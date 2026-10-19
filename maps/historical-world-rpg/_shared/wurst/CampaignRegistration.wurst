@@ -2,6 +2,8 @@ package CampaignRegistration
 import Agriculture
 import CampaignAgriculture
 import CivicGovernance
+import TradeFinance
+import FinanceCampaignRuntime
 import ScienceCampaignRuntime
 import ScienceExploration
 import CivicCampaignRuntime
@@ -183,6 +185,12 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.technologies.effects = scienceResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.scienceRuntime = new ScienceCampaignRuntime(campaign.state, trade, scienceResearch)
+	let financeResearch = new FinanceResearchEffects(rpg.technologies.effects)
+	configureGeneratedFinance(military.finance, financeResearch)
+	rpg.technologies.effects = financeResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.financeRuntime = new FinanceCampaignRuntime(campaign.state, trade, financeResearch)
+	trade.controller.finance = campaign.state.financeRuntime
 	trade.civic = military
 	trade.civicClock = campaign.state.clock
 	trade.tradeController()

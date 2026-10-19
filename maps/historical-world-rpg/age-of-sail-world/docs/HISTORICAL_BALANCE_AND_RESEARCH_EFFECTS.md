@@ -267,3 +267,74 @@ The three exact issue #514 research-unbound release findings remain pending the
 controller's fresh integrated current-main execution/runtime/traceability audit.
 Focused development tests do not establish native client playability or resolve
 the unrelated #438 crash.
+
+## Trade exchange, remittance and canal finance consumers (issue #517)
+
+`scenario/progression/trade-finance.json` supplies the shared `TradeFinance` and
+`FinanceCampaignRuntime` adapters. The active map and inactive regions use the
+same campaign ledgers and integer calculations. Player and AI controllers use
+these same action methods. Research delivery rebuilds one named entitlement
+layer; duplicate provenance does not multiply an effect. Activity starts no
+earlier than the technology's authored preferred year (1580 auction, 1475 bills,
+1710 brokerage, 1750 canal finance); early research retains its existing premium
+and prerequisites but cannot confer an out-of-era finance benefit.
+
+* A formal exchange requires an existing market, warehouse and authored urban
+  trade role, lawful current control, administration and access. The existing
+  commodity spread is now explicitly accounted as 50% transaction commission and
+  50% liquidity/execution slippage. Auction research reduces only the commission
+  component by 500 bp; brokerage reduces only execution slippage by 700 bp.
+  Both components are portions of the existing spread, not extra charges.
+  Actual marginal stock prices and scarcity remain unchanged. Savings round
+  down independently against actual settled costs; each nonzero component keeps
+  a positive minimum charge. Tiny orders can have zero saving. Buying and selling
+  still validate stock, counterparty funds, compatible cargo, capacity, physical
+  presence and transaction replay. No same-market merchant standing is awarded.
+* `/finance remit SOURCE DESTINATION AMOUNT` transfers existing warehouse
+  currency between controlled, administered banks in different provinces of the
+  authored European correspondent network (London, Bruges, Venice and Genoa).
+  Both endpoints require real banking/warehouse services, accessible markets and
+  earned double-entry bookkeeping. The service bill is 200 bp of the principal,
+  rounded up with a minimum of one minor currency unit; earned bills research
+  reduces that bill by 600 bp, rounding the saving down. A transfer of 10,000
+  costs 200 without research or 188 with it. The principal arrives in the other
+  existing store and the fee is consumed. This is a currency transfer through
+  banks, not commodity shipping, a loan or a new credit balance. Transfers use
+  the existing persisted transaction history and never award trade standing.
+* `/finance canal yangzhou_canal_quay` funds one durable refurbishment of the
+  existing Grand Canal quay at the authored Yangzhou canal node. From 1750 it
+  requires river transport bureaus, lawful local administration and market
+  access, ten available local workers, 20 existing timber stock units, 1,000
+  principal and 100 financing currency units from government treasury. Canal
+  finance reduces only the financing bill to 94; principal and materials remain
+  unchanged. Each of 90 funded workdays also requires the real local workforce
+  and pays two treasury units in wages. Worker availability is a daily service
+  capacity; workers are not consumed as casualties. Missing wages or workers
+  suspend work without retroactive free days. Completion adds 200 cargo units to
+  that existing local warehouse once, as a derived canal capacity contribution.
+  Repeated starts, grants or refreshes cannot add a second quay. Capture cancels
+  unfinished work without refund. Completed physical infrastructure survives
+  transfer; research and its fee reduction do not transfer.
+
+`/finance inspect [PROJECT]` explains conditions, bills, labor, materials, time
+and expected output. `/technology` identifies each exact metric and its activity
+availability; `/trade inspect` previews current one-stock-unit settlements with
+eligible research. Existing discovery, ownership, supply, route and cargo checks
+continue to govern the underlying actions. There are no new ships or equipment,
+policy enactments, general construction discounts or treasury income passives.
+
+Military/settlement snapshot schema **14** adds canonical canal project records
+(owner, committed day, paid work and completion); versions 1–13 migrate to
+unstarted projects with no invented capital or capacity. Staging rejects missing,
+duplicate, unknown, inconsistent, wrong-controller and future-day records before
+mutating authority. The existing campaign transaction rolls back project state,
+research, treasury, bank stores and stock together. Warehouse capacity is rebuilt
+from completed works after load and before cargo use, avoiding duplicate layers.
+
+The four exact research-unbound findings stay blocking without verified full
+same-revision execution. The release audit now checks current source identity,
+pinned compiler evidence, production probes and all required trade-finance
+consumer tests before recognizing these four bindings. Focused development logs
+are not that full release evidence. Native campaign launch issue #438 remains
+separately owned; repository validation and integrated audit regeneration belong
+to the controller.

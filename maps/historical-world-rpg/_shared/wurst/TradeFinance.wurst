@@ -1,0 +1,154 @@
+package TradeFinance
+
+import CivicGovernance
+import ResearchEntitlements
+
+/** Named, replaceable passive layer. The era gate belongs to the recipient
+ * activity; historical saves retain completed research without free output. */
+public class FinanceEffect extends CivicEffect
+	int firstDay
+	construct(string kind, string contentId, string metric, int basisPoints, int firstDay)
+		super(kind, contentId, metric, basisPoints)
+		this.firstDay = firstDay
+
+public class FinanceResearchEffects extends CivicResearchEffects
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	function rateAt(string owner, string metric, int day) returns int
+		let layer = get(owner)
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i] castTo FinanceEffect
+				if d.metric == metric and day >= d.firstDay and layer.has(d.kind, d.contentId)
+					result += d.basisPoints
+		return result
+
+/** Keep a strictly positive existing cost; floor the saving, never the bill.
+ * Integer helpers avoid overflow even at the native currency limit. */
+public function financeCost(int cost, int reduction) returns int
+	if cost <= 0
+		return 0
+	return cost - civicScale(cost, IMinBJ(9999, IMaxBJ(0, reduction)))
+
+public class ExchangeSite
+	string id
+	string provinceId
+	string bankNetwork
+	construct(string id, string provinceId, string bankNetwork)
+		this.id = id
+		this.provinceId = provinceId
+		this.bankNetwork = bankNetwork
+
+public class CanalWork
+	string id
+	string settlementId
+	string prerequisite
+	string good
+	int firstDay
+	int materialUnits
+	int principalCost
+	int financingCost
+	int laborCostPerDay
+	int constructionDays
+	int capacityUnits
+	int laborUnits
+	construct(string id, string settlementId, string prerequisite, string good, int firstDay, int materialUnits, int principalCost, int financingCost, int laborCostPerDay, int constructionDays, int capacityUnits, int laborUnits)
+		this.id = id
+		this.settlementId = settlementId
+		this.prerequisite = prerequisite
+		this.good = good
+		this.firstDay = firstDay
+		this.materialUnits = materialUnits
+		this.principalCost = principalCost
+		this.financingCost = financingCost
+		this.laborCostPerDay = laborCostPerDay
+		this.constructionDays = constructionDays
+		this.capacityUnits = capacityUnits
+		this.laborUnits = laborUnits
+
+public class CanalState
+	boolean restored = false
+	string owner = ""
+	int work = 0
+	int lastDay = 0
+	boolean completed = false
+
+public interface FinancePort
+	function workforce(string settlementId, int units) returns boolean
+	function eligible(string owner, string settlementId) returns boolean
+	function technology(string owner, string id) returns boolean
+	function pay(string owner, string settlementId, int money, string good, int units) returns boolean
+
+/** Durable canal works use local stock and treasury. Capture cancels unfinished
+ * works without refund; completed quays remain physical infrastructure. */
+public class FinanceLedger
+	ExchangeSite array[1024] sites
+	int siteCount = 0
+	CanalWork array[32] projects
+	CanalState array[32] states
+	int count = 0
+	int commissionShare = 0
+	int remittanceFee = 0
+	string bankPrerequisite = ""
+	function site(string id) returns ExchangeSite
+		for i = 0 to siteCount - 1
+			if sites[i].id == id
+				return sites[i]
+		return null
+	function register(CanalWork project)
+		projects[count] = project
+		states[count] = new CanalState()
+		count++
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if projects[i].id == id
+				return i
+		return -1
+	function fork() returns FinanceLedger
+		let copy = new FinanceLedger()
+		copy.commissionShare = commissionShare
+		copy.remittanceFee = remittanceFee
+		copy.bankPrerequisite = bankPrerequisite
+		copy.siteCount = siteCount
+		for i = 0 to siteCount - 1
+			copy.sites[i] = sites[i]
+		for i = 0 to count - 1
+			copy.register(projects[i])
+		return copy
+	function controlChanged(string id)
+		for i = 0 to count - 1
+			if projects[i].settlementId == id and not states[i].completed
+				states[i].owner = ""
+				states[i].work = 0
+	function start(string owner, string id, int day, FinanceResearchEffects effects, FinancePort port) returns string
+		let i = index(id)
+		if i < 0
+			return "Choose an authored canal works project."
+		let d = projects[i]
+		let s = states[i]
+		if s.completed or s.owner != "" or day < s.lastDay or day < d.firstDay or not port.eligible(owner, d.settlementId) or not port.technology(owner, d.prerequisite)
+			return "Requires an unbuilt canal project, historical availability, lawful administration, local access and its supporting technology."
+		let fee = financeCost(d.financingCost, effects.rateAt(owner, "canal_infrastructure_financing_cost_reduction", day))
+		if not port.workforce(d.settlementId, d.laborUnits) or not port.pay(owner, d.settlementId, d.principalCost + fee, d.good, d.materialUnits)
+			return "Treasury, real canal materials or workforce are insufficient."
+		s.owner = owner
+		s.lastDay = day
+		s.work = 0
+		return ""
+	function advance(int day, FinancePort port)
+		for i = 0 to count - 1
+			let d = projects[i]
+			let s = states[i]
+			while s.lastDay < day and s.owner != "" and not s.completed
+				s.lastDay++
+				if not port.eligible(s.owner, d.settlementId) or not port.technology(s.owner, d.prerequisite)
+					s.owner = ""
+					s.work = 0
+				else if port.workforce(d.settlementId, d.laborUnits) and port.pay(s.owner, d.settlementId, d.laborCostPerDay, "", 0)
+					s.work++
+					if s.work == d.constructionDays
+						s.completed = true
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]

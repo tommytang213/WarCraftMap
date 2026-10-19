@@ -1,0 +1,70 @@
+{
+  "MilitaryCombatEventsTests.wurst": [
+    "everyLegacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec",
+    "militaryClockVersionMigrationAndMalformedSnapshotsAreAtomic"
+  ],
+  "TradeCommandTests.wurst": [
+    "legacySummaryTradeKeepsHistoricalStoreAndCapacityDespiteCurrentSelection",
+    "registeredTradeCommandsCompleteTwoCommodityTwoSettlementCargoJourney",
+    "tradeCommandsRecheckMovementOwnershipAndCampaignAvailabilityAtCommit",
+    "tradeCommandsRejectUnknownHiddenRemoteAndUnauthorizedTargets",
+    "tradeCommitRejectsControlChangesBetweenResolutionAndMutation",
+    "tradeListsAreBoundedAndShareOnlyTheExistingMarketPauseOwner",
+    "tradeSelectionLoadRollbackAndLegacyPersonalStoreMigrationPreserveAuthority"
+  ],
+  "LandArmyEffectsTests.wurst": [
+    "combinedLandAndScienceRecordsRoundTripAndMigrateMainVersion12"
+  ],
+  "CampaignLoadTransactionTests.wurst": [
+    "legacyMilitaryMigrationSupportsFoundedPolityReconciliation"
+  ],
+  "CivicGovernanceTests.wurst": [
+    "combinedCivicAndVoyageDayReplayAndSnapshotMigrationPreserveBothDomains"
+  ],
+  "ResearchRuntimeTests.wurst": [
+    "castCannonSupportedEnvelopesRebuildTheSameQualifiedDamage",
+    "generatedFlintlockRequiresBothCrossBranchPrerequisitesAtCommit",
+    "generatedInstitutionRequiresBothTechnologyAndInstitutionPrerequisites",
+    "generatedMassArmyResearchDeliversAllTypedEntitlementsToItsController",
+    "generatedResearchSaveCodecPreservesCompletionsAndResumedEligibility",
+    "historicalResearchCommandChargesAuthoredCurrentCostExactlyOnce",
+    "historicalResearchCommandRejectsInvalidCostsAndPreservesAllGates",
+    "historicalResearchCommandRepricesAfterClockAndDefinitionChanges",
+    "historicalResearchCommandResumesAtSavedDateAndRetainsLegacyCompletions",
+    "institutionsPreserveSharedContentProvenanceAndAllFiveUnlockKinds",
+    "malformedTypedResearchDefinitionsRejectBeforeChargesAndCompletion",
+    "pikeResearchCommandBindsOnlyItsModifierAndReportsItsRecipients",
+    "productionResearchRegistrationKeepsScreensReadOnlyAndActionReachable",
+    "productionRpgRegistrationReportsNameAndAliasConflicts",
+    "productionUnboundResearchNeverChangesWarcraftFoodCapacity",
+    "typedIdentitySeparatesKindsEvenWhenContentIdsAreShared",
+    "typedResearchReconstructsSupportedSavesWithoutGrantsOrStaleLayers",
+    "unknownResearchIsAtomicAndAllPrerequisitesBeyondTwoAreRequired"
+  ],
+  "MilitaryOrderEventsTests.wurst": [
+    "militaryOrderMigrationRetainsLegacyDestinationsAndRejectsMalformedV6"
+  ],
+  "NavigationEfficiencyTests.wurst": [
+    "activeAbstractSaveResumeAndRepeatedCallbackHaveExactVoyageParity"
+  ],
+  "TradeFinanceTests.wurst": [
+    "canalActiveInactiveTravelCaptureSaveMigrationAndFailedLoadRemainDeterministic",
+    "failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority",
+    "financeLongCampaignConservesWealthAndMissedLaborNeverReplaysFreeWork",
+    "financeMissingTechEraControlRecipientAccessFundsStockAndGearNeverBypassAuthority",
+    "financeResearchNamedLayersDeduplicateRepairAndStackDistinctSourcesOnce",
+    "registeredAuctionAndBrokerageResearchReduceExistingSettlementCostsPrecisely",
+    "registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal",
+    "registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput",
+    "registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence"
+  ],
+  "MilitarySettlementRuntimeTests.wurst": [
+    "militarySnapshotRecordBoundariesPreserveRecoveryAndRejectMalformedSuffixes"
+  ],
+  "ScienceExplorationTests.wurst": [
+    "scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact"
+  ],
+  "AbstractSettlementTests.wurst": [
+    "militaryVersion4BranchesMigratePolicyAndRecoveryTogether"
+  ]
+}

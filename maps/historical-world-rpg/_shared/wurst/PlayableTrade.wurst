@@ -1,4 +1,5 @@
 package PlayableTrade
+import FinanceCampaignRuntime
 import Agriculture
 import CivicGovernance
 import MilitarySettlementRuntime
@@ -161,6 +162,12 @@ public class MerchantProgress
 		return standing>=500
 
 public class PlayableTradeController
+	FinanceCampaignRuntime finance = null
+	string financeOwner = ""
+	function amount(RuntimeMarket market, int quantity, boolean buying) returns int
+		if finance != null
+			return finance.amount(financeOwner, market, quantity, buying)
+		return market.quoteAmount(quantity, buying)
 	MilitarySettlementRuntime civic = null
 	CampaignClock civicClock = null
 	function throughputAllowed(RuntimeMarket market, int quantity) returns boolean
@@ -206,7 +213,7 @@ public class PlayableTradeController
 			return "Market access is restricted."
 		if market.stock<quantity
 			return "Market stock is insufficient."
-		let charge=market.quoteAmount(quantity,true)
+		let charge=amount(market,quantity,true)
 		if charge<1 or market.money>2147483647-charge
 			return "Trade amount is outside the currency settlement range."
 		if destination.money<charge
@@ -240,7 +247,7 @@ public class PlayableTradeController
 			return "Market access is restricted."
 		if market.storageCapacity<2147483647 and quantity>market.storageCapacity-market.stock
 			return "Local staple storage capacity is insufficient."
-		let proceeds=market.quoteAmount(quantity,false)
+		let proceeds=amount(market,quantity,false)
 		if proceeds<1 or source.money>2147483647-proceeds
 			return "Trade amount is outside the currency settlement range."
 		if market.money<proceeds
@@ -313,6 +320,10 @@ function inspectMarket(player viewer,PlayableTradeRuntime runtime,TradePresentat
 	if runtime.access != null and runtime.findMarket(runtime.market.id,runtime.market.goodName)==runtime.market and runtime.access.marketActor(viewer,runtime.market)>=0
 		title=runtime.market.id
 		rows=runtime.market.inspect()
+		if runtime.controller.finance != null
+			let finance = runtime.controller.finance
+			let owner = runtime.access.state.rpg.researchResources.controllerId(viewer)
+			rows += "\nOne stock unit, current settlement: buy " + I2S(finance.amount(owner, runtime.market, 1, true)) + "; sell " + I2S(finance.amount(owner, runtime.market, 1, false)) + ". Currency minor units. Use /finance inspect for fees and eligibility."
 		rows+="\n"+runtime.contentListings(viewer,page)
 	presentation.showMarket(viewer,title,rows+"\nCampaign paused. Use /trade inspect [PAGE], /trade buy QUANTITY, /trade sell QUANTITY, /trade move SOURCE DESTINATION COMMODITY QUANTITY, or /trade close.")
 public function buyCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,PlayableTradeController controller,TradePresentation presentation)
@@ -484,6 +495,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		storeControl=rollbackStoreControl
 		clearLoadCheckpoint()
 	override function commitLoad()
+		if controller.finance != null
+			controller.finance.refresh()
 		management.close()
 		clearLoadCheckpoint()
 	function clearLoadCheckpoint()
@@ -958,6 +971,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		storeControl=control
 		return "Selected cargo store: "+hold.id+"."
 	function exchange(player sender,string side,int quantity) returns string
+		if controller.finance != null
+			controller.finance.refresh()
 		refreshAgriculture()
 		let actor=selectedActor(sender)
 		if actor<0 or not storeSelected or findStore(hold.id)!=hold
@@ -967,6 +982,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		if nextTransaction>=2147483647
 			return "Transaction history is full."
 		let id="runtime-"+side+"-"+nextTransaction.toString()
+		if controller.finance != null
+			controller.financeOwner = access.state.rpg.researchResources.controllerId(sender)
 		let before=controller.processedCount
 		var result=""
 		if side=="buy"
@@ -979,6 +996,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	function transfer(player sender,string sourceId,string destinationId,int quantity) returns string
 		return transfer(sender,sourceId,destinationId,"",quantity)
 	function transfer(player sender,string sourceId,string destinationId,string goodId,int quantity) returns string
+		if controller.finance != null
+			controller.finance.refresh()
 		let actor=selectedActor(sender)
 		let source=findStore(sourceId)
 		let destination=findStore(destinationId)
@@ -1029,6 +1048,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				count++
 		return tradePage(rows,count,page)+"\nUse /trade select MARKET COMMODITY."
 	function storeListings(player sender,int page) returns string
+		if controller.finance != null
+			controller.finance.refresh()
 		let actor=selectedActor(sender)
 		if actor<0 or not commitSelection(sender,actor)
 			return "Select a local market first."
@@ -1042,6 +1063,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				count++
 		return tradePage(rows,count,page)+"\nUse /trade store STORE then /trade inspect [PAGE]."
 	function contentListings(player sender,int page) returns string
+		if controller.finance != null
+			controller.finance.refresh()
 		let actor=selectedActor(sender)
 		if actor<0 or not storeSelected or findStore(hold.id)!=hold
 			return "Select an eligible cargo store with /trade store STORE."

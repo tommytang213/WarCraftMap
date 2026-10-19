@@ -1,0 +1,392 @@
+package TradeFinanceTests
+
+import TradeFinance
+import FinanceCampaignRuntime
+import CivicGovernance
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ManagementScreenPauseController
+import ManagementCommandTests
+import TradeCommandTests
+import ScenarioData
+
+class FinanceResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return 1800
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player sender, string message)
+		output = message
+
+class FinanceFixture
+	int day = 657072
+	FinanceResources resources = new FinanceResources()
+	FinanceResearchEffects effects = new FinanceResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	FinanceCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	construct(boolean ai, boolean active)
+		if ai
+			resources.owner = "ai"
+		configureGeneratedRpg(rpg)
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureGeneratedFinance(military.finance, effects)
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity(resources.owner, 100000)
+		addSettlement("london")
+		addSettlement("venice")
+		addSettlement("yangzhou")
+		runtime = new FinanceCampaignRuntime(campaign, trade, effects)
+		campaign.financeRuntime = runtime
+		trade.controller.finance = runtime
+		trade.controller.financeOwner = resources.owner
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerFinanceCommands(commands, runtime).assertEquals("")
+		if active
+			military.activateRegion("europe_west")
+		else
+			military.activateRegion("africa")
+		let owner = resources.owner
+		rpg.restoreState(rpg.captureState() + "|u," + owner + ",double_entry_bookkeeping|u," + owner + ",consular_trade_networks|u," + owner + ",commercial_statistics|u," + owner + ",river_transport_bureaus").assertTrue()
+		rpg.technologies.reconstructAll()
+	function addSettlement(string id)
+		military.registerSettlement(new SettlementRuntimeState(id, resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
+		military.appoint(id, new AdministratorState(id + "_clerk", "Clerk", "Administrator", resources.owner, "europe_west", id, 50, 50, 40, 1))
+		trade.registerMarket(new RuntimeMarket(id, "timber", 10000, 1000000, 100, 100))
+		trade.registerStore(new TradeStore("warehouse:" + id, 24000, 100000))
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+		rpg.technologies.bindingStatus(rpg.technologies.get(id).unlocks[0]).assertEquals(RESEARCH_BOUND)
+	function allResearch()
+		unlock("auction_markets")
+		unlock("bill_of_exchange_networks")
+		unlock("canal_tolls_finance")
+		unlock("brokerage_houses")
+	function action(string text)
+		commands.dispatch(Player(0), "/finance " + text).assertTrue()
+		resources.output.assertEquals("Finance action completed.")
+
+function financeReceipt(string name)
+	print("TRACEABILITY {\"requirement\":\"ROAD-0045.01\",\"case\":\"" + name + "\",\"entryPoint\":\"production-trade-finance\",\"scope\":\"registered-research-trade-remittance-canal\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function registeredAuctionAndBrokerageResearchReduceExistingSettlementCostsPrecisely()
+	let f = new FinanceFixture(false, true)
+	let m = f.trade.markets[0]
+	let original = m.quoteAmount(100, true)
+	f.runtime.amount("player", m, 100, true).assertEquals(original)
+	m.pricing.spreadPermille = 0
+	let principal = m.quoteAmount(100, true)
+	m.pricing.spreadPermille = 80
+	let commission = (original - principal) div 2
+	let slippage = original - principal - commission
+	f.unlock("auction_markets")
+	f.runtime.amount("player", m, 100, true).assertEquals(original - civicScale(commission, 500))
+	(f.runtime.amount("player", m, 100, true) < original).assertTrue()
+	f.unlock("canal_tolls_finance")
+	f.unlock("brokerage_houses")
+	let expected = original - civicScale(commission, 500) - civicScale(slippage, 700)
+	f.runtime.amount("player", m, 100, true).assertEquals(expected)
+	let store = f.trade.findStore("warehouse:london")
+	let money = store.money
+	let liquidity = m.money
+	f.trade.controller.buy("actual_purchase", m, store, 100).startsWith("Bought").assertTrue()
+	store.money.assertEquals(money - expected)
+	m.money.assertEquals(liquidity + expected)
+	store.quantity("timber").assertEquals(100)
+	m.stock.assertEquals(9900)
+	f.trade.controller.buy("actual_purchase", m, store, 100).assertEquals("Transaction already processed.")
+	store.money.assertEquals(money - expected)
+	// Sell settlement improves proceeds, retaining the same real counterparty.
+	let baseSale = m.quoteAmount(100, false)
+	(f.runtime.amount("player", m, 100, false) > baseSale).assertTrue()
+	let before = m.stock
+	f.trade.controller.sell("actual_sale", m, store, 100, 1000).startsWith("Sold").assertTrue()
+	m.stock.assertEquals(before + 100)
+	(store.money < money).assertTrue()
+	f.trade.progress.standing.assertEquals(0)
+	financeReceipt("success")
+
+@test function registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal()
+	let control = new FinanceFixture(false, false)
+	let f = new FinanceFixture(true, true)
+	control.action("remit london venice 10000")
+	control.trade.findStore("warehouse:london").money.assertEquals(89800)
+	control.trade.findStore("warehouse:venice").money.assertEquals(110000)
+	f.unlock("bill_of_exchange_networks")
+	f.action("remit london venice 10000")
+	f.trade.findStore("warehouse:london").money.assertEquals(89812)
+	f.trade.findStore("warehouse:venice").money.assertEquals(110000)
+	f.trade.progress.standing.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(100000)
+	f.commands.dispatch(Player(0), "/finance inspect").assertTrue()
+	f.resources.output.contains("200 bp").assertTrue()
+	f.resources.output.contains("600 bp").assertTrue()
+	let saved = f.trade.capture()
+	f.action("remit venice london 1000")
+	f.trade.applyState(saved).assertTrue()
+	f.trade.capture().assertEquals(saved)
+	f.trade.nextTransaction.assertEquals(2)
+	financeReceipt("remittance")
+
+@test function registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput()
+	let control = new FinanceFixture(false, false)
+	let f = new FinanceFixture(true, true)
+	f.unlock("canal_tolls_finance")
+	control.action("canal yangzhou_canal_quay")
+	f.action("canal yangzhou_canal_quay")
+	control.campaign.countries.treasury[0].assertEquals(98900)
+	f.campaign.countries.treasury[0].assertEquals(98906)
+	f.trade.findMarket("yangzhou", "timber").stock.assertEquals(9980)
+	f.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24000)
+	f.clock.advanceTo(f.day + 89).assertTrue()
+	f.military.finance.states[0].completed.assertFalse()
+	f.clock.advanceTo(f.day + 90).assertTrue()
+	f.military.finance.states[0].completed.assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(98726)
+	f.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
+	f.runtime.advance(f.day + 90)
+	f.runtime.refresh()
+	f.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
+	f.runtime.start("ai", "yangzhou_canal_quay").startsWith("Requires").assertTrue()
+	financeReceipt("canal")
+
+@test function financeMissingTechEraControlRecipientAccessFundsStockAndGearNeverBypassAuthority()
+	let f = new FinanceFixture(false, false)
+	let m = f.trade.markets[0]
+	let base = m.quoteAmount(100, true)
+	f.allResearch()
+	for i = 0 to f.effects.definitionCount - 1
+		let d = f.effects.definitions[i] castTo FinanceEffect
+		f.effects.rateAt("player", d.metric, d.firstDay - 1).assertEquals(0)
+		f.effects.rateAt("player", d.metric, d.firstDay).assertEquals(d.basisPoints)
+	f.effects.rateAt("player", "market_transaction_fee_reduction", 529237).assertEquals(0)
+	let day = f.clock.currentDay
+	f.clock.currentDay = 529237
+	f.runtime.amount("player", m, 100, true).assertEquals(base)
+	f.runtime.start("player", "yangzhou_canal_quay").startsWith("Requires").assertTrue()
+	f.clock.currentDay = day
+	f.runtime.amount("other", m, 100, true).assertEquals(base)
+	m.blockaded = true
+	f.runtime.amount("player", m, 100, true).assertEquals(m.quoteAmount(100, true))
+	f.runtime.remit("player", "london", "venice", 1000).startsWith("Requires").assertTrue()
+	m.blockaded = false
+	f.runtime.amount("player", new RuntimeMarket("invented", "timber", 10000, 1000000, 100, 100), 100, true).assertEquals(base)
+	f.runtime.remit("player", "london", "yangzhou", 1000).startsWith("Requires").assertTrue()
+	f.runtime.start("other", "yangzhou_canal_quay").startsWith("Requires").assertTrue()
+	f.runtime.start("player", "ordinary_building").startsWith("Choose").assertTrue()
+	let store = f.trade.findStore("warehouse:london")
+	let money = store.money
+	let stock = m.stock
+	store.money = 0
+	f.trade.controller.buy("poor", m, store, 100).assertEquals("Funds are insufficient.")
+	f.runtime.remit("player", "london", "venice", 1000).startsWith("Existing").assertTrue()
+	store.money = money
+	store.allowedGoodIds = "grain"
+	f.trade.controller.buy("bad_gear", m, store, 100).assertEquals("Cargo store is incompatible with this commodity.")
+	store.allowedGoodIds = ""
+	m.stock = 0
+	f.trade.controller.buy("empty", m, store, 100).assertEquals("Market stock is insufficient.")
+	m.stock = stock
+	f.trade.findMarket("yangzhou", "timber").stock = 1
+	f.runtime.start("player", "yangzhou_canal_quay").startsWith("Treasury").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(100000)
+	f.trade.findMarket("yangzhou", "timber").stock = 10000
+	let city = f.military.settlements[f.military.settlementIndex("yangzhou")]
+	let manpower = city.manpower
+	city.manpower = 0
+	f.runtime.start("player", "yangzhou_canal_quay").startsWith("Treasury").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(100000)
+	city.manpower = manpower
+	f.campaign.countries.treasury[0] = 0
+	f.runtime.start("player", "yangzhou_canal_quay").startsWith("Treasury").assertTrue()
+	f.military.finance.states[0].owner.assertEquals("")
+	financeReceipt("failure")
+
+@test function financeResearchNamedLayersDeduplicateRepairAndStackDistinctSourcesOnce()
+	let f = new FinanceFixture(false, false)
+	f.allResearch()
+	let duplicate = new RuntimeTechnology("duplicate_auction", "Duplicate auction", 1450, 1)
+	duplicate.addUnlock(duplicate.id, "modifier", "progression_auction_markets")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("duplicate_auction")
+	let independent = new RuntimeTechnology("independent_auction", "Independent auction", 1450, 1)
+	independent.addUnlock(independent.id, "modifier", "independent_auction_source")
+	f.effects.register(new FinanceEffect("modifier", "independent_auction_source", "market_transaction_fee_reduction", 100, 0))
+	f.rpg.technologies.register(independent).assertTrue()
+	f.unlock("independent_auction")
+	let saved = f.rpg.captureState()
+	for repeat = 1 to 3
+		f.rpg.restoreState(saved).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.effects.rateAt("player", "market_transaction_fee_reduction", f.day).assertEquals(600)
+		f.effects.rateAt("player", "secure_remittance_fee_reduction", f.day).assertEquals(600)
+		f.effects.rateAt("other", "market_transaction_fee_reduction", f.day).assertEquals(0)
+	f.rpg.restoreState(saved + "|u,player,unknown_technology").assertFalse()
+	f.effects.rateAt("player", "market_transaction_fee_reduction", f.day).assertEquals(600)
+	f.effects.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	f.effects.rateAt("player", "market_transaction_fee_reduction", f.day).assertEquals(0)
+	f.rpg.technologies.reconstructAll()
+	f.effects.rateAt("player", "market_transaction_fee_reduction", f.day).assertEquals(600)
+	financeCost(2147483647, 600).assertEquals(2018634629)
+	financeCost(1, 99999).assertEquals(1)
+	financeCost(0, 600).assertEquals(0)
+	financeReceipt("repair")
+
+@test function canalActiveInactiveTravelCaptureSaveMigrationAndFailedLoadRemainDeterministic()
+	let active = new FinanceFixture(false, true)
+	let inactive = new FinanceFixture(false, false)
+	active.allResearch()
+	inactive.allResearch()
+	active.action("canal yangzhou_canal_quay")
+	inactive.action("canal yangzhou_canal_quay")
+	active.clock.advanceTo(active.day + 30).assertTrue()
+	inactive.clock.advanceTo(inactive.day + 30).assertTrue()
+	active.military.finance.states[0].work.assertEquals(30)
+	let saved = active.military.snapshot()
+	active.military.restore(saved).assertTrue()
+	active.military.snapshot().assertEquals(saved)
+	active.military.restore(saved + "|q,unknown,,0,0,0").assertFalse()
+	active.military.restore(saved + "|q,yangzhou_canal_quay,,0,0,0").assertFalse()
+	let record = "|q,yangzhou_canal_quay,player,30," + I2S(active.day + 30) + ",0"
+	active.military.restore(saved.replace(record, "|q,yangzhou_canal_quay,player,90," + I2S(active.day + 90) + ",0")).assertFalse()
+	active.military.restore(saved.replace(record, "|q,yangzhou_canal_quay,other,30," + I2S(active.day + 30) + ",0")).assertFalse()
+	active.military.snapshot().assertEquals(saved)
+	active.military.validateSnapshot(saved, active.day + 29).assertFalse()
+	active.military.activateRegion("africa")
+	active.clock.advanceTo(active.day + 90).assertTrue()
+	inactive.clock.advanceTo(inactive.day + 90).assertTrue()
+	active.military.finance.states[0].work.assertEquals(inactive.military.finance.states[0].work)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[0])
+	active.military.transferSettlement("yangzhou", "other")
+	active.military.finance.states[0].completed.assertTrue()
+	active.effects.rateAt("other", "canal_infrastructure_financing_cost_reduction", active.day).assertEquals(0)
+	active.runtime.refresh()
+	active.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
+	// Legacy schemas have no funded canal projects or retroactive improvements.
+	let state = inactive.military.finance.states[0]
+	let legacy = inactive.military.snapshot().replace("v14|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
+	inactive.military.restore(legacy).assertTrue()
+	inactive.runtime.refresh()
+	inactive.military.finance.states[0].completed.assertFalse()
+	inactive.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24000)
+	inactive.action("canal yangzhou_canal_quay")
+	inactive.military.transferSettlement("yangzhou", "other")
+	inactive.military.finance.states[0].owner.assertEquals("")
+	inactive.military.finance.states[0].work.assertEquals(0)
+	financeReceipt("persistence")
+
+@test function failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority()
+	let f = new LoadFixture()
+	let trade = f.extension.trade
+	f.military.finance.register(new CanalWork("quay", "port", "printing", "grain", 0, 1, 10, 2, 1, 90, 100, 1))
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	f.rpg.restoreState(f.rpg.captureState() + "|u,england,printing").assertTrue()
+	let effects = new FinanceResearchEffects(f.rpg.technologies.effects)
+	let finance = new FinanceCampaignRuntime(f.campaign.state, trade, effects)
+	f.campaign.state.financeRuntime = finance
+	trade.controller.finance = finance
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "finance").assertTrue()
+	finance.start("england", "quay").assertEquals("")
+	let money = f.campaign.countries.treasury[0]
+	money.assertEquals(988)
+	trade.market.stock.assertEquals(99)
+	f.clock.advanceTo(f.clock.currentDay + 30).assertTrue()
+	f.military.finance.states[0].work.assertEquals(30)
+	f.campaign.countries.treasury[0].assertEquals(958)
+	trade.controller.buy("finance_rollback_purchase", trade.market, trade.hold, 2).startsWith("Bought").assertTrue()
+	let before = f.campaign.state.captureAuthoritativeState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.finance.states[0].work.assertEquals(0)
+	f.military.finance.states[0].owner.assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(1000)
+	trade.market.stock.assertEquals(100)
+	trade.controller.seen("finance_rollback_purchase").assertFalse()
+
+@test function registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence()
+	let f = new TradeCommandFixture()
+	let resources = new FinanceResources()
+	resources.owner = "portugal"
+	f.rpg.researchResources = resources
+	let effects = new FinanceResearchEffects(new UnboundResearchEffects())
+	f.rpg.technologies.effects = effects
+	configureGeneratedFinance(f.military.finance, effects)
+	let finance = new FinanceCampaignRuntime(f.state, f.trade, effects)
+	f.trade.controller.finance = finance
+	f.clock.currentDay = 657072
+	f.military.appoint("lisbon", new AdministratorState("clerk", "Clerk", "Administrator", "portugal", "europe_west", "lisbon", 50, 50, 40, 1))
+	let layer = new ResearchEntitlements("portugal")
+	layer.add(new ResearchUnlock("auction_markets", "modifier", "progression_auction_markets"))
+	layer.add(new ResearchUnlock("brokerage_houses", "modifier", "progression_brokerage_houses"))
+	effects.replaceResearchEntitlements(layer)
+	f.selectPersonal()
+	let m = f.trade.market
+	m.baseUnitPrice = 100
+	m.pricing.quantityUnitsPerDisplayUnit = 1
+	let cost = finance.amount("portugal", m, 20, true)
+	(cost < m.quoteAmount(20, true)).assertTrue()
+	f.personal().money = 100000
+	f.dispatch("/trade buy 20")
+	f.ports.output.startsWith("Bought").assertTrue()
+	f.personal().money.assertEquals(100000 - cost)
+	f.actors.actorX += 10000.
+	f.reject("/trade buy 20")
+	financeReceipt("command")
+
+@test function financeLongCampaignConservesWealthAndMissedLaborNeverReplaysFreeWork()
+	let f = new FinanceFixture(false, false)
+	f.allResearch()
+	let m = f.trade.markets[0]
+	let store = f.trade.findStore("warehouse:london")
+	let money = store.money
+	let total = money + m.money
+	for cycle = 1 to 20
+		f.trade.controller.buy("cycle_buy_" + I2S(cycle), m, store, 10).startsWith("Bought").assertTrue()
+		f.trade.controller.sell("cycle_sell_" + I2S(cycle), m, store, 10, 1000).startsWith("Sold").assertTrue()
+		(store.money < money).assertTrue()
+		(store.money + m.money).assertEquals(total)
+		m.stock.assertEquals(10000)
+	f.trade.progress.standing.assertEquals(0)
+	f.action("canal yangzhou_canal_quay")
+	f.campaign.countries.treasury[0] = 0
+	f.clock.advanceTo(f.day + 30).assertTrue()
+	f.military.finance.states[0].work.assertEquals(0)
+	f.campaign.countries.treasury[0] = 1000
+	f.runtime.advance(f.day + 30)
+	f.military.finance.states[0].work.assertEquals(0)
+	f.clock.advanceTo(f.day + 119).assertTrue()
+	f.military.finance.states[0].completed.assertFalse()
+	f.clock.advanceTo(f.day + 120).assertTrue()
+	f.military.finance.states[0].completed.assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(820)
+	f.clock.advanceTo(664383).assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(820)
+	f.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
+	financeReceipt("long-campaign")

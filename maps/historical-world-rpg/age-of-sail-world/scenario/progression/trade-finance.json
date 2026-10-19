@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "commissionShareBasisPoints": 5000,
+  "remittanceFeeBasisPoints": 200,
+  "bankPrerequisite": "double_entry_bookkeeping",
+  "bankNetworks": [
+    {
+      "id": "european_correspondents",
+      "settlementIds": [
+        "london",
+        "bruges",
+        "venice",
+        "genoa"
+      ]
+    }
+  ],
+  "canalWorks": [
+    {
+      "id": "yangzhou_canal_quay",
+      "settlementId": "yangzhou",
+      "firstDate": "1750-01-01",
+      "prerequisite": "river_transport_bureaus",
+      "good": "timber",
+      "materialUnits": 20,
+      "principalCost": 1000,
+      "financingCost": 100,
+      "laborCostPerDay": 2,
+      "constructionDays": 90,
+      "capacityUnits": 200,
+      "laborUnits": 10
+    }
+  ]
+}
