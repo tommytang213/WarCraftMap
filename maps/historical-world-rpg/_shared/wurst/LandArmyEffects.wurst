@@ -1,0 +1,139 @@
+package LandArmyEffects
+
+import CivicGovernance
+import ResearchEntitlements
+import ExactNatural
+
+/** Scenario definitions own identity, rates and actual commissioned kit.
+ * Reuse the deduplicated, replaceable controller entitlement layer. */
+public interface LandReloadListener
+	function refreshLandReload()
+	function refreshLandController(string controllerId)
+
+public function landReloadMillis(int baseMillis, int bonus) returns int
+	return IMaxBJ(1, exactNaturalNativeInt(exactNaturalDivide(exactNaturalMultiply(I2S(baseMillis), 10000), 10000 + bonus)))
+
+public class LandResearchEffects extends CivicResearchEffects
+	LandReloadListener listener = null
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		super.replaceResearchEntitlements(result)
+		if listener != null
+			listener.refreshLandController(result.controllerId)
+
+public class LandProfile
+	string id
+	int unitTypeId
+	string categoryId
+	boolean firearm
+	boolean bayonet
+	boolean cavalry
+	boolean artillery
+	int firstYear
+	int lastYear
+	int cost
+	int strength
+	string primaryNativeAttack = ""
+	int baseReloadMillis = 0
+	string requiredResearch = ""
+	LandProfile next = null
+	construct(string id, int unitTypeId, string categoryId, boolean firearm, boolean bayonet, boolean cavalry, boolean artillery, int firstYear, int lastYear, int cost, int strength)
+		this.id = id
+		this.unitTypeId = unitTypeId
+		this.categoryId = categoryId
+		this.firearm = firearm
+		this.bayonet = bayonet
+		this.cavalry = cavalry
+		this.artillery = artillery
+		this.firstYear = firstYear
+		this.lastYear = lastYear
+		this.cost = cost
+		this.strength = strength
+
+public class ArsenalState
+	string id
+	string owner = ""
+	int ready = 0
+	int upkeepThrough = 0
+	string projectOwner = ""
+	int work = 0
+	boolean officeBillPaid = false
+	int serial = 0
+	int lastDay = 0
+	boolean restored = false
+	construct(string id, int day)
+		this.id = id
+		lastDay = day
+	function cancel()
+		owner = ""
+		ready = 0
+		upkeepThrough = 0
+		projectOwner = ""
+		work = 0
+		officeBillPaid = false
+
+public class LandArmyLedger
+	LandProfile profiles = null
+	ArsenalState array[1024] arsenals
+	int count = 0
+	LandResearchEffects research = null
+	int transitionDays = 90
+	int enactmentBasisPoints = 100
+	int upkeepBasisPoints = 50
+	int procurementUpkeepBasisPoints = 200
+	int constructionDays = 90
+	int armsPerBattery = 30
+	int crewPerBattery = 30
+	int supplyPerBattery = 30
+	int shipmentArms = 100
+	int shipmentWaste = 25
+	int supplyRadius = 768
+	string armsGood = ""
+	string commissionProfile = ""
+	function registerProfile(LandProfile profile)
+		profile.next = profiles
+		profiles = profile
+	function profile(string id) returns LandProfile
+		var p = profiles
+		while p != null
+			if p.id == id
+				return p
+			p = p.next
+		return null
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if arsenals[i].id == id
+				return i
+		return -1
+	function register(string id, int day)
+		if index(id) < 0 and count < 1024
+			arsenals[count] = new ArsenalState(id, day)
+			count++
+	function fork() returns LandArmyLedger
+		let copy = new LandArmyLedger()
+		copy.profiles = profiles // Immutable catalogue borrowed by staged snapshots.
+		copy.research = research
+		copy.transitionDays = transitionDays
+		copy.enactmentBasisPoints = enactmentBasisPoints
+		copy.upkeepBasisPoints = upkeepBasisPoints
+		copy.procurementUpkeepBasisPoints = procurementUpkeepBasisPoints
+		copy.constructionDays = constructionDays
+		copy.armsPerBattery = armsPerBattery
+		copy.crewPerBattery = crewPerBattery
+		copy.supplyPerBattery = supplyPerBattery
+		copy.shipmentArms = shipmentArms
+		copy.shipmentWaste = shipmentWaste
+		copy.supplyRadius = supplyRadius
+		copy.armsGood = armsGood
+		copy.commissionProfile = commissionProfile
+		for i = 0 to count - 1
+			copy.register(arsenals[i].id, 0)
+		return copy
+	function rate(string controllerId, string metric) returns int
+		if research == null
+			return 0
+		return research.rate(controllerId, metric)
+	ondestroy
+		for i = 0 to count - 1
+			destroy arsenals[i]

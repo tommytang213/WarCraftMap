@@ -205,13 +205,15 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 					destroy layer
 			return accepted
 		let profile = runtime.combatProfile(runtime.forces[attacker])
-		let verified = profile != null and nativeAttack != "" and profile.nativeAttack == nativeAttack and profile.attackId == hit.attackId
+		let verified = (profile != null and nativeAttack != "" and profile.nativeAttack == nativeAttack and profile.attackId == hit.attackId) or (hit.attackId == "land_firearm" and runtime.landFirearmAttack(runtime.forces[attacker], nativeAttack)) or (hit.attackId == "land_cavalry_melee" and runtime.landCavalryAttack(runtime.forces[attacker], nativeAttack))
 		if defender < 0
 			// A known, living campaign hero is also a valid hostile weapon target.
 			// Unrelated Warcraft objects and non-weapon events remain untouched.
 			let heroController = attackerController(target)
 			if not verified or originalDamage <= 0. or heroController == "" or not runtime.atWar(controller(runtime.forces[attacker].controllerId), heroController)
 				return accepted
+			if not runtime.acceptLandShot(hit, runtime.forces[attacker])
+				return 1
 			let attackingLayer = runtime.resolveTradition(runtime.forces[attacker])
 			runtime.combatBindings.applyForCombatants(hit, true, attackingLayer, profile, null, null, null, null, runtime.forces[attacker].controllerId, runtime.forces[attacker].categoryId, "", "")
 			if attackingLayer != null
@@ -223,10 +225,14 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		return accepted
 	function nativeAttackId(int source, string nativeAttack) returns string
 		let found = representedForce(source)
+		if found >= 0 and runtime.landCavalryAttack(runtime.forces[found], nativeAttack)
+			return "land_cavalry_melee"
 		if found >= 0 and nativeAttack != ""
 			let profile = runtime.combatProfile(runtime.forces[found])
-			if profile != null and profile.nativeAttack == nativeAttack
+			if profile != null and profile.nativeAttack == nativeAttack and profile.attackId != ""
 				return profile.attackId
+			if runtime.landFirearmAttack(runtime.forces[found], nativeAttack)
+				return "land_firearm"
 		return ""
 	function nativeTypesMatch(int source, int target, int sourceType, int targetType) returns boolean
 		let attacker = representedForce(source)

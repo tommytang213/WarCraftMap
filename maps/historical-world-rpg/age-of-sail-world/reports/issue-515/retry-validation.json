@@ -1,0 +1,66 @@
+{
+  "issue": 515,
+  "scope": "Focused current-worktree verification after repository-validation timeout; complete repository validation remains with the controller.",
+  "sourceRevision": "9f0de637a37f7fd54b06e72c856fdf01e80c93b2",
+  "sourceTreeSha256": "9787929479aaba91108cae57a00d767e3647f95b72e0a0e5fe0bca6757a60b5e",
+  "implementation": "Preserved all four production land consumers and the integrated schema-13 science migration. No source repair was needed in this retry.",
+  "compiler": {
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "typecheck": "pass",
+    "testsPassed": 181,
+    "counts": {
+      "wurst/AbstractSettlementTests.wurst": 5,
+      "wurst/CampaignLoadTransactionTests.wurst": 25,
+      "wurst/CampaignStartupTests.wurst": 50,
+      "wurst/CivicGovernanceTests.wurst": 9,
+      "wurst/FrameworkConformanceTests.wurst": 1,
+      "wurst/LandArmyEffectsTests.wurst": 9,
+      "wurst/MilitaryCombatEventsTests.wurst": 50,
+      "wurst/MilitaryOrderEventsTests.wurst": 7,
+      "wurst/MilitarySettlementRuntimeTests.wurst": 10,
+      "wurst/NavigationEfficiencyTests.wurst": 8,
+      "wurst/ScienceExplorationTests.wurst": 7
+    },
+    "log": "retry-wurst.log.gz"
+  },
+  "pythonPassed": {
+    "land": 5,
+    "research": 9,
+    "saves": 6,
+    "framework": 9,
+    "runtime": 24,
+    "release": 10,
+    "traceability": 53,
+    "packaging": 12,
+    "design": 3,
+    "science": 3
+  },
+  "pythonTestsPassed": 134,
+  "pythonLog": "retry-python.log.gz",
+  "frameworkBoundary": "pass",
+  "traceabilityCheck": "pass; known publication blockers retained",
+  "audits": {
+    "runtime-acceptance.json": {
+      "recordedRevision": "5b74ae987f0a2e48d2cced630fbcc1019fe9f922",
+      "currentSourceDigestMatches": true
+    },
+    "release-blocker-audit.json": {
+      "recordedRevision": "5b74ae987f0a2e48d2cced630fbcc1019fe9f922",
+      "currentSourceDigestMatches": true
+    },
+    "traceability/requirements.json": {
+      "recordedRevision": "adf5e6998312df3d561a21f1dc55639d23d8f2ce",
+      "currentSourceDigestMatches": true
+    }
+  },
+  "containerSafety": "Existing pinned image, no network, compiler user, read-only generated source and dependency mounts from /tmp, container-private build; no worktree mount or permission changes.",
+  "evidenceLimits": "Focused Wurst execution only. Python packaging tests use synthetic compiler fixtures; their 621/621 messages are not Wurst execution evidence. No full release or native client playability claim.",
+  "releaseFindingsRetained": [
+    "release:RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL",
+    "release:RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES",
+    "release:RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN",
+    "release:RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM"
+  ],
+  "nativeCrash438": "Unrelated and still blocked."
+}

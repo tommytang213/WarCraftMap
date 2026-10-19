@@ -45,3 +45,15 @@ controller's fresh integrated current-main execution/runtime/traceability audit.
 This directory is not an allowlist or a substitute for that audit. Native campaign
 launch #438 remains separately blocked. No release findings, CI evidence, campaign
 archives, GitHub state, commits or global tooling are changed here.
+
+Fresh merge integration evidence is in `merge-integration-validation.json` and
+its two compressed logs. It records both merge parents and exact generated and
+compiled input hashes. The pinned compiler typechecked the integrated production
+source and passed 124 focused tests, including land/naval consumers, campaign
+registration, save/load rollback, and the version 14 regression that preserves
+both legacy `h` record shapes and migrates either version 13 branch. The 49
+Python checks include 12 packaging regressions using the repository synthetic
+compiler fixture; those packaging fixtures are not real compiled-map evidence.
+Fresh campaign/conformance generation, provenance and framework boundary checks
+also passed. Full repository and release/runtime/traceability validation remains
+with the controller, and this focused report closes no release findings.

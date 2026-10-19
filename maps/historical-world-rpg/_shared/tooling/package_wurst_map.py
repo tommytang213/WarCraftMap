@@ -830,9 +830,18 @@ def generate(config: BuildConfig, generated: Path) -> None:
             px, py = yard['stationPosition']
             naval_wurst += f'\tledger.register(new NavalYard({ident}, {map_id}, {px}, {py}, blueprint.prerequisite, blueprint.researchRequirements, blueprint.profileId, blueprint.unitTypeId, blueprint.firstDay, blueprint.lastDay, blueprint.price, blueprint.upkeep, blueprint.supply, blueprint.crew, blueprint.strength))\n'
         runtime['navalServices']['additionalYards'] = extra_yards
-    wurst += civic_wurst + science_wurst + naval_wurst
-    wurst = wurst.replace('import UnstuckRecovery\n', 'import NavalServices\nimport UnstuckRecovery\n')
-    wurst = wurst.replace('import UnstuckRecovery\n', 'import ScienceExploration\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
+    land_sources = []
+    land_wurst = '\npublic function configureGeneratedLandArmy(LandArmyLedger ledger, LandResearchEffects research, int day)\n\tskip\n'
+    land_builder = config.project / 'tooling/land_army_catalog.py'
+    if land_builder.is_file():
+        result = subprocess.run([sys.executable, str(land_builder)], cwd=config.project,
+                                text=True, capture_output=True, check=True)
+        land_payload = json.loads(result.stdout)
+        runtime['landArmy'] = land_payload['catalog']
+        land_wurst = land_payload['wurst']
+        land_sources = [content_path(config.project, name) for name in land_payload['sources']]
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst
+    wurst = wurst.replace('import UnstuckRecovery\n', 'import NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
     runtime['questDefinitions'] = world.get('quests', [])
@@ -869,6 +878,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *quest_sources,
         *combat_sources,
         *civic_sources,
+        *land_sources,
         *science_sources,
         *naval_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
@@ -954,6 +964,15 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
             raise _fail("combat bindings", "executable catalogue differs from scenario (release blocker)")
         from combat_effects import verify_executable_bindings
         verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
+
+    land_builder = config.project / 'tooling/land_army_catalog.py'
+    if land_builder.is_file() and not selector:
+        result = subprocess.run([sys.executable, str(land_builder)], cwd=config.project,
+                                text=True, capture_output=True, check=True)
+        payload = json.loads(result.stdout)
+        if ((generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('landArmy') != payload['catalog']):
+            raise _fail('land army bindings', 'executable catalogue differs from scenario (release blocker)')
 
     voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
     if voyage_builder and not selector:

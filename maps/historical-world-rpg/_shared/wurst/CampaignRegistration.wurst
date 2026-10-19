@@ -7,6 +7,8 @@ import CivicGovernance
 import ScienceCampaignRuntime
 import ScienceExploration
 import CivicCampaignRuntime
+import LandArmyEffects
+import LandArmyRuntime
 
 import ScenarioData
 import CampaignHandoff
@@ -171,6 +173,13 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.technologies.effects = civicResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.civicRuntime = new CivicCampaignRuntime(campaign.state, trade, civicResearch)
+	let landResearch = new LandResearchEffects(rpg.technologies.effects)
+	configureGeneratedLandArmy(military.land, landResearch, campaign.state.clock.currentDay)
+	landResearch.listener = military
+	military.landYear = campaign.state.clock.campaignYear()
+	rpg.technologies.effects = landResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.landRuntime = new LandArmyRuntime(campaign.state, trade)
 	let scienceResearch = new ScienceResearchEffects(rpg.technologies.effects)
 	configureGeneratedScience(military.science, scienceResearch)
 	rpg.technologies.effects = scienceResearch

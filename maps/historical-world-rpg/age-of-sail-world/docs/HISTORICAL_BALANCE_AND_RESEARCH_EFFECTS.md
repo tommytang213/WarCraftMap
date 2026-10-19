@@ -144,6 +144,65 @@ until fresh integrated current-main execution, runtime and traceability evidence
 removes them. Focused interpreter execution is development evidence; it does not
 establish native client playability or resolve the unrelated #438 crash.
 
+## Land drill and artillery production consumers (#515)
+
+`scenario/progression/land-army.json` owns the four land research bindings,
+kit predicates, arsenal eligibility and action calibration. The compiler checks
+these exact typed identities against the approved design and resolves equipment,
+weapons, historical dates and required technologies from the inherited roster.
+The shared `LandArmyEffects` and `LandArmyRuntime` consumers use current control;
+research never commissions a force or adds equipment to an existing roster.
+
+`/land inspect ARSENAL` shows bills, conditions, deadlines and work. An arsenal is
+an authored arms-producing settlement, with a local tax district, lawful government
+control, a serving administrator and an accessible local market. `/land policy`
+and `/land repeal` require that settlement ID. Enactment costs 1% of normal annual
+local tax and takes 90 days; annual administration costs 0.5%, paid in advance.
+Failure to fund renewal suspends the office. This is an explicit local choice.
+
+`/land commission ARSENAL` pays the existing field-artillery roster price and
+withdraws 30 actual local arms, 30 manpower and 30 supply. One local order can be
+pending. Completion takes 90 workshop days. An active office adds 800 bp to daily
+work on an order that also paid its 2% procurement administration bill. At the
+initial values, a funded order completes after 84 days. Activating an office later
+does not retroactively accelerate an order that did not pay the surcharge. No
+research, policy or load callback grants a free battery. Blockaded, occupied or
+unadministered workshops cannot operate. Capture cancels the old policy and work;
+spent resources are not refunded or transferred as completed artillery.
+
+`/land supply ARSENAL FORCE` transfers a fixed 100-unit shipment from actual arms
+stock to owned, living field artillery that already has supply. The local route
+must be on the same physical map within 768 map units, with an accessible source.
+Normal handling wastes 25 units. Artillery Train avoids floor(25 × 800 / 10000)
+= 2 units of waste, so the force receives 77 instead of 75 supply. The full shipment
+is withdrawn either way. A disconnected, hostile, dead, unequipped or empty-supply
+force cannot use this delivery action or obtain a train bonus.
+
+Arquebus drill contributes 500 bp to firing frequency, independently of volley
+damage and tradition defense: interval = floor(base milliseconds × 10000 / 10500),
+with a positive minimum. The scenario owns the base primary-weapon interval for
+eligible runtime templates (initial foot company: 1350 ms). Native cooldown and
+abstract firing use the same calculation. Native/abstract duplicate deliveries
+share a hit receipt; the next-shot deadline survives reconstruction and save/load.
+Socket Bayonet System adds 800 bp to the defense bucket only for actual compatible
+socket-bayonet infantry receiving a verified cavalry melee hit. A musket weapon
+name alone does not establish bayonet equipment. Swords, bows, siege, spells and
+unqualified kit receive no drill/defense substitution. All four effects and actions
+use the same legal rules for player and AI controllers.
+
+Military/settlement snapshot schema **13** adds the local arsenal policy, prepaid
+upkeep, order work, paid surcharge, serial identity, accounting day and firearm
+reload deadline, using distinct `h` firearm, `l` arsenal and `j` science records.
+Schema 12 science state remains authoritative during migration. Schemas 1–12
+migrate with inactive artillery projects and no invented past charges or deliveries. The first live day anchors legacy accounting.
+All fields participate in detached validation and the existing campaign rollback.
+Balance quantities remain scenario-owned; gains round down and positive bills
+round up once at the transaction boundary.
+
+The four exact research-unbound findings from #515 remain release blockers until
+fresh current-main production execution, runtime and traceability audits remove
+them. Focused tests establish development behavior, not native client playability;
+the unrelated #438 crash remains blocked.
 ## Science, weather and exploration production consumers (#514)
 
 `scenario/progression/science-exploration.json` configures the shared
@@ -196,8 +255,9 @@ completed equipment survives while the new controller needs its own research,
 administration, supplies and actor access. Critical state is independent of
 Warcraft object survival and follows the same day replay on inactive maps.
 
-Military/settlement snapshot schema **12** persists equipment commissioning,
-controller, target, paid research bill, committed day, work, fractional credit and
+Military/settlement snapshot schema **12** introduced (and schema **13** retains)
+equipment commissioning, controller, target, paid research bill, committed day,
+work, fractional credit and
 actual hazard outcome counters. Versions 1–11 migrate with inactive science work
 and no invented assets or past output. Parsing stages a separate ledger, rejects
 missing/duplicate/invalid records and future committed days, and campaign load
@@ -274,9 +334,14 @@ choices, preserves completed docks and ship gear, clears controller-specific
 fractional research credit, and immediately re-evaluates the new controller's
 own research and resource conditions.
 
-Military snapshot schema **13** adds hull/service state (`h`) and local shipyard
-projects (`y`). Versions 1–12 migrate with sound hulls, no invented paid mounts,
-refits, docks, boards or projects, and no replayed historical losses or bills.
+Military snapshot schema **14** combines hull/service state (`h`), local shipyard
+projects (`y`), land arsenals (`l`) and weapon deadlines (three-field `h`).
+Versions 1–12 migrate with sound hulls, no invented paid mounts, refits, docks,
+boards or projects, and no replayed historical losses or bills. Version 13 saves
+from either implementation preserve their domain and initialize absent domain
+state without funded projects. Three-field weapon deadlines and ten-field hull
+records have independent validation and duplicate detection. Current saves require
+complete configured land/naval ledgers and every fleet's hull record.
 Campaign envelopes remain unchanged. Parsing stages a detached ledger, rejects
 invalid, duplicate, missing-current-version and future-day state, and campaign
 load failure rolls back military authority together with research, treasury,
