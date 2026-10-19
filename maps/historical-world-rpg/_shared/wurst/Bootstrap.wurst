@@ -19,6 +19,7 @@ import CampaignSaveManager
 import CampaignRegistration
 import ScienceCampaignRuntime
 import CivicCampaignRuntime
+import LandArmyRuntime
 import PlayableCampaignRuntime
 import PlayableTrade
 import CountryDiplomacyScreen
@@ -104,6 +105,7 @@ function initializeRegionalCampaign()
 	if tradeRegistrationProblem != ""
 		error(tradeRegistrationProblem)
 	registerCivicCommands(commands, campaign.state.civicRuntime)
+	registerLandArmyCommands(commands, campaign.state.landRuntime)
 	registerScienceCommands(commands, campaign.state.scienceRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let voyageProblem = registerVoyageCommands(commands, campaign.state)

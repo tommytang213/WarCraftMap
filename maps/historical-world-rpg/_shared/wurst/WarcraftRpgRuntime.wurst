@@ -7,6 +7,7 @@ import ResearchCost
 import CombatEffects
 import ScienceExploration
 import CivicGovernance
+import LandArmyEffects
 import QuestStages
 import HeroProgression
 import HeroAllocationDefinitions
@@ -1966,6 +1967,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
 						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires supported funded work, commissioned equipment and actual inputs. Use /science inspect SITE for conditions, expenses and duration."
 				port = science.upstream
+			if port instanceof LandResearchEffects
+				let land = port castTo LandResearchEffects
+				for k = 0 to land.definitionCount - 1
+					let binding = land.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires current control, historical availability and actual compatible equipment/supply. Use /land inspect ARSENAL for costs, conditions, duration and upkeep."
+				port = land.upstream
 			if port instanceof CivicResearchEffects
 				let civic = port castTo CivicResearchEffects
 				for k = 0 to civic.definitionCount - 1

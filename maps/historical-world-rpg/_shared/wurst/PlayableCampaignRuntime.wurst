@@ -2,6 +2,7 @@ package PlayableCampaignRuntime
 import ScienceCampaignRuntime
 import Agriculture
 import CivicCampaignRuntime
+import LandArmyRuntime
 
 import CampaignSaveManager
 import CampaignTimeline
@@ -336,6 +337,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		countries = runtime
 		countries.setMilitaryAuthority(militarySettlements)
 	CivicCampaignRuntime civicRuntime = null
+	LandArmyRuntime landRuntime = null
 	ScienceCampaignRuntime scienceRuntime = null
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
@@ -348,6 +350,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			if agriculture!=null
 				agriculture.advance(day,clock.campaignYear())
 			recoverHeroes(day)
+			if landRuntime != null
+				landRuntime.advance(day)
 			if scienceRuntime != null
 				scienceRuntime.advance(day)
 			if civicRuntime != null
@@ -720,6 +724,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if rpg != null and not rpg.restoreState(lastAuthorityValue(candidate,"rpg"))
 			lastDiagnostic=rpg.diagnostic()
 			return false
+		if militarySettlements != null
+			militarySettlements.landYear = clock.campaignYear()
 		if militarySettlements != null and not militarySettlements.restore(lastAuthorityValue(candidate, "militarySettlements"))
 			lastDiagnostic = "military/settlement reconstruction failed"
 			return false
@@ -951,6 +957,7 @@ class CampaignLoadCheckpoint
 		if state.rpg != null
 			restored = state.rpg.restoreState(rpgState) and restored
 		if state.militarySettlements != null
+			state.militarySettlements.landYear = state.clock.campaignYear()
 			restored = state.militarySettlements.restore(militaryState, false) and restored
 		if state.religion != null
 			restored = state.religion.restoreState(religionState) and restored
