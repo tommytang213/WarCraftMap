@@ -110,7 +110,9 @@ class ResearchGenerationTests(unittest.TestCase):
             for n, k, c in expected if (k, c) not in {('modifier', 'army_discipline'),
                 ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon'),
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
-                ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance')}])
+                ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance'), ('unit', 'ship_of_the_line'),
+                ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
+                ('modifier', 'progression_carvel_hull_construction')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_production_adapter_cannot_substitute_native_food_capacity(self):

@@ -1,0 +1,401 @@
+package NavalServicesTests
+
+import NavalServices
+import MilitaryCombatEvents
+import MilitaryCombatEventsTests
+import NavalCampaignRuntime
+import CivicGovernance
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CombatEffects
+import ExactRational
+import ManagementScreenPauseController
+import ManagementCommandTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ScenarioData
+
+class NavalTestResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return 1787
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+class NavalFixture
+	int day = 652436 // 1787; all physical gear eras are open.
+	NavalTestResources resources = new NavalTestResources()
+	NavalResearchEffects effects = new NavalResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	NavalCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	construct(boolean ai, boolean active)
+		if ai
+			resources.owner = "ai"
+		let generated = new WarcraftRpgRuntime(effects)
+		configureGeneratedRpg(generated)
+		rpg.technologies = generated.technologies
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureGeneratedNaval(military.naval, effects)
+		military.combatBindings = createGeneratedCombatBindings()
+		military.voyages = createGeneratedVoyageContract()
+		military.navalResearch = effects
+		let d = military.naval.yards[0]
+		military.registerSettlement(new SettlementRuntimeState(d.id, resources.owner, d.mapId, 'htow', 'hfoo', 30, 20, 10000, 10000, 0., 0.))
+		military.appoint(d.id, new AdministratorState("clerk", "Clerk", "Administrator", resources.owner, d.mapId, d.id, 50, 50, 40, 1))
+		let ship = new RuntimeForce("ship", resources.owner, d.mapId, "sailing_naval", FORCE_FLEET, d.unitTypeId, 1050, 10000, d.x, d.y)
+		ship.combatProfileId = d.profileId
+		ship.hull.lastDay = day
+		military.registerForce(ship)
+		let enemy = new RuntimeForce("enemy", "enemy", d.mapId, "sailing_naval", FORCE_FLEET, d.unitTypeId, 1050, 10000, d.x + 300., d.y)
+		enemy.combatProfileId = d.profileId
+		military.registerForce(enemy)
+		military.setWar(resources.owner, "enemy", true)
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		military.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity(resources.owner, 100000)
+		trade.registerMarket(new RuntimeMarket(d.id, "timber", 10000, 100000, 10, 10))
+		trade.registerMarket(new RuntimeMarket(d.id, "iron", 10000, 100000, 10, 10))
+		trade.registerMarket(new RuntimeMarket(d.id, "ship_provisions", 10000, 100000, 10, 10))
+		runtime = new NavalCampaignRuntime(campaign, trade, effects)
+		campaign.navalRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerNavalCommands(commands, runtime).assertEquals("")
+		if active
+			military.activateRegion(d.mapId)
+		else
+			military.activateRegion("africa")
+		let owner = resources.owner
+		rpg.restoreState(rpg.captureState() + "|u," + owner + ",dockyard_logistics|u," + owner + ",galleon_design|u," + owner + ",naval_gunnery|u," + owner + ",public_credit|u," + owner + ",copper_sheathing|u," + owner + ",oceanic_seamanship|u," + owner + ",rated_warships").assertTrue()
+		rpg.technologies.reconstructAll()
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+		let definition = rpg.technologies.get(id)
+		for i = 0 to definition.unlockCount - 1
+			rpg.technologies.bindingStatus(definition.unlocks[i]).assertEquals(RESEARCH_BOUND)
+	function action(string verb, string target)
+		commands.dispatch(Player(0), "/naval " + verb + " london" + target).assertTrue()
+		resources.output.assertEquals("Naval action completed.")
+	function dock()
+		action("dock", "")
+		clock.advanceTo(day + 90).assertTrue()
+	function allResearch()
+		unlock("battlefleet_doctrine")
+		unlock("careening_stations")
+		unlock("carronade_batteries")
+		unlock("carvel_hull_construction")
+	function hit(boolean weapon) returns string
+		let h = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+		military.applyCombatHit(h, military.forceIndex("ship"), military.forceIndex("enemy"), resources.owner, "enemy", weapon)
+		let result = h.damage.display()
+		military.applyCombatHit(h, military.forceIndex("ship"), military.forceIndex("enemy"), resources.owner, "enemy", weapon)
+		h.damage.display().assertEquals(result)
+		destroy h
+		return result
+
+@test function registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs()
+	let f = new NavalFixture(false, true)
+	let control = new NavalFixture(false, false)
+	let before = f.military.forceCount
+	f.allResearch()
+	f.military.forceCount.assertEquals(before)
+	f.runtime.act("player", "build", "london", "").startsWith("Commission").assertTrue()
+	f.dock()
+	control.dock()
+	f.action("board", "")
+	control.action("board", "")
+	f.clock.advanceTo(f.day + 180).assertTrue()
+	control.clock.advanceTo(control.day + 180).assertTrue()
+	control.runtime.act("player", "build", "london", "").startsWith("Requires").assertTrue()
+	let historical = f.military.naval.yards[0].firstDay
+	f.military.naval.yards[0].firstDay = f.day + 1000
+	f.runtime.act("player", "build", "london", "").startsWith("Requires").assertTrue()
+	f.military.naval.yards[0].firstDay = historical
+	let funds = f.campaign.countries.treasury[0]
+	let manpower = f.military.settlements[0].manpower
+	f.action("build", "")
+	f.campaign.countries.treasury[0].assertEquals(funds - 1540)
+	f.military.settlements[0].manpower.assertEquals(manpower - 700)
+	f.military.forceCount.assertEquals(before)
+	f.clock.advanceTo(f.day + 359).assertTrue()
+	f.military.forceCount.assertEquals(before)
+	f.clock.advanceTo(f.day + 360).assertTrue()
+	f.military.forceCount.assertEquals(before + 1)
+	f.military.forces[before].combatProfileId.assertEquals("ship_of_the_line_generic")
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity = 5000
+	control.military.forces[control.military.forceIndex("ship")].hull.integrity = 5000
+	f.action("repair", " ship")
+	control.action("repair", " ship")
+	f.clock.advanceTo(f.day + 370).assertTrue()
+	control.clock.advanceTo(control.day + 190).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(6150)
+	control.military.forces[control.military.forceIndex("ship")].hull.integrity.assertEquals(6000)
+	f.effects.rate("player", "hull_repair_throughput").assertEquals(1500)
+
+@test function paidCarronadesOnlyModifyCloseVerifiedCannonHitsAndPreserveOtherRatingsOnCaptureAndReload()
+	let f = new NavalFixture(false, true)
+	f.allResearch()
+	f.dock()
+	f.hit(true).assertEquals("100")
+	f.action("mount", " ship")
+	f.clock.advanceTo(f.day + 96).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.carronades.assertFalse()
+	f.clock.advanceTo(f.day + 97).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.carronades.assertTrue()
+	f.hit(true).assertEquals("110")
+	f.hit(false).assertEquals("100")
+	f.military.forces[f.military.forceIndex("enemy")].x += 0.01
+	f.hit(true).assertEquals("100")
+	f.military.forces[f.military.forceIndex("enemy")].x -= 0.01
+	let saved = f.military.snapshot()
+	f.military.restore(saved).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.hit(true).assertEquals("110")
+	f.military.transferControl("ship", "ai", f.day + 97)
+	f.military.setWar("ai", "enemy", true)
+	let h = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(h, f.military.forceIndex("ship"), f.military.forceIndex("enemy"), "ai", "enemy", true)
+	h.damage.display().assertEquals("100")
+	f.military.forces[f.military.forceIndex("ship")].hull.carronades.assertTrue()
+
+@test function carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity()
+	let f = new NavalFixture(false, true)
+	let control = new NavalFixture(false, false)
+	f.allResearch()
+	f.dock()
+	control.dock()
+	let route = f.military.voyages.routes
+	f.military.startVoyage("ship", route.id, "player", f.day + 90, true).assertTrue()
+	control.military.startVoyage("ship", route.id, "player", control.day + 90, true).assertTrue()
+	f.clock.advanceTo(f.day + 100).assertTrue()
+	control.clock.advanceTo(control.day + 100).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(9632)
+	control.military.forces[control.military.forceIndex("ship")].hull.integrity.assertEquals(9600)
+	f.military.forces[f.military.forceIndex("ship")].strength.assertEquals(1050)
+	f.military.forces[f.military.forceIndex("ship")].navigation.pending().assertFalse()
+	f.clock.advanceTo(f.day + 110).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(9632)
+
+@test function navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic()
+	let f = new NavalFixture(false, true)
+	f.dock()
+	let paid = f.campaign.countries.treasury[0]
+	f.runtime.act("ai", "board", "london", "").startsWith("Requires").assertTrue()
+	f.runtime.act("player", "build", "london", "").startsWith("Requires").assertTrue()
+	f.runtime.act("player", "mount", "london", "ship").startsWith("Requires").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(paid)
+	f.allResearch()
+	f.trade.markets[0].blockaded = true
+	f.runtime.act("player", "board", "london", "").startsWith("Requires").assertTrue()
+	f.trade.markets[0].blockaded = false
+	f.military.forces[f.military.forceIndex("ship")].x += 256.
+	f.runtime.act("player", "repair", "london", "ship").startsWith("Requires").assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].x -= 256.
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity = 5000
+	f.trade.markets[0].stock = 0
+	f.runtime.act("player", "repair", "london", "ship").startsWith("Treasury").assertTrue()
+	f.trade.markets[0].stock = 10000
+	f.action("repair", " ship")
+	f.clock.advanceTo(f.day + 93).assertTrue()
+	let saved = f.military.snapshot()
+	f.military.restore(saved + "|y,unknown,0,,,,,0,0,0").assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	f.military.validateSnapshot(saved, f.day + 92).assertFalse()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	var legacy = saved.replace("v15|", "v12|")
+	for i = 0 to f.military.naval.count - 1
+		legacy = legacy.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")
+	f.military.restore(legacy).assertTrue()
+	f.military.naval.states[0].ready.assertEquals(0)
+	let load = new LoadFixture()
+	configureGeneratedNaval(load.military.naval, f.effects)
+	load.military.naval.states[0].ready = 10
+	load.military.naval.states[0].lastDay = 10
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "naval").assertTrue()
+	load.military.naval.states[0].ready = 20
+	load.military.naval.states[0].lastDay = 20
+	let before = load.military.snapshot()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.military.snapshot().assertEquals(before)
+
+@test function paidCarronadesUseInstalledProductionWeaponCallbacksAndRejectStaleAndIncompatibleHits()
+	let f = new NavalFixture(true, true)
+	f.allResearch()
+	f.dock()
+	f.action("mount", " ship")
+	f.clock.advanceTo(f.day + 97).assertTrue()
+	let representations = new CombatRepresentations()
+	f.military.adapter = representations
+	f.military.activateRegion("europe_west")
+	let natives = new RecordingCombatNatives()
+	let identity = new PlayerCampaignIdentity()
+	let events = new MilitaryCombatEvents(f.military, identity, f.rpg.management.pauses, natives)
+	events.install()
+	let hit = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+	events.onWeaponDamage(events.generation, representations.representationId("enemy"), representations.representationId("ship"), "siege", hit).assertEquals(1)
+	hit.damage.display().assertEquals("110")
+	events.onWeaponDamage(events.generation, representations.representationId("enemy"), representations.representationId("ship"), "siege", hit).assertEquals(1)
+	hit.damage.display().assertEquals("110")
+	let invalid = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
+	events.onWeaponDamage(events.generation, representations.representationId("enemy"), representations.representationId("ship"), "normal", invalid).assertEquals(1)
+	invalid.damage.display().assertEquals("100")
+	events.onWeaponDamage(events.generation - 1, representations.representationId("enemy"), representations.representationId("ship"), "siege", invalid).assertEquals(-1)
+	events.stop()
+
+@test function navalSourcesReconstructOnceAndLongCampaignFractionsConserveActualHullInputs()
+	let f = new NavalFixture(true, false)
+	f.allResearch()
+	let duplicate = new RuntimeTechnology("duplicate_naval", "Duplicate naval", 1450, 1)
+	duplicate.addUnlock("duplicate_naval", "modifier", "progression_careening_stations")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("duplicate_naval")
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.effects.rate("ai", "hull_repair_throughput").assertEquals(1500)
+	f.effects.rate("player", "hull_repair_throughput").assertEquals(0)
+	let hull = new NavalHull()
+	hull.integrity = 1
+	for i = 0 to 99
+		hull.repair(1, 1500)
+	hull.integrity.assertEquals(116)
+	// 50 years of bounded weekly weather exposure and paid repair inputs.
+	// Each avoidance is limited to actual damage; maintenance never mints hulls.
+	for i = 0 to 2599
+		hull.integrity = 10000
+		hull.weather(10, 800)
+		(hull.integrity >= 9990 and hull.integrity <= 9991).assertTrue()
+		hull.repair(10, 1500)
+		hull.integrity.assertEquals(10000)
+
+@test function navalHistoryInfrastructureGearAndResourceNegativesSuspendWithoutInventedOutput()
+	let f = new NavalFixture(false, false)
+	f.commands.dispatch(Player(0), "/naval inspect london").assertTrue()
+	f.resources.output.contains("1630/1/1").assertTrue()
+	f.resources.output.contains("1780/1/1").assertTrue()
+	f.allResearch()
+	f.dock()
+	let d = f.military.naval.yards[0]
+	let ship = f.military.forces[f.military.forceIndex("ship")]
+	f.military.naval.mountFirstDay = f.day + 1000
+	f.runtime.act("player", "mount", d.id, ship.id).startsWith("Requires").assertTrue()
+	f.military.naval.mountFirstDay = f.day
+	ship.unitTypeId = 'hfoo'
+	f.runtime.act("player", "mount", d.id, ship.id).startsWith("Requires").assertTrue()
+	ship.unitTypeId = d.unitTypeId
+	ship.hull.integrity = 5000
+	f.action("repair", " ship")
+	f.clock.advanceTo(f.day + 91).assertTrue()
+	ship.hull.integrity.assertEquals(5115)
+	f.campaign.countries.treasury[0] = 0
+	f.clock.advanceTo(f.day + 92).assertTrue()
+	ship.hull.integrity.assertEquals(5115)
+	f.runtime.act("player", "stop", d.id, "").assertEquals("")
+	let before = ship.supply
+	f.campaign.countries.treasury[0] = 10000
+	f.action("supply", " ship")
+	f.clock.advanceTo(f.day + 93).assertTrue()
+	ship.supply.assertEquals(before + d.supply - 1)
+	f.military.naval.states[0].boardOwner = "player"
+	f.military.transferSettlement(d.id, "ai")
+	f.military.naval.states[0].boardOwner.assertEquals("")
+	(f.military.naval.states[0].ready > 0).assertTrue()
+
+@test function navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision()
+	let f = new NavalFixture(false, true)
+	f.allResearch()
+	f.dock()
+	f.action("board", "")
+	f.clock.advanceTo(f.day + 180).assertTrue()
+	let count = f.military.forceCount
+	f.action("build", "")
+	f.clock.advanceTo(f.day + 360).assertTrue()
+	f.military.forceCount.assertEquals(count + 1)
+	let ship = f.military.forces[f.military.forceIndex("ship")]
+	ship.hull.integrity = 5000
+	f.action("repair", " ship")
+	f.clock.advanceTo(f.day + 370).assertTrue()
+	ship.hull.integrity.assertEquals(6150)
+	f.action("stop", "")
+	f.action("mount", " ship")
+	f.clock.advanceTo(f.day + 377).assertTrue()
+	f.hit(true).assertEquals("110")
+	f.military.startVoyage("ship", f.military.voyages.routes.id, "player", f.day + 377, true).assertTrue()
+	f.clock.advanceTo(f.day + 387).assertTrue()
+	ship.hull.integrity.assertEquals(5782)
+	let saved = f.military.snapshot()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+
+@test function combinedNavalAndLandSnapshotsPreserveBothHRecordsAndMigrateEitherVersion13Branch()
+	let f = new NavalFixture(false, false)
+	f.military.land.register("london", f.day)
+	let arsenal = f.military.land.arsenals[0]
+	arsenal.projectOwner = "player"
+	arsenal.work = 12345
+	arsenal.serial = 1
+	let ship = f.military.forces[f.military.forceIndex("ship")]
+	ship.nextFireAt = 1.285
+	ship.hull.integrity = 5432
+	ship.hull.repairCredit = 3456
+	let hullRecord = "|h,ship," + ship.hull.record()
+	let fireRecord = "|h,ship," + clockReal(1.285)
+	let landRecord = "|l,london,,0,0,player,12345,0,1," + I2S(f.day)
+	let saved = f.military.snapshot()
+	saved.startsWith("v15|").assertTrue()
+	saved.contains(hullRecord).assertTrue()
+	saved.contains(fireRecord).assertTrue()
+	saved.contains(landRecord).assertTrue()
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.military.restore(saved + hullRecord, false).assertFalse()
+	f.military.restore(saved + fireRecord, false).assertFalse()
+	f.military.restore(saved + landRecord, false).assertFalse()
+	f.military.restore(saved.replace(hullRecord, ""), false).assertFalse()
+	f.military.restore(saved.replace(landRecord, ""), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	var main13 = saved.replace("v15|", "v13|")
+	for i = 0 to f.military.forceCount - 1
+		let fleet = f.military.forces[i]
+		if fleet.kind == FORCE_FLEET
+			main13 = main13.replace("|h," + fleet.id + "," + fleet.hull.record(), "")
+	for i = 0 to f.military.naval.count - 1
+		main13 = main13.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")
+	f.military.restore(main13, false).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].nextFireAt.assertEquals(1.285)
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(10000)
+	f.military.land.arsenals[0].work.assertEquals(12345)
+	f.military.naval.states[0].ready.assertEquals(0)
+	let naval13 = saved.replace("v15|", "v13|").replace(landRecord, "").replace(fireRecord, "")
+	f.military.restore(naval13, false).assertTrue()
+	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(5432)
+	f.military.forces[f.military.forceIndex("ship")].hull.repairCredit.assertEquals(3456)
+	f.military.forces[f.military.forceIndex("ship")].nextFireAt.assertEquals(0.)
+	f.military.land.arsenals[0].projectOwner.assertEquals("")
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)

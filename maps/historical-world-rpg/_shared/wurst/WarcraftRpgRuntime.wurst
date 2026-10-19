@@ -6,6 +6,7 @@ import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
 import TradeFinance
+import NavalServices
 import ScienceExploration
 import CivicGovernance
 import LandArmyEffects
@@ -1961,6 +1962,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
 			var port = runtime.technologies.effects
+			if port instanceof NavalResearchEffects
+				let naval = port castTo NavalResearchEffects
+				for k = 0 to naval.definitionCount - 1
+					let binding = naval.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires qualifying paid naval activity. Use /naval inspect PORT for bills, gear, era, construction time and upkeep."
+				port = naval.upstream
 			if port instanceof FinanceResearchEffects
 				let finance = port castTo FinanceResearchEffects
 				for k = 0 to finance.definitionCount - 1

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "blueprint": "ship_of_the_line_generic",
+  "constructionDays": 180,
+  "rules": {
+    "dockCost": 200,
+    "dockWood": 20,
+    "dockIron": 10,
+    "dockDays": 90,
+    "boardCost": 100,
+    "boardDays": 90,
+    "buildWood": 40,
+    "buildIron": 20,
+    "repairCost": 2,
+    "repairWood": 1,
+    "repairOutput": 100,
+    "mountCost": 200,
+    "mountDays": 7,
+    "carvelCost": 200,
+    "carvelDays": 30,
+    "stormLoss": 100,
+    "weatherPeriod": 5,
+    "weatherDays": 2,
+    "closeRange": 300,
+    "provisionPrice": 2,
+    "mountWood": 2,
+    "mountIron": 10,
+    "carvelWood": 20,
+    "carvelIron": 2
+  },
+  "mountFirstDate": "1780-01-01",
+  "carvelFirstDate": "1460-01-01",
+  "yards": [
+    {
+      "settlementId": "london",
+      "prerequisite": "dockyard_logistics",
+      "stationForceId": "english_patrol_ship"
+    }
+  ],
+  "carvelBuiltProfiles": [
+    "atlantic_carrack_merchant",
+    "atlantic_galleon",
+    "portuguese_oceanic_galleon",
+    "spanish_treasure_galleon",
+    "english_race_built_galleon",
+    "ocean_cruising_frigate",
+    "dutch_style_frigate",
+    "french_frigate",
+    "ship_of_the_line_generic",
+    "british_ship_of_line",
+    "armed_indiaman"
+  ],
+  "carvelRefitProfiles": [
+    "armed_sailing_warship",
+    "ocean_merchantman"
+  ],
+  "carronadeMountProfiles": [
+    "ocean_cruising_frigate",
+    "dutch_style_frigate",
+    "french_frigate",
+    "ship_of_the_line_generic",
+    "british_ship_of_line"
+  ],
+  "note": "Paid shipyard/board/refit calibration in campaign accounting units. Existing shipbuilding, timber and iron stock fund the yard, hull and ordnance; provisions and crew are withdrawn from real local authority. Carvel eligibility follows authored Atlantic plank-built hull families. Unknown legacy hulls never acquire a profile or free redesign. Carronades require a paid compatible mount from 1780. No new assets or research at campaign start."
+}
