@@ -30,7 +30,7 @@ public class CampaignSciencePort implements SciencePort
 		let military = campaign.militarySettlements
 		let i = military.forceIndex(d.forceId)
 		let settlement = economy.settlement(d.settlementId)
-		if i < 0 or settlement == null
+		if i < 0 or settlement == null or military.naval.busy(d.forceId)
 			return false
 		let actor = military.forces[i]
 		var kind = FORCE_ARMY

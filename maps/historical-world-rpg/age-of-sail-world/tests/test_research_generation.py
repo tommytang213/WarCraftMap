@@ -108,7 +108,9 @@ class ResearchGenerationTests(unittest.TestCase):
         self.assertEqual(self.runtime['researchIntegrationBlockers'], [
             dict(nodeId=n, kind=k, contentId=c, bindingStatus='unbound', reason='missing_gameplay_consumer')
             for n, k, c in expected if (k, c) not in {('modifier', 'army_discipline'),
-                ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon')}])
+                ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon'), ('unit', 'ship_of_the_line'),
+                ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
+                ('modifier', 'progression_carvel_hull_construction')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_production_adapter_cannot_substitute_native_food_capacity(self):

@@ -4,6 +4,7 @@ import ExactNatural
 import ExactRational
 import MilitaryTraditionLayer
 import CombatEffects
+import NavalServices
 import ScienceExploration
 import CivicGovernance
 import LandArmyEffects
@@ -35,7 +36,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 13
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 14
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -125,6 +126,7 @@ public class RuntimeForce
 	int unitTypeId
 	// Durable roster identity, not a saved bonus or an inferred weapon assignment.
 	// Old forces with no metadata remain unknown and fail closed.
+	NavalHull hull = new NavalHull()
 	VoyageProgress navigation = new VoyageProgress()
 	string combatProfileId = ""
 	real nextFireAt = 0.
@@ -159,6 +161,7 @@ public class RuntimeForce
 		this.x = x
 		this.y = y
 	ondestroy
+		destroy hull
 		destroy navigation
 	function mobileForce() returns boolean
 		return kind == FORCE_ARMY or kind == FORCE_FLEET
@@ -496,6 +499,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	LandArmyLedger land = new LandArmyLedger()
 	int landYear = 1450
 	CivicLedger civic = new CivicLedger()
+	NavalLedger naval = new NavalLedger()
+	NavalResearchEffects navalResearch = null
 	ScienceLedger science = new ScienceLedger()
 	PrizeCombatAuthority prizeCombat = new PrizeEncounters()
 	MilitarySettlementAdapter adapter
@@ -540,6 +545,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	construct(MilitarySettlementAdapter adapter)
 		this.adapter = adapter
 	ondestroy
+		destroy naval
 		destroy land
 		destroy science
 		destroy civic
@@ -733,7 +739,24 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if found >= 0
 			settlements[found].withPolicy(projectMilitary, capturable, governanceExceptionId)
 	function voyageSupported(RuntimeForce vessel, string routeId) returns boolean
-		return voyages != null and vessel.kind == FORCE_FLEET and voyages.supports(vessel.id, vessel.unitTypeId, routeId)
+		if voyages == null or vessel.kind != FORCE_FLEET
+			return false
+		if voyages.supports(vessel.id, vessel.unitTypeId, routeId)
+			return true
+		// Newly paid hulls can use the same authored station-return circuit.
+		// The immutable route still supplies geography, time and provisions.
+		let profile = naval.profile(vessel.combatProfileId, vessel.unitTypeId)
+		if profile == null
+			return false
+		for i = 0 to naval.count - 1
+			let yard = naval.yards[i]
+			if vessel.combatProfileId == yard.profileId and vessel.unitTypeId == yard.unitTypeId
+				var route = voyages.routes
+				while route != null
+					if route.mapId == yard.mapId and (routeId == "" or route.id == routeId)
+						return true
+					route = route.next
+		return false
 	function voyageEligible(RuntimeForce vessel) returns boolean
 		if rpg == null or not voyageSupported(vessel, vessel.navigation.routeId) or not vessel.active or vessel.strength <= 0
 			return false
@@ -751,7 +774,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			let progress = vessel.navigation
 			if progress.pending()
 				let route = voyages.route(progress.routeId)
-				if not voyageSupported(vessel, progress.routeId) or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
+				if not voyageSupported(vessel, progress.routeId) or not vessel.active or vessel.strength <= 0 or not vessel.hull.maintained or vessel.hull.integrity <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
 					vessel.supply += progress.interrupt()
 				else
 					vessel.supply += voyages.resolve(progress, day, voyageEligible(vessel))
@@ -763,15 +786,31 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			return false
 		let vessel = forces[found]
 		let route = voyages.route(routeId)
-		if science.busy(forceId) or route == null or not voyageSupported(vessel, routeId) or vessel.controllerId != controllerId or not vessel.active or vessel.strength <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
+		if naval.busy(forceId) or science.busy(forceId) or route == null or not voyageSupported(vessel, routeId) or vessel.controllerId != controllerId or not vessel.active or vessel.strength <= 0 or not vessel.hull.maintained or vessel.hull.integrity <= 0 or not militaryMapMatches(vessel.regionId, route.mapId)
 			return false
 		if orderCallbacks != null
 			orderCallbacks.capture()
 		let specification = voyages.ship(vessel.id)
-		if (vessel.x - specification.stationX) * (vessel.x - specification.stationX) + (vessel.y - specification.stationY) * (vessel.y - specification.stationY) > 128. * 128.
+		var stationX = 0.
+		var stationY = 0.
+		var station = false
+		if specification != null
+			stationX = specification.stationX
+			stationY = specification.stationY
+			station = true
+		else
+			for i = 0 to naval.count - 1
+				let yard = naval.yards[i]
+				if yard.profileId == vessel.combatProfileId and yard.unitTypeId == vessel.unitTypeId and yard.mapId == route.mapId
+					stationX = yard.x
+					stationY = yard.y
+					station = naval.states[i].ready > 0
+		if not station or (vessel.x - stationX) * (vessel.x - stationX) + (vessel.y - stationY) * (vessel.y - stationY) > 128. * 128.
 			return false
 		if not voyages.start(vessel.navigation, route, day, vessel.supply)
 			return false
+		if vessel.hull.lastDay == 0
+			vessel.hull.lastDay = day
 		// Retire the sampled local object; the circuit returns to this station.
 		vessel.supply -= vessel.navigation.reserved
 		vessel.cancelOrder()
@@ -790,7 +829,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let found = forceIndex(forceId)
 		if found < 0 or not voyageSupported(forces[found], "") or forces[found].controllerId != controllerId or forces[found].navigation.equipment == equipped
 			return false
-		if equipped and not militaryMapMatches(forces[found].regionId, voyages.ship(forceId).mapId)
+		if equipped and (voyages.ship(forceId) == null or not militaryMapMatches(forces[found].regionId, voyages.ship(forceId).mapId))
 			return false
 		resolveVoyages(day)
 		forces[found].navigation.equipment = equipped
@@ -798,7 +837,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	function issueOrder(string forceId, string orderId, real targetX, real targetY) returns boolean
 		var command = orderId
 		let found = forceIndex(forceId)
-		if found < 0 or forces[found].navigation.pending() or science.busy(forceId) or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
+		if found < 0 or forces[found].navigation.pending() or naval.busy(forceId) or science.busy(forceId) or not forces[found].mobileForce() or not locationNumber(targetX.toString()) or not locationNumber(targetY.toString())
 			return false
 		if orderId == "march" or orderId == "sail"
 			command = "move"
@@ -944,10 +983,19 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	function applyCombatHit(CombatHit hit, int sourceIndex, int targetIndex, string sourcePolity, string targetPolity, boolean weaponAttack)
 		if hit.applied or combatBindings == null or sourceIndex < 0 or targetIndex < 0 or sourceIndex >= forceCount or targetIndex >= forceCount
 			return
+		if weaponAttack and orderCallbacks != null
+			orderCallbacks.capture()
 		let source = forces[sourceIndex]
 		let target = forces[targetIndex]
+		// A retired service recipient or unpaid fleet cannot deliver an abstract
+		// hit that the installed native authority would reject.
+		if not source.hull.maintained or source.hull.integrity <= 0 or target.hull.integrity <= 0 or naval.busy(source.id) or naval.busy(target.id)
+			hit.applied = true
+			destroy hit.damage
+			hit.damage = new ExactRational("0", "1", "1")
+			return
 		let city = settlementForForce(target)
-		var legal = source.active and target.active and source.strength > 0 and target.strength > 0 and atWar(sourcePolity, targetPolity)
+		var legal = source.active and target.active and not naval.busy(source.id) and not naval.busy(target.id) and source.hull.maintained and source.hull.integrity > 0 and target.hull.integrity > 0 and source.strength > 0 and target.strength > 0 and atWar(sourcePolity, targetPolity)
 		legal = legal and (militaryMapMatches(source.regionId, target.regionId) or militaryMapMatches(target.regionId, source.regionId) or scenarioAuthorityMap(source.regionId) != "" and scenarioAuthorityMap(source.regionId) == scenarioAuthorityMap(target.regionId))
 		if city >= 0
 			legal = legal and settlements[city].controllerId == target.controllerId and gameplaySeconds >= settlements[city].captureImmuneUntil
@@ -962,11 +1010,21 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let defendingKit = landKit(target)
 		if legal and weaponAttack and hit.attackId == "land_cavalry_melee" and attackingKit != null and attackingKit.cavalry and defendingKit != null and defendingKit.bayonet
 			hit.contextualDefense = land.rate(target.controllerId, "anti_cavalry_melee_defense")
-		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), null, null, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
+		let navalSource = navalCombatSources(source, target, weaponAttack)
+		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), navalSource, null, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
+		destroy navalSource
 		if attackingLayer != null
 			destroy attackingLayer
 		if defendingLayer != null
 			destroy defendingLayer
+	function navalCombatSources(RuntimeForce source, RuntimeForce target, boolean weaponAttack) returns CombatSources
+		let result = new CombatSources()
+		let profile = naval.profile(source.combatProfileId, source.unitTypeId)
+		let weapon = combatProfile(source)
+		if navalResearch != null and weaponAttack and weapon != null and weapon.attackId == "naval_gunfire" and profile != null and profile.carronadeMount and source.kind == FORCE_FLEET and source.hull.carronades and source.hull.maintained and source.hull.integrity > 0 and rpg != null and rpg.heroes.clock != null and rpg.heroes.clock.currentDay >= naval.mountFirstDay and not naval.busy(source.id) and (source.x - target.x) * (source.x - target.x) + (source.y - target.y) * (source.y - target.y) <= naval.closeRange * naval.closeRange
+			let rate = navalResearch.rate(source.controllerId, "close_range_naval_gunfire_damage")
+			result.replace("naval:mounted_close_range", "naval_gunfire", "damage", new ExactRational(I2S(rate), "1", "1"))
+		return result
 	function reconcileForceTradition(RuntimeForce runtimeForce)
 		TraditionLayer layer = null
 		if runtimeForce.active and runtimeForce.strength > 0 and militaryMapMatches(runtimeForce.regionId, activeRegionId)
@@ -980,7 +1038,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if traditionDefinitions == null and (track < 0 or traditions[track].definition == null)
 			adapter.applyTradition(runtimeForce.id, traditionLifePermille(runtimeForce), traditionAbility(runtimeForce))
 	function instantiate(RuntimeForce runtimeForce)
-		if science.busy(runtimeForce.id) or runtimeForce.navigation.pending() or not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
+		if naval.busy(runtimeForce.id) or science.busy(runtimeForce.id) or runtimeForce.navigation.pending() or not runtimeForce.active or not militaryMapMatches(runtimeForce.regionId, activeRegionId)
 			adapter.replaceTraditionLayer(runtimeForce.id, null)
 			return
 		let city = settlementForForce(runtimeForce)
@@ -1101,14 +1159,18 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if orderCallbacks != null
 				orderCallbacks.capture()
 			suspendCallbacks()
+			let returningFromNaval = naval.busy(forceId)
 			let returningFromScience = science.busy(forceId)
 			if forces[found].controllerId != controllerId
 				science.controlChanged(forceId, controllerId, day)
+				naval.controlChanged(forceId)
+				forces[found].hull.repairCredit = 0
+				forces[found].hull.weatherCredit = 0
 				forces[found].cancelOrder()
 			forces[found].controllerId = controllerId
 			forces[found].orderControllerId = controllerId
 			adapter.changeRepresentationOwner(forceId, adapter.playerForController(controllerId, not forces[found].mobileForce()))
-			if returningFromScience and not science.busy(forceId)
+			if (returningFromScience and not science.busy(forceId)) or (returningFromNaval and not naval.busy(forceId))
 				instantiate(forces[found])
 			reconcileForceTradition(forces[found])
 			if orderCallbacks != null
@@ -1240,6 +1302,14 @@ public class MilitarySettlementRuntime implements LandReloadListener
 					if actorIndex >= 0
 						instantiate(forces[actorIndex])
 			science.controlChanged(settlementId, controllerId, -1)
+			let yardIndex = naval.index(settlementId)
+			var navalTarget = ""
+			if yardIndex >= 0
+				navalTarget = naval.states[yardIndex].target
+			naval.controlChanged(settlementId)
+			let targetIndex = forceIndex(navalTarget)
+			if targetIndex >= 0
+				instantiate(forces[targetIndex])
 		state.controllerId = controllerId
 		state.underAttack = false
 		state.garrisonStrength = 0
@@ -1354,6 +1424,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		for i = 0 to forceCount - 1
 			let f = forces[i]
 			result += "|f," + f.id + "," + f.controllerId + "," + f.regionId + "," + f.categoryId + "," + f.kind.toString() + "," + f.unitTypeId.toString() + "," + f.strength.toString() + "," + f.maximumStrength.toString() + "," + f.supply.toString() + "," + R2S(f.x) + "," + R2S(f.y) + "," + boolText(f.active) + "," + f.orderId + "," + R2S(f.orderX) + "," + R2S(f.orderY) + "," + f.orderTargetId + "," + f.orderControllerId
+			if f.kind == FORCE_FLEET
+				result += "|h," + f.id + "," + f.hull.record()
 			if f.nextFireAt > 0.
 				result += "|h," + f.id + "," + clockReal(f.nextFireAt)
 			if f.navigation.equipment or f.navigation.pending() or f.navigation.creditBasisPoints > 0
@@ -1382,6 +1454,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			result += "|l," + s.id + "," + s.owner + "," + I2S(s.ready) + "," + I2S(s.upkeepThrough) + "," + s.projectOwner + "," + I2S(s.work) + "," + boolText(s.officeBillPaid) + "," + I2S(s.serial) + "," + I2S(s.lastDay)
 		for i = 0 to science.count - 1
 			result += "|j," + science.sites[i].id + "," + science.states[i].record()
+		for i = 0 to naval.count - 1
+			result += "|y," + naval.yards[i].id + "," + naval.states[i].record()
 		return result
 	function deadlineReal(string value) returns real
 		if legacyDeadlines
@@ -1391,14 +1465,70 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let kind = record.field(0)
 		if kind == "h"
 			let i = target.forceIndex(record.field(1))
-			if record.count != 3 or i < 0 or target.forces[i].restoredFireClock
+			// Version 13 branches used h for two distinct record shapes.
+			if record.count == 3
+				if i < 0 or target.forces[i].restoredFireClock
+					return false
+				let at = readClockReal(record.field(2))
+				if at <= 0.
+					return false
+				target.forces[i].nextFireAt = at
+				target.forces[i].restoredFireClock = true
+				return true
+			if record.count != 10 or i < 0 or target.forces[i].kind != FORCE_FLEET or target.forces[i].hull.restored
 				return false
-			let at = readClockReal(record.field(2))
-			if at <= 0.
+			for j = 2 to 9
+				if S2I(record.field(j)).toString() != record.field(j) or S2I(record.field(j)) < 0
+					return false
+			for j = 3 to 5
+				if record.field(j) != "0" and record.field(j) != "1"
+					return false
+			let h = target.forces[i].hull
+			h.integrity = S2I(record.field(2))
+			h.carronades = record.field(3) == "1"
+			h.carvel = record.field(4) == "1"
+			h.maintained = record.field(5) == "1"
+			h.lastDay = S2I(record.field(6))
+			h.repairCredit = S2I(record.field(7))
+			h.weatherCredit = S2I(record.field(8))
+			h.upkeepCredit = S2I(record.field(9))
+			h.restored = true
+			return h.integrity <= 10000 and h.lastDay <= 1000000 and h.repairCredit < 10000 and h.weatherCredit < 10000 and h.upkeepCredit < 30
+		if kind == "y"
+			let i = target.naval.index(record.field(1))
+			if record.count != 10 or i < 0 or target.naval.states[i].restored
 				return false
-			target.forces[i].nextFireAt = at
-			target.forces[i].restoredFireClock = true
-			return true
+			for j = 2 to 9
+				if j == 2 or j >= 7
+					if S2I(record.field(j)).toString() != record.field(j) or S2I(record.field(j)) < 0 or S2I(record.field(j)) > 1000000
+						return false
+				else if record.field(j) != "" and not militaryOrderAtom(record.field(j))
+					return false
+			let s = target.naval.states[i]
+			s.ready = S2I(record.field(2))
+			s.boardOwner = record.field(3)
+			s.owner = record.field(4)
+			s.job = record.field(5)
+			s.target = record.field(6)
+			s.work = S2I(record.field(7))
+			s.lastDay = S2I(record.field(8))
+			s.serial = S2I(record.field(9))
+			s.restored = true
+			if s.ready > s.lastDay or (s.boardOwner != "" and s.ready == 0)
+				return false
+			if s.job == ""
+				return s.owner == "" and s.target == "" and s.work == 0
+			if s.owner == "" or (s.job != "dock" and s.ready == 0)
+				return false
+			if s.job == "dock"
+				return s.ready == 0 and s.target == "" and s.work < target.naval.dockDays
+			if s.job == "board"
+				return s.target == "" and s.work < target.naval.boardDays
+			if s.job == "build"
+				return s.target == "" and s.boardOwner == s.owner and s.work <= target.naval.buildDays
+			if s.target == "" or target.forceIndex(s.target) < 0
+				return false
+			return (s.job == "supply" and s.work == 0) or (s.job == "repair" and s.work <= 1) or (s.job == "mount" and s.work < target.naval.mountDays) or (s.job == "carvel" and s.work < target.naval.carvelDays)
 		if kind == "l"
 			let i = target.land.index(record.field(1))
 			if record.count != 10 or i < 0 or target.land.arsenals[i].restored
@@ -1664,7 +1794,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
@@ -1676,10 +1806,12 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		parsed.landYear = landYear
 		destroy parsed.science
 		parsed.science = science.fork()
+		destroy parsed.naval
+		parsed.naval = naval.fork()
 		parsed.traditionDefinitions = traditionDefinitions
 		parsed.combatBindings = combatBindings
 		parsed.voyages = voyages
-		parsed.legacyVoyages = not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
+		parsed.legacyVoyages = not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
 		parsed.legacyCombatProfiles = parsed.legacyVoyages and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
@@ -1710,16 +1842,18 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if traditionDefinitions != null and not traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)
 			parsed.dispose()
 			return null
+		// Both branches authored v13 independently. Missing domains initialize
+		// unfunded during migration; v14 requires both complete ledgers.
 		for i = 0 to parsed.land.count - 1
-			if (candidate.startsWith("v13|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
+			if (candidate.startsWith("v14|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.civic.count - 1
-			if (candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
+			if (candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
-			if (candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored
+			if (candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
@@ -1728,6 +1862,25 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if state.owner != "" and not site.scholarly()
 				let actorIndex = parsed.forceIndex(site.forceId)
 				if actorIndex < 0 or parsed.forces[actorIndex].navigation.pending() or parsed.forces[actorIndex].controllerId != state.owner or parsed.forces[actorIndex].unitTypeId != site.unitTypeId
+					parsed.dispose()
+					return null
+		for i = 0 to parsed.forceCount - 1
+			let f = parsed.forces[i]
+			if candidate.startsWith("v14|") and f.kind == FORCE_FLEET and not f.hull.restored
+				parsed.dispose()
+				return null
+			let p = parsed.naval.profile(f.combatProfileId, f.unitTypeId)
+			if (f.hull.carronades and (p == null or not p.carronadeMount)) or (f.hull.carvel and (p == null or not p.carvelRefit))
+				parsed.dispose()
+				return null
+		for i = 0 to parsed.naval.count - 1
+			let s = parsed.naval.states[i]
+			if (candidate.startsWith("v14|") or candidate.contains("|y,")) and not s.restored
+				parsed.dispose()
+				return null
+			if s.target != ""
+				let f = parsed.forces[parsed.forceIndex(s.target)]
+				if f.controllerId != s.owner or f.kind != FORCE_FLEET or f.navigation.pending() or parsed.science.busy(f.id)
 					parsed.dispose()
 					return null
 		for i = 0 to parsed.conflictCount - 1
@@ -1773,6 +1926,14 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if campaignDay >= 0 and parsed.science.states[i].lastDay > campaignDay
 				parsed.dispose()
 				return false
+		for i = 0 to parsed.forceCount - 1
+			if campaignDay >= 0 and parsed.forces[i].hull.lastDay > campaignDay
+				parsed.dispose()
+				return false
+		for i = 0 to parsed.naval.count - 1
+			if campaignDay >= 0 and parsed.naval.states[i].lastDay > campaignDay
+				parsed.dispose()
+				return false
 		parsed.dispose()
 		return true
 	function restore(string candidate) returns boolean
@@ -1806,6 +1967,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			destroy traditions[i]
 		for i = 0 to conflictCount - 1
 			destroy conflicts[i]
+		destroy naval
+		naval = parsed.naval
+		parsed.naval = new NavalLedger()
 		destroy science
 		destroy civic
 		science = parsed.science
@@ -1855,6 +2019,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 					if combatBindings != null
 						result += combatBindings.inspection(layer, combatProfile(runtimeForce), runtimeForce.active and runtimeForce.strength > 0)
 					destroy layer
+			if runtimeForce.kind == FORCE_FLEET
+				result += "\nHull integrity " + I2S(runtimeForce.hull.integrity) + "/10000; paid carronade mounts " + boolText(runtimeForce.hull.carronades) + "; paid carvel refit " + boolText(runtimeForce.hull.carvel) + "; maintenance funded " + boolText(runtimeForce.hull.maintained) + ". /naval inspect PORT lists real service bills."
 			if voyageSupported(runtimeForce, "")
 				result += "\nNavigation: astronomical observation capable; kit installed: " + boolText(runtimeForce.navigation.equipment) + "; voyage: " + runtimeForce.navigation.routeId + "; elapsed days: " + runtimeForce.navigation.elapsedDays.toString() + "; reserved provisions: " + runtimeForce.navigation.reserved.toString() + "; fractional provision credit: " + runtimeForce.navigation.creditBasisPoints.toString() + "/10000. Research source: " + voyages.contentId + "; position-finding provision reduction: " + voyages.reductionBasisPoints.toString() + " basis points; research eligible: " + boolText(voyageEligible(runtimeForce))
 			if combatBindings != null

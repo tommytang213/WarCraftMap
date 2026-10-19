@@ -1,0 +1,302 @@
+package NavalCampaignRuntime
+
+import CampaignTimeline
+import NavalServices
+import CivicCampaignRuntime
+import initlater PlayableCampaignRuntime
+import MilitarySettlementRuntime
+import initlater PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+
+function navalDate(int day) returns string
+	let date = new CampaignClock(day, day, day, 1.)
+	let result = I2S(date.campaignYear()) + "/" + I2S(date.campaignMonth()) + "/" + I2S(date.campaignMonthDay())
+	destroy date
+	return result
+
+/** Player and AI call this same resource-conserving campaign adapter. */
+public class NavalCampaignRuntime
+	PlayableCampaignState campaign
+	CampaignCivicEconomy economy
+	NavalResearchEffects effects
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, NavalResearchEffects effects)
+		this.campaign = campaign
+		this.effects = effects
+		economy = new CampaignCivicEconomy(campaign, trade)
+	function marketOpen(string id, string good) returns boolean
+		let stock = economy.trade.findMarket(id, good)
+		return stock != null and not stock.blockaded and not stock.occupiedByHostile
+	function accessible(NavalYard d, string owner) returns boolean
+		let ledger = campaign.militarySettlements.naval
+		let city = economy.settlement(d.id)
+		return marketOpen(d.id, ledger.woodGood) and marketOpen(d.id, ledger.ironGood) and marketOpen(d.id, ledger.supplyGood) and city != null and city.manpower > 0 and economy.lawful(d.id) and economy.controller(d.id) == owner and economy.accessible(d.id) and campaign.rpg.technologies.isUnlocked(owner, d.prerequisite)
+	function requirements(NavalYard d, string owner) returns boolean
+		// Delimited generated stable IDs; includes every roster tech/institution.
+		for i = 0 to campaign.rpg.technologies.count - 1
+			let id = campaign.rpg.technologies.definitions[i].id
+			if d.researchRequirements.contains("|" + id + "|") and not campaign.rpg.technologies.isUnlocked(owner, id)
+				return false
+		return true
+	function actor(NavalYard d, string owner, string id) returns RuntimeForce
+		let m = campaign.militarySettlements
+		let i = m.forceIndex(id)
+		if i < 0
+			return null
+		let f = m.forces[i]
+		if f.controllerId != owner or f.kind != FORCE_FLEET or not f.active or f.strength <= 0 or f.hull.integrity <= 0 or f.navigation.pending() or m.science.busy(id) or not militaryMapMatches(f.regionId, d.mapId) or (f.x - d.x) * (f.x - d.x) + (f.y - d.y) * (f.y - d.y) > 128. * 128. or not m.naval.hullType(f.unitTypeId)
+			return null
+		return f
+	/** Validate the complete multi-resource bill before the first mutation. */
+	function pay(NavalYard d, string owner, int money, int wood, int metalUnits, int provisions, int crew) returns boolean
+		let p = campaign.countries.polityIndex(owner)
+		let s = economy.settlement(d.id)
+		let ledger = campaign.militarySettlements.naval
+		let woodStock = economy.trade.findMarket(d.id, ledger.woodGood)
+		let metal = economy.trade.findMarket(d.id, ledger.ironGood)
+		let food = economy.trade.findMarket(d.id, ledger.supplyGood)
+		if p < 0 or money < 1 or campaign.countries.treasury[p] < money or s == null or s.manpower <= crew or s.supply < provisions
+			return false
+		if wood > 0 and (woodStock == null or woodStock.blockaded or woodStock.occupiedByHostile or woodStock.stock < wood)
+			return false
+		if metalUnits > 0 and (metal == null or metal.blockaded or metal.occupiedByHostile or metal.stock < metalUnits)
+			return false
+		if provisions > 0 and (food == null or food.blockaded or food.occupiedByHostile or food.stock < provisions)
+			return false
+		campaign.countries.treasury[p] -= money
+		s.manpower -= crew
+		s.supply -= provisions
+		if wood > 0
+			woodStock.stock -= wood
+		if metalUnits > 0
+			metal.stock -= metalUnits
+		if provisions > 0
+			food.stock -= provisions
+		return true
+	function act(string owner, string action, string id, string target) returns string
+		if not campaign.isSaveSafe()
+			return "Naval actions unavailable during restoration or transfer."
+		let m = campaign.militarySettlements
+		if m.orderCallbacks != null
+			m.orderCallbacks.capture()
+		let ledger = m.naval
+		let i = ledger.index(id)
+		if i < 0 or owner == ""
+			return "Choose an authored port shipyard."
+		let d = ledger.yards[i]
+		let s = ledger.states[i]
+		let day = campaign.clock.currentDay
+		advance(day)
+		if not accessible(d, owner) or day < s.lastDay
+			return "Requires lawful administered port, labor, market/supply access and dockyard technology."
+		if action == "stop"
+			if s.owner != owner
+				return "No project belongs to this controller."
+			let previous = s.target
+			s.stop()
+			let found = m.forceIndex(previous)
+			if found >= 0
+				m.instantiate(m.forces[found])
+			return ""
+		if s.job != ""
+			return "A paid project already occupies this berth."
+		var money = 0
+		var wood = 0
+		var metalUnits = 0
+		var provisions = 0
+		var crew = 0
+		if action == "dock"
+			if s.ready != 0 or target != ""
+				return "Dock already exists or invalid target."
+			money = ledger.dockCost
+			wood = ledger.dockWood
+			metalUnits = ledger.dockIron
+		else
+			if s.ready == 0 or day < s.ready
+				return "Commission and finish a paid dock first."
+			if action == "board"
+				if s.boardOwner == owner or target != ""
+					return "Naval board already enacted or invalid target."
+				money = ledger.boardCost
+			else if action == "build"
+				if target != "" or s.boardOwner != owner or not effects.earned(owner, "unlock_recruitment") or not requirements(d, owner) or day < d.firstDay or day > d.lastDay or m.forceCount >= 4096 or s.serial >= 1000000
+					return "Requires historical roster availability, earned unit entitlement, public credit, naval board, ordnance, labor and provisions."
+				money = d.price
+				wood = ledger.buildWood
+				metalUnits = ledger.buildIron
+				provisions = d.supply
+				crew = d.crew
+			else
+				let f = actor(d, owner, target)
+				if f == null or ledger.busy(target)
+					return "Requires a compatible owned ship at this operational dock."
+				let profile = ledger.profile(f.combatProfileId, f.unitTypeId)
+				if action == "repair"
+					if f.hull.integrity >= 10000
+						return "Hull already sound."
+					// Repair bills are paid for each actual day of output.
+					money = ledger.repairCost
+					wood = ledger.repairWood
+					provisions = 1
+				else if action == "supply"
+					if f.supply > 2147483647 - d.supply
+						return "Ship provision capacity exceeded."
+					money = d.supply * ledger.provisionPrice
+					provisions = d.supply
+				else if action == "mount"
+					if day < ledger.mountFirstDay or (profile == null or not profile.carronadeMount) or f.hull.carronades or not effects.earned(owner, "close_range_naval_gunfire_damage")
+						return "Requires historical compatible carronade mounts and earned research."
+					money = ledger.mountCost
+					wood = ledger.mountWood
+					metalUnits = ledger.mountIron
+				else if action == "carvel"
+					if day < ledger.carvelFirstDay or (profile == null or not profile.carvelRefit or profile.carvelBuilt) or f.hull.carvel or not effects.earned(owner, "voyage_hull_weather_resilience")
+						return "Requires a historically compatible paid carvel refit and earned research."
+					money = ledger.carvelCost
+					wood = ledger.carvelWood
+					metalUnits = ledger.carvelIron
+				else
+					return "Use dock, board, build, repair, supply, mount, carvel or stop."
+		if action == "build" and (m.combatBindings == null or m.combatBindings.profile(d.profileId, d.unitTypeId, FORCE_FLEET) == null)
+			return "Authoritative roster weapon profile unavailable."
+		if not pay(d, owner, money, wood, metalUnits, provisions, crew)
+			return "Treasury, materials, crew or local supply insufficient; no payment taken."
+		if target != ""
+			m.forces[m.forceIndex(target)].cancelOrder()
+			m.adapter.removeRepresentation(target)
+		s.owner = owner
+		s.job = action
+		s.target = target
+		s.work = 0
+		s.lastDay = day
+		if action == "repair"
+			// The first bill prepays the first day; one paid day never repeats.
+			s.work = 1
+		return ""
+	function advance(int day)
+		let m = campaign.militarySettlements
+		let ledger = m.naval
+		for i = 0 to ledger.count - 1
+			let d = ledger.yards[i]
+			let s = ledger.states[i]
+			let previousTarget = s.target
+			while s.job != "" and s.lastDay < day
+				s.lastDay++
+				let owner = s.owner
+				var valid = accessible(d, owner)
+				RuntimeForce f = null
+				if s.target != ""
+					f = actor(d, owner, s.target)
+					valid = valid and f != null
+				if not valid
+					s.stop()
+				else if s.job == "repair"
+					if s.work == 1 or pay(d, owner, ledger.repairCost, ledger.repairWood, 0, 1, 0)
+						f.hull.repair(ledger.repairOutput, effects.rate(owner, "hull_repair_throughput"))
+						s.work = 0
+						if f.hull.integrity == 10000
+							s.stop()
+				else
+					if s.job == "build" and (not requirements(d, owner) or s.boardOwner != owner or not effects.earned(owner, "unlock_recruitment") or s.lastDay < d.firstDay or s.lastDay > d.lastDay)
+						s.stop()
+					else
+						s.work++
+						if s.job == "build"
+							s.work = IMinBJ(s.work, ledger.buildDays)
+						if s.job == "dock" and s.work >= ledger.dockDays
+							s.ready = s.lastDay
+							s.stop()
+						else if s.job == "board" and s.work >= ledger.boardDays
+							s.boardOwner = owner
+							s.stop()
+						else if s.job == "supply" and s.work >= 1
+							f.supply += d.supply
+							s.stop()
+						else if s.job == "mount" and s.work >= ledger.mountDays
+							f.hull.carronades = true
+							s.stop()
+						else if s.job == "carvel" and s.work >= ledger.carvelDays
+							f.hull.carvel = true
+							s.stop()
+						else if s.job == "build" and s.work >= ledger.buildDays and m.forceCount < 4096
+							let shipId = "naval:" + d.id + ":" + I2S(s.serial)
+							if m.forceIndex(shipId) < 0
+								let ship = new RuntimeForce(shipId, owner, d.mapId, m.combatBindings.profile(d.profileId, d.unitTypeId, FORCE_FLEET).categoryId, FORCE_FLEET, d.unitTypeId, d.strength, d.supply, d.x, d.y)
+								ship.combatProfileId = d.profileId
+								ship.hull.lastDay = s.lastDay
+								m.recruit(ship)
+								s.serial++
+							s.stop()
+			if previousTarget != "" and not ledger.busy(previousTarget)
+				let found = m.forceIndex(previousTarget)
+				if found >= 0
+					m.instantiate(m.forces[found])
+		for i = 0 to m.forceCount - 1
+			let f = m.forces[i]
+			let profile = ledger.profile(f.combatProfileId, f.unitTypeId)
+			if f.kind == FORCE_FLEET
+				if f.hull.lastDay == 0
+					f.hull.lastDay = day
+				while f.hull.lastDay < day
+					let at = f.hull.lastDay
+					f.hull.lastDay++
+					if f.active and f.strength > 0
+						// Existing hulls retain their existing supply. New battlefleet
+						// hulls additionally pay the roster's monthly maintenance.
+						if ledger.count > 0 and f.combatProfileId == ledger.yards[0].profileId
+							let credit = f.hull.upkeepCredit + ledger.yards[0].upkeep
+							let bill = credit div 30
+							f.hull.upkeepCredit = credit mod 30
+							let p = campaign.countries.polityIndex(f.controllerId)
+							f.hull.maintained = p >= 0 and campaign.countries.treasury[p] >= bill and f.supply > 0
+							if f.hull.maintained
+								campaign.countries.treasury[p] -= bill
+								f.supply--
+						if f.navigation.pending() and m.voyages != null and at >= f.navigation.lastDay and at < f.navigation.lastDay + m.voyages.route(f.navigation.routeId).days - f.navigation.elapsedDays and ledger.weatherPeriod > 0 and at mod ledger.weatherPeriod < ledger.weatherDays
+							var rate = 0
+							if at >= ledger.carvelFirstDay and profile != null and f.hull.maintained and (profile.carvelBuilt or f.hull.carvel)
+								rate = effects.rate(f.controllerId, "voyage_hull_weather_resilience")
+							f.hull.weather(ledger.stormLoss, rate)
+							if f.hull.integrity == 0
+								m.recordLoss(f.id, f.strength)
+	function overview(string owner, string id) returns string
+		let ledger = campaign.militarySettlements.naval
+		let i = ledger.index(id)
+		if i < 0
+			var result = "Naval yards:"
+			for j = 0 to ledger.count - 1
+				result += " " + ledger.yards[j].id
+			return result
+		let d = ledger.yards[i]
+		let s = ledger.states[i]
+		return id + ": requires lawful administration, port access, local labor and " + d.prerequisite + ". Dock " + I2S(ledger.dockCost) + " currency + " + I2S(ledger.dockWood) + " " + ledger.woodGood + " + " + I2S(ledger.dockIron) + " " + ledger.ironGood + ", " + I2S(ledger.dockDays) + " days. Naval board is a separate paid choice: " + I2S(ledger.boardCost) + " currency, " + I2S(ledger.boardDays) + " days.\nBuild " + d.profileId + ": " + I2S(d.price) + " currency, " + I2S(d.crew) + " manpower, " + I2S(d.supply) + " provisions and settlement supply, " + I2S(ledger.buildWood) + " " + ledger.woodGood + ", " + I2S(ledger.buildIron) + " " + ledger.ironGood + " (includes naval ordnance); " + I2S(ledger.buildDays) + " days; " + I2S(d.upkeep) + " currency per 30 days + 1 provision/day. Historical availability " + navalDate(d.firstDay) + " through " + navalDate(d.lastDay) + "; all roster research required: " + d.researchRequirements + ".\nRepair: " + I2S(ledger.repairCost) + " currency + " + I2S(ledger.repairWood) + " " + ledger.woodGood + " + 1 provision/supply per day; " + I2S(ledger.repairOutput) + " hull integrity/day + " + I2S(effects.rate(owner, "hull_repair_throughput")) + " bp. Hull maximum 10000. Supply: " + I2S(d.supply) + " provisions, " + I2S(d.supply * ledger.provisionPrice) + " currency and matching local stock/supply, 1 day. Mount: " + I2S(ledger.mountCost) + " currency + " + I2S(ledger.mountWood) + " " + ledger.woodGood + " + " + I2S(ledger.mountIron) + " " + ledger.ironGood + "; " + I2S(ledger.mountDays) + " days, available from " + navalDate(ledger.mountFirstDay) + ". Carvel refit: " + I2S(ledger.carvelCost) + " currency + " + I2S(ledger.carvelWood) + " " + ledger.woodGood + " + " + I2S(ledger.carvelIron) + " " + ledger.ironGood + "; " + I2S(ledger.carvelDays) + " days, from " + navalDate(ledger.carvelFirstDay) + ". Compatible hulls only. Carronades add " + I2S(effects.rate(owner, "close_range_naval_gunfire_damage")) + " bp only within " + R2S(ledger.closeRange) + " range; carvel avoids " + I2S(effects.rate(owner, "voyage_hull_weather_resilience")) + " bp actual voyage hull weather loss.\nProject " + s.job + " " + s.target + ", funded work " + I2S(s.work) + ". Capture cancels projects/board; completed dock and gear survive. No refunds. Use /naval <inspect|dock|board|build|repair|supply|mount|carvel|stop> PORT [SHIP]."
+
+class NavalCommand implements CommandHandler
+	NavalCampaignRuntime runtime
+	CommandOutput output
+	construct(NavalCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let cut = arguments.indexOf(" ")
+		if cut < 1
+			output.show(sender, runtime.overview("", ""))
+			return
+		let action = SubString(arguments, 0, cut)
+		var id = SubString(arguments, cut + 1, StringLength(arguments))
+		var target = ""
+		let targetCut = id.indexOf(" ")
+		if targetCut > 0
+			target = SubString(id, targetCut + 1, StringLength(id))
+			id = SubString(id, 0, targetCut)
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			output.show(sender, runtime.overview(owner, id))
+		else
+			var result = runtime.act(owner, action, id, target)
+			if result == ""
+				result = "Naval action completed."
+			output.show(sender, result)
+
+public function registerNavalCommands(CommandRegistry commands, NavalCampaignRuntime runtime) returns string
+	return commands.register("naval", "", "naval <inspect|dock|board|build|repair|supply|mount|carvel|stop> PORT [SHIP]", "Manage paid shipyards, construction and fleet maintenance.", "Inspect bills, historical availability, research, port, crew and supply conditions. Player and AI use the same paid actions.", 1, 3, COMMAND_RELEASE, new NavalCommand(runtime, commands.output))
