@@ -68,3 +68,30 @@ synthetic compiler fixture. No Wurst production or test source changed in this
 repair; pinned execution and authoritative complete repository validation remain
 with the controller. The source reports retain all execution/artifact blockers
 and do not close the four naval research findings.
+
+PR #539 CI repair: the campaign packaging job failed in
+`productionCampaignContentContract` at the interpreter's unchanged 20-second
+deadline; its separate Wurst workflow passed. The shared conformance fixture now
+finalizes migration defaults after bounding its registered authority, releases
+discarded civic definitions, and bounds agricultural sites to the retained
+settlements. All original gameplay, save/load and travel assertions remain.
+A separate shared test verifies full-world production migration defaults in both
+campaigns. Production registration and the execution gate are unchanged.
+
+`ci-repair-validation.json` and its compressed transcripts record 117 passing
+pinned Wurst tests: the complete current third 100-test execution batch plus all
+naval/navigation tests. The integrated naval trace exercises all seven required
+production probes. Both shared conformance tests also pass in the reusable
+campaign and its renamed-content/price mutation (four executions). All container
+inputs were mounted read-only and builds ran as the image's default non-root user
+in container-private `/tmp`. Generation/provenance, framework boundary, map source
+and traceability freshness checks pass. Refreshed source audit reports preserve
+all existing release blockers. These are focused development results; the outer
+worker still owns complete repository validation and release evidence.
+
+The repair also passes 38 focused Python tests: naval catalogue/research
+generation (13), shared framework packaging/evidence (3), and execution-gate
+failure handling (22). Their transcript is `ci-repair-python.log.gz`. Python
+compiler fixtures exercise orchestration and fail-closed packaging, separately
+from the real pinned interpreter executions above. Broad local Python discovery
+was stopped in favor of these selections; it is not claimed as a complete pass.
