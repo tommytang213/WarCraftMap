@@ -1,6 +1,7 @@
 """Synthetic transcripts test the gate protocol; they are never release evidence."""
 import copy
 import json
+import shutil
 from pathlib import Path
 import sys
 import tempfile
@@ -222,6 +223,33 @@ class IntegrationEvidenceTests(unittest.TestCase):
                        'interface Production\n\tpublic function registration()\n'):
             with self.assertRaises(ValueError):
                 evidence.instrument(source, {"register": self.contract["probes"]["register"]})
+
+    def test_shards_bind_only_annotation_changes_to_current_production_sources(self):
+        from wurst_execution_fixture import FAKE_EXECUTION, allow_synthetic_compiler
+        fixture = self.project / "wurst/FixtureTests.wurst"
+        fixture.write_text(fixture.read_text() + '@test function second()\n\tskip\n')
+        fake = self.project / "grill"
+        fake.write_text('#!/usr/bin/env python3\nimport pathlib, sys\nroot=pathlib.Path.cwd()\n' + FAKE_EXECUTION)
+        fake.chmod(0o755)
+        allow_synthetic_compiler(self, fake)
+        compiled = self.project / "_build/compile"
+        shutil.copytree(self.project / "wurst", compiled / "wurst")
+        before = {p: p.read_bytes() for p in (fixture, self.production)}
+        with patch.object(execution, "TESTS_PER_PROCESS", 1):
+            report = execution.execute_tests(compiled, str(fake), self.project / "evidence",
+                                             self.revision, project=self.project)
+        log = (self.project / "evidence/execution.log").read_bytes()
+        self.assertEqual({"trade": []}, evidence.verify_execution_coverage(report, log, self.project, self.revision))
+        self.assertEqual(before, {p: p.read_bytes() for p in before})
+        # Even a rehashed manifest cannot authorize editing a function body or
+        # production file in one process instead of merely masking annotations.
+        for relative in ("wurst/FixtureTests.wurst", "wurst/Production.wurst"):
+            changed = copy.deepcopy(report)
+            shard = changed["shards"][0]
+            shard["inputOverrides"][relative] = "0" * 64
+            shard["inputSetSha256"] = evidence.digest(evidence.canonical({**changed["inputs"], **shard["inputOverrides"]}))
+            with self.assertRaisesRegex(ValueError, "beyond test annotations"):
+                evidence.verify_execution_coverage(changed, log, self.project, self.revision)
 
 
 if __name__ == "__main__":

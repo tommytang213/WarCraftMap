@@ -150,7 +150,7 @@ def execution_sources(project: Path) -> dict[str, Path]:
 
 
 def verify_execution_coverage(report: dict, log: bytes, project: Path, revision: str) -> dict:
-    from wurst_execution import verify_evidence, discover
+    from wurst_execution import verify_evidence, discover, select_tests
     verify_evidence(report, log, revision)
     if report.get("executionStatus") != "completed":
         raise ValueError("required integration executionStatus is not completed")
@@ -173,6 +173,22 @@ def verify_execution_coverage(report: dict, log: bytes, project: Path, revision:
         expected = digest(instrument(source.read_text(), probes).encode() if probes else source.read_bytes())
         if report.get("inputs", {}).get(relative) != expected:
             raise ValueError(f"production probe input mismatch: {relative}")
+    # A partition declaration cannot authorize arbitrary source changes. Derive
+    # each process's only legal overrides from the current annotated functions.
+    test_files = {test["id"].rsplit(":", 1)[0] for test in report["expected"]}
+    for shard in report.get("shards", []):
+        overrides = {}
+        for relative in sorted(test_files):
+            source = sources[relative].read_text()
+            probes = {name: spec for name, spec in contract["probes"].items() if spec["path"] == relative}
+            source = instrument(source, probes) if probes else source
+            names = {test.rsplit(":", 1)[1] for test in shard["testIds"]
+                     if test.rsplit(":", 1)[0] == relative}
+            selected = digest(select_tests(source, names).encode())
+            if selected != report["inputs"][relative]:
+                overrides[relative] = selected
+        if shard["inputOverrides"] != overrides:
+            raise ValueError("execution shard modified sources beyond test annotations")
     # Grill rewrites wurst.build during dependency installation (YAML ordering
     # and dependency URL capitalization). The source identity binds the authored
     # config; the runner separately hashes the normalized interpreter input.

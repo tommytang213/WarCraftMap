@@ -50,7 +50,10 @@ class PackagingTests(unittest.TestCase):
 
     def test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures(self):
         output = build(self.project / "package.json", grill=str(self.fake))
-        self.assertEqual(["install", "typecheck", "test", "build map/AgeOfSailWorld.w3x"], (self.project / "_build/commands.txt").read_text().splitlines())
+        execution = json.loads((self.project / "_build/wurst-tests/results.json").read_text())
+        batches = len(execution.get("shards", [None]))
+        self.assertEqual(["install", "typecheck"] + ["test"] * batches + ["build map/AgeOfSailWorld.w3x"],
+                         (self.project / "_build/commands.txt").read_text().splitlines())
         with zipfile.ZipFile(output) as archive:
             names = set(archive.namelist()); lua = archive.read("war3map.lua").decode(); runtime = json.loads(archive.read("runtime/scenario-runtime.json")); terrain = json.loads(archive.read("runtime/terrain-europe.json")); africa = json.loads(archive.read("runtime/terrain-africa.json")); middle_east_india = json.loads(archive.read("runtime/terrain-middle_east_india.json")); authored_preview = archive.read("war3mapMap.blp")
         self.assertIn("war3map.w3i", names); self.assertIn("runtime/provenance.json", names)

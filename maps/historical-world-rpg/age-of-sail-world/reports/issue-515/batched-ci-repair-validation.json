@@ -1,0 +1,166 @@
+{
+  "issue": 515,
+  "sourceRevision": "db9e20c2de498fbe9226d41dbf4e2c056e202ff2",
+  "sourceTreeSha256": "79e26afbcfb12df8339c4e72bf968d2a851f5bcdc410a8064fb81b6c054fc736",
+  "scope": "Repair PR #538 complete-suite interpreter timeouts; retain the four approved land research production consumers.",
+  "designDependency": {
+    "pr": 511,
+    "state": "MERGED",
+    "mergeCommit": "9db8952c7171e44daa250a90689357dc7b91fe92"
+  },
+  "ciFailure": {
+    "jobs": [
+      117851537421,
+      117851537416
+    ],
+    "result": "620/623 passed; three late VisitKnowledgeTests timed out during generated registration in the accumulated interpreter heap."
+  },
+  "repair": "Execute deterministic batches of at most 100 tests in fresh interpreter processes. Preserve all function bodies and line numbers, restore annotations before map compilation, retain every raw transcript and exact input overrides, and verify the complete discovery partition, compiler pin, production probes, and source identity. Keep the 20-second test deadline.",
+  "fixtureIsolation": "PrizeFixture installs its own campaign clock. The prize-capture reconstruction regression starts with no installed clock and verifies that fixture binding.",
+  "additionalPinnedRegression": {
+    "testsPassed": 19,
+    "typecheck": "pass",
+    "log": "batched-prize-clock-pinned.log.gz"
+  },
+  "compiler": {
+    "executionImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "wurst": {
+    "typecheck": "pass",
+    "testsPassed": 623,
+    "batchSizes": [
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      23
+    ],
+    "counts": {
+      "wurst/AbstractSettlementTests.wurst": 5,
+      "wurst/AgricultureTests.wurst": 10,
+      "wurst/AuthoredQuestTests.wurst": 13,
+      "wurst/BoundaryArrivalTests.wurst": 3,
+      "wurst/CampaignAutosaveLifecycleTests.wurst": 8,
+      "wurst/CampaignAutosaveSchedulerTests.wurst": 2,
+      "wurst/CampaignLoadTransactionTests.wurst": 25,
+      "wurst/CampaignRecoveryTests.wurst": 27,
+      "wurst/CampaignSaveManagerTests.wurst": 3,
+      "wurst/CampaignStartupTests.wurst": 51,
+      "wurst/CampaignTimelineTests.wurst": 6,
+      "wurst/CharacterEquipmentTests.wurst": 13,
+      "wurst/CivicGovernanceTests.wurst": 9,
+      "wurst/CommandMapTransportTests.wurst": 10,
+      "wurst/CommandRouterTests.wurst": 3,
+      "wurst/ConflictPeaceIntegrationTests.wurst": 11,
+      "wurst/CountryDiplomacyScreenTests.wurst": 6,
+      "wurst/EquipmentSetTests.wurst": 3,
+      "wurst/EquipmentSetVectorsTests.wurst": 4,
+      "wurst/ExactNaturalTests.wurst": 2,
+      "wurst/ExactRationalTests.wurst": 3,
+      "wurst/FrameworkConformanceTests.wurst": 1,
+      "wurst/HeroAllocationTests.wurst": 6,
+      "wurst/HeroAllocationVectorsTests.wurst": 6,
+      "wurst/HeroDefeatLifecycleTests.wurst": 4,
+      "wurst/HeroEarnedGrowthTests.wurst": 5,
+      "wurst/HeroProgressionVectorsTests.wurst": 12,
+      "wurst/HeroStartingProfileTests.wurst": 5,
+      "wurst/InstalledCommandHelpTests.wurst": 4,
+      "wurst/InstalledGodModeTests.wurst": 6,
+      "wurst/ItemComparisonVectorsTests.wurst": 1,
+      "wurst/ItemDefinitionTests.wurst": 4,
+      "wurst/LandArmyEffectsTests.wurst": 9,
+      "wurst/LiveRecoveryTests.wurst": 7,
+      "wurst/ManagementCommandTests.wurst": 7,
+      "wurst/ManagementScreenPauseControllerTests.wurst": 5,
+      "wurst/MapDiscoveryScreenTests.wurst": 2,
+      "wurst/MilitaryCombatEventsTests.wurst": 50,
+      "wurst/MilitaryOrderEventsTests.wurst": 7,
+      "wurst/MilitarySettlementRuntimeTests.wurst": 10,
+      "wurst/MixedCargoTests.wurst": 7,
+      "wurst/MixedCargoVectorsTests.wurst": 2,
+      "wurst/NavigationEfficiencyTests.wurst": 8,
+      "wurst/NewCampaignOriginSelectionTests.wurst": 2,
+      "wurst/PartyLocationTests.wurst": 2,
+      "wurst/PiracyCommandTests.wurst": 16,
+      "wurst/PlayableCampaignRuntimeTests.wurst": 15,
+      "wurst/PlayablePiracyTests.wurst": 3,
+      "wurst/PlayableTradeTests.wurst": 16,
+      "wurst/PlayerGodModeTests.wurst": 4,
+      "wurst/QuestNavigationTests.wurst": 10,
+      "wurst/RecruitmentWindowTests.wurst": 10,
+      "wurst/ReligionRuntimeTests.wurst": 5,
+      "wurst/RemoteRegionAuthorityTests.wurst": 5,
+      "wurst/ResearchCostTests.wurst": 3,
+      "wurst/ResearchRuntimeTests.wurst": 18,
+      "wurst/RpgInteractionTests.wurst": 9,
+      "wurst/ScienceExplorationTests.wurst": 7,
+      "wurst/TradeCommandTests.wurst": 7,
+      "wurst/TradePricingTests.wurst": 11,
+      "wurst/TradePricingVectorsTests.wurst": 9,
+      "wurst/TreasureResolutionTests.wurst": 10,
+      "wurst/TreasureVectorsTests.wurst": 28,
+      "wurst/UnstuckRecoveryTests.wurst": 7,
+      "wurst/VisitKnowledgeTests.wurst": 7,
+      "wurst/WC3CompatibilityCompileFixture.wurst": 1,
+      "wurst/WarcraftRpgRuntimeTests.wurst": 33
+    },
+    "evidence": "batched-wurst-results.json.gz",
+    "log": "batched-wurst-execution.log.gz"
+  },
+  "python": {
+    "executionAndReleaseGate": {
+      "testsPassed": 21,
+      "log": "executionAndReleaseGate-python.log.gz"
+    },
+    "coverageAndPackagingRegression": {
+      "testsPassed": 33,
+      "log": "coverageAndPackagingRegression-python.log.gz"
+    },
+    "research": {
+      "testsPassed": 18,
+      "log": "research-python.log.gz"
+    },
+    "domainsFrameworkSimulationRuntimeAndTraceability": {
+      "testsPassed": 154,
+      "log": "domainsFrameworkSimulationRuntimeAndTraceability-python.log.gz"
+    },
+    "automation": {
+      "testsPassed": 198,
+      "log": "automation-python.log.gz"
+    },
+    "finalPackagingRegression": {
+      "testsPassed": 1,
+      "log": "finalPackagingRegression-python.log.gz"
+    }
+  },
+  "packagingChecks": {
+    "totalChecks": 40,
+    "unchangedChecksPassed": 39,
+    "repairedAssertionPassed": true,
+    "fullRunLog": "batched-packaging-initial.log.gz",
+    "note": "The full run began before the packaging assertion update; its sole failure expected one test command rather than seven. The corrected assertion passed in the final 33-case coverage/packaging regression run."
+  },
+  "conformance": {
+    "typecheck": "pass",
+    "testsPassed": 2,
+    "mapCompilation": "pass",
+    "packagedArtifactInspection": "pass",
+    "log": "batched-framework-pinned.log.gz"
+  },
+  "containerSafety": "Cached pinned image; networking disabled; non-root wurstuser; every host mount read-only; all compilation and test writes in container-private /tmp. No ownership or permission changes to the worktree.",
+  "audits": "Runtime, release and requirement traceability regenerated for the final source identity. Existing publication blockers retained. Full Age of Sail campaign packaging remains with the authoritative outer validation.",
+  "evidenceLimits": "Python packaging fixtures use synthetic compilers to check the protocol, not to prove Wurst execution. The 623-test run and two conformance tests above use the actual pinned compiler. No claim of current-main native client playability.",
+  "releaseFindingsRetained": [
+    "release:RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL",
+    "release:RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES",
+    "release:RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN",
+    "release:RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM"
+  ],
+  "nativeCrash438": "Unrelated and still blocked."
+}

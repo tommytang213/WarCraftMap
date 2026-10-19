@@ -144,6 +144,68 @@ class WurstExecutionTests(unittest.TestCase):
                 self.assertEqual(expected, (self.root / "java-options.txt").read_text())
                 self.assertEqual(before, dict(os.environ))
 
+    def test_fresh_process_shards_execute_exact_discovery_and_restore_annotations(self):
+        source = self.root / "wurst/Fixture.wurst"
+        before = source.read_bytes()
+        with patch.object(execution, "TESTS_PER_PROCESS", 1):
+            report = self.run_suite()
+        log = (self.root / "evidence/execution.log").read_bytes()
+        self.assertEqual(before, source.read_bytes())
+        self.assertEqual(2, len(report["shards"]))
+        self.assertEqual([1, 1], [len(s["testIds"]) for s in report["shards"]])
+        self.assertEqual(2, log.count(b"Running tests\n"))
+        self.assertEqual((2, 2), (report["discovered"], report["succeeded"]))
+        self.assertTrue(all(s["inputOverrides"] for s in report["shards"]))
+        self.assertEqual(execution.sha(before), report["inputs"]["wurst/Fixture.wurst"])
+        execution.verify_evidence(report, log, "a" * 40)
+
+    def test_masking_annotations_preserves_helpers_comments_strings_indentation_and_lines(self):
+        source = ('package Fixture\n// @test function comment()\n'
+                  '/* @test function commentToo() */\n'
+                  'string label = "@test function literal()"\n'
+                  '@test function first()\n\tsecond()\n'
+                  '@test\nfunction second()\n\ttrue.assertTrue()\n')
+        selected = execution.select_tests(source, {"first"})
+        self.assertEqual(source.replace('@test\nfunction second()', '\nfunction second()'), selected)
+        selected = execution.select_tests(source, {"second"})
+        self.assertEqual(source.replace('@test function first()', 'function first()'), selected)
+        self.assertEqual(source.count('\n'), selected.count('\n'))
+
+    def test_failed_shards_and_missing_tools_restore_sources_and_fail_closed(self):
+        source = self.root / "wurst/Fixture.wurst"
+        before = source.read_bytes()
+        for mode in ("assertion", "timeout", "absent", "truncated", "incomplete"):
+            with self.subTest(mode=mode), patch.object(execution, "TESTS_PER_PROCESS", 1), \
+                    redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
+                self.run_suite(mode)
+            self.assertEqual(before, source.read_bytes())
+            self.assertEqual("fail", json.loads((self.root / "evidence/results.json").read_text())["status"])
+        with patch.object(execution, "TESTS_PER_PROCESS", 1), \
+                self.assertRaises(execution.WurstExecutionError):
+            execution.execute_tests(self.root, str(self.root / "missing"), self.root / "evidence", "a" * 40)
+        self.assertEqual(before, source.read_bytes())
+
+    def test_shard_evidence_rejects_omitted_duplicate_changed_and_malformed_partitions(self):
+        with patch.object(execution, "TESTS_PER_PROCESS", 1):
+            original = self.run_suite()
+        log = (self.root / "evidence/execution.log").read_bytes()
+        variants = []
+        for key, value in (("logStart", 1), ("logEnd", len(log) + 1),
+                           ("logSha256", "0" * 64), ("returnCode", 1),
+                           ("testIds", []), ("testIds", ["unlisted"]),
+                           ("inputOverrides", {}), ("inputSetSha256", "0" * 64)):
+            report = copy.deepcopy(original)
+            report["shards"][0][key] = value
+            variants.append(report)
+        for shards in ([], None, "pass", original["shards"][:1], original["shards"] * 2):
+            variants.append({**original, "shards": shards})
+        duplicate = copy.deepcopy(original)
+        duplicate["shards"][1]["testIds"] = duplicate["shards"][0]["testIds"]
+        variants.append(duplicate)
+        for report in variants:
+            with self.subTest(shards=report["shards"]), self.assertRaises(execution.WurstExecutionError):
+                execution.verify_evidence(report, log, "a" * 40)
+
     def test_assertion_exception_absence_truncation_incomplete_and_zero_fail_closed(self):
         for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):
             with self.subTest(mode=mode), redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
@@ -215,7 +277,8 @@ class WurstExecutionTests(unittest.TestCase):
 
     def test_unexecuted_or_malformed_json_is_rejected_without_attribute_errors(self):
         original, log = passing_evidence()
-        variants = ["pass", None, [], {}, {**original, "executionStatus": "not_run"}]
+        variants = ["pass", None, [], {}, {**original, "executionStatus": "not_run"},
+                    {**original, "shards": None}, {**original, "shards": "pass"}]
         missing = copy.deepcopy(original)
         del missing["executionStatus"]
         variants.append(missing)

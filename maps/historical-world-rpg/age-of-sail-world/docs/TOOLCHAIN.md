@@ -194,6 +194,17 @@ the production registration/adapter entries each required system must exercise
 within one passing test. Uncovered entries remain blockers. Merely declaring a
 probe or finding its function/test name does not supply execution evidence.
 
+The complete suite runs in deterministic batches of at most 100 tests, each in
+a fresh interpreter process. Wurst's interpreter retains fixture objects across
+tests; an accumulated full-world heap previously caused late travel tests to
+exceed the unchanged 20-second deadline. Batches only mask unselected `@test`
+annotations in the temporary assembly, preserving all function bodies and line
+numbers. The runner restores those annotations before map compilation. Evidence
+retains each raw transcript, its exact test partition and input hashes. Upload
+verification rejects omitted, duplicated, failed or altered batches, and requires
+every discovered test exactly once. Existing single-process evidence remains
+readable; batching does not relax assertions, production coverage or timeouts.
+
 To evaluate a built campaign, supply `--execution-dir _build/wurst-tests`,
 `--campaign _build/release/AgeOfSailWorldCampaign.w3n` and a full
 `--source-revision` to either acceptance tool. Evidence binds the revision and

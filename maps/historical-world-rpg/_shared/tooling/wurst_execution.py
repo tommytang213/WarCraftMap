@@ -18,6 +18,10 @@ PINNED_IMAGE = "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaa
 PINNED_COMPILER_SHA256 = "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
 PINNED_COMPILER_VERSION = "1.9.0.0-nightly-1-gedd2e5e74"
 FORMAT = "warcraftmap_wurst_execution_v1"
+# The interpreter retains Wurst heap objects across tests in one process. Keep
+# catalogue-heavy integration fixtures away from the accumulated full-suite heap.
+# This bounds lifetime, not the per-test timeout or the discovered test set.
+TESTS_PER_PROCESS = 100
 
 
 class WurstExecutionError(RuntimeError):
@@ -130,6 +134,75 @@ def input_hashes(compile_root: Path) -> dict[str, str]:
             for path in sorted(files) if path.is_file()}
 
 
+def select_tests(text: str, names: set[str]) -> str:
+    """Remove only unselected annotations; preserve code, indentation and lines."""
+    ignored = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
+    code = ignored.sub(lambda m: re.sub(r"[^\n]", " ", m[0]), text)
+    offsets = []
+    for match in re.finditer(r"@test\s+function\s+(\w+)\s*\(", code):
+        if match[1] not in names:
+            end = match.start() + len("@test")
+            while end < len(text) and text[end] in " \t":
+                end += 1
+            offsets.append((match.start(), end))
+    for start, end in reversed(offsets):
+        text = text[:start] + text[end:]
+    return text
+
+
+def parse_execution(log: str, expected: list[dict], shards: list[dict] | None = None,
+                    inputs: dict | None = None) -> tuple[list[dict], list[str]]:
+    """Validate each raw process transcript and the exact partition of discovery."""
+    if shards is None:
+        return parse_results(log, expected)
+    if not isinstance(shards, list) or not shards:
+        raise WurstExecutionError("malformed Wurst execution shards")
+    rows, issues, covered = [], [], []
+    offset = 0
+    by_id = {test["id"]: test for test in expected}
+    for shard in shards:
+        if (not isinstance(shard, dict) or type(shard.get("logStart")) is not int or
+                type(shard.get("logEnd")) is not int or shard["logStart"] != offset or
+                not offset < shard["logEnd"] <= len(log) or
+                not isinstance(shard.get("testIds"), list) or not shard["testIds"] or
+                any(not isinstance(t, str) or t not in by_id for t in shard["testIds"]) or
+                type(shard.get("returnCode")) is not int or
+                not isinstance(shard.get("inputOverrides"), dict)):
+            raise WurstExecutionError("malformed Wurst execution shard")
+        overrides = shard["inputOverrides"]
+        if (inputs is None or any(name not in inputs or not name.startswith("wurst/") or
+                not name.endswith(".wurst") or not isinstance(value, str) or
+                not re.fullmatch(r"[0-9a-f]{64}", value) for name, value in overrides.items()) or
+                shard.get("inputSetSha256") != sha(canonical({**inputs, **overrides}))):
+            raise WurstExecutionError("mismatched Wurst shard inputs")
+        transcript = log[offset:shard["logEnd"]]
+        if shard.get("logSha256") != sha(transcript.encode()):
+            raise WurstExecutionError("mismatched Wurst shard transcript")
+        actual, errors = parse_results(transcript, [by_id[t] for t in shard["testIds"]])
+        rows.extend(actual)
+        issues.extend(errors)
+        if shard["returnCode"]:
+            issues.append(f"grill test exited {shard['returnCode']}")
+        covered.extend(shard["testIds"])
+        offset = shard["logEnd"]
+    if offset != len(log) or sorted(covered) != sorted(by_id):
+        issues.append("execution shards differ from complete discovery or transcript")
+    return rows, issues
+
+
+def compiler_identity(log: str) -> dict:
+    grill = re.search(r"Grill ([\w.-]+)", log)
+    jar = re.search(r"detectedCompilerJar=(.+?) exists=true", log)
+    if not grill or not jar or not Path(jar[1]).is_file():
+        raise WurstExecutionError("compiler identity is absent from execution")
+    compiler_sha = sha(Path(jar[1]).read_bytes())
+    if compiler_sha != PINNED_COMPILER_SHA256:
+        raise WurstExecutionError("execution used a compiler different from the pinned toolchain")
+    return {"sha256": compiler_sha, "grillVersion": grill[1],
+            "expectedImage": PINNED_IMAGE, "executionImage": os.environ.get("WURST_IMAGE"),
+            "version": PINNED_COMPILER_VERSION}
+
+
 def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
                   revision: str | None = None, *, project: Path | None = None) -> dict:
     evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -140,6 +213,7 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
               "executionStatus": "not_run"}
     log = ""
     originals = {}
+    test_sources = {}
     try:
         report["sourceRevision"] = source_revision(compile_root, revision)
         if project is not None:
@@ -152,28 +226,53 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
         inputs = input_hashes(compile_root)
         report["inputs"] = inputs
         report["inputSetSha256"] = sha(canonical(inputs))
-        result = subprocess.run([executable, "test"], cwd=compile_root,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                                env=toolchain_environment())
-        log = result.stdout
+        expected = report["expected"]
+        batches = [expected[i:i + TESTS_PER_PROCESS] for i in range(0, len(expected), TESTS_PER_PROCESS)]
+        sharded = len(batches) > 1
+        if sharded:
+            report["shards"] = []
+            test_paths = {compile_root / test["id"].rsplit(":", 1)[0] for test in expected}
+            test_sources = {path: path.read_bytes() for path in test_paths}
+        report["returnCode"] = 0
+        for number, batch in enumerate(batches, 1):
+            if sharded:
+                for path, original in test_sources.items():
+                    names = {t["id"].rsplit(":", 1)[1] for t in batch
+                             if compile_root / t["id"].rsplit(":", 1)[0] == path}
+                    path.write_text(select_tests(original.decode(), names))
+                if discover(compile_root) != batch:
+                    raise WurstExecutionError("test selection differs from discovered shard")
+            selected_inputs = input_hashes(compile_root)
+            result = subprocess.run([executable, "test"], cwd=compile_root,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                    env=toolchain_environment())
+            start = len(log)
+            log += result.stdout
+            if sharded:
+                report["shards"].append({"testIds": [t["id"] for t in batch],
+                    "logStart": start, "logEnd": len(log), "logSha256": sha(result.stdout.encode()),
+                    "returnCode": result.returncode,
+                    "inputOverrides": {k: v for k, v in selected_inputs.items() if inputs.get(k) != v},
+                    "inputSetSha256": sha(canonical(selected_inputs))})
+            report["returnCode"] = report["returnCode"] or result.returncode
+            identity = compiler_identity(result.stdout)
+            if "compiler" in report and report["compiler"] != identity:
+                raise WurstExecutionError("compiler identity changed between execution shards")
+            report["compiler"] = identity
+            if input_hashes(compile_root) != selected_inputs:
+                raise WurstExecutionError("compiler inputs changed during execution")
+            if sharded:
+                rows, _ = parse_results(result.stdout, batch)
+                passed = sum(row["status"] == "pass" for row in rows)
+                print(f"Wurst execution batch {number}/{len(batches)}: {passed}/{len(batch)} passed", flush=True)
+        for path, original in test_sources.items():
+            path.write_bytes(original)
         report["executionStatus"] = "completed"
-        report["returnCode"] = result.returncode
-        rows, issues = parse_results(log, report["expected"])
+        rows, issues = parse_execution(log, expected, report.get("shards"), inputs)
         report["tests"] = rows
         report["errors"].extend(issues)
-        if result.returncode:
-            report["errors"].append(f"grill test exited {result.returncode}")
-        grill = re.search(r"Grill ([\w.-]+)", log)
-        jar = re.search(r"detectedCompilerJar=(.+?) exists=true", log)
-        if not grill or not jar or not Path(jar[1]).is_file():
-            raise WurstExecutionError("compiler identity is absent from execution")
-        compiler_sha = sha(Path(jar[1]).read_bytes())
-        report["compiler"] = {"sha256": compiler_sha, "grillVersion": grill[1],
-                              "expectedImage": PINNED_IMAGE,
-                              "executionImage": os.environ.get("WURST_IMAGE"),
-                              "version": PINNED_COMPILER_VERSION}
-        if compiler_sha != PINNED_COMPILER_SHA256:
-            raise WurstExecutionError("execution used a compiler different from the pinned toolchain")
+        if report["returnCode"] and not report.get("shards"):
+            report["errors"].append(f"grill test exited {report['returnCode']}")
         if input_hashes(compile_root) != inputs:
             raise WurstExecutionError("compiler inputs changed during execution")
         if project is not None:
@@ -186,6 +285,8 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
     except (OSError, ValueError, WurstExecutionError) as error:
         report["errors"].append(str(error))
     finally:
+        for path, original in test_sources.items():
+            path.write_bytes(original)
         for path, original in originals.items():
             path.write_bytes(original)
     report["logSha256"] = sha(log.encode())
@@ -212,10 +313,13 @@ def verify_evidence(report: dict, log: bytes, revision: str) -> None:
     expected = report.get("expected", [])
     inputs = report.get("inputs", {})
     compiler = report.get("compiler")
+    if "shards" in report and not isinstance(report["shards"], list):
+        raise WurstExecutionError("malformed Wurst execution shards")
     if (not isinstance(expected, list) or not expected or
             any(not isinstance(row, dict) or not isinstance(row.get("id"), str) or
                 not row["id"] or type(row.get("line")) is not int or row["line"] < 1
                 for row in expected) or
+            len({row["id"] for row in expected}) != len(expected) or
             not isinstance(inputs, dict) or not inputs or
             any(not isinstance(name, str) or not isinstance(value, str) or
                 not re.fullmatch(r"[0-9a-f]{64}", value) for name, value in inputs.items()) or
@@ -223,7 +327,7 @@ def verify_evidence(report: dict, log: bytes, revision: str) -> None:
             not isinstance(revision, str)):
         raise WurstExecutionError("malformed Wurst execution evidence")
     try:
-        rows, issues = parse_results(log.decode("utf-8"), expected)
+        rows, issues = parse_execution(log.decode("utf-8"), expected, report.get("shards"), inputs)
     except UnicodeDecodeError as error:
         raise WurstExecutionError("invalid Wurst execution transcript encoding") from error
     if (report.get("format") != FORMAT or report.get("status") != "pass" or

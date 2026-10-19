@@ -98,6 +98,9 @@ public class PrizeFixture
 	PrizeStorage storage=new PrizeStorage()
 	CampaignSaveManager saves=new CampaignSaveManager(storage,new PlayableCampaignCodec(clock),state)
 	construct()
+		// Production startup installs this campaign's clock before commands can
+		// capture military prizes. Do not borrow a previous test's singleton.
+		installCampaignClock(clock)
 		hero.recruited=true
 		hero.assignment="field"
 		rpg.heroes.register(hero)
