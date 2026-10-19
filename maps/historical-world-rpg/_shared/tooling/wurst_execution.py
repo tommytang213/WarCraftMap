@@ -262,12 +262,18 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
             if input_hashes(compile_root) != selected_inputs:
                 raise WurstExecutionError("compiler inputs changed during execution")
             if sharded:
-                rows, _ = parse_results(result.stdout, batch)
+                rows, errors = parse_results(result.stdout, batch)
                 passed = sum(row["status"] == "pass" for row in rows)
                 print(f"Wurst execution batch {number}/{len(batches)}: {passed}/{len(batch)} passed", flush=True)
+                # A failed batch already blocks packaging. Preserve its raw
+                # evidence and complete discovery, but do not launch more
+                # compiler processes for a run that cannot succeed.
+                if result.returncode or errors:
+                    break
         for path, original in test_sources.items():
             path.write_bytes(original)
-        report["executionStatus"] = "completed"
+        report["executionStatus"] = ("stopped_on_failure" if sharded and
+                                     len(report["shards"]) < len(batches) else "completed")
         rows, issues = parse_execution(log, expected, report.get("shards"), inputs)
         report["tests"] = rows
         report["errors"].extend(issues)

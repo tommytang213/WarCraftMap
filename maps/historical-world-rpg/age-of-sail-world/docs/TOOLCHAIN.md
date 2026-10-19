@@ -204,6 +204,9 @@ retains each raw transcript, its exact test partition and input hashes. Upload
 verification rejects omitted, duplicated, failed or altered batches, and requires
 every discovered test exactly once. Existing single-process evidence remains
 readable; batching does not relax assertions, production coverage or timeouts.
+A failed batch stops further compiler launches. Its transcript and the complete
+expected test list remain in failed evidence; an unexecuted remainder cannot be
+verified as a passing suite or used to package a release.
 
 To evaluate a built campaign, supply `--execution-dir _build/wurst-tests`,
 `--campaign _build/release/AgeOfSailWorldCampaign.w3n` and a full

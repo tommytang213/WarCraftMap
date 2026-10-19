@@ -206,6 +206,30 @@ class WurstExecutionTests(unittest.TestCase):
             with self.subTest(shards=report["shards"]), self.assertRaises(execution.WurstExecutionError):
                 execution.verify_evidence(report, log, "a" * 40)
 
+    def test_failed_first_batch_stops_compilation_and_retains_incomplete_evidence(self):
+        source = self.root / "wurst/Fixture.wurst"
+        before = source.read_bytes()
+        for mode in ("assertion", "exception", "timeout", "truncated", "incomplete", "zero"):
+            with self.subTest(mode=mode), patch.object(execution, "TESTS_PER_PROCESS", 1), \
+                    patch.object(execution.subprocess, "run", wraps=execution.subprocess.run) as run, \
+                    redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
+                self.run_suite(mode)
+            self.assertEqual(1, run.call_count)
+            self.assertEqual(before, source.read_bytes())
+            report = json.loads((self.root / "evidence/results.json").read_text())
+            log = (self.root / "evidence/execution.log").read_bytes()
+            # A truncated suite can contain a successful individual result;
+            # retain it without treating the incomplete suite as passing.
+            succeeded = 1 if mode == "truncated" else 0
+            self.assertEqual(("fail", "stopped_on_failure", 2, succeeded),
+                             (report["status"], report["executionStatus"],
+                              report["discovered"], report["succeeded"]))
+            self.assertEqual(1, len(report["shards"]))
+            self.assertIn("execution shards differ from complete discovery or transcript", report["errors"])
+            self.assertNotIn(b" - second..", log)
+            with self.assertRaises(execution.WurstExecutionError):
+                execution.verify_evidence(report, log, "a" * 40)
+
     def test_assertion_exception_absence_truncation_incomplete_and_zero_fail_closed(self):
         for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):
             with self.subTest(mode=mode), redirect_stderr(io.StringIO()), self.assertRaises(execution.WurstExecutionError):
