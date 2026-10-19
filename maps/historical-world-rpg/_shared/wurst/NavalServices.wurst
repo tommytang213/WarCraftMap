@@ -1,0 +1,233 @@
+package NavalServices
+
+import CivicGovernance
+import ResearchEntitlements
+
+public function navalBool(boolean value) returns string
+	if value
+		return "1"
+	return "0"
+
+/** Scenario-neutral naval authority. All quantities are integer campaign units;
+ * hull integrity is independent of troop strength and Warcraft life. */
+public class NavalResearchEffects extends CivicResearchEffects
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	function earned(string owner, string metric) returns boolean
+		let layer = get(owner)
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i]
+				if d.metric == metric and layer.has(d.kind, d.contentId)
+					return true
+		return false
+
+public class NavalHull
+	int integrity = 10000
+	boolean carronades = false
+	boolean carvel = false
+	boolean maintained = true
+	int lastDay = 0
+	int repairCredit = 0
+	int weatherCredit = 0
+	int upkeepCredit = 0
+	boolean restored = false
+	function record() returns string
+		return I2S(integrity) + "," + navalBool(carronades) + "," + navalBool(carvel) + "," + navalBool(maintained) + "," + I2S(lastDay) + "," + I2S(repairCredit) + "," + I2S(weatherCredit) + "," + I2S(upkeepCredit)
+	/** Returns actual repair, with no overflow and no output beyond real damage. */
+	function repair(int base, int rate) returns int
+		let credit = base * (10000 + rate) + repairCredit
+		let gain = IMinBJ(10000 - integrity, credit div 10000)
+		integrity += gain
+		repairCredit = credit mod 10000
+		if integrity == 10000
+			repairCredit = 0
+		return gain
+	/** Research avoids only actual weather loss; no combat mitigation. */
+	function weather(int exposure, int rate) returns int
+		let credit = IMinBJ(integrity, exposure) * IMinBJ(9999, rate) + weatherCredit
+		let avoided = credit div 10000
+		let loss = IMaxBJ(0, IMinBJ(integrity, exposure) - avoided)
+		weatherCredit = credit mod 10000
+		integrity -= loss
+		return loss
+
+public class NavalProfile
+	string id
+	int unitTypeId
+	boolean carvelBuilt
+	boolean carvelRefit
+	boolean carronadeMount
+	NavalProfile next = null
+	construct(string id, int unitTypeId, boolean carvelBuilt, boolean carvelRefit, boolean carronadeMount)
+		this.id = id
+		this.unitTypeId = unitTypeId
+		this.carvelBuilt = carvelBuilt
+		this.carvelRefit = carvelRefit
+		this.carronadeMount = carronadeMount
+
+public class NavalYard
+	string id
+	string mapId
+	real x
+	real y
+	string prerequisite
+	string researchRequirements
+	string profileId
+	int unitTypeId
+	int firstDay
+	int lastDay
+	int price
+	int upkeep
+	int supply
+	int crew
+	int strength
+	construct(string id, string mapId, real x, real y, string prerequisite, string researchRequirements, string profileId, int unitTypeId, int firstDay, int lastDay, int price, int upkeep, int supply, int crew, int strength)
+		this.id = id
+		this.mapId = mapId
+		this.x = x
+		this.y = y
+		this.prerequisite = prerequisite
+		this.researchRequirements = researchRequirements
+		this.profileId = profileId
+		this.unitTypeId = unitTypeId
+		this.firstDay = firstDay
+		this.lastDay = lastDay
+		this.price = price
+		this.upkeep = upkeep
+		this.supply = supply
+		this.crew = crew
+		this.strength = strength
+
+public class NavalYardState
+	boolean restored = false
+	int ready = 0
+	string boardOwner = ""
+	string owner = ""
+	string job = ""
+	string target = ""
+	int work = 0
+	int lastDay = 0
+	int serial = 0
+	function stop()
+		owner = ""
+		job = ""
+		target = ""
+		work = 0
+	function record() returns string
+		return I2S(ready) + "," + boardOwner + "," + owner + "," + job + "," + target + "," + I2S(work) + "," + I2S(lastDay) + "," + I2S(serial)
+
+public class NavalLedger
+	NavalYard array[64] yards
+	NavalYardState array[64] states
+	int count = 0
+	NavalProfile profiles = null
+	// Scenario-owned calibration. No named technology, country or hull here.
+	string woodGood = ""
+	string ironGood = ""
+	string supplyGood = ""
+	int provisionPrice = 0
+	int dockCost = 0
+	int dockWood = 0
+	int dockIron = 0
+	int dockDays = 0
+	int boardCost = 0
+	int boardDays = 0
+	int buildDays = 0
+	int buildWood = 0
+	int buildIron = 0
+	int repairCost = 0
+	int repairWood = 0
+	int repairOutput = 0
+	int mountWood = 0
+	int mountIron = 0
+	int carvelWood = 0
+	int carvelIron = 0
+	int mountCost = 0
+	int mountDays = 0
+	int mountFirstDay = 0
+	int carvelCost = 0
+	int carvelDays = 0
+	int carvelFirstDay = 0
+	int stormLoss = 0
+	int weatherPeriod = 0
+	int weatherDays = 0
+	real closeRange = 0.
+	function register(NavalYard yard)
+		yards[count] = yard
+		states[count] = new NavalYardState()
+		count++
+	function addProfile(NavalProfile profile)
+		profile.next = profiles
+		profiles = profile
+	function profile(string id, int unitTypeId) returns NavalProfile
+		var p = profiles
+		while p != null
+			if p.id == id and p.unitTypeId == unitTypeId
+				return p
+			p = p.next
+		return null
+	function hullType(int unitTypeId) returns boolean
+		var p = profiles
+		while p != null
+			if p.unitTypeId == unitTypeId
+				return true
+			p = p.next
+		return false
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if yards[i].id == id
+				return i
+		return -1
+	function busy(string id) returns boolean
+		for i = 0 to count - 1
+			if states[i].job != "" and states[i].target == id
+				return true
+		return false
+	function controlChanged(string id)
+		for i = 0 to count - 1
+			if yards[i].id == id
+				states[i].boardOwner = ""
+				states[i].stop()
+			else if states[i].target == id
+				states[i].stop()
+	/** Definitions are borrowed by detached parsers; only mutable states owned. */
+	function fork() returns NavalLedger
+		let copy = new NavalLedger()
+		copy.profiles = profiles
+		copy.woodGood = woodGood
+		copy.ironGood = ironGood
+		copy.supplyGood = supplyGood
+		copy.provisionPrice = provisionPrice
+		copy.dockCost = dockCost
+		copy.dockWood = dockWood
+		copy.dockIron = dockIron
+		copy.dockDays = dockDays
+		copy.boardCost = boardCost
+		copy.boardDays = boardDays
+		copy.buildDays = buildDays
+		copy.buildWood = buildWood
+		copy.buildIron = buildIron
+		copy.repairCost = repairCost
+		copy.repairWood = repairWood
+		copy.repairOutput = repairOutput
+		copy.mountWood = mountWood
+		copy.mountIron = mountIron
+		copy.carvelWood = carvelWood
+		copy.carvelIron = carvelIron
+		copy.mountCost = mountCost
+		copy.mountDays = mountDays
+		copy.mountFirstDay = mountFirstDay
+		copy.carvelCost = carvelCost
+		copy.carvelDays = carvelDays
+		copy.carvelFirstDay = carvelFirstDay
+		copy.stormLoss = stormLoss
+		copy.weatherPeriod = weatherPeriod
+		copy.weatherDays = weatherDays
+		copy.closeRange = closeRange
+		for i = 0 to count - 1
+			copy.register(yards[i])
+		return copy
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]

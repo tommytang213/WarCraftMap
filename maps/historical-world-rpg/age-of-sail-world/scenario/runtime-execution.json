@@ -253,6 +253,34 @@
     "science_complete": {
       "path": "wurst/ScienceCampaignRuntime.wurst",
       "signature": "override function complete(string owner, string target, int paid) returns boolean"
+    },
+    "naval_registration": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "public function registerNavalCommands(CommandRegistry commands, NavalCampaignRuntime runtime) returns string"
+    },
+    "naval_action": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string target) returns string"
+    },
+    "naval_advance": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "naval_pay": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function pay(NavalYard d, string owner, int money, int wood, int metalUnits, int provisions, int crew) returns boolean"
+    },
+    "naval_repair": {
+      "path": "wurst/NavalServices.wurst",
+      "signature": "function repair(int base, int rate) returns int"
+    },
+    "naval_weather": {
+      "path": "wurst/NavalServices.wurst",
+      "signature": "function weather(int exposure, int rate) returns int"
+    },
+    "naval_combat": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function navalCombatSources(RuntimeForce source, RuntimeForce target, boolean weaponAttack) returns CombatSources"
     }
   },
   "systems": {
@@ -402,6 +430,15 @@
       "science_advance",
       "science_pay",
       "science_complete"
+    ],
+    "naval_services": [
+      "naval_registration",
+      "naval_action",
+      "naval_advance",
+      "naval_pay",
+      "naval_repair",
+      "naval_weather",
+      "naval_combat"
     ]
   }
 }

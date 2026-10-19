@@ -387,3 +387,13 @@ reconstruction, exact composition, abstract resolution and late-load rollback.
 campaign envelope. `test_combat_effects.py` checks qualification across the whole
 roster, headless research/save/controller behavior, definition migrations and
 executable qualification tampering. See [CAST_CANNON_COMBAT.md](../docs/CAST_CANNON_COMBAT.md).
+
+`NavalServicesTests.wurst` covers the issue #516 consumers through registered
+research and `/naval` actions, installed native combat callbacks and the same
+inactive-region authority. It checks delayed paid shipbuilding, 115-versus-100
+hull repairs, close-range 110-versus-100 carronade hits, 368-versus-400 voyage hull
+losses, resource/gear/era/control negatives, duplicate sources, capture, military
+v13 migration, failed-load rollback and long-campaign fractional conservation.
+`test_naval_services.py` checks resolved roster bills, exact entitlement generation,
+scenario sensitivity and invalid input rejection. See
+`docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md` and `reports/issue-516`.

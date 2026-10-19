@@ -207,3 +207,87 @@ The three exact issue #514 research-unbound release findings remain pending the
 controller's fresh integrated current-main execution/runtime/traceability audit.
 Focused development tests do not establish native client playability or resolve
 the unrelated #438 crash.
+
+## Naval construction and fleet services production consumers (#516)
+
+`scenario/naval/services.json` supplies paid service recipes, compatible hull
+profiles and facility calibration. `naval_services_catalog.py` reads the four
+exact typed entitlements and 1500/1000/800-bp values from the approved design,
+and construction price, upkeep, crew, provisions, weapon profile and recruitment
+window from the resolved existing `ship_of_the_line_generic` roster. No national
+starting strength, research prerequisite, research cost or historical roster is
+rebalanced by these consumers.
+
+`/naval inspect PORT` lists conditions, calendar availability, currency/material
+bills, durations and results. `/naval dock PORT` commissions a dock for 200
+currency, 20 timber and 10 iron, taking 90 days. `/naval board PORT` is a separate
+100-currency, 90-day naval-board choice. Both require lawful administration,
+labor, supporting dockyard technology and accessible markets. Port/banking/
+warehouse services and nearby real naval pathing determine eligible yards;
+current authored markets qualify London and Ragusa. They start without new docks
+or boards. A government can administer its own port on an inactive physical map.
+The same action API serves player and AI controllers.
+
+* `/naval build PORT` commissions one existing roster hull after earned
+  Battlefleet Doctrine, Public Credit, the local board and dock, and historical
+  eligibility. The roster's early-access window starts in 1630 and ends in 1820.
+  The bill is 1540 currency, 700 real manpower, 78 ship-provision stock units and
+  settlement supply, 40 timber and 20 iron; paid ordnance is included in this
+  construction recipe. At least one local worker must remain. Construction takes
+  180 campaign days. Completion creates a durable fleet record and only then
+  projects it locally. Existing ships never change archetype or receive free gear.
+* Fleet maintenance uses the roster's 98 currency per 30 days, carried exactly
+  across daily installments, plus one provision per day. Unpaid fleets cannot
+  deliver attacks or receive carronade/carvel bonuses, and remain vulnerable
+  to enemy attacks. `/naval supply PORT SHIP` transfers 78 actual local provision
+  stock/supply units for 156 currency after one day; no supply or money is minted.
+* `/naval repair PORT SHIP` consumes two currency, one timber and one local
+  provision/supply unit per funded day. Base output is 100 hull-integrity units;
+  earned Careening Stations makes it 115. Hull capacity is 10000. Repairs need
+  an owned, living naval recipient at an operational dock and never heal at sea.
+  Unknown legacy armament does not prevent ordinary repairs or invent a profile.
+* `/naval mount PORT SHIP` installs a compatible carronade battery for 200
+  currency, two timber and ten iron, taking seven days, from 1780. Completed
+  Carronade Batteries, a qualified broadside-warship roster profile and paid
+  mounts are all required. The +1000-bp source enters the existing exact gunfire
+  rating calculation only for verified cannon attacks within 300 world units.
+  A base-100 zero-rating control becomes 110. Long-range, spell, boarding and
+  incompatible-weapon hits gain nothing. Existing doctrine, Cast Cannon and
+  independent refit ratings retain their own sources.
+* Carvel Hull Construction avoids 800 bp of actual voyage hull weather losses
+  only for historically compatible carvel-built or paid-refitted ships, from
+  1460. `/naval carvel PORT SHIP` requires an explicitly compatible refit profile
+  and costs 200 currency, 20 timber and two iron, taking 30 days. It never
+  automatically redesigns a legacy hull. The existing provisioned station-return
+  circuit supplies geography and elapsed time; actual exposed days lose 100 hull
+  integrity, reduced to 92 with the earned qualifying effect. Four exposures
+  therefore cost 368 instead of 400 integrity. Supply-weather observations,
+  navigation equipment and combat damage remain separate quantities. Zero hull
+  integrity causes a real fleet loss, without combat invulnerability.
+
+`/naval stop PORT` cancels the current project without refund. Service recipients
+retire their representations while working; orders, voyages and scientific work
+cannot double-use them. Repeated daily delivery, repeated research grants and
+reconstruction cannot multiply output. Fixed-point repair/weather fractions and
+maintenance installments persist. Capture cancels unfinished work and board
+choices, preserves completed docks and ship gear, clears controller-specific
+fractional research credit, and immediately re-evaluates the new controller's
+own research and resource conditions.
+
+Military snapshot schema **13** adds hull/service state (`h`) and local shipyard
+projects (`y`). Versions 1–12 migrate with sound hulls, no invented paid mounts,
+refits, docks, boards or projects, and no replayed historical losses or bills.
+Campaign envelopes remain unchanged. Parsing stages a detached ledger, rejects
+invalid, duplicate, missing-current-version and future-day state, and campaign
+load failure rolls back military authority together with research, treasury,
+trade stock and projections. Active and inactive regions use the same campaign
+runtime and calendar delivery.
+
+`NavalServicesTests.wurst` executes registered research/actions, construction,
+paid repairs/mounts, installed weapon callbacks, exact control comparisons,
+negatives, source deduplication, capture, migration, rollback and a 50-year
+fraction-conservation fixture. The integrated trace test exercises all seven
+`naval_services` production probes. Focused evidence is retained under
+`reports/issue-516`; the exact four release findings remain blocking until the
+controller completes fresh integrated repository/runtime/traceability validation.
+This work does not establish native-client launch or close #438.

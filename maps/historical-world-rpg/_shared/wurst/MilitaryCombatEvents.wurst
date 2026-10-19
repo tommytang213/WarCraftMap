@@ -124,7 +124,7 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 		let found = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(representation))
 		if found >= 0
 			let runtimeForce = runtime.forces[found]
-			if runtimeForce.active and runtimeForce.strength > 0 and militaryMapMatches(runtimeForce.regionId, runtime.activeRegionId)
+			if runtimeForce.active and runtimeForce.strength > 0 and runtimeForce.hull.integrity > 0 and militaryMapMatches(runtimeForce.regionId, runtime.activeRegionId)
 				return found
 		return -1
 	function controller(string owner) returns string
@@ -134,7 +134,10 @@ public class MilitaryCombatEvents implements MilitaryRuntimeCallbacks, CampaignP
 	function attackerController(int representation) returns string
 		let runtimeForce = representedForce(representation)
 		if runtimeForce >= 0
-			return controller(runtime.forces[runtimeForce].controllerId)
+			let attackingForce = runtime.forces[runtimeForce]
+			if not attackingForce.hull.maintained or runtime.naval.busy(attackingForce.id)
+				return ""
+			return controller(attackingForce.controllerId)
 		if representation != 0 and runtime.rpg != null
 			for i = 0 to runtime.rpg.heroes.count - 1
 				let hero = runtime.rpg.heroes.heroes[i]
