@@ -57,3 +57,14 @@ compiler fixture; those packaging fixtures are not real compiled-map evidence.
 Fresh campaign/conformance generation, provenance and framework boundary checks
 also passed. Full repository and release/runtime/traceability validation remains
 with the controller, and this focused report closes no release findings.
+
+Validation repair after integration updates the runtime source-evidence marker
+from military snapshot version 13 to the implemented version 14 and regenerates
+the runtime, release-blocker and traceability source reports. Fresh focused Python
+validation passes 118 tests: naval services (4), research generation (9), release
+save compatibility (6), runtime acceptance (24), requirement traceability (53),
+release-blocker audit (10) and packaging (12). Packaging uses the repository's
+synthetic compiler fixture. No Wurst production or test source changed in this
+repair; pinned execution and authoritative complete repository validation remain
+with the controller. The source reports retain all execution/artifact blockers
+and do not close the four naval research findings.
