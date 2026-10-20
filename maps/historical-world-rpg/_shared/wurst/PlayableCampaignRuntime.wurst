@@ -1,5 +1,6 @@
 package PlayableCampaignRuntime
 import IndustryCampaignRuntime
+import FinanceCampaignRuntime
 import NavalCampaignRuntime
 import ScienceCampaignRuntime
 import Agriculture
@@ -342,6 +343,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	NavalCampaignRuntime navalRuntime = null
 	IndustryCampaignRuntime industryRuntime = null
 	LandArmyRuntime landRuntime = null
+	FinanceCampaignRuntime financeRuntime = null
 	ScienceCampaignRuntime scienceRuntime = null
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg = runtime
@@ -360,6 +362,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 				industryRuntime.advance(day)
 			if landRuntime != null
 				landRuntime.advance(day)
+			if financeRuntime != null
+				financeRuntime.advance(day)
 			if scienceRuntime != null
 				scienceRuntime.advance(day)
 			if civicRuntime != null

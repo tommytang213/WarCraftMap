@@ -564,7 +564,7 @@ def _build_release_candidate(config: dict, grill: str | None, revision: str | No
             raise PackagingError("authoritative sources changed during candidate build")
         if blocker_report["status"] != "pass" or not blocker_report["candidateReady"]:
             if (only_unbound_research_blocks(blocker_report, execution=json.loads(execution_bytes),
-                                            execution_log=execution_log, revision=revision)
+                                             execution_log=execution_log, revision=revision)
                     and blocker_report.get("runtimeAcceptance") == runtime_report
                     and all(blocker_report.get(key) == value for key, value in identity.items())):
                 # Retain every missing typed consumer. CI can report a completed

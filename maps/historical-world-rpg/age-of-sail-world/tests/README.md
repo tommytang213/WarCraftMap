@@ -393,7 +393,7 @@ research and `/naval` actions, installed native combat callbacks and the same
 inactive-region authority. It checks delayed paid shipbuilding, 115-versus-100
 hull repairs, close-range 110-versus-100 carronade hits, 368-versus-400 voyage hull
 losses, resource/gear/era/control negatives, duplicate sources, capture, military
-v14 round-trips, migration from either v13 branch, failed-load rollback and
+v16 round-trips, migration from either v13 branch, failed-load rollback and
 long-campaign fractional conservation. The integration regression preserves hull
 state and weapon deadlines on one fleet, plus land and shipyard projects.
 `test_naval_services.py` checks resolved roster bills, exact entitlement generation,
@@ -404,10 +404,20 @@ scenario sensitivity and invalid input rejection. See
 107-versus-100 paid refining output and 95-versus-100-day barrel production.
 It covers real material/fuel/equipment/worker bills, warehouse FIFO consumption,
 negative conditions, historical years, deduplication and named-layer repair,
-active/inactive government parity, capture, v15 round-trips, v14 migration and
+active/inactive government parity, capture, v16 round-trips, v14 migration and
 late campaign-load rollback. Industry production probes bind those callbacks to
 same-source execution evidence. `test_industry.py` exercises the shared headless
 consumer with real research completions, conservation over 200 batches,
 save/resume, scenario mutations and generated executable/provenance tampering.
 Run it with `python3 tests/test_industry.py`. Python results do not substitute for
 the pinned Wurst execution or native-client launch evidence.
+`TradeFinanceTests.wurst` also verifies the combined military v16 format with
+populated canal, naval and land projects. Both pre-integration v14 layouts retain
+their own paid work and initialize absent domains unfunded. Missing or duplicate
+current-version records reject atomically. Focused integration results are in
+`reports/issue-517/merge-integration-validation.json`; full repository and release
+validation remains the controller's responsibility.
+
+The combined v16 format requires both industry and finance records. Either
+pre-integration v15 layout migrates its paid work while absent domains initialize
+unfunded; partial or duplicate ledgers reject atomically.

@@ -1,0 +1,161 @@
+package FinanceCampaignRuntime
+
+import CivicGovernance
+import ExactNatural
+import TradeFinance
+import CivicCampaignRuntime
+import initlater PlayableCampaignRuntime
+import initlater PlayableTrade
+import WarcraftRpgRuntime
+import CommandRouter
+import ResearchEntitlements
+
+public class CampaignFinancePort implements FinancePort
+	CampaignCivicEconomy economy
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		economy = new CampaignCivicEconomy(campaign, trade)
+	override function workforce(string id, int units) returns boolean
+		let city = economy.settlement(id)
+		return city != null and units > 0 and city.manpower >= units
+	override function eligible(string owner, string id) returns boolean
+		return owner != "" and economy.controller(id) == owner and economy.lawful(id) and economy.accessible(id)
+	override function technology(string owner, string id) returns boolean
+		return economy.campaign.rpg.technologies.isUnlocked(owner, id)
+	override function pay(string owner, string id, int money, string good, int units) returns boolean
+		return economy.pay(owner, id, money, good, units)
+
+public class FinanceCampaignRuntime
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	FinanceResearchEffects effects
+	CampaignFinancePort port
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, FinanceResearchEffects effects)
+		this.campaign = campaign
+		this.trade = trade
+		this.effects = effects
+		port = new CampaignFinancePort(campaign, trade)
+	function ledger() returns FinanceLedger
+		return campaign.militarySettlements.finance
+	function advance(int day)
+		ledger().advance(day, port)
+		refresh()
+	function refresh()
+		let l = ledger()
+		for i = 0 to l.count - 1
+			let store = trade.findStore("warehouse:" + l.projects[i].settlementId)
+			if store != null
+				var extra = 0
+				if l.states[i].completed
+					extra = l.projects[i].capacityUnits
+				// One named capacity contribution, reconstructed from durable works.
+				store.capacity = store.initialCapacity + extra
+	function eligibleExchange(string owner, RuntimeMarket market) returns boolean
+		return campaign.isSaveSafe() and ledger().site(market.id) != null and market.discovered and not market.blockaded and not market.occupiedByHostile and port.eligible(owner, market.id)
+	function amount(string owner, RuntimeMarket market, int quantity, boolean buying) returns int
+		let original = market.quoteAmount(quantity, buying)
+		if original < 1 or not eligibleExchange(owner, market)
+			return original
+		let day = campaign.clock.currentDay
+		let auction = effects.rateAt(owner, "market_transaction_fee_reduction", day)
+		let brokerage = effects.rateAt(owner, "market_slippage_reduction", day)
+		if auction == 0 and brokerage == 0
+			return original
+		// Existing spread is the execution cost, separated into commission and
+		// liquidity/slippage. Scarcity curve, stock and principal never change.
+		let spread = market.pricing.spreadPermille
+		market.pricing.spreadPermille = 0
+		let principal = market.quoteAmount(quantity, buying)
+		market.pricing.spreadPermille = spread
+		if principal < 1
+			return original
+		var cost = principal - original
+		if buying
+			cost = original - principal
+		if cost <= 0
+			return original
+		let commission = civicScale(cost, ledger().commissionShare)
+		let slippage = cost - commission
+		let saving = cost - financeCost(commission, auction) - financeCost(slippage, brokerage)
+		if buying
+			return original - saving
+		if original > 2147483647 - saving
+			return -1
+		return original + saving
+	function start(string owner, string id) returns string
+		if not campaign.isSaveSafe()
+			return "Finance actions are unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		return ledger().start(owner, id, campaign.clock.currentDay, effects, port)
+	function remit(string owner, string sourceId, string destinationId, int amount) returns string
+		let l = ledger()
+		let source = l.site(sourceId)
+		let destination = l.site(destinationId)
+		if not campaign.isSaveSafe() or source == null or destination == null or sourceId == destinationId
+			return "Choose two distinct accessible banking settlements."
+		if source.bankNetwork == "" or source.bankNetwork != destination.bankNetwork or source.provinceId == destination.provinceId or not port.eligible(owner, sourceId) or not port.eligible(owner, destinationId) or not port.technology(owner, l.bankPrerequisite)
+			return "Requires controlled lawful banks in different provinces, the same accessible correspondent network and bookkeeping."
+		let fromStore = trade.findStore("warehouse:" + sourceId)
+		let toStore = trade.findStore("warehouse:" + destinationId)
+		if amount <= 0 or fromStore == null or toStore == null or trade.nextTransaction >= 2147483647 or trade.controller.processedCount >= 4096
+			return "Invalid amount, unavailable bank stores or full transaction history."
+		let baseFee = civicBill(amount, l.remittanceFee)
+		let fee = financeCost(baseFee, effects.rateAt(owner, "secure_remittance_fee_reduction", campaign.clock.currentDay))
+		if amount > 2147483647 - fee or fromStore.money < amount + fee or toStore.money > 2147483647 - amount
+			return "Existing bank funds are insufficient or destination currency would overflow."
+		// Principal is conserved. The real service fee is consumed, never minted
+		// as income, debt or merchant standing. Persist through existing stores.
+		fromStore.money -= amount + fee
+		toStore.money += amount
+		trade.controller.mark(trade.transactionId("remit"))
+		return ""
+	function overview(string owner, string id) returns string
+		let l = ledger()
+		var result = "Trade finance: existing market spread allocates " + I2S(l.commissionShare) + " bp commission, remainder execution slippage. Auction research reduces commission by " + I2S(effects.rateAt(owner, "market_transaction_fee_reduction", campaign.clock.currentDay)) + " bp; brokerage reduces slippage by " + I2S(effects.rateAt(owner, "market_slippage_reduction", campaign.clock.currentDay)) + " bp. Requires lawful controlled formal exchange, real volume, stock, counterparty funds and normal physical trade access. Costs stay positive.\nRemittance: " + I2S(l.remittanceFee) + " bp of transferred principal (ceil, minimum 1 currency minor unit), reduced by " + I2S(effects.rateAt(owner, "secure_remittance_fee_reduction", campaign.clock.currentDay)) + " bp (saving rounded down). Both controlled banks must share a correspondent network in different provinces, lawful administration, bookkeeping and accessible markets. Existing warehouse currency pays principal and fee."
+		for i = 0 to l.siteCount - 1
+			if l.sites[i].bankNetwork != "" and port.eligible(owner, l.sites[i].id)
+				result += "\nBank: " + l.sites[i].id + " [" + l.sites[i].bankNetwork + "]"
+		for i = 0 to l.count - 1
+			let d = l.projects[i]
+			if id == "" or id == d.id
+				let s = l.states[i]
+				let fee = financeCost(d.financingCost, effects.rateAt(owner, "canal_infrastructure_financing_cost_reduction", campaign.clock.currentDay))
+				result += "\n" + d.id + " at " + d.settlementId + ": principal " + I2S(d.principalCost) + ", financing " + I2S(fee) + " (base " + I2S(d.financingCost) + ") treasury currency minor units; " + I2S(d.materialUnits) + " " + d.good + " stock units; daily paid labor " + I2S(d.laborCostPerDay) + "; " + I2S(d.constructionDays) + " funded days. Requires lawful administered canal geography, access and " + d.prerequisite + "; earliest day " + I2S(d.firstDay) + ". Completed canal quay adds " + I2S(d.capacityUnits) + " local warehouse cargo capacity once. Work " + I2S(s.work) + "; complete " + I2S(s.work div d.constructionDays) + ". Capture cancels unfinished work without refund. No free materials, capital or generic building discount."
+		return result + "\nUse /finance inspect [PROJECT], /finance canal PROJECT, /finance remit SOURCE DESTINATION AMOUNT. For actual commodity orders use /trade buy or sell."
+
+class FinanceCommand implements CommandHandler
+	FinanceCampaignRuntime runtime
+	CommandOutput output
+	construct(FinanceCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let action = tradeFinanceArgument(arguments, 0)
+		let id = tradeFinanceArgument(arguments, 1)
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		var problem = "Use /finance inspect [PROJECT], canal PROJECT or remit SOURCE DESTINATION AMOUNT."
+		if action == "inspect" and countArguments(arguments) <= 2
+			output.show(sender, runtime.overview(owner, id))
+			return
+		if action == "canal" and countArguments(arguments) == 2
+			problem = runtime.start(owner, id)
+		if action == "remit" and countArguments(arguments) == 4
+			let text = tradeFinanceArgument(arguments, 3)
+			if exactNaturalValid(text) and exactNaturalCompare(text, "2147483647") <= 0 and S2I(text) > 0
+				problem = runtime.remit(owner, id, tradeFinanceArgument(arguments, 2), S2I(text))
+		if problem == ""
+			problem = "Finance action completed."
+		output.show(sender, problem)
+
+function tradeFinanceArgument(string arguments, int wanted) returns string
+	var start = 0
+	var field = 0
+	for i = 0 to StringLength(arguments)
+		if i == StringLength(arguments) or SubString(arguments, i, i + 1) == " "
+			if field == wanted
+				return SubString(arguments, start, i)
+			field++
+			start = i + 1
+	return ""
+
+public function registerFinanceCommands(CommandRegistry commands, FinanceCampaignRuntime runtime) returns string
+	return commands.register("finance", "", "finance <inspect [PROJECT]|canal PROJECT|remit SOURCE DESTINATION AMOUNT>", "Inspect trade costs, remit existing funds or fund canal works.", "Research reduces only eligible existing costs. Inspection shows currency, materials, labor, duration, control, facility and historical conditions; both player and AI use the same campaign ledger.", 1, 4, COMMAND_RELEASE, new FinanceCommand(runtime, commands.output))

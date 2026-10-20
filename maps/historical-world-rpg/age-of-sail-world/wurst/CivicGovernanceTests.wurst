@@ -347,7 +347,7 @@ class CivicFixture
 	ship.navigation.elapsedDays.assertEquals(3)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(3)
 	let saved = f.military.snapshot()
-	saved.startsWith("v15|").assertTrue()
+	saved.startsWith("v16|").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
 	let cut = saved.indexOf("|g,")
