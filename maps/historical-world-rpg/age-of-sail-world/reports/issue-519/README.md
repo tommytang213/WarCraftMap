@@ -1,5 +1,26 @@
 # Issue #519 focused development evidence
 
+The merge integration repair is recorded separately in
+`integration-verification.json` and the `integration-*` transcripts. It preserves
+both #519 logistics and main's #518 industry consumers. Military snapshot v17
+requires the combined industry, finance and daily freight state, accepts both
+independent v16 layouts, and initializes absent legacy domains unfunded. The
+runtime manifest and source reports describe the combined revision. All six
+conflicted paths are resolved and staged; no commit was created.
+
+Fresh pinned execution passes all 76 selected Wurst tests, including all logistics
+and industry cases, capture, travel, save rollback, both v16 migrations and missing
+v17 ledger rejection. Both consumers' production probes are present. The initial
+Python run imported the old v16 runtime assertion; after correcting the manifest,
+all 35 runtime/release audit regressions were rerun on stable final sources.
+The original failed transcript is retained alongside the passing repair run.
+Source report freshness and framework boundary checks pass. These are focused
+development results; full repository validation and authoritative release evidence
+remain the controller's responsibility. Both exact logistics release findings and
+native launch #438 remain blocking.
+
+The evidence below documents the original implementation before this merge repair.
+
 Both approved logistics consumers are implemented on the merged #511 design.
 The work starts at `c1b78cd` and uses no unmerged predecessor code or CI artifacts.
 `validation.json` identifies the exact uncommitted source tree and compiler inputs.

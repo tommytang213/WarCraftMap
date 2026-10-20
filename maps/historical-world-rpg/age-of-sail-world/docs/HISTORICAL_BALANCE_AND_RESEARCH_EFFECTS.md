@@ -472,10 +472,10 @@ commodities consume one daily capacity bucket. Rejected transactions consume
 nothing; missed days never bank capacity. Rates add once per typed identity before
 rounding, and retained future research has no effect before its historical year.
 
-Military snapshot **v16** adds a required `z,PROJECT,DAY,USED` record for each canal.
-All v1–v15 inputs remain accepted through existing migrations: paid canal works
+Military snapshot **v17** retains a required `z,PROJECT,DAY,USED` record for each canal.
+All v1–v16 inputs remain accepted through existing migrations: paid canal works
 survive and absent freight counters initialize empty. Missing/duplicate/malformed
-v16 records and future-day counters reject before authority replacement. Capture
+v17 records and future-day counters reject before authority replacement. Capture
 retains completed infrastructure and today's consumed freight capacity; use and
 bonuses are re-evaluated against both current controllers and their research.
 Campaign rollback restores grain, treasury, army supply, canal usage and the
@@ -490,3 +490,64 @@ probes and fail-closed `army_food_logistics.verified_bindings` require the compl
 same-revision interpreter evidence before the two exact research release findings
 can close. Focused development results do not replace the controller's integrated
 repository/runtime/traceability audit; native launch #438 remains separately owned.
+
+## Foundries and precision manufacturing consumer (#518)
+
+`scenario/progression/industry.json` supplies paid batch recipes, equipment and
+labor costs. The generator qualifies authored production plus existing market
+and warehouse services: Stockholm and Liaoyang refine iron; Milan, Nuremberg and
+Vienna manufacture gun barrels. Mining sites without warehouse infrastructure
+remain material suppliers. These accounting quantities are bounded gameplay
+batches, not historical population or tonnage estimates. No 1450 forces, stocks,
+wealth, equipment or research completions are added.
+
+Use `/industry inspect iron_refining:stockholm` or
+`/industry inspect gun_barrels:milan` for the bill, requirements and expected
+result; `equip`, `start` and `stop` use the same facility ID. Government legal
+control, a serving administrator, prerequisite technology and accessible local
+markets are required. Machinery costs 120 minor currency, 10 tools, 20 timber
+and 10 manpower assigned as the durable workshop workforce, and takes 90 days.
+Completed machinery/workforce transfers with a settlement; capture cancels
+unfinished commissioning and work without refund and conveys no research.
+
+A refining batch reserves 200 existing raw-material `iron` units (the catalogue's
+ore/feedstock aggregate), 50 timber for charcoal fuel, 2 tools for wear, and 20
+minor currency. Ten funded workdays produce 100 manufactured `iron_goods`, or
+`100 + floor(100 * 700 / 10000) = 107` after Blast Furnace Practice, from 1500.
+It never produces raw iron. A barrel batch reserves 100 iron goods, 20 timber,
+5 tools and 40 currency. It produces 30 `arms` units representing finished
+barrels in the existing ordnance commodity. Work advances by 100 units a day,
+or exactly 106 after Boring Mills from 1750: `ceil(10000 / 106) = 95` funded
+days versus 100. Both jobs pay one currency and one local supply per workday.
+Missing daily inputs or finished-stock capacity suspend work without replaying
+missed days. Existing artillery procurement still buys its roster equipment,
+crew and supply and completes its own construction; manufactured stock changes
+no existing cannon's damage, ship hull or combat gear.
+
+Inputs consume accessible local market stock first, then delivered local
+warehouse cargo and its FIFO provenance. Added material/output market definitions
+start with zero stock and zero liquidity; existing trade access and physical
+warehouse delivery rules still apply. This permits supply through real trade
+without minting a counterparty's money. Player and AI controllers use the same
+`IndustryLedger` and campaign resource adapter, independent of the loaded region.
+
+Military snapshot v17 retains one complete `i` record per facility: equipment owner,
+ready day, batch owner, integer basis-point work and last processed day. Legacy saves without industry records
+migrate to uncommissioned industry; campaign, RPG and trade schema versions are
+unchanged. Validation stages the complete ledger, rejects duplicate/missing,
+unknown, malformed and controller-inconsistent records, and joins ordinary
+campaign rollback with treasury, manpower, supplies, markets and cargo state.
+Research layers are rebuilt from completions and deduplicate typed unlocks.
+
+The two exact release findings remain blocking without current-source pinned
+production execution. The release audit verifies the transcript and industry
+payment/labor/output probes from the comparative production test before removing
+these identities. Definition generation, Python simulations and a merged PR alone
+cannot close them. The #438 native launch blocker remains separately owned.
+
+The integrated military snapshot v17 requires complete industry, finance and
+canal freight ledgers. Independent v15 layouts migrate their existing paid work;
+industry v16 saves initialize absent freight counters empty, and logistics v16
+saves initialize absent industry unfunded. Partially present ledgers still reject.
+V14 finance saves may also lack naval state; missing domains never grant completed
+infrastructure or free production.

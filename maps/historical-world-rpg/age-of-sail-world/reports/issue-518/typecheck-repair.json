@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_industry test_trade_finance test_research_gameplay_design",
+      "elapsedSeconds": 18.33,
+      "status": "pass",
+      "testCount": 26
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_research_generation test_release_blocker_audit test_requirement_traceability",
+      "elapsedSeconds": 116.456,
+      "log": "typecheck-repair-research-audit.log.gz",
+      "logSha256": "23a5599e821bf1cc9cbc78fda66a5eb7eda569cc19be8e4683ecb3a8653d2c76",
+      "status": "pass",
+      "testCount": 72
+    },
+    {
+      "command": "python3 tooling/validate_map_source.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 ../_shared/tooling/audit_framework_boundary.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 tooling/requirement_traceability_audit.py --write --check",
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "controllerHandoff": "Run authoritative repository validation, including pinned Wurst typechecking/execution, packaging and current-source production audit evidence. Existing implementation and merged-main changes are preserved. No predecessor artifacts or evidence were reused.",
+  "evidenceScope": "Current-worktree Python headless production and generation tests, release-gate regressions, map-source validation and framework boundary audit. No pinned Wurst execution or native-client evidence is claimed.",
+  "format": "issue_518_typecheck_repair_v1",
+  "pinnedWurst": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "reason": "required tool 'grill' was not found on PATH; Docker socket access is denied",
+    "status": "not_run"
+  },
+  "pythonTestsPassed": 98,
+  "releaseAudit": {
+    "industryFindingsRemainBlocking": true,
+    "unresolvedCampaignBlockers": 238
+  },
+  "releaseEvidence": false,
+  "repair": "IndustryTests late-load rollback now uses PlayableTradeRuntime.capture() for both pre-load and post-rollback trade snapshots, correcting the two undefined captureState calls reported by pinned Wurst typechecking.",
+  "sourceRevision": "2f148152248bf042e66101e89735515d9f401440",
+  "sourceTreeSha256": "3136b2c1ac5228760b86c16b7c55d76904e9ded4948e463b279a843257ed4ac2",
+  "status": "pass"
+}

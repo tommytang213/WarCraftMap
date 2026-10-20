@@ -113,7 +113,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
                 ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance'), ('unit', 'ship_of_the_line'),
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
-                ('modifier', 'progression_carvel_hull_construction')}])
+                ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),
+                ('modifier', 'progression_boring_mills')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_logistics_depots_use_materialized_service_positions_and_land_connectivity(self):

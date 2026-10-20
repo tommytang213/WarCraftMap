@@ -102,6 +102,26 @@ def _audit_inputs(config):
     return hashes, findings
 
 
+def _verified_industry_bindings(execution=None, execution_log=None, revision=None):
+    """Definitions/merged PRs never close the two industry release findings.
+
+    Verify the current source hashes, pinned compiler transcript, discovery and
+    production traces. The comparative test must execute both real consumers;
+    the full passing suite also contains restore/capture/negative checks.
+    """
+    if execution is None or not revision:
+        return set()
+    try:
+        coverage = runtime_acceptance.verify_execution_coverage(execution, execution_log or b"", PROJECT, revision)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, runtime_acceptance.WurstExecutionError):
+        return set()
+    comparative = 'wurst/IndustryTests.wurst:industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl'
+    if comparative not in coverage.get('industry', []):
+        return set()
+    from industry_catalog import build as industry_contract
+    return {(e['unlock']['kind'], e['unlock']['contentId']) for e in industry_contract(PROJECT)['catalog']['effects']}
+
+
 def _audit_research_bindings(*, execution=None, execution_log=None, revision=None):
     # Definition retention and successful entitlement delivery cannot establish
     # gameplay consumers. Keep each missing typed consumer accountable at release.
@@ -110,6 +130,7 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     from navigation_efficiency import build as navigation_contract
     navigation, _world = navigation_contract(PROJECT)
     bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
+    bound |= _verified_industry_bindings(execution, execution_log, revision)
     from trade_finance import verified_bindings
     bound |= verified_bindings(PROJECT, execution, execution_log, revision)
     from army_food_logistics import verified_bindings as verified_logistics

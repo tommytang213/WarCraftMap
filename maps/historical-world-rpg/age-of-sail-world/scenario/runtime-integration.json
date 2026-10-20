@@ -704,6 +704,13 @@
           ]
         },
         {
+          "path": "scenario/progression/industry.json",
+          "contains": [
+            "iron_refining_yield",
+            "gun_barrel_production_throughput"
+          ]
+        },
+        {
           "path": "scenario/progression/trade-finance.json",
           "contains": [
             "commissionShareBasisPoints",
@@ -739,6 +746,13 @@
           "contains": [
             "test_exact_design_bindings_values_eras_inputs_and_actor_routes",
             "test_invalid_conditions_bills_materials_routes_and_bindings_reject"
+          ]
+        },
+        {
+          "path": "tests/test_industry.py",
+          "contains": [
+            "test_refining_changes_real_output_107_vs_100_for_identical_feedstock",
+            "test_barrel_throughput_completes_in_95_vs_100_paid_days_with_same_materials"
           ]
         },
         {
@@ -799,6 +813,14 @@
           ]
         },
         {
+          "path": "wurst/Industry.wurst",
+          "contains": [
+            "class IndustryLedger",
+            "port.produce(d, output)",
+            "effects.rateAt(s.owner, d.metric, port.year(at))"
+          ]
+        },
+        {
           "path": "wurst/FinanceCampaignRuntime.wurst",
           "contains": [
             "class CampaignFinancePort",
@@ -841,6 +863,13 @@
           ]
         },
         {
+          "path": "wurst/IndustryCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"industry\"",
+            "function overview"
+          ]
+        },
+        {
           "path": "wurst/FinanceCampaignRuntime.wurst",
           "contains": [
             "commands.register(\"finance\"",
@@ -868,7 +897,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 16",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 17",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -884,6 +913,9 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
+            "industry.states[i].record()",
+            "parsed.industry = industry.fork()",
+            "industry = parsed.industry",
             "finance.states[i]",
             "parsed.finance = finance.fork()",
             "finance = parsed.finance"
@@ -910,6 +942,13 @@
             "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
             "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
             "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
+          ]
+        },
+        {
+          "path": "wurst/IndustryTests.wurst",
+          "contains": [
+            "industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl",
+            "industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts"
           ]
         },
         {

@@ -313,6 +313,30 @@
     "logistics_freight": {
       "path": "wurst/ArmyFoodLogistics.wurst",
       "signature": "function freight(string owner, string id, string good, int quantity, boolean reverse) returns string"
+    },
+    "industry_registration": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "public function registerIndustryCommands(CommandRegistry commands, IndustryCampaignRuntime runtime) returns string"
+    },
+    "industry_action": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id) returns string"
+    },
+    "industry_advance": {
+      "path": "wurst/Industry.wurst",
+      "signature": "function advance(int day, IndustryResearchEffects effects, IndustryPort port)"
+    },
+    "industry_pay": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function pay(IndustrySite d, string owner, boolean setup) returns boolean"
+    },
+    "industry_labor": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function labor(IndustrySite d, string owner) returns boolean"
+    },
+    "industry_output": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function produce(IndustrySite d, int amount)"
     }
   },
   "systems": {
@@ -478,6 +502,14 @@
       "logistics_freight",
       "finance_canal",
       "finance_advance"
+    ],
+    "industry": [
+      "industry_registration",
+      "industry_action",
+      "industry_advance",
+      "industry_pay",
+      "industry_labor",
+      "industry_output"
     ]
   }
 }

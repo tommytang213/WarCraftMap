@@ -1,4 +1,5 @@
 package WarcraftRpgRuntime
+import Industry
 
 import public EquipmentItems
 import public EquipmentSets
@@ -1962,6 +1963,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
 			var port = runtime.technologies.effects
+			if port instanceof IndustryResearchEffects
+				let industry = port castTo IndustryResearchEffects
+				for k = 0 to industry.definitionCount - 1
+					let binding = industry.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; available from " + I2S(industry.firstYears[k]) + "; requires commissioned local industry and actual materials, fuel, equipment and paid labor. Use /industry inspect SITE for bills and expected output."
+				port = industry.upstream
 			if port instanceof NavalResearchEffects
 				let naval = port castTo NavalResearchEffects
 				for k = 0 to naval.definitionCount - 1
