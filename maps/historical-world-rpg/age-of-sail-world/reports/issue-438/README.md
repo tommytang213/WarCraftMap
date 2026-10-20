@@ -1,5 +1,37 @@
 # Issue #438: persistent Begin Campaign crash
 
+## Current continuation: destination startup, 2026-10-20
+
+The owner confirmed that the `54911ca` root-basename campaign still reaches
+Victory / Continue and then remains black. The exact observation and its
+missing client/hash details are retained in
+[`root-basename-native-observation.json`](root-basename-native-observation.json).
+The earlier archive/CI passes do not override that native failure.
+
+Investigation of the actual compiled destination found a separate, measurable
+startup defect: validating 8,422 saved market rows scans all 8,422 registered
+markets and reparses row fields inside each scan. The new `PlayableTrade`
+snapshot cursor and temporary exact-identity index remove that quadratic work
+while retaining the existing save schema, serialized capture and validation
+semantics. Actual recompiled Lua completes startup under both documented local
+Lua runtimes; native rendering, transition and movement remain unverified.
+
+The source-bound comparison, executable scale regression and explicit native
+model limits are retained in [`trade-startup/README.md`](trade-startup/README.md).
+[`trade-startup-validation.json`](trade-startup-validation.json) records the
+interpreter test scopes, including the preserved first 83/84 run whose new
+full-size roundtrip exceeded the unchanged 20-second test deadline. The revised
+seven semantic tests pass; full-scale claims belong to the separate compiled
+Lua regression, not to a resized interpreter fixture.
+
+Keep PR #536 draft and #438 open until a new source-bound campaign displays
+destination terrain and a player-controlled unit responds to movement. The
+sections below preserve the earlier crash investigation; their proposed next
+experiments and "no startup repair" descriptions are historical, not the current
+trade-startup change.
+
+## Historical crash investigation
+
 **Diagnosis: `diagnosis_unconfirmed`. Real-client launch: FAILED. Do not close
 #438 as repaired.** This change implements investigation evidence, versioned
 diagnostic identity and an opt-in local WGC adapter. It makes no gameplay,

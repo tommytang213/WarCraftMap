@@ -1,0 +1,132 @@
+{
+  "format": "trade_startup_fix_validation_v1",
+  "scope": "Focused source repair and developer verification; final campaign build and native acceptance are separate gates.",
+  "baselineRevision": "54911cabe2a993b22f3a5d05b549df5dc3995c9c",
+  "baselineNativeStatus": "failed_origin_to_region_transition",
+  "candidateNativeStatus": "not_run",
+  "releaseCandidate": false,
+  "productionSourceSha256": "0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda",
+  "testSourceSha256": "d2520570dc11293e796e36283132aa54fea18f0f8005602e31187f7d23628f3b",
+  "firstInterpreterAttempt": {
+    "status": "fail",
+    "discovered": 84,
+    "succeeded": 83,
+    "failure": "New full 8,422-market / 829-store populated roundtrip exceeded the unchanged 20-second per-test deadline in document.read; no assertion failure was recorded.",
+    "preservedOriginalFixture": "trade-startup-interpreter-first-failed-fixture.wurst.gz"
+  },
+  "revisedInterpreterAttempt": {
+    "status": "pass",
+    "discovered": 7,
+    "succeeded": 7,
+    "fixtureMarkets": 256,
+    "fixtureStores": 32,
+    "populatedLots": 32,
+    "deadlineSeconds": 20,
+    "deadlineChanged": false,
+    "fullTestDiscovery": 650,
+    "scope": "All seven new snapshot regression tests; the original 83 passed cases are not relabeled as a complete 84-case pass."
+  },
+  "focusedPythonDiagnostics": {
+    "status": "pass",
+    "tests": 17
+  },
+  "destinationIsolationTool": {
+    "status": "pass",
+    "focusedTests": 7,
+    "playerArtifactGenerated": false,
+    "scope": "Developer-only minimal-script fallback; not the campaign source repair."
+  },
+  "compiledStartup": {
+    "status": "pass",
+    "runtimes": [
+      "Lua5.3.6",
+      "Lua5.4"
+    ],
+    "report": "trade-startup/startup-exact-source-comparison.json",
+    "actualArchivedScript": true,
+    "productionFunctionOverrides": false,
+    "nativeStubs": true,
+    "nativeExecution": false
+  },
+  "compiledFullScaleRoundtrip": {
+    "status": "pass_under_explicit_native_stubs",
+    "requiredBeforeNewCampaignDelivery": true,
+    "report": "trade-startup/full-scale-lua53.json",
+    "reportSha256": "943647a21d2aeb15e2f170d8ecb81fb52f637971077d19d533a7a09cce775f4e",
+    "marketCount": 8422,
+    "storeCount": 829,
+    "populatedLots": 829,
+    "cataloguesReordered": true,
+    "exactCaptureEquality": true,
+    "savedAndRestoredBytes": 616819,
+    "savedAndRestoredSha256": "1b0f150a628ab521067d21a2c9438889a5c7a343b9456007980a206f4600fa9a",
+    "compiledFunctionsCheckedUnchanged": 2412,
+    "negativeControl": "pass_expected_exit_1_on_budget_exhaustion",
+    "nativeExecution": false,
+    "finalPackagedCampaignRecheckRequired": true
+  },
+  "candidateValidationSequence": [
+    "Complete the full 650-test interpreter gate in package_campaign; build and inspect all 17 maps.",
+    "Run the fail-closed 8,422-market / 829-store populated restoration against the actual new packaged destination Lua.",
+    "Verify staging source identity and checksums; independently reread campaign members.",
+    "Close the ZIP before publication and verify saved-file readback bytes and CRCs."
+  ],
+  "testGateModified": false,
+  "saveSchemaChanged": false,
+  "captureImplementationChanged": false,
+  "evidence": {
+    "trade-startup-interpreter-first-failed-results.json.gz": {
+      "decompressedSha256": "d89a0fc7d73b6197005f7701f66966ca34df9120872b5655419672495b5d4153",
+      "decompressedBytes": 42812,
+      "sha256": "d02e443ca00e72db18db134e3bc65cf43a7015956b9f865245bad526116f7f8b"
+    },
+    "trade-startup-interpreter-first-failed-execution.log.gz": {
+      "decompressedSha256": "02fa0d73517ce1d6ddf07091f7bff23893b82e479c5e6e5e96e06f4008decf02",
+      "decompressedBytes": 1700113,
+      "sha256": "ef96e6b598571823b61417c3803670d177c1991c4648828eb265efbcec78519b"
+    },
+    "trade-startup-interpreter-first-failed-focused-context.json.gz": {
+      "decompressedSha256": "ca8a4263ef9fd656621d67c4abd5e695726bc01470b5fc27bb86c7c3fa61828e",
+      "decompressedBytes": 39385,
+      "sha256": "90c2be550466c7162f9351bbf6e1ec5b9e6d062eb9b2b9a5b8cd97e3779c40ea"
+    },
+    "trade-startup-interpreter-revised-results.json.gz": {
+      "decompressedSha256": "f72d38cd54d616bf89b5c08c50841298597a59518e223ef35689f82e051dbf18",
+      "decompressedBytes": 18806,
+      "sha256": "0529f39b7bfe5fb24ccd4b10ba4d3374d13448767887d61e082681d8891e5e48"
+    },
+    "trade-startup-interpreter-revised-execution.log.gz": {
+      "decompressedSha256": "2388bf34d7bb061754470307f58cccbd45b9008f064365bb85370ed754083a32",
+      "decompressedBytes": 59030,
+      "sha256": "3869d6f244cb62bd0c67b3e9fb15a5c5637457df869f1a50da692f131bafff99"
+    },
+    "trade-startup-interpreter-revised-focused-context.json.gz": {
+      "decompressedSha256": "2a268ef3d828ee0bccb3aa86c8491cf95ef79b2721a3ca74ea5a0e0746bbba59",
+      "decompressedBytes": 28329,
+      "sha256": "db5055ae2b81879022a2b93e2ea30cba951f7d5c2df6a75df6c19dc5edc79b8e"
+    },
+    "trade-startup-interpreter-first-failed-fixture.wurst.gz": {
+      "decompressedSha256": "6ff4fbac990818f2105d816a1a33b3265d0a636731b7f2638cc43f401708e647",
+      "sha256": "ee62c770b1b032615c9b4a74f1e3112e4a55d376cdc9ab1e27f4689e7aa30b85"
+    }
+  },
+  "sourceIdentityAfterReportRefresh": {
+    "sourceRevision": "54911cabe2a993b22f3a5d05b549df5dc3995c9c",
+    "sourceTreeSha256": "2de512c8b59b11d7012e9363f411510955aa47d5dbcbfdb29fdc5814f5aae83c"
+  },
+  "sourceOnlyReportRefresh": {
+    "runtimeAcceptance": "fail",
+    "runtimeFailures": 30,
+    "traceabilityStatus": "fail",
+    "blockerCount": 7004,
+    "blockerListUnchanged": true,
+    "sourceFreshnessCheck": "pass",
+    "mappingChanges": "Four applyState symbol references in REQ-0181.01/.02 now point to unchanged reset logic moved into applySnapshot"
+  },
+  "finalCampaignBuild": {
+    "status": "pending",
+    "requiredTests": 650,
+    "requiredMaps": 17,
+    "nativeStatus": "not_run"
+  }
+}

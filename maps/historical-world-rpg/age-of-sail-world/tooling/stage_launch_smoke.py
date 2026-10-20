@@ -26,6 +26,7 @@ FAILED_TRANSITION_ARTIFACTS = {
     "pr530_full17": "ca03705c83fa714e2799f3be42f109d993d96c39334885b7974d6417f6ae31da",
     "pr536_hidden_chapters": "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
     "pr536_selector_as_region": "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6",
+    "pr536_root_basenames": "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8",
 }
 LAUNCH_PROFILE = "launch"
 HANDOFF_PROFILE = "root-basename-handoff"
@@ -118,13 +119,23 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
         "does not establish successful regional gameplay. If still black after two\n"
         "minutes, record the failure and whether you had to force-quit. Do not repeat\n"
         "the unchanged candidate. Keep the installed hash and exact client build.\n"
-        "This candidate tests consistent root-basename paths; native causality is\n"
-        "unconfirmed. The hidden-chapter and duplicate-selector controls already\n"
-        "failed. The duplicate-selector control shared internal map identity, so\n"
+        "Root-basename consistency is only a static check: the previous root-path\n"
+        "candidate also failed after Victory/Continue; the native cause remains\n"
+        "unconfirmed. Hidden-chapter and duplicate-selector controls failed too.\n"
+        "The duplicate-selector control shared internal map identity, so\n"
         "its failure did not conclusively exclude regional initialization.\n"
         if profile == HANDOFF_PROFILE else
         "Record the exact client build and whether origin selection opens. A process or\n"
         "a War3Log Played entry is not gameplay success. Keep the hash with the result.\n"
+    )
+    test_request = (
+        "One native check is requested for the reviewed source change described in this receipt.\n"
+        "This request does not establish native acceptance.\n\n"
+        "For this single test, close Warcraft, keep only ONE diagnostic W3N in\n"
+        if result.get("playerTestRequested", False) else
+        "Diagnostic filename identity is not a crash repair. No player retest is requested.\n"
+        "Only test after a reviewed, materially changed candidate and a specific hypothesis.\n\n"
+        "For that future single test, close Warcraft, keep only ONE diagnostic W3N in\n"
     )
     (output / "LAUNCH-SMOKE-ONLY.txt").write_text(
         f"DIAGNOSTIC {result['diagnosticId']} - NOT A RELEASE CANDIDATE\n"
@@ -135,9 +146,7 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
         "Native campaign acceptance remains FAILED; these bytes have NOT RUN in Warcraft.\n"
         "Original startup crashes: smoke #3 on 3.0.0 build 24268; smoke #2 on 3.0.1 build 24342.\n"
         "Later diagnostics opened the selector but stayed black after choosing Austria.\n"
-        "Diagnostic filename identity is not a crash repair. No player retest is requested.\n"
-        "Only test after a reviewed, materially changed candidate and a specific hypothesis.\n\n"
-        "For that future single test, close Warcraft, keep only ONE diagnostic W3N in\n"
+        + test_request +
         "Documents/Warcraft III/Campaigns, and copy the versioned filename shown above.\n"
         "The menu/editor title is still Age of Sail: The World; the filename does not\n"
         "change that label. Menu-title editing is deferred to keep every archive byte intact.\n"
@@ -216,9 +225,21 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
         "campaignSha256": digest, "reproductionSha256": FAILING_SHA256,
         "failedTransitionArtifacts": [{"id": name, "sha256": value, "destinationGameplay": "failed"}
                                       for name, value in FAILED_TRANSITION_ARTIFACTS.items()],
-        "latestTransitionObservation": {"selectorLaunch": "pass", "destinationOpenAttempt": "observed",
+        "latestTransitionObservation": {
+            "artifactId": "pr536_root_basenames", "reportedAtUtc": "2026-10-20T13:46:04Z",
+            "sourceRevision": "54911cabe2a993b22f3a5d05b549df5dc3995c9c",
+            "expectedCampaignSha256": FAILED_TRANSITION_ARTIFACTS["pr536_root_basenames"],
+            "candidateAssociation": "owner-confirmed versioned candidate and test sequence",
+            "installedFileHashRecollected": False, "clientBuild": "not_recollected",
+            "selectorLaunch": "pass", "originCommand": "/origin choose austria",
+            "scoreScreen": "Victory", "continueClicked": True, "postHandoffDisplay": "black",
+            "durationSeconds": None, "processExit": "not_reported_for_this_run",
+            "destinationOpenAttempt": "not_observed_for_this_run",
+            "destinationLuaInitialized": "unknown", "destinationGameplay": "failed"},
+        "priorTransitionObservations": [{"artifactId": "pr536_selector_as_region",
+            "selectorLaunch": "pass", "destinationOpenAttempt": "observed",
             "postHandoffDisplay": "black_>120s", "processExit": "owner_force_quit",
-            "destinationLuaInitialized": "unknown", "duplicateSelectorIdentityCaveat": True},
+            "destinationLuaInitialized": "unknown", "duplicateSelectorIdentityCaveat": True}],
         "changes": [], "diagnosis": "diagnosis_unconfirmed", "playerTestRequested": False,
         "purpose": "Versioned diagnostic identity and static evidence; no verified native repair.",
         "archiveTransformation": "none; byte-identical copy including W3F and every nested W3X",
@@ -239,7 +260,7 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
         transition = inspect_root_basename_handoff(config, bootstrap_lua)
         result["staticValidation"]["transitionPath"] = transition
         result["changes"] = ["root-basename map destinations consistent across authored paths, W3F and MPQ; hidden regional chapters retained"]
-        result["purpose"] = "Test the root-basename path hypothesis for the failed selector-to-Austria transition; native cause is unconfirmed."
+        result["purpose"] = "Check root-basename consistency for a materially changed diagnostic; the prior root-basename candidate failed and this check does not establish a repair."
         result["remainingDiscriminator"] = "After review, one manual /origin choose austria transition must load destination terrain AND a player-controlled unit; Victory/Continue alone is not success."
         result["origin_to_region_native"] = "not_run"
     publish(campaign, output, result)

@@ -65,7 +65,8 @@ class LaunchIdentityTests(unittest.TestCase):
         failed_hashes = (smoke.FAILING_SHA256, smoke.PREVIOUS_FAILING_SHA256,
                          "ca03705c83fa714e2799f3be42f109d993d96c39334885b7974d6417f6ae31da",
                          "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
-                         "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6")
+                         "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6",
+                         "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8")
         for failed in failed_hashes:
             with self.subTest(digest=failed), patch.object(smoke.hashlib, "sha256") as digest:
                 digest.return_value.hexdigest.return_value = failed
@@ -104,6 +105,20 @@ class LaunchIdentityTests(unittest.TestCase):
                 (output / "launch-smoke.json").write_text(json.dumps(result))
             with self.subTest(case=case), self.assertRaises(ValueError):
                 smoke.verify_staged(output, "a" * 40)
+
+    def test_explicit_reviewed_test_request_retains_native_pending_and_exact_bytes(self):
+        output = self.root / "reviewed"
+        result = smoke.publish(self.campaign, output, self.result() | {
+            "playerTestRequested": True, "changes": ["reviewed source change"],
+            "campaign_native": "not_run", "releaseCandidate": False})
+        instructions = (output / "LAUNCH-SMOKE-ONLY.txt").read_text()
+        self.assertIn("One native check is requested", instructions)
+        self.assertNotIn("No player retest is requested", instructions)
+        self.assertIn("these bytes have NOT RUN in Warcraft", instructions)
+        self.assertEqual((output / result["installedCampaignPath"]).read_bytes(), self.campaign.read_bytes())
+        self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
+        self.assertEqual(result["campaign_native"], "not_run")
+        self.assertFalse(result["releaseCandidate"])
 
     def test_publish_refuses_changed_input_and_existing_output(self):
         changed = self.result() | {"campaignSha256": "0" * 64,
@@ -185,11 +200,19 @@ end
         self.assertEqual(result["nativeClient"]["revisedArtifact"], "not_run")
         self.assertEqual(result["nativeClient"]["reproduction"], "failed")
         self.assertEqual(result["reproductionSha256"], smoke.FAILING_SHA256)
-        self.assertEqual(len(result["failedTransitionArtifacts"]), 3)
+        self.assertEqual(len(result["failedTransitionArtifacts"]), 4)
         self.assertFalse(result["releaseCandidate"])
         self.assertFalse(result["playerTestRequested"])
         self.assertEqual(result["diagnosis"], "diagnosis_unconfirmed")
         self.assertEqual(result["latestTransitionObservation"]["destinationLuaInitialized"], "unknown")
+        latest = result["latestTransitionObservation"]
+        self.assertEqual(latest["artifactId"], "pr536_root_basenames")
+        self.assertEqual(latest["destinationGameplay"], "failed")
+        self.assertEqual(latest["postHandoffDisplay"], "black")
+        self.assertIsNone(latest["durationSeconds"])
+        self.assertEqual(latest["processExit"], "not_reported_for_this_run")
+        self.assertFalse(latest["installedFileHashRecollected"])
+        self.assertTrue(result["priorTransitionObservations"][0]["duplicateSelectorIdentityCaveat"])
         self.assertEqual((output / result["installedCampaignPath"]).read_bytes(), campaign.read_bytes())
         self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
         instructions = (output / "LAUNCH-SMOKE-ONLY.txt").read_text()
