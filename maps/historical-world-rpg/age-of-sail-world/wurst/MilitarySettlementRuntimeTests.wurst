@@ -1,6 +1,7 @@
 package MilitarySettlementRuntimeTests
 
 import MilitarySettlementRuntime
+import CampaignTimeline
 import MilitaryTraditionLayer
 import CommandRouter
 import ManagementScreenPauseController
@@ -115,6 +116,33 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	runtime.capture("london", "england", 14.999).assertFalse()
 	runtime.releaseCaptureProtection(15.)
 	adapter.protectedId.contains("released:core:london|").assertTrue()
+
+@test function settlementTransferWithoutInstalledClockWorksForActiveAndAbstractAuthority()
+	let previousClock = getCampaignClock()
+	installCampaignClock(null)
+	for active = 0 to 1
+		let adapter = new RecordingMilitaryAdapter()
+		let runtime = fixture(adapter)
+		runtime.industry.count.assertEquals(0)
+		runtime.science.count.assertEquals(0)
+		if active == 1
+			runtime.activateRegion("europe")
+		else
+			runtime.activateRegion("africa")
+		runtime.transferSovereignty("london", "france")
+		runtime.settlements[0].controllerId.assertEquals("france")
+		runtime.settlements[0].legalOwnerId.assertEquals("france")
+		runtime.administrators[runtime.administratorIndex("london")].controllerId.assertEquals("france")
+		runtime.science.count.assertEquals(0)
+		let saved = runtime.snapshot()
+		runtime.restore(saved).assertTrue()
+		runtime.snapshot().assertEquals(saved)
+		if active == 0
+			adapter.created.assertEquals("")
+		else
+			adapter.created.contains("core:london|").assertTrue()
+		runtime.dispose()
+	installCampaignClock(previousClock)
 
 @test function garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly()
 	let adapter = new RecordingMilitaryAdapter()
@@ -280,7 +308,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 /** Recreate the pre-policy settlement layout when exercising old save versions. */
 public function withoutMilitarySettlementPolicy(string input) returns string
 	var candidate = input
-	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|") and not candidate.startsWith("v8|") and not candidate.startsWith("v9|") and not candidate.startsWith("v10|") and not candidate.startsWith("v11|") and not candidate.startsWith("v12|") and not candidate.startsWith("v13|") and not candidate.startsWith("v14|") and not candidate.startsWith("v15|")
+	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|") and not candidate.startsWith("v8|") and not candidate.startsWith("v9|") and not candidate.startsWith("v10|") and not candidate.startsWith("v11|") and not candidate.startsWith("v12|") and not candidate.startsWith("v13|") and not candidate.startsWith("v14|") and not candidate.startsWith("v15|") and not candidate.startsWith("v16|")
 		candidate = withoutMilitaryOrderTargets(candidate)
 	var result = ""
 	var start = 0

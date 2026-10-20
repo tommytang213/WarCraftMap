@@ -1,4 +1,6 @@
 package CampaignRegistration
+import IndustryCampaignRuntime
+import Industry
 import NavalServices
 import NavalCampaignRuntime
 import Agriculture
@@ -199,6 +201,12 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.technologies.effects = navalResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.navalRuntime = new NavalCampaignRuntime(campaign.state, trade, navalResearch)
+	let industryResearch = new IndustryResearchEffects(rpg.technologies.effects)
+	configureGeneratedIndustry(military.industry, industryResearch)
+	configureGeneratedIndustryMarkets(trade)
+	rpg.technologies.effects = industryResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.industryRuntime = new IndustryCampaignRuntime(campaign.state, trade, industryResearch)
 	trade.civic = military
 	trade.civicClock = campaign.state.clock
 	trade.tradeController()

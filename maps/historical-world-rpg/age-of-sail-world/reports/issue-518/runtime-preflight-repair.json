@@ -1,0 +1,64 @@
+{
+  "checks": [
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_industry test_trade_finance test_research_gameplay_design test_research_generation test_release_save_compatibility",
+      "status": "pass",
+      "testCount": 41
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_runtime_acceptance test_release_upload_verification",
+      "status": "pass",
+      "testCount": 40
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_release_blocker_audit test_requirement_traceability",
+      "status": "pass",
+      "testCount": 63
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_packaging plus three selected FrameworkConformanceTests for assembly shadows, command authority and instrumented aliases",
+      "status": "pass",
+      "testCount": 15
+    },
+    {
+      "candidateReady": false,
+      "command": "package_release_candidate.validate_gates(load_release_config())",
+      "status": "pass"
+    },
+    {
+      "command": "python3 tooling/requirement_traceability_audit.py --write --check",
+      "status": "pass"
+    },
+    {
+      "command": "python3 tooling/validate_map_source.py",
+      "status": "pass"
+    },
+    {
+      "command": "python3 ../_shared/tooling/audit_framework_boundary.py",
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "controllerHandoff": "Run authoritative pinned Wurst, packaging and same-revision production execution/artifact validation. Both issue #518 findings remain unresolved until verified execution; native campaign launch #438 remains separately owned.",
+  "diagnosis": "PR #541 job 118687540118 in run 39440154408 stopped before compilation because the checked-in runtime acceptance source hash predated the clock-transfer implementation repair.",
+  "evidenceScope": "Python headless production simulations, generation, persistence and audit regressions. Packaging and framework tests use synthetic compiler fixtures; their Wurst counts are not pinned compiler gameplay execution.",
+  "format": "issue_518_runtime_preflight_repair_v1",
+  "pinnedWurst": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "reason": "Required tool 'grill' is absent; Docker socket access is denied.",
+    "status": "not_run"
+  },
+  "pythonTestsPassed": 159,
+  "releaseAudit": {
+    "industryFindingsRemainBlocking": true,
+    "unresolvedCampaignBlockers": 238
+  },
+  "releaseEvidence": false,
+  "repair": "Regenerated runtime, release-blocker and traceability reports for current sources; added a regression comparing the actual checked-in runtime JSON and Markdown with freshly computed evidence at the recorded revision.",
+  "sourceRevision": "eec5493a6dec7d6079f4457c76189069458aa135",
+  "sourceTreeSha256": "4198ff1547eada4a3ffed54c406533552e9bd11ff51187058ba457a9e4d619b5",
+  "status": "pass"
+}

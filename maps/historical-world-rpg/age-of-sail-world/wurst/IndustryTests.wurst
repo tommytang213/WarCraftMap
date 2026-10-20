@@ -1,0 +1,298 @@
+package IndustryTests
+
+import Industry
+import IndustryCampaignRuntime
+import CivicGovernance
+import CampaignTimeline
+import CampaignSaveManager
+import CampaignLoadTransactionTests
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import ManagementCommandTests
+import ManagementScreenPauseController
+import ScenarioData
+import Wurstunit
+
+class IndustryResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return 1778
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+class IndustryFixture
+	int day = 649041
+	IndustryResources resources = new IndustryResources()
+	IndustryResearchEffects effects = new IndustryResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	IndustryCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	construct(boolean ai, boolean active)
+		installCampaignClock(clock)
+		if ai
+			resources.owner = "ai"
+		configureGeneratedRpg(rpg)
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureGeneratedIndustry(military.industry, effects)
+		configureGeneratedIndustryMarkets(trade)
+		for i = 0 to 1
+			var id = "stockholm"
+			if i == 1
+				id = "milan"
+			military.registerSettlement(new SettlementRuntimeState(id, resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 1000, 10000, 0., 0.))
+			trade.registerStore(new TradeStore("warehouse:" + id, 10000, 0).withAccess("warehouse", id, true))
+			military.appoint(id, new AdministratorState("clerk" + I2S(i), "Clerk", "Administrator", resources.owner, "europe_west", id, 50, 50, 40, 1))
+		for i = 0 to trade.marketCount - 1
+			trade.markets[i].stock = 10000
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity("player", 100000)
+		campaign.countries.registerPolity("ai", 100000)
+		runtime = new IndustryCampaignRuntime(campaign, trade, effects)
+		campaign.industryRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerIndustryCommands(commands, runtime).assertEquals("")
+		if active
+			military.activateRegion("europe_west")
+		else
+			military.activateRegion("africa")
+		rpg.restoreState(rpg.captureState() + "|u," + resources.owner + ",water_powered_machinery|u," + resources.owner + ",deep_mine_drainage|u," + resources.owner + ",cast_cannon").assertTrue()
+		rpg.technologies.reconstructAll()
+	function unlock(string node)
+		commands.dispatch(Player(0), "/research " + node).assertTrue()
+		resources.output.assertEquals("Action completed.")
+		rpg.technologies.bindingStatus(rpg.technologies.get(node).unlocks[0]).assertEquals(RESEARCH_BOUND)
+	function allResearch()
+		unlock("blast_furnace_practice")
+		unlock("boring_mills")
+	function action(string verb, string site)
+		commands.dispatch(Player(0), "/industry " + verb + " " + site).assertTrue()
+		resources.output.startsWith("Industry action completed.").assertTrue()
+	function state(string id) returns IndustryState
+		return military.industry.states[military.industry.index(id)]
+	function equip()
+		action("equip", "iron_refining:stockholm")
+		action("equip", "gun_barrels:milan")
+		runtime.act(resources.owner, "start", "iron_refining:stockholm").startsWith("Commission").assertTrue()
+		advance(90)
+	function advance(int offset)
+		clock.advanceTo(day + offset).assertTrue()
+
+@test function industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl()
+	let treatment = new IndustryFixture(false, true)
+	let control = new IndustryFixture(false, true)
+	treatment.allResearch()
+	treatment.resources.balance.assertEquals(100000 - 116 - 333)
+	treatment.equip()
+	control.equip()
+	treatment.military.settlements[0].manpower.assertEquals(990)
+	treatment.action("start", "iron_refining:stockholm")
+	control.action("start", "iron_refining:stockholm")
+	treatment.action("start", "gun_barrels:milan")
+	control.action("start", "gun_barrels:milan")
+	treatment.trade.findMarket("stockholm", "iron").stock.assertEquals(9800)
+	treatment.trade.findMarket("stockholm", "timber").stock.assertEquals(9930)
+	treatment.trade.findMarket("stockholm", "tools").stock.assertEquals(9988)
+	treatment.advance(99)
+	treatment.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10000)
+	treatment.advance(100)
+	control.advance(100)
+	treatment.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10107)
+	control.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10100)
+	treatment.advance(184)
+	treatment.trade.findMarket("milan", "arms").stock.assertEquals(10000)
+	treatment.advance(185)
+	control.advance(185)
+	treatment.trade.findMarket("milan", "arms").stock.assertEquals(10030)
+	control.trade.findMarket("milan", "arms").stock.assertEquals(10000)
+	control.advance(190)
+	control.trade.findMarket("milan", "arms").stock.assertEquals(10030)
+	// The bonus cannot create an existing cannon, strength or wealth layer.
+	treatment.military.forceCount.assertEquals(control.military.forceCount)
+	treatment.military.settlements[1].supply.assertEquals(9905)
+	treatment.advance(500)
+	treatment.trade.findMarket("milan", "arms").stock.assertEquals(10030)
+	treatment.commands.dispatch(Player(0), "/technology").assertTrue()
+	treatment.resources.output.contains("+700 bp iron_refining_yield").assertTrue()
+	treatment.resources.output.contains("+600 bp gun_barrel_production_throughput").assertTrue()
+	treatment.commands.dispatch(Player(0), "/industry inspect gun_barrels:milan").assertTrue()
+	treatment.resources.output.contains("95 funded workdays").assertTrue()
+
+@test function industryMissingInfrastructureGearResourcesEraAndControllerNeverManufactureFreeOutput()
+	let f = new IndustryFixture(false, false)
+	f.allResearch()
+	let before = f.campaign.countries.treasury[0]
+	f.runtime.act("ai", "equip", "iron_refining:stockholm").startsWith("Requires").assertTrue()
+	f.runtime.act("player", "equip", "iron_refining:london").startsWith("Choose").assertTrue()
+	f.runtime.act("player", "start", "iron_refining:stockholm").startsWith("Commission").assertTrue()
+	f.trade.findMarket("stockholm", "timber").stock = 0
+	f.runtime.act("player", "equip", "iron_refining:stockholm").startsWith("Equipment").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(before)
+	f.trade.findMarket("stockholm", "timber").stock = 10000
+	f.equip()
+	f.campaign.countries.treasury[0] = 0
+	f.runtime.act("player", "start", "iron_refining:stockholm").startsWith("Insufficient").assertTrue()
+	f.campaign.countries.treasury[0] = 10000
+	f.trade.findMarket("stockholm", "iron").stock = 0
+	f.runtime.act("player", "start", "iron_refining:stockholm").startsWith("Insufficient").assertTrue()
+	f.trade.findMarket("stockholm", "iron").stock = 10000
+	f.action("start", "iron_refining:stockholm")
+	f.military.settlements[0].supply = 0
+	f.advance(120)
+	f.state("iron_refining:stockholm").work.assertEquals(0)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10000)
+	f.military.settlements[0].supply = 100
+	f.advance(130)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10107)
+	f.effects.rateAt("player", "iron_refining_yield", 1499).assertEquals(0)
+	f.effects.rateAt("player", "gun_barrel_production_throughput", 1749).assertEquals(0)
+	f.effects.rateAt("ai", "iron_refining_yield", 1778).assertEquals(0)
+	f.runtime.eligible(f.military.industry.sites[0], "player", 1).assertFalse()
+
+@test function industrySourcesRepairOnceAndAbstractTravelRestoreCaptureAndLegacyAreDeterministic()
+	let active = new IndustryFixture(false, true)
+	let inactive = new IndustryFixture(true, false)
+	active.allResearch()
+	inactive.allResearch()
+	let duplicate = new RuntimeTechnology("second_foundry_source", "Second foundry source", 1450, 1)
+	duplicate.addUnlock("second_foundry_source", "modifier", "progression_blast_furnace_practice")
+	active.rpg.technologies.register(duplicate).assertTrue()
+	active.unlock("second_foundry_source")
+	active.effects.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	active.effects.rateAt("player", "iron_refining_yield", 1778).assertEquals(0)
+	active.rpg.technologies.reconstructAll()
+	active.rpg.technologies.reconstructAll()
+	active.effects.rateAt("player", "iron_refining_yield", 1778).assertEquals(700)
+	active.equip()
+	inactive.equip()
+	active.action("start", "gun_barrels:milan")
+	inactive.action("start", "gun_barrels:milan")
+	active.advance(133)
+	let saved = active.military.snapshot()
+	active.military.restore(saved, false).assertTrue()
+	active.military.snapshot().assertEquals(saved)
+	let record = "|i,gun_barrels:milan," + active.state("gun_barrels:milan").record()
+	active.military.restore(saved + record, false).assertFalse()
+	active.military.restore(saved.replace(record, ""), false).assertFalse()
+	active.military.restore(saved + "|i,fake,,0,,0,0", false).assertFalse()
+	active.military.snapshot().assertEquals(saved)
+	active.military.validateSnapshot(saved, active.day + 132).assertFalse()
+	active.military.activateRegion("east_asia")
+	active.advance(185)
+	inactive.advance(185)
+	active.trade.findMarket("milan", "arms").stock.assertEquals(inactive.trade.findMarket("milan", "arms").stock)
+	active.action("start", "gun_barrels:milan")
+	active.military.transferSettlement("milan", "ai")
+	active.state("gun_barrels:milan").owner.assertEquals("")
+	active.state("gun_barrels:milan").equipmentOwner.assertEquals("ai")
+	active.effects.rateAt("ai", "gun_barrel_production_throughput", 1778).assertEquals(0)
+	active.advance(400)
+	active.trade.findMarket("milan", "arms").stock.assertEquals(10030)
+	// v14 has no industry assets. Migrating cannot grant a furnace or a batch.
+	var legacy = inactive.military.snapshot().replace("v16|", "v14|")
+	for i = 0 to inactive.military.industry.count - 1
+		legacy = legacy.replace("|i," + inactive.military.industry.sites[i].id + "," + inactive.military.industry.states[i].record(), "")
+	inactive.military.restore(legacy, false).assertTrue()
+	inactive.state("gun_barrels:milan").equipmentOwner.assertEquals("")
+	inactive.state("gun_barrels:milan").owner.assertEquals("")
+
+@test function industryTransferWithoutInstalledClockUsesCommittedWorkDayAndNeverRefundsMaterials()
+	let previousClock = getCampaignClock()
+	for completed = 0 to 1
+		let f = new IndustryFixture(false, false)
+		f.action("equip", "iron_refining:stockholm")
+		if completed == 1
+			f.advance(90)
+			f.action("start", "iron_refining:stockholm")
+		let committedDay = f.state("iron_refining:stockholm").lastDay
+		let treasury = f.campaign.countries.treasury[0]
+		let materials = f.trade.capture()
+		installCampaignClock(null)
+		f.military.transferSettlement("stockholm", "ai")
+		let state = f.state("iron_refining:stockholm")
+		state.lastDay.assertEquals(committedDay)
+		state.owner.assertEquals("")
+		state.work.assertEquals(0)
+		if completed == 1
+			state.equipmentOwner.assertEquals("ai")
+		else
+			state.equipmentOwner.assertEquals("")
+			state.ready.assertEquals(0)
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+		f.trade.capture().assertEquals(materials)
+	installCampaignClock(previousClock)
+
+@test function industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts()
+	let f = new LoadFixture()
+	let effects = new IndustryResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	f.military.industry.register(new IndustrySite("factory", "port", "gun_barrel_production_throughput", "printing", "feed", "product", 1, 100, 20, 5, 40, 30, 10000, 100, false))
+	let state = f.military.industry.states[0]
+	state.equipmentOwner = "england"
+	state.ready = 1
+	state.owner = "england"
+	state.work = 123456
+	state.lastDay = 11
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "industry").assertTrue()
+	state.work = 234567
+	f.extension.trade.market.stock = 88
+	let before = f.military.snapshot()
+	let trade = f.extension.trade.capture()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(trade)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.industry.states[0].work.assertEquals(123456)
+
+@test function industryWarehouseDeliveriesConsumeActualCargoWithoutMintingMarketCashOrMerchantRewards()
+	let f = new IndustryFixture(false, true)
+	f.allResearch()
+	let store = f.trade.stores[0]
+	store.contents.set("timber", 70)
+	store.contents.set("iron", 200)
+	store.contents.set("tools", 12)
+	for i = 0 to f.trade.marketCount - 1
+		if f.trade.markets[i].id == "stockholm"
+			f.trade.markets[i].stock = 0
+	f.trade.controller.provenance.add(store.id, "timber", 70, 700, "source_port")
+	f.trade.findMarket("stockholm", "timber").stock = 0
+	let cash = f.trade.findMarket("stockholm", "timber").money
+	f.action("equip", "iron_refining:stockholm")
+	store.quantity("timber").assertEquals(50)
+	f.trade.controller.provenance.quantityIn(store.id, "timber").assertEquals(50)
+	f.advance(90)
+	f.action("start", "iron_refining:stockholm")
+	store.quantity("timber").assertEquals(0)
+	f.trade.controller.provenance.quantityIn(store.id, "timber").assertEquals(0)
+	f.trade.controller.provenance.costIn(store.id, "timber").assertEquals(0)
+	f.advance(100)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(107)
+	f.trade.findMarket("stockholm", "timber").money.assertEquals(cash)
+
+@test function industryFixedPointYieldFloorsWithoutFloatingPointOrNativeProductOverflow()
+	civicScale(1, 700).assertEquals(0)
+	civicScale(99, 700).assertEquals(6)
+	civicScale(101, 700).assertEquals(7)
+	civicScale(2147483647, 700).assertEquals(150323855)

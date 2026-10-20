@@ -1,0 +1,191 @@
+package Industry
+
+import CivicGovernance
+import ResearchEntitlements
+
+/** Scenario definitions, durable batch state and fixed-point work have no
+ * Warcraft handles. Active and unloaded settlements use this same consumer. */
+public class IndustryResearchEffects extends CivicResearchEffects
+	int array[32] firstYears
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	function registerIndustrial(CivicEffect binding, int firstYear)
+		let before = definitionCount
+		register(binding)
+		if definitionCount > before
+			firstYears[before] = firstYear
+	function rateAt(string owner, string metric, int year) returns int
+		let layer = get(owner)
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i]
+				if d.metric == metric and year >= firstYears[i] and layer.has(d.kind, d.contentId)
+					result += d.basisPoints
+		return result
+
+public class IndustrySite
+	string id
+	string settlementId
+	string metric
+	string prerequisite
+	string inputGood
+	string outputGood
+	int firstYear
+	int inputUnits
+	int fuelUnits
+	int wearUnits
+	int money
+	int outputUnits
+	int workRequired
+	int dailyWork
+	boolean yieldEffect
+	construct(string id, string settlementId, string metric, string prerequisite, string inputGood, string outputGood, int firstYear, int inputUnits, int fuelUnits, int wearUnits, int money, int outputUnits, int workRequired, int dailyWork, boolean yieldEffect)
+		this.id = id
+		this.settlementId = settlementId
+		this.metric = metric
+		this.prerequisite = prerequisite
+		this.inputGood = inputGood
+		this.outputGood = outputGood
+		this.firstYear = firstYear
+		this.inputUnits = inputUnits
+		this.fuelUnits = fuelUnits
+		this.wearUnits = wearUnits
+		this.money = money
+		this.outputUnits = outputUnits
+		this.workRequired = workRequired
+		this.dailyWork = dailyWork
+		this.yieldEffect = yieldEffect
+	function refining() returns boolean
+		return yieldEffect
+
+public class IndustryState
+	boolean restored = false
+	string equipmentOwner = ""
+	int ready = 0
+	string owner = ""
+	int work = 0
+	int lastDay = 0
+	function stop()
+		owner = ""
+		work = 0
+	function record() returns string
+		return equipmentOwner + "," + I2S(ready) + "," + owner + "," + I2S(work) + "," + I2S(lastDay)
+
+public interface IndustryPort
+	function year(int day) returns int
+	function eligible(IndustrySite site, string owner, int day) returns boolean
+	/** Atomically checks and reserves the complete setup or batch bill. */
+	function pay(IndustrySite site, string owner, boolean setup) returns boolean
+	function labor(IndustrySite site, string owner) returns boolean
+	function room(IndustrySite site, int amount) returns boolean
+	function produce(IndustrySite site, int amount)
+
+public class IndustryLedger
+	IndustrySite array[64] sites
+	IndustryState array[64] states
+	int count = 0
+	int setupDays = 90
+	int setupMoney = 120
+	int setupEquipment = 10
+	int setupFuel = 20
+	int setupWorkers = 10
+	int dailyMoney = 1
+	int dailySupply = 1
+	string fuelGood = ""
+	string equipmentGood = ""
+	function register(IndustrySite site)
+		if count < 64
+			sites[count] = site
+			states[count] = new IndustryState()
+			count++
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if sites[i].id == id
+				return i
+		return -1
+	function fork() returns IndustryLedger
+		let copy = new IndustryLedger()
+		copy.setupDays = setupDays
+		copy.setupMoney = setupMoney
+		copy.setupEquipment = setupEquipment
+		copy.setupFuel = setupFuel
+		copy.setupWorkers = setupWorkers
+		copy.dailyMoney = dailyMoney
+		copy.dailySupply = dailySupply
+		copy.fuelGood = fuelGood
+		copy.equipmentGood = equipmentGood
+		for i = 0 to count - 1
+			copy.register(sites[i])
+		return copy
+	function controlChanged(string settlementId, string owner, int day)
+		for i = 0 to count - 1
+			if sites[i].settlementId == settlementId
+				let s = states[i]
+				s.stop()
+				let at = IMaxBJ(day, s.lastDay)
+				if s.equipmentOwner != ""
+					if s.ready <= at
+						s.equipmentOwner = owner
+					else
+						s.equipmentOwner = ""
+						s.ready = 0
+				s.lastDay = at
+	function action(string owner, string id, string action, int day, IndustryPort port) returns string
+		let i = index(id)
+		if owner == "" or i < 0
+			return "Choose an authored industrial facility."
+		let d = sites[i]
+		let s = states[i]
+		if day < s.lastDay or not port.eligible(d, owner, day)
+			return "Requires historical availability, local industrial production, lawful control, administrator, access and prerequisite technology."
+		if action == "stop"
+			if s.owner != owner
+				return "No batch belongs to this controller."
+			s.stop()
+			return ""
+		if s.owner != ""
+			return "A batch is already active; work cannot stack."
+		if action == "equip"
+			if s.equipmentOwner != "" or not port.pay(d, owner, true)
+				return "Equipment already commissioned or treasury, workforce, equipment or fuel unavailable."
+			s.equipmentOwner = owner
+			s.ready = day + setupDays
+			s.lastDay = day
+			return ""
+		if action != "start" or s.equipmentOwner != owner or day < s.ready
+			return "Commission and finish local furnace/foundry machinery first; use equip, start or stop."
+		if not port.pay(d, owner, false)
+			return "Insufficient treasury, raw materials, fuel or equipment wear stock."
+		s.owner = owner
+		s.work = 0
+		s.lastDay = day
+		return ""
+	function advance(int day, IndustryResearchEffects effects, IndustryPort port)
+		for i = 0 to count - 1
+			let d = sites[i]
+			let s = states[i]
+			while s.owner != "" and s.lastDay < day
+				let at = s.lastDay
+				s.lastDay++
+				if not port.eligible(d, s.owner, at) or s.equipmentOwner != s.owner or at < s.ready
+					s.stop()
+				else
+					let rate = effects.rateAt(s.owner, d.metric, port.year(at))
+					var output = d.outputUnits
+					var work = d.dailyWork * 10000
+					if d.refining()
+						output += civicScale(output, rate)
+					else
+						work += d.dailyWork * rate
+					let completed = s.work + work >= d.workRequired * 10000
+					if (not completed or port.room(d, output)) and port.labor(d, s.owner)
+						s.work = IMinBJ(d.workRequired * 10000, s.work + work)
+						if completed
+							port.produce(d, output)
+							s.stop()
+			if s.owner == ""
+				s.lastDay = IMaxBJ(day, s.lastDay)
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]

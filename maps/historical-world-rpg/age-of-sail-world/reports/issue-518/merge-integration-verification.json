@@ -1,0 +1,89 @@
+{
+  "additionalChecks": [
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest test_framework_conformance.FrameworkConformanceTests.test_assembly_refuses_a_scenario_shadow_of_a_shared_package test_framework_conformance.FrameworkConformanceTests.test_command_authority_locations_resolve_only_authored_assignments test_framework_conformance.FrameworkConformanceTests.test_execution_evidence_accepts_shared_contract_and_instrumented_aliases",
+      "id": "framework-adapter-contracts",
+      "scope": "Synthetic compiler protocol only; not pinned Wurst execution.",
+      "status": "pass",
+      "testCount": 3
+    },
+    {
+      "command": "python3 ../_shared/tooling/audit_framework_boundary.py",
+      "id": "framework-boundary",
+      "status": "pass"
+    },
+    {
+      "command": "git ls-files -u; git diff --check; git diff --cached --check",
+      "id": "conflicts-and-whitespace",
+      "status": "pass"
+    }
+  ],
+  "checks": [
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_industry.py' && python3 -m unittest discover -s tests -p 'test_trade_finance.py'",
+      "id": "industry-finance",
+      "log": "merge-integration-industry-finance.log.gz",
+      "logSha256": "93f62838cb7931863b98d3b58b8b014d2e502ec5f7afd46afe275af481a53a17",
+      "status": "pass",
+      "testCount": 23
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_research*.py'",
+      "id": "research",
+      "log": "merge-integration-research.log.gz",
+      "logSha256": "6d9d27db316430b35c3d89e54ff218a216775a0ff0638996e0ac57ea05492859",
+      "status": "pass",
+      "testCount": 13
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_runtime_acceptance.py'",
+      "id": "runtime",
+      "log": "merge-integration-runtime.log.gz",
+      "logSha256": "f9a8b0dd859ce2652aefde470d1f19873e85c48ef8d56ba2f8e852748ef6a56a",
+      "status": "pass",
+      "testCount": 24
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_release_save_compatibility.py' && python3 -m unittest discover -s tests -p 'test_release_blocker_audit.py'",
+      "id": "save-audit",
+      "log": "merge-integration-save-audit.log.gz",
+      "logSha256": "379c81199174f9f9394688bd67588d0f6cef803a31dd2ec1b58def1c56b93e7e",
+      "note": "Six save tests and nine audit tests passed initially. The stale checked-in-report test failed before regeneration; the post-regeneration rerun passed.",
+      "status": "freshness_failure_repaired",
+      "testCount": 16
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest test_release_blocker_audit.ReleaseBlockerAuditTests.test_checked_in_machine_and_human_reports_are_current",
+      "id": "audit-freshness",
+      "log": "merge-integration-audit-freshness.log.gz",
+      "logSha256": "482657abc11e697171212a60d92b11ac52116b44974f8a27f55177cabc09d129",
+      "status": "pass",
+      "testCount": 1
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest test_packaging.PackagingTests.test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures",
+      "id": "packaging",
+      "log": "merge-integration-packaging.log.gz",
+      "logSha256": "fff826b9aaffdc792f0e38aa701fa51b598a5bcebbae79275bddeee379a11361",
+      "scope": "Synthetic compiler orchestration and binary packaging inspection only; not Wurst gameplay execution.",
+      "status": "pass",
+      "testCount": 1
+    }
+  ],
+  "controllerHandoff": "Run authoritative pinned Wurst, full framework, campaign packaging and same-revision runtime/traceability validation. No native-client or pinned compiler execution is claimed by these local results.",
+  "format": "issue_518_merge_integration_verification_v1",
+  "integration": "Preserved industry and trade-finance generators, runtime registration, clocks, persistence, capture and evidence gates. Military snapshot v16 migrates either independent v15 layout unfunded for absent domains; extended production Wurst regression covers combined ledgers and atomic rejection.",
+  "pinnedWurst": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "reason": "Wurst execution failed: inputs stage failed: required tool 'grill' was not found on PATH",
+    "status": "not_run"
+  },
+  "releaseAudit": {
+    "industryFindingsRemainBlocking": true,
+    "note": "No predecessor compiler logs or artifacts were reused as current execution evidence.",
+    "status": "release_blocked",
+    "unresolvedCampaignBlockers": 238
+  },
+  "sourceRevision": "d7ca39136984b0d700d15fe339fb9c2e106d2711",
+  "sourceTreeSha256": "4d8ef62c4c4f7169b5dbf8fa76ef338ce936cb4fac450d3da63723339d84813b"
+}

@@ -1,6 +1,7 @@
 package TradeFinanceTests
 
 import TradeFinance
+import Industry
 import NavalServices
 import FinanceCampaignRuntime
 import CivicGovernance
@@ -289,7 +290,7 @@ function financeReceipt(string name)
 	active.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
 	// Legacy schemas have no funded canal projects or retroactive improvements.
 	let state = inactive.military.finance.states[0]
-	let legacy = inactive.military.snapshot().replace("v15|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
+	let legacy = inactive.military.snapshot().replace("v16|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
 	inactive.military.restore(legacy).assertTrue()
 	inactive.runtime.refresh()
 	inactive.military.finance.states[0].completed.assertFalse()
@@ -409,27 +410,42 @@ function financeReceipt(string name)
 	f.allResearch()
 	f.action("canal yangzhou_canal_quay")
 	f.clock.advanceTo(f.day + 30).assertTrue()
+	f.military.industry.register(new IndustrySite("integration_foundry", "london", "gun_barrel_production_throughput", "cast_cannon", "iron_goods", "arms", 1500, 100, 20, 5, 40, 30, 10000, 100, false))
+	f.military.industry.register(new IndustrySite("integration_furnace", "london", "iron_refining_yield", "blast_furnace_practice", "iron", "iron_goods", 1500, 200, 50, 2, 20, 100, 10000, 1000, true))
+	let industry = f.military.industry.states[0]
+	industry.equipmentOwner = "player"
+	industry.ready = f.day
+	industry.owner = "player"
+	industry.work = 123456
+	industry.lastDay = f.day + 30
+	let industryRecord = "|i,integration_foundry," + industry.record()
+	let furnaceRecord = "|i,integration_furnace," + f.military.industry.states[1].record()
 	let canalRecord = "|q,yangzhou_canal_quay,player,30," + I2S(f.day + 30) + ",0"
 	let yardRecord = "|y,london," + yard.record()
 	let saved = f.military.snapshot()
-	saved.startsWith("v15|").assertTrue()
+	saved.startsWith("v16|").assertTrue()
 	saved.contains(canalRecord).assertTrue()
 	saved.contains(yardRecord).assertTrue()
+	saved.contains(industryRecord).assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
 	f.military.restore(saved.replace(canalRecord, ""), false).assertFalse()
 	f.military.restore(saved.replace(yardRecord, ""), false).assertFalse()
 	f.military.restore(saved + canalRecord, false).assertFalse()
 	f.military.restore(saved + yardRecord, false).assertFalse()
+	f.military.restore(saved.replace(industryRecord, ""), false).assertFalse()
+	f.military.restore(saved.replace(industryRecord, "").replace(furnaceRecord, ""), false).assertFalse()
+	f.military.restore(saved + industryRecord, false).assertFalse()
+	f.military.validateSnapshot(saved, f.day + 29).assertFalse()
 	f.military.snapshot().assertEquals(saved)
 	// Main v14 has naval/land state and no finance domain.
-	f.military.restore(saved.replace("v15|", "v14|").replace(canalRecord, ""), false).assertTrue()
+	f.military.restore(saved.replace("v16|", "v14|").replace(canalRecord, ""), false).assertTrue()
 	f.military.finance.states[0].owner.assertEquals("")
 	f.military.finance.states[0].work.assertEquals(0)
 	f.military.naval.states[f.military.naval.index("london")].work.assertEquals(10)
 	f.military.land.arsenals[0].work.assertEquals(12345)
 	// Finance v14 has canal/land state and no naval domain.
-	var finance14 = saved.replace("v15|", "v14|")
+	var finance14 = saved.replace("v16|", "v14|")
 	f.military.restore(saved, false).assertTrue()
 	for i = 0 to f.military.naval.count - 1
 		finance14 = finance14.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")
@@ -437,6 +453,25 @@ function financeReceipt(string name)
 	f.military.finance.states[0].work.assertEquals(30)
 	f.military.naval.states[f.military.naval.index("london")].owner.assertEquals("")
 	f.military.naval.states[f.military.naval.index("london")].ready.assertEquals(0)
+	f.military.land.arsenals[0].work.assertEquals(12345)
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+
+	// Industry v15 preserves paid manufacturing and migrates finance unfunded.
+	let industry15 = saved.replace("v16|", "v15|").replace(canalRecord, "")
+	f.military.restore(industry15, false).assertTrue()
+	f.military.industry.states[0].work.assertEquals(123456)
+	f.military.finance.states[0].owner.assertEquals("")
+	f.military.finance.states[0].work.assertEquals(0)
+	f.military.naval.states[f.military.naval.index("london")].work.assertEquals(10)
+	f.military.restore(industry15.replace(industryRecord, ""), false).assertFalse()
+	// Main v15 preserves paid canal works and migrates industry unfunded.
+	let finance15 = saved.replace("v16|", "v15|").replace(industryRecord, "").replace(furnaceRecord, "")
+	f.military.restore(finance15, false).assertTrue()
+	f.military.finance.states[0].work.assertEquals(30)
+	f.military.industry.states[0].equipmentOwner.assertEquals("")
+	f.military.industry.states[0].owner.assertEquals("")
+	f.military.industry.states[0].work.assertEquals(0)
 	f.military.land.arsenals[0].work.assertEquals(12345)
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)

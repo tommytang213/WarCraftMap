@@ -16,6 +16,16 @@ runtime = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(runtime
 
 
 class RuntimeAcceptanceTests(unittest.TestCase):
+    def test_checked_in_reports_match_current_sources_at_recorded_revision(self):
+        # A checkpoint can advance HEAD without changing source inputs. Retain
+        # the report's revision, as the RC preflight does, but rehash the actual
+        # current code so an implementation repair cannot leave a stale gate.
+        saved = json.loads(runtime.REPORT_JSON.read_text())
+        current = runtime.audit_acceptance(revision=saved["sourceRevision"])
+        self.assertEqual(current, saved,
+                         "Runtime report is stale; run tooling/runtime_acceptance.py --write")
+        self.assertEqual(runtime.render_markdown(current), runtime.REPORT_MD.read_text())
+
     def test_malformed_source_manifest_cannot_be_treated_as_readiness_evidence(self):
         original = json.loads(runtime.MANIFEST.read_text())
         with tempfile.TemporaryDirectory() as directory:
