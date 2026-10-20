@@ -1295,7 +1295,12 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				forces[i].active = false
 				adapter.removeRepresentation(forces[i].id)
 		if state.controllerId != controllerId
-			industry.controlChanged(settlementId, controllerId, getCampaignDay())
+			// Standalone authorities may have no installed campaign clock. As
+			// with science, retain each project's last committed day in that case.
+			var transferDay = -1
+			if getCampaignClock() != null
+				transferDay = getCampaignDay()
+			industry.controlChanged(settlementId, controllerId, transferDay)
 			civic.controlChanged(settlementId)
 			finance.controlChanged(settlementId)
 			let arsenal = land.index(settlementId)

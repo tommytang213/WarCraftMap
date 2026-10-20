@@ -216,6 +216,32 @@ class IndustryFixture
 	inactive.state("gun_barrels:milan").equipmentOwner.assertEquals("")
 	inactive.state("gun_barrels:milan").owner.assertEquals("")
 
+@test function industryTransferWithoutInstalledClockUsesCommittedWorkDayAndNeverRefundsMaterials()
+	let previousClock = getCampaignClock()
+	for completed = 0 to 1
+		let f = new IndustryFixture(false, false)
+		f.action("equip", "iron_refining:stockholm")
+		if completed == 1
+			f.advance(90)
+			f.action("start", "iron_refining:stockholm")
+		let committedDay = f.state("iron_refining:stockholm").lastDay
+		let treasury = f.campaign.countries.treasury[0]
+		let materials = f.trade.capture()
+		installCampaignClock(null)
+		f.military.transferSettlement("stockholm", "ai")
+		let state = f.state("iron_refining:stockholm")
+		state.lastDay.assertEquals(committedDay)
+		state.owner.assertEquals("")
+		state.work.assertEquals(0)
+		if completed == 1
+			state.equipmentOwner.assertEquals("ai")
+		else
+			state.equipmentOwner.assertEquals("")
+			state.ready.assertEquals(0)
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+		f.trade.capture().assertEquals(materials)
+	installCampaignClock(previousClock)
+
 @test function industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts()
 	let f = new LoadFixture()
 	let effects = new IndustryResearchEffects(f.rpg.technologies.effects)

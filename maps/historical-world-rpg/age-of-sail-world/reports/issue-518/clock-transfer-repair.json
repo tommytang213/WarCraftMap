@@ -1,0 +1,56 @@
+{
+  "additionalChecks": [
+    "Map source validation passed",
+    "Reusable framework boundary audit passed",
+    "Source traceability --write --check passed; publication remains blocked",
+    "git diff --check passed"
+  ],
+  "checks": [
+    {
+      "id": "focused",
+      "log": "clock-transfer-repair-focused.log.gz",
+      "logSha256": "132c1cc0852defb81f60f5722b36907c1ae7f7fbbac9c34356fa7a472005644b",
+      "status": "pass",
+      "testCount": 32
+    },
+    {
+      "id": "integration",
+      "log": "clock-transfer-repair-integration.log.gz",
+      "logSha256": "e7ac56a913cd8789ef4e58187c3e4f3df7b9a2d5aedc0c069a0b29cf036918a5",
+      "status": "pass",
+      "testCount": 42
+    },
+    {
+      "id": "release-gate",
+      "log": "clock-transfer-repair-release.log.gz",
+      "logSha256": "89beb814343d4e6fbb902dec206980dbfd571426ac4ddf4ef411e386b772350c",
+      "status": "freshness_failure_repaired_on_rerun",
+      "testCount": 10
+    },
+    {
+      "id": "release-freshness",
+      "log": "clock-transfer-repair-release-freshness.log.gz",
+      "logSha256": "6f517b3db0297ec5bc977f987c58706341ab36d3ad0f5d8f04128d2ac739f0cc",
+      "status": "pass",
+      "testCount": 1
+    }
+  ],
+  "controllerHandoff": "Run authoritative current-source pinned Wurst, packaging and same-revision production audit checks; both issue research findings remain blocking until that evidence passes.",
+  "diagnosis": "Instrumenting HEAD source with the current execution contract maps MilitarySettlementRuntime.wurst:1306 to industry.controlChanged(..., getCampaignDay()); the clock is nullable in standalone authorities.",
+  "evidenceScope": "Current-worktree Python headless production, generation, save, runtime-fixture and audit tests. Framework execution-protocol tests use a synthetic compiler and do not establish Wurst execution.",
+  "format": "issue_518_clock_transfer_repair_v1",
+  "pinnedWurst": {
+    "reason": "Grill and Java are not available on PATH; authoritative pinned execution and packaging are assigned to the controller.",
+    "status": "not_run"
+  },
+  "pythonTestsPassed": 84,
+  "releaseEvidence": false,
+  "repair": "Settlement transfer reads campaign time only when a clock is installed. Detached authorities use the industry ledger last committed day, preserving paid work cancellation and equipment transfer rules.",
+  "sourceRevision": "963fa10b81770af6082ed39892385a088bd9fec5",
+  "sourceTreeSha256": "1ec89e88fd7e63ac0b7c9af9ac72b9bc22abd98a695fab5be1ea734ed856b77a",
+  "status": "pass",
+  "wurstRegressions": [
+    "wurst/IndustryTests.wurst:industryTransferWithoutInstalledClockUsesCommittedWorkDayAndNeverRefundsMaterials",
+    "wurst/MilitarySettlementRuntimeTests.wurst:settlementTransferWithoutInstalledClockWorksForActiveAndAbstractAuthority"
+  ]
+}
