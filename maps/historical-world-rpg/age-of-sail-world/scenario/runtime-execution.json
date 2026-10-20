@@ -281,6 +281,30 @@
     "naval_combat": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function navalCombatSources(RuntimeForce source, RuntimeForce target, boolean weaponAttack) returns CombatSources"
+    },
+    "industry_registration": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "public function registerIndustryCommands(CommandRegistry commands, IndustryCampaignRuntime runtime) returns string"
+    },
+    "industry_action": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id) returns string"
+    },
+    "industry_advance": {
+      "path": "wurst/Industry.wurst",
+      "signature": "function advance(int day, IndustryResearchEffects effects, IndustryPort port)"
+    },
+    "industry_pay": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function pay(IndustrySite d, string owner, boolean setup) returns boolean"
+    },
+    "industry_labor": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function labor(IndustrySite d, string owner) returns boolean"
+    },
+    "industry_output": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function produce(IndustrySite d, int amount)"
     }
   },
   "systems": {
@@ -439,6 +463,14 @@
       "naval_repair",
       "naval_weather",
       "naval_combat"
+    ],
+    "industry": [
+      "industry_registration",
+      "industry_action",
+      "industry_advance",
+      "industry_pay",
+      "industry_labor",
+      "industry_output"
     ]
   }
 }

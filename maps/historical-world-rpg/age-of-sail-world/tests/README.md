@@ -399,3 +399,15 @@ state and weapon deadlines on one fleet, plus land and shipyard projects.
 `test_naval_services.py` checks resolved roster bills, exact entitlement generation,
 scenario sensitivity and invalid input rejection. See
 `docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md` and `reports/issue-516`.
+
+`IndustryTests.wurst` executes registered research and `/industry` actions for
+107-versus-100 paid refining output and 95-versus-100-day barrel production.
+It covers real material/fuel/equipment/worker bills, warehouse FIFO consumption,
+negative conditions, historical years, deduplication and named-layer repair,
+active/inactive government parity, capture, v15 round-trips, v14 migration and
+late campaign-load rollback. Industry production probes bind those callbacks to
+same-source execution evidence. `test_industry.py` exercises the shared headless
+consumer with real research completions, conservation over 200 batches,
+save/resume, scenario mutations and generated executable/provenance tampering.
+Run it with `python3 tests/test_industry.py`. Python results do not substitute for
+the pinned Wurst execution or native-client launch evidence.

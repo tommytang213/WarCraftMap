@@ -12,7 +12,7 @@ from hero_starting_profiles import starting_definitions, rank_text, recovery_day
 from quest_codegen import validate_graphs, emit_quests
 
 class PackagingError(RuntimeError): pass
-GENERATOR_VERSION = 32
+GENERATOR_VERSION = 33
 GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
 
 @dataclass(frozen=True)
@@ -840,8 +840,21 @@ def generate(config: BuildConfig, generated: Path) -> None:
         runtime['landArmy'] = land_payload['catalog']
         land_wurst = land_payload['wurst']
         land_sources = [content_path(config.project, name) for name in land_payload['sources']]
-    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst
-    wurst = wurst.replace('import UnstuckRecovery\n', 'import NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
+    industry_sources = []
+    industry_wurst = '\npublic function configureGeneratedIndustry(IndustryLedger ledger, IndustryResearchEffects effects)\n\tskip\n\npublic function configureGeneratedIndustryMarkets(PlayableTradeRuntime runtime)\n\tskip\n'
+    industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
+    if industry_builder:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
+        runtime['industry'] = payload['catalog']
+        industry_wurst = payload['wurst']
+        industry_sources = [content_path(config.project, name) for name in payload['sources']]
+        runtime['tradeMarketCount'] += sum(
+            not any(f'runtime.registerMarketProfile("{ident}","{good}",' in line for line in trade_records)
+            for ident, good in payload['catalog']['markets'])
+        if runtime['tradeMarketCount'] > 16384:
+            raise PackagingError('industry: trade authority capacity exceeded')
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst
+    wurst = wurst.replace('import UnstuckRecovery\n', 'import Industry\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
     runtime['questDefinitions'] = world.get('quests', [])
@@ -855,6 +868,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         bound_research.add((entitlement['kind'], entitlement['contentId']))
     if naval_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
+    if industry_builder:
+        bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
@@ -879,6 +894,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *combat_sources,
         *civic_sources,
         *land_sources,
+        *industry_sources,
         *science_sources,
         *naval_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
@@ -964,6 +980,13 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
             raise _fail("combat bindings", "executable catalogue differs from scenario (release blocker)")
         from combat_effects import verify_executable_bindings
         verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
+
+    industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
+    if industry_builder and not selector:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
+        if ((generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('industry') != payload['catalog']):
+            raise _fail('industry bindings', 'executable catalogue differs from scenario (release blocker)')
 
     land_builder = config.project / 'tooling/land_army_catalog.py'
     if land_builder.is_file() and not selector:

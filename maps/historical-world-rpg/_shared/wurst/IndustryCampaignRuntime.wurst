@@ -1,0 +1,146 @@
+package IndustryCampaignRuntime
+
+import Industry
+import Agriculture
+import CivicGovernance
+import CivicCampaignRuntime
+import initlater PlayableCampaignRuntime
+import initlater PlayableTrade
+import CampaignTimeline
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+import CommandRouter
+
+/** All inventory belongs to durable local markets and delivered warehouse cargo. No native object
+ * or active-map flag can create an extra batch or make resources available. */
+public class IndustryCampaignRuntime implements IndustryPort
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	CampaignCivicEconomy economy
+	IndustryResearchEffects effects
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, IndustryResearchEffects effects)
+		this.campaign = campaign
+		this.trade = trade
+		this.effects = effects
+		economy = new CampaignCivicEconomy(campaign, trade)
+	override function year(int day) returns int
+		return agricultureYear(day)
+	override function eligible(IndustrySite d, string owner, int day) returns boolean
+		return owner != "" and year(day) >= d.firstYear and economy.controller(d.settlementId) == owner and economy.lawful(d.settlementId) and warehouse(d.settlementId) != null and marketsOpen(d) and campaign.rpg.technologies.isUnlocked(owner, d.prerequisite)
+	function marketsOpen(IndustrySite d) returns boolean
+		let ledger = campaign.militarySettlements.industry
+		return available(d.settlementId, d.inputGood, 0) and available(d.settlementId, d.outputGood, 0) and available(d.settlementId, ledger.fuelGood, 0) and available(d.settlementId, ledger.equipmentGood, 0)
+	function warehouse(string id) returns TradeStore
+		for i = 0 to trade.storeCount - 1
+			let store = trade.stores[i]
+			if store.accessKind == "warehouse" and store.accessId == id and store.warehouseService
+				return store
+		return null
+	function available(string id, string good, int units) returns boolean
+		let m = trade.findMarket(id, good)
+		if m == null or m.blockaded or m.occupiedByHostile
+			return false
+		if m.stock >= units
+			return true
+		let store = warehouse(id)
+		return store != null and store.quantity(good) >= units - m.stock
+	function consume(string id, string good, int units)
+		let m = trade.findMarket(id, good)
+		let local = IMinBJ(units, m.stock)
+		m.stock -= local
+		if units > local
+			let store = warehouse(id)
+			let used = trade.controller.provenance.consume(store.id, good, units - local, id)
+			destroy used
+			store.contents.set(good, store.quantity(good) - units + local)
+	override function pay(IndustrySite d, string owner, boolean setup) returns boolean
+		let ledger = campaign.militarySettlements.industry
+		let p = campaign.countries.polityIndex(owner)
+		let city = economy.settlement(d.settlementId)
+		var bill = d.money
+		var fuel = d.fuelUnits
+		var equipmentUnits = d.wearUnits
+		if setup
+			bill = ledger.setupMoney
+			fuel = ledger.setupFuel
+			equipmentUnits = ledger.setupEquipment
+		if p < 0 or city == null or campaign.countries.treasury[p] < bill or not available(d.settlementId, ledger.fuelGood, fuel) or not available(d.settlementId, ledger.equipmentGood, equipmentUnits)
+			return false
+		if setup
+			if city.manpower < ledger.setupWorkers
+				return false
+		else if not available(d.settlementId, d.inputGood, d.inputUnits)
+			return false
+		campaign.countries.treasury[p] -= bill
+		consume(d.settlementId, ledger.fuelGood, fuel)
+		consume(d.settlementId, ledger.equipmentGood, equipmentUnits)
+		if setup
+			// Workers become the local workshop's permanent assigned workforce.
+			// The durable equipment state owns them; research never grants labor.
+			city.manpower -= ledger.setupWorkers
+		else
+			consume(d.settlementId, d.inputGood, d.inputUnits)
+		return true
+	override function labor(IndustrySite d, string owner) returns boolean
+		let ledger = campaign.militarySettlements.industry
+		let city = economy.settlement(d.settlementId)
+		let p = campaign.countries.polityIndex(owner)
+		if p < 0 or city == null or city.supply < ledger.dailySupply or campaign.countries.treasury[p] < ledger.dailyMoney
+			return false
+		city.supply -= ledger.dailySupply
+		campaign.countries.treasury[p] -= ledger.dailyMoney
+		return true
+	override function room(IndustrySite d, int amount) returns boolean
+		let m = trade.findMarket(d.settlementId, d.outputGood)
+		return m != null and not m.blockaded and not m.occupiedByHostile and amount <= m.storageCapacity - m.stock
+	override function produce(IndustrySite d, int amount)
+		trade.findMarket(d.settlementId, d.outputGood).stock += amount
+	function advance(int day)
+		campaign.militarySettlements.industry.advance(day, effects, this)
+	function act(string owner, string action, string id) returns string
+		if campaign.loading or campaign.startupLocked or campaign.transitionOpen
+			return "Campaign actions are unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		return campaign.militarySettlements.industry.action(owner, id, action, campaign.clock.currentDay, this)
+	function overview(string owner, string id) returns string
+		let ledger = campaign.militarySettlements.industry
+		let i = ledger.index(id)
+		if i < 0 or not economy.known(owner, ledger.sites[i].settlementId)
+			return "Choose a known, administered industrial facility."
+		let d = ledger.sites[i]
+		let s = ledger.states[i]
+		let rate = effects.rateAt(owner, d.metric, campaign.clock.campaignYear())
+		var output = d.outputUnits
+		var work = d.dailyWork * 10000
+		if d.refining()
+			output += civicScale(output, rate)
+		else
+			work += d.dailyWork * rate
+		let days = (d.workRequired * 10000 + work - 1) div work
+		return "Industry: " + id + " at " + d.settlementId + ". Requires lawful local administration, existing industrial production, accessible markets, " + d.prerequisite + " and year " + I2S(d.firstYear) + ".\nCommission machinery/workforce: " + I2S(ledger.setupMoney) + " currency minor units, " + I2S(ledger.setupEquipment) + " " + ledger.equipmentGood + ", " + I2S(ledger.setupFuel) + " " + ledger.fuelGood + ", " + I2S(ledger.setupWorkers) + " assigned manpower; " + I2S(ledger.setupDays) + " days. Ready day " + I2S(s.ready) + ".\nBatch reserves " + I2S(d.money) + " currency, " + I2S(d.inputUnits) + " " + d.inputGood + ", " + I2S(d.fuelUnits) + " " + ledger.fuelGood + " fuel and " + I2S(d.wearUnits) + " " + ledger.equipmentGood + " wear stock. Materials use local market stock, then delivered local warehouse cargo. Each funded workday consumes " + I2S(ledger.dailyMoney) + " currency for labor and " + I2S(ledger.dailySupply) + " local supply. Missing labor supplies suspend work.\nExpected output " + I2S(output) + " " + d.outputGood + " after " + I2S(days) + " funded workdays (base " + I2S(d.outputUnits) + " in " + I2S((d.workRequired + d.dailyWork - 1) div d.dailyWork) + " days); research +" + I2S(rate) + " bp " + d.metric + ". Work " + I2S(s.work) + "/" + I2S(d.workRequired * 10000) + ". Capture cancels unfinished work without refund; completed machinery/workforce transfers. Manufactured stock is output, not an immediate artillery unit. Use /industry <inspect|equip|start|stop> SITE."
+
+class IndustryCommand implements CommandHandler
+	IndustryCampaignRuntime runtime
+	CommandOutput output
+	construct(IndustryCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let cut = arguments.indexOf(" ")
+		if sender != Player(0) or cut <= 0
+			return
+		let action = SubString(arguments, 0, cut)
+		let id = SubString(arguments, cut + 1, StringLength(arguments))
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			runtime.campaign.rpg.management.open("technology")
+			output.show(sender, runtime.overview(owner, id))
+		else
+			let problem = runtime.act(owner, action, id)
+			if problem == ""
+				output.show(sender, "Industry action completed.\n" + runtime.overview(owner, id))
+			else
+				output.show(sender, problem)
+
+public function registerIndustryCommands(CommandRegistry commands, IndustryCampaignRuntime runtime) returns string
+	return commands.register("industry", "", "industry <inspect|equip|start|stop> SITE", "Manage paid refining and gun-barrel manufacturing.", "Inspect material bills, labor, equipment, historical conditions and expected output. Player and AI governments use identical actions.", 2, 2, COMMAND_RELEASE, new IndustryCommand(runtime, commands.output))

@@ -702,6 +702,13 @@
             "unknown_route_attrition_reduction",
             "research_generation_efficiency"
           ]
+        },
+        {
+          "path": "scenario/progression/industry.json",
+          "contains": [
+            "iron_refining_yield",
+            "gun_barrel_production_throughput"
+          ]
         }
       ],
       "headlessVerification": [
@@ -723,6 +730,13 @@
           "contains": [
             "test_exact_design_bindings_values_eras_inputs_and_actor_routes",
             "test_invalid_conditions_bills_materials_routes_and_bindings_reject"
+          ]
+        },
+        {
+          "path": "tests/test_industry.py",
+          "contains": [
+            "test_refining_changes_real_output_107_vs_100_for_identical_feedstock",
+            "test_barrel_throughput_completes_in_95_vs_100_paid_days_with_same_materials"
           ]
         }
       ],
@@ -767,6 +781,14 @@
             "campaign.rpg.research(owner, target",
             "economy.pay(owner, d.settlementId"
           ]
+        },
+        {
+          "path": "wurst/Industry.wurst",
+          "contains": [
+            "class IndustryLedger",
+            "port.produce(d, output)",
+            "effects.rateAt(s.owner, d.metric, port.year(at))"
+          ]
         }
       ],
       "playerEntry": [
@@ -787,6 +809,13 @@
           "path": "wurst/ScienceCampaignRuntime.wurst",
           "contains": [
             "commands.register(\"science\"",
+            "function overview"
+          ]
+        },
+        {
+          "path": "wurst/IndustryCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"industry\"",
             "function overview"
           ]
         }
@@ -811,7 +840,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 14",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 15",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -822,6 +851,14 @@
             "science.states[i].record()",
             "parsed.science = science.fork()",
             "science = parsed.science"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "industry.states[i].record()",
+            "parsed.industry = industry.fork()",
+            "industry = parsed.industry"
           ]
         }
       ],
@@ -845,6 +882,13 @@
             "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
             "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
             "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
+          ]
+        },
+        {
+          "path": "wurst/IndustryTests.wurst",
+          "contains": [
+            "industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl",
+            "industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts"
           ]
         }
       ],

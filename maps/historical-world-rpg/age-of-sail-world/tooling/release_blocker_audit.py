@@ -102,7 +102,27 @@ def _audit_inputs(config):
     return hashes, findings
 
 
-def _audit_research_bindings():
+def _verified_industry_bindings(execution=None, execution_log=None, revision=None):
+    """Definitions/merged PRs never close the two industry release findings.
+
+    Verify the current source hashes, pinned compiler transcript, discovery and
+    production traces. The comparative test must execute both real consumers;
+    the full passing suite also contains restore/capture/negative checks.
+    """
+    if execution is None or not revision:
+        return set()
+    try:
+        coverage = runtime_acceptance.verify_execution_coverage(execution, execution_log or b"", PROJECT, revision)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, runtime_acceptance.WurstExecutionError):
+        return set()
+    comparative = 'wurst/IndustryTests.wurst:industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl'
+    if comparative not in coverage.get('industry', []):
+        return set()
+    from industry_catalog import build as industry_contract
+    return {(e['unlock']['kind'], e['unlock']['contentId']) for e in industry_contract(PROJECT)['catalog']['effects']}
+
+
+def _audit_research_bindings(*, execution=None, execution_log=None, revision=None):
     # Definition retention and successful entitlement delivery cannot establish
     # gameplay consumers. Keep each missing typed consumer accountable at release.
     from combat_effect_catalog import build
@@ -110,6 +130,7 @@ def _audit_research_bindings():
     from navigation_efficiency import build as navigation_contract
     navigation, _world = navigation_contract(PROJECT)
     bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
+    bound |= _verified_industry_bindings(execution, execution_log, revision)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
@@ -117,7 +138,7 @@ def _audit_research_bindings():
         for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bound)]
 
 
-def only_unbound_research_blocks(report):
+def only_unbound_research_blocks(report, *, execution=None, execution_log=None, revision=None):
     """Recognize the complete, current consumer gap without accepting other failures.
 
     This selects a publication-blocked result, never release readiness. The
@@ -125,7 +146,7 @@ def only_unbound_research_blocks(report):
     Exact findings prevent a missing consumer or an unrelated defect from being
     hidden by a shared class, ID prefix or caller-supplied count.
     """
-    expected = sorted(_audit_research_bindings(), key=lambda row: row["id"])
+    expected = sorted(_audit_research_bindings(execution=execution, execution_log=execution_log, revision=revision), key=lambda row: row["id"])
     return (bool(expected) and report.get("format") == REPORT_FORMAT
             and report.get("status") == "fail" and report.get("candidateReady") is False
             and report.get("disposition") == "release_blocked"
@@ -243,7 +264,7 @@ def build_report(*, injected_findings=(), execution=None, execution_log=None, re
     if runtime["status"] != "pass" or not runtime["candidateReady"]:
         runtime_findings.append(_finding("RUNTIME-EVIDENCE-INCOMPLETE", "missing_runtime_integration",
                                          "runtime-acceptance", "; ".join(runtime["failures"])))
-    findings = sorted([*report_findings, *input_findings, *runtime_findings, *_audit_research_bindings(),
+    findings = sorted([*report_findings, *input_findings, *runtime_findings, *_audit_research_bindings(execution=execution, execution_log=execution_log, revision=revision),
                        *injected_findings], key=lambda x: x["id"])
     for finding in findings:
         if finding.get("severity") not in taxonomy:
