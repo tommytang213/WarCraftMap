@@ -430,3 +430,63 @@ fraction-conservation fixture. The integrated trace test exercises all seven
 `reports/issue-516`; the exact four release findings remain blocking until the
 controller completes fresh integrated repository/runtime/traceability validation.
 This work does not establish native-client launch or close #438.
+
+## Army food and canal freight consumers (#519)
+
+`ArmyFoodLogistics.wurst` consumes the two approved logistics modifiers through
+`/logistics food DEPOT FORCE` and `/logistics freight PROJECT GOOD QUANTITY
+[reverse]`. `/logistics inspect` shows bills, expected delivery, rate, workforce,
+control, historical kit and connected-route conditions; `/finance inspect` retains
+the separate paid canal construction preview. AI governments invoke exactly the
+same actions on campaign authority, including when the region is inactive.
+
+`scenario/progression/army-food-logistics.json` owns the quantities, costs and
+route selection. A food depot is an authored warehouse/market with real grain.
+One delivery withdraws 100 grain and pays 1 treasury currency for handling with
+one available local worker. Ordinary waste is 25; bakeries avoid
+`floor(25 * 800 / 10000) = 2`, delivering 77 supply versus 75. The force must be
+living, supplied, controlled, within 768 map units, and carry an available land
+roster profile with its real technology prerequisites. The depot and force must
+share a traversable land component from the packaged terrain raster. Depot
+positions use the materialized market service anchors or a verified land
+approach within 512 map units. Warehouses without such an approach remain
+ineligible. Strategic settlement coordinates do not substitute for these physical
+services. Current source has 423 operational depot approaches; Hohhot, Karakorum,
+Pskov and Thessaloniki have no qualifying approach in the packaged terrain. Unknown,
+blocked, isolated, exhausted or out-of-era recipients gain no research output.
+Historical sword/bow/levy formations qualify for food without firearm equipment;
+the existing firearm and artillery predicates continue to gate their own effects.
+
+Canal freight is local transshipment on the authored Yangzhou–Zhenjiang river
+connection between canal nodes at the Grand Canal/Yangtze crossing. It requires
+the completed paid Yangzhou canal quay, supporting technology, both lawfully
+administered accessible endpoints, ten available workers at each, real allowed
+grain/timber stock and destination commodity storage. The existing works still
+cost 1000 principal, 100 financing before eligible finance research, 20 timber,
+and 90 days at 2 treasury currency per funded labor day. Logistics research creates
+no project and pays none of those bills. Throughput is 100 stock units per campaign
+day, plus `floor(100 * 1000 / 10000) = 10` with canal research. Freight costs
+`ceil(quantity * 100 / 10000)`, minimum one treasury currency. Stocks move without
+creating income, provenance lots, food or merchant XP. Both directions and all
+commodities consume one daily capacity bucket. Rejected transactions consume
+nothing; missed days never bank capacity. Rates add once per typed identity before
+rounding, and retained future research has no effect before its historical year.
+
+Military snapshot **v16** adds a required `z,PROJECT,DAY,USED` record for each canal.
+All v1–v15 inputs remain accepted through existing migrations: paid canal works
+survive and absent freight counters initialize empty. Missing/duplicate/malformed
+v16 records and future-day counters reject before authority replacement. Capture
+retains completed infrastructure and today's consumed freight capacity; use and
+bonuses are re-evaluated against both current controllers and their research.
+Campaign rollback restores grain, treasury, army supply, canal usage and the
+replaceable entitlement layer together. Immutable navigation and facility
+configuration are reconstructed from source rather than serialized handles.
+
+`ArmyFoodLogisticsTests.wurst` covers registered research and actions, exact
+same-condition controls, resource/gear/era/infrastructure/geography negatives,
+deduplication and layer repair, active/inactive parity, travel, capture, migrations,
+failed campaign restore and fifty years of freight/food conservation. Production
+probes and fail-closed `army_food_logistics.verified_bindings` require the complete
+same-revision interpreter evidence before the two exact research release findings
+can close. Focused development results do not replace the controller's integrated
+repository/runtime/traceability audit; native launch #438 remains separately owned.

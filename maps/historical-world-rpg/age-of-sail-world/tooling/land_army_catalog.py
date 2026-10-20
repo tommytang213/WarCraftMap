@@ -61,7 +61,7 @@ def build(project=ROOT):
         bayonet = bool(firearm and unit['category'] == 'infantry' and equipment.intersection(pred['bayonetEquipment']))
         cavalry = bool(unit['category'] == 'cavalry' and unit['movementClassId'] == 'mounted' and weapons.intersection(pred['cavalryWeapons']))
         artillery = bool(unit['category'] == 'artillery' and weapons.intersection(pred['artilleryWeapons']))
-        if not (firearm or cavalry or artillery):
+        if not category:
             continue
         if artillery:
             category = pred['formationCategory']

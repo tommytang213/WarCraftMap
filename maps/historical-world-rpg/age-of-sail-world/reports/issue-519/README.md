@@ -1,0 +1,59 @@
+# Issue #519 focused development evidence
+
+Both approved logistics consumers are implemented on the merged #511 design.
+The work starts at `c1b78cd` and uses no unmerged predecessor code or CI artifacts.
+`validation.json` identifies the exact uncommitted source tree and compiler inputs.
+
+Passing checks:
+
+- **69 pinned Wurst tests**, including all seven army-food/canal-freight cases,
+  the finance and land supply suites, populated campaign-load rollback, and the
+  existing regressions changed by military snapshot v16. The compiler also
+  typechecks all assembled production and test source. The integrated logistics
+  test hits all five logistics/construction production probes.
+- **145 Python tests**: logistics compiler/geometry/evidence (9), research
+  generation and all generated depot approaches (10), finance (7), land army (5),
+  release save compatibility (6), runtime acceptance (24), release-blocker audit
+  (10), requirement traceability (53), packaging (12) and reusable framework (9).
+  Packaging/framework tests use synthetic compiler fixtures for their archive
+  and validation protocols; their printed interpreter totals are **not** real
+  compiled-map execution evidence.
+- Current-source generation/provenance verification, framework boundary audit,
+  and whitespace validation pass. Runtime/release/traceability source reports
+  are refreshed while preserving the existing execution/artifact blockers.
+
+Production comparisons deliver **77 versus 75** army supply from exactly 100
+real grain, and move **110 versus 100** stock units per canal day after paid
+construction. Tests exercise research and registered actions; missing resources,
+control, title, gear, era and infrastructure; disconnected land; source dedup and
+layer repair; repeated loads; capture; active/inactive travel; migration from v15;
+late campaign-load rollback; and 50 years of stock, supply and treasury conservation.
+
+Generation binds **423** depot approaches to materialized physical market
+locations and packaged land components. Four warehouses (Hohhot, Karakorum,
+Pskov, Thessaloniki) have no traversable approach within the scenario's 512-unit
+service radius and remain ineligible. Canal freight follows only the authored
+Yangzhou–Zhenjiang waterway and its completed paid quay; both directions and all
+commodities share durable daily usage.
+
+The pinned compiler is
+`frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a`;
+its JAR hash is recorded and verified in the transcript. All inputs are mounted
+read-only. Compilation runs in container-private `/tmp`; the worktree is never
+mounted writable or subjected to container ownership/permission changes. The
+cached standard-library source is a dependency, not predecessor execution evidence.
+Only unrelated `@test` annotations are removed in the disposable focused copy;
+production is instrumented using the repository's `integration_evidence` probes.
+The expected selection, exact compiler input hashes, generated provenance and
+compressed transcripts are retained alongside the machine summary.
+
+Reproduce Python selections from the scenario directory with
+`python3 -m unittest discover -s tests -p PATTERN`, using the ten corresponding
+`test_*.py` files named above. The normal complete interpreter command remains
+`python3 ../_shared/tooling/run_wurst_tests.py package.json`.
+
+Complete repository validation and fresh integrated current-main execution,
+runtime/traceability and release evidence belong to the controller. These focused
+results do not clear either exact research-unbound release finding. Native
+campaign launch #438 remains separately owned. No commits, GitHub writes, global
+tooling changes, service installations or player QA were performed.

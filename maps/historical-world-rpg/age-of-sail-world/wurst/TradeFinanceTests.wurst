@@ -20,7 +20,7 @@ import ManagementCommandTests
 import TradeCommandTests
 import ScenarioData
 
-class FinanceResources implements ResearchCommandResources, CommandOutput
+public class FinanceResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
 	int balance = 100000
 	string output = ""
@@ -35,7 +35,7 @@ class FinanceResources implements ResearchCommandResources, CommandOutput
 	override function show(player sender, string message)
 		output = message
 
-class FinanceFixture
+public class FinanceFixture
 	int day = 657072
 	FinanceResources resources = new FinanceResources()
 	FinanceResearchEffects effects = new FinanceResearchEffects(new UnboundResearchEffects())
@@ -183,7 +183,10 @@ function financeReceipt(string name)
 	for i = 0 to f.effects.definitionCount - 1
 		let d = f.effects.definitions[i] castTo FinanceEffect
 		f.effects.rateAt("player", d.metric, d.firstDay - 1).assertEquals(0)
-		f.effects.rateAt("player", d.metric, d.firstDay).assertEquals(d.basisPoints)
+		if d.metric == "grain_supply_spoilage_reduction" or d.metric == "canal_freight_throughput"
+			f.effects.rateAt("player", d.metric, d.firstDay).assertEquals(0) // Separate research has not been purchased.
+		else
+			f.effects.rateAt("player", d.metric, d.firstDay).assertEquals(d.basisPoints)
 	f.effects.rateAt("player", "market_transaction_fee_reduction", 529237).assertEquals(0)
 	let day = f.clock.currentDay
 	f.clock.currentDay = 529237
@@ -289,7 +292,7 @@ function financeReceipt(string name)
 	active.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
 	// Legacy schemas have no funded canal projects or retroactive improvements.
 	let state = inactive.military.finance.states[0]
-	let legacy = inactive.military.snapshot().replace("v15|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
+	let legacy = inactive.military.snapshot().replace("v16|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
 	inactive.military.restore(legacy).assertTrue()
 	inactive.runtime.refresh()
 	inactive.military.finance.states[0].completed.assertFalse()
@@ -412,7 +415,7 @@ function financeReceipt(string name)
 	let canalRecord = "|q,yangzhou_canal_quay,player,30," + I2S(f.day + 30) + ",0"
 	let yardRecord = "|y,london," + yard.record()
 	let saved = f.military.snapshot()
-	saved.startsWith("v15|").assertTrue()
+	saved.startsWith("v16|").assertTrue()
 	saved.contains(canalRecord).assertTrue()
 	saved.contains(yardRecord).assertTrue()
 	f.military.restore(saved, false).assertTrue()
@@ -423,13 +426,13 @@ function financeReceipt(string name)
 	f.military.restore(saved + yardRecord, false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
 	// Main v14 has naval/land state and no finance domain.
-	f.military.restore(saved.replace("v15|", "v14|").replace(canalRecord, ""), false).assertTrue()
+	f.military.restore(saved.replace("v16|", "v14|").replace(canalRecord, ""), false).assertTrue()
 	f.military.finance.states[0].owner.assertEquals("")
 	f.military.finance.states[0].work.assertEquals(0)
 	f.military.naval.states[f.military.naval.index("london")].work.assertEquals(10)
 	f.military.land.arsenals[0].work.assertEquals(12345)
 	// Finance v14 has canal/land state and no naval domain.
-	var finance14 = saved.replace("v15|", "v14|")
+	var finance14 = saved.replace("v16|", "v14|")
 	f.military.restore(saved, false).assertTrue()
 	for i = 0 to f.military.naval.count - 1
 		finance14 = finance14.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")

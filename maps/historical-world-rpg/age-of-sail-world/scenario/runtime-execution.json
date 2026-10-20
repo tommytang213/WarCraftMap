@@ -301,6 +301,18 @@
     "naval_combat": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function navalCombatSources(RuntimeForce source, RuntimeForce target, boolean weaponAttack) returns CombatSources"
+    },
+    "logistics_registration": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "public function registerLogisticsCommands(CommandRegistry commands, ArmyFoodLogistics runtime) returns string"
+    },
+    "logistics_food": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "function food(string owner, string id, string forceId) returns string"
+    },
+    "logistics_freight": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "function freight(string owner, string id, string good, int quantity, boolean reverse) returns string"
     }
   },
   "systems": {
@@ -459,6 +471,13 @@
       "naval_repair",
       "naval_weather",
       "naval_combat"
+    ],
+    "army_food_logistics": [
+      "logistics_registration",
+      "logistics_food",
+      "logistics_freight",
+      "finance_canal",
+      "finance_advance"
     ]
   }
 }
