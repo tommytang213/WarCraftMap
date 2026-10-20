@@ -66,7 +66,8 @@ class LaunchIdentityTests(unittest.TestCase):
                          "ca03705c83fa714e2799f3be42f109d993d96c39334885b7974d6417f6ae31da",
                          "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
                          "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6",
-                         "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8")
+                         "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8",
+                         "9ea9a0e554fe70f6c85ca99c12718bb867d83658cad36635b39bc20dfd3ea742")
         for failed in failed_hashes:
             with self.subTest(digest=failed), patch.object(smoke.hashlib, "sha256") as digest:
                 digest.return_value.hexdigest.return_value = failed
@@ -200,19 +201,21 @@ end
         self.assertEqual(result["nativeClient"]["revisedArtifact"], "not_run")
         self.assertEqual(result["nativeClient"]["reproduction"], "failed")
         self.assertEqual(result["reproductionSha256"], smoke.FAILING_SHA256)
-        self.assertEqual(len(result["failedTransitionArtifacts"]), 4)
+        self.assertEqual(len(result["failedTransitionArtifacts"]), 5)
         self.assertFalse(result["releaseCandidate"])
         self.assertFalse(result["playerTestRequested"])
         self.assertEqual(result["diagnosis"], "diagnosis_unconfirmed")
         self.assertEqual(result["latestTransitionObservation"]["destinationLuaInitialized"], "unknown")
         latest = result["latestTransitionObservation"]
-        self.assertEqual(latest["artifactId"], "pr536_root_basenames")
+        self.assertEqual(latest["artifactId"], "pr536_trade_startup")
         self.assertEqual(latest["destinationGameplay"], "failed")
-        self.assertEqual(latest["postHandoffDisplay"], "black")
+        self.assertEqual(latest["postHandoffDisplay"], "Windows Warcraft III is not responding dialog")
         self.assertIsNone(latest["durationSeconds"])
+        self.assertEqual(latest["eventualRecovery"], "unknown")
         self.assertEqual(latest["processExit"], "not_reported_for_this_run")
         self.assertFalse(latest["installedFileHashRecollected"])
-        self.assertTrue(result["priorTransitionObservations"][0]["duplicateSelectorIdentityCaveat"])
+        self.assertEqual(result["priorTransitionObservations"][0]["artifactId"], "pr536_root_basenames")
+        self.assertTrue(result["priorTransitionObservations"][1]["duplicateSelectorIdentityCaveat"])
         self.assertEqual((output / result["installedCampaignPath"]).read_bytes(), campaign.read_bytes())
         self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
         instructions = (output / "LAUNCH-SMOKE-ONLY.txt").read_text()

@@ -1,0 +1,96 @@
+package CampaignAuthorityPerformanceTests
+
+import PlayableCampaignRuntime
+import CampaignSaveManager
+import TypeCasting
+
+// Independent retained pre-optimization editing rule. In particular it replaces
+// the first marker and cuts at the first following semicolon, unlike the
+// domain-aware last-value reader. These differences are part of existing saves.
+function previousFieldReplacement(string document, string key, string value) returns string
+	let marker = ";" + key + "="
+	let first = document.indexOf(marker)
+	if first < 0
+		return document + marker + value
+	let tail = SubString(document, first + StringLength(marker), StringLength(document))
+	let finish = tail.indexOf(";")
+	if finish < 0
+		return SubString(document, 0, first) + marker + value
+	return SubString(document, 0, first) + marker + value + SubString(tail, finish, StringLength(tail))
+
+function replacementMatchesPrevious(string document, string key, string value) returns string
+	let expected = previousFieldReplacement(document, key, value)
+	let observed = replaceCampaignField(document, key, value)
+	observed.assertEquals(expected)
+	return observed
+
+@test function indexedEditsPreserveFirstMatchAndLastRead()
+	let original = "v2;x=one;x=two;tail=three"
+	let updated = replaceCampaignField(original, "x", "changed")
+	updated.assertEquals("v2;x=changed;x=two;tail=three")
+	lastAuthorityValue(updated, "x").assertEquals("two")
+	lastAuthorityValue(original, "x").assertEquals("two")
+	let empty = replaceCampaignField(updated, "x", "")
+	empty.assertEquals("v2;x=;x=two;tail=three")
+	lastAuthorityValue(empty, "x").assertEquals("two")
+	lastAuthorityValue(replaceCampaignField("v2", "x", ""), "x").assertEquals("")
+
+@test function indexedEditsKeepEmbeddedSemicolonCutAndMalformedKeys()
+	var document = "v2;trade=v4:cargo;hold:grain,2;clock=old;trade=later"
+	document = replacementMatchesPrevious(document, "trade", "new;extra=value")
+	document.assertEquals("v2;trade=new;extra=value;hold:grain,2;clock=old;trade=later")
+	lastAuthorityValue(document, "trade").assertEquals("later")
+	document = replacementMatchesPrevious(document, "", "empty;")
+	document = replacementMatchesPrevious(document, "x;y", "first;second")
+	document = replacementMatchesPrevious(document, "x;y", "")
+	document = replacementMatchesPrevious(document, "bad=key", "other")
+	document = replacementMatchesPrevious(document, "clock", "new")
+	lastAuthorityValue(document, "clock").assertEquals("new")
+
+@test function indexedEditsKeepOffsetsAcrossGrowthShrinkAndDocumentSwitches()
+	let first = "v2;map=alpha;trade=cargo;hold:grain,2;tail=one"
+	let second = "v2;map=omega;trade=cargo;hold:sugar,3;tail=two"
+	var current = first
+	for i = 0 to 15
+		current = replacementMatchesPrevious(current, "map", "m" + i.toString())
+		current = replacementMatchesPrevious(current, "new" + i.toString(), "a;b=c;d:e")
+		lastAuthorityValue(second, "map").assertEquals("omega")
+		lastAuthorityValue(first, "map").assertEquals("alpha")
+		lastAuthorityValue(current, "map").assertEquals("m" + i.toString())
+		current = replacementMatchesPrevious(current, "new" + i.toString(), "")
+		lastAuthorityValue(current, "tail").assertEquals("one")
+
+@test function indexedEditsRetainMultibyteTextAndFieldOrder()
+	var document = "v2;名字=玩家;label=München,東京,😀;x=雪;tail=ä"
+	document = replacementMatchesPrevious(document, "名字", "東京;extra=é")
+	document = replacementMatchesPrevious(document, "x", "äöü")
+	document = replacementMatchesPrevious(document, "new", "雪,😀")
+	lastAuthorityValue(document, "label").assertEquals("München,東京,😀")
+	lastAuthorityValue(document, "x").assertEquals("äöü")
+	lastAuthorityValue(document, "new").assertEquals("雪,😀")
+	document = replacementMatchesPrevious(document, "名字", "")
+	lastAuthorityValue(document, "label").assertEquals("München,東京,😀")
+
+// Reference checksum and envelope from the prior save implementation. Never
+// substitute process-local string IDs for native hashes in persisted bytes.
+function previousEnvelope(string slot, string createdAt, string state) returns string
+	let body = "schema=" + CAMPAIGN_SAVE_SCHEMA_CURRENT.toString() + "|slot=" + slot + "|kind=" + SAVE_SLOT_MANUAL.toString() + "|index=1|created=" + createdAt + "|state=" + state
+	var checksum = 5381
+	for i = 0 to StringLength(body) - 1
+		checksum = ModuloInteger(checksum * 33 + StringHash(SubString(body, i, i + 1)), 2147483000)
+	return "integrity=" + checksum.toString() + "|" + body
+
+@test function memoizedChecksumPreservesEnvelopeAndNativeCaseCollisions()
+	StringHash("a").assertEquals(StringHash("A"))
+	string array[5] values
+	values[0] = ""
+	values[1] = "aAaA000000||;;=="
+	values[2] = "v2;map=west;trade=cargo;hold:grain,2;clock=2|1|0|0|0:1|0"
+	values[3] = "München,東京,😀,ä,é"
+	values[4] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	for i = 0 to 4
+		let expected = previousEnvelope("manual_01", "checksum-fixture", values[i])
+		campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "checksum-fixture", values[i]).assertEquals(expected)
+		// Populate unrelated exact-string identities between checksum calls.
+		stringToIndex("unrelated identity " + i.toString())
+		campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "checksum-fixture", values[i]).assertEquals(expected)

@@ -1,0 +1,216 @@
+package WarcraftCampaignSaveStorageTests
+import CampaignSaveManager
+
+/** Native outcomes are controlled; the production transaction is inherited.
+ * Persisted fields model only the save result, never actual disk durability. */
+class FaultingCacheStorage extends WarcraftCampaignSaveStorage
+	boolean present = false
+	string value = ""
+	boolean persistedPresent = false
+	string persistedValue = ""
+	int storeCalls = 0
+	int flushCalls = 0
+	int saveCalls = 0
+	int rejectStoreCall = 0
+	boolean rejectedStoreMutates = false
+	int truncateStoreCall = 0
+	int failSaveCall = 0
+	boolean failEverySave = false
+	boolean failedSavePersists = false
+	int mutateSaveCall = 0
+	boolean ignoreFlush = false
+	boolean firstSavedPresent = false
+	string firstSavedValue = ""
+	construct(gamecache unused)
+		super(unused, "campaign")
+	function seed(boolean existed, string payload)
+		present = existed
+		value = payload
+		persistedPresent = existed
+		persistedValue = payload
+	override function contains(string slotId) returns boolean
+		return present
+	override function read(string slotId) returns string
+		if present
+			return value
+		return ""
+	override function storeString(string slotId, string payload) returns boolean
+		storeCalls++
+		if storeCalls == rejectStoreCall
+			if rejectedStoreMutates
+				present = true
+				value = payload
+			return false
+		present = true
+		value = payload
+		if storeCalls == truncateStoreCall
+			value = SubString(payload, 0, StringLength(payload) - 1)
+		return true
+	override function flushString(string slotId)
+		flushCalls++
+		if not ignoreFlush
+			present = false
+			value = ""
+	override function saveCache() returns boolean
+		saveCalls++
+		if saveCalls == 1
+			firstSavedPresent = present
+			firstSavedValue = value
+		if saveCalls == mutateSaveCall
+			present = true
+			value = "changed during save"
+		let failed = failEverySave or saveCalls == failSaveCall
+		if not failed or failedSavePersists
+			persistedPresent = present
+			persistedValue = value
+		return not failed
+	function assertRestored(boolean existed, string payload)
+		present.assertEquals(existed)
+		value.assertEquals(payload)
+		persistedPresent.assertEquals(existed)
+		persistedValue.assertEquals(payload)
+
+@test function cacheTransactionRequiresPresentExactStringIncludingEmptyPayload()
+	let cache = new FaultingCacheStorage(null)
+	cache.writeTransactional("session_start", "").assertTrue()
+	cache.assertRestored(true, "")
+	cache.saveCalls.assertEquals(1)
+	cache.writeTransactional("session_start", "candidate").assertTrue()
+	cache.assertRestored(true, "candidate")
+	cache.saveCalls.assertEquals(2)
+	cache.diagnostic().assertEquals("")
+
+@test function rejectedStoreCannotReportSuccessAndRetryClearsDiagnostic()
+	let empty = new FaultingCacheStorage(null)
+	// Exact archived-Lua negative control: StoreString rejects an absent key,
+	// while SaveGameCache reports success for the unchanged cache.
+	empty.rejectStoreCall = 1
+	empty.writeTransactional("session_start", "candidate").assertFalse()
+	empty.assertRestored(false, "")
+	empty.storeCalls.assertEquals(1)
+	empty.saveCalls.assertEquals(1)
+	empty.diagnostic().assertEquals("game cache string store failed; previous slot restored")
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.rejectStoreCall = 1
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(true, "previous")
+	cache.storeCalls.assertEquals(1)
+	cache.saveCalls.assertEquals(1)
+	cache.firstSavedValue.assertEquals("previous")
+	cache.diagnostic().assertEquals("game cache string store failed; previous slot restored")
+	cache.writeTransactional("session_start", "retry").assertTrue()
+	cache.assertRestored(true, "retry")
+	cache.diagnostic().assertEquals("")
+
+@test function rejectedStoreThatMutatesStillRollsBackBeforeSaving()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.rejectStoreCall = 1
+	cache.rejectedStoreMutates = true
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(true, "previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(1)
+	cache.firstSavedValue.assertEquals("previous")
+	cache.diagnostic().assertEquals("game cache string store failed; previous slot restored")
+
+@test function successfulStoreWithTruncatedReadbackNeverCommitsCandidate()
+	let cache = new FaultingCacheStorage(null)
+	cache.truncateStoreCall = 1
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(false, "")
+	cache.storeCalls.assertEquals(1)
+	cache.flushCalls.assertEquals(1)
+	cache.saveCalls.assertEquals(1)
+	cache.firstSavedPresent.assertFalse()
+	cache.diagnostic().assertEquals("game cache string readback mismatch; previous slot restored")
+
+@test function failedCommitRestoresExistingSlotAfterPossiblePartialPersistence()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.failSaveCall = 1
+	cache.failedSavePersists = true
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(true, "previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(2)
+	cache.firstSavedValue.assertEquals("candidate")
+	cache.diagnostic().assertEquals("game cache commit failed; previous slot restored")
+
+@test function failedCommitRestoresAbsentSlotAfterPossiblePartialPersistence()
+	let cache = new FaultingCacheStorage(null)
+	cache.failSaveCall = 1
+	cache.failedSavePersists = true
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(false, "")
+	cache.storeCalls.assertEquals(1)
+	cache.flushCalls.assertEquals(1)
+	cache.saveCalls.assertEquals(2)
+	cache.diagnostic().assertEquals("game cache commit failed; previous slot restored")
+
+@test function rejectedRollbackStoreNeverPersistsWrongBuffer()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.failSaveCall = 1
+	cache.rejectStoreCall = 2
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.value.assertEquals("candidate")
+	cache.persistedValue.assertEquals("previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(1)
+	cache.diagnostic().assertEquals("game cache commit failed; previous slot rollback failed")
+
+@test function truncatedRollbackStoreNeverPersistsWrongBuffer()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.failSaveCall = 1
+	cache.truncateStoreCall = 2
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.value.assertEquals("previou")
+	cache.persistedValue.assertEquals("previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(1)
+	cache.diagnostic().assertEquals("game cache commit failed; previous slot rollback failed")
+
+@test function failedRollbackCommitNeverClaimsRestoration()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.failEverySave = true
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.value.assertEquals("previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(2)
+	cache.diagnostic().assertEquals("game cache commit failed; rollback commit failed")
+
+@test function failedRollbackFlushNeverPersistsWrongBuffer()
+	let cache = new FaultingCacheStorage(null)
+	cache.failSaveCall = 1
+	cache.ignoreFlush = true
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.present.assertTrue()
+	cache.persistedPresent.assertFalse()
+	cache.flushCalls.assertEquals(1)
+	cache.saveCalls.assertEquals(1)
+	cache.diagnostic().assertEquals("game cache commit failed; previous slot rollback failed")
+
+@test function successfulCommitWithChangedReadbackRollsBack()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.mutateSaveCall = 1
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.assertRestored(true, "previous")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(2)
+	cache.diagnostic().assertEquals("game cache commit readback mismatch; previous slot restored")
+
+@test function changedRollbackReadbackNeverClaimsRestoration()
+	let cache = new FaultingCacheStorage(null)
+	cache.seed(true, "previous")
+	cache.failSaveCall = 1
+	cache.mutateSaveCall = 2
+	cache.writeTransactional("session_start", "candidate").assertFalse()
+	cache.value.assertEquals("changed during save")
+	cache.storeCalls.assertEquals(2)
+	cache.saveCalls.assertEquals(2)
+	cache.diagnostic().assertEquals("game cache commit failed; rollback readback mismatch")

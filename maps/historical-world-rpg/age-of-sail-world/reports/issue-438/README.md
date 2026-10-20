@@ -2,6 +2,42 @@
 
 ## Current continuation: destination startup, 2026-10-20
 
+**Latest native observation, 16:52 UTC: the `a1b4396` trade-startup candidate
+was unresponsive after Continue.** The supplied image shows the Windows
+"Warcraft III is not responding" dialog. No destination terrain or responsive
+player-controlled unit was observed. Duration, eventual recovery, client build
+and destination Lua initialization are unknown; this does not establish a
+permanent deadlock. The association with the delivered candidate and the lack
+of an installed-file hash are recorded in
+[`trade-startup-native-observation.json`](trade-startup-native-observation.json).
+Do not request another run of these unchanged bytes. The staging guard rejects
+their campaign hash alongside the earlier failed candidates.
+
+### Source correction after the latest native failure
+
+The next source correction checks the actual `StoreString` result, exact
+in-memory cache readback and rollback outcomes before acknowledging a saved
+checkpoint. A controlled native failure against the actual delivered Lua
+reproduced a false success; the same control against the revised, archived
+Europe Lua is rejected. This is a demonstrated persistence correction, not an
+established explanation for the native freeze.
+
+Campaign save processing now reuses separator positions across field edits
+and memoizes each exact character slice's actual native `StringHash` result.
+The frozen startup probe reduces `StringHash` calls from 3,240,256 to 37,931
+and `SubString` calls from 20,484,826 to 15,095,868. The remaining synchronous
+work is substantial. Stock Lua timing and explicit native stubs do not
+establish Warcraft's load time or a repaired transition. The full campaign
+schema remains 10 and the separate PlayableTrade snapshot format remains 5.
+
+The isolated Europe map retains baseline build metadata and is a developer
+artifact only. No new full campaign or player retest is requested from these
+results. Source provenance, focused/full test scopes, compiled comparisons,
+the failed setup attempts and remaining native unknowns are retained in
+[`native-boundary-repair/README.md`](native-boundary-repair/README.md).
+
+### Earlier trade-startup correction
+
 The owner confirmed that the `54911ca` root-basename campaign still reaches
 Victory / Continue and then remains black. The exact observation and its
 missing client/hash details are retained in
@@ -14,7 +50,8 @@ markets and reparses row fields inside each scan. The new `PlayableTrade`
 snapshot cursor and temporary exact-identity index remove that quadratic work
 while retaining the existing save schema, serialized capture and validation
 semantics. Actual recompiled Lua completes startup under both documented local
-Lua runtimes; native rendering, transition and movement remain unverified.
+Lua runtimes, but the subsequent native observation above did not reach
+destination gameplay. The optimization is not a sufficient demonstrated repair.
 
 The source-bound comparison, executable scale regression and explicit native
 model limits are retained in [`trade-startup/README.md`](trade-startup/README.md).

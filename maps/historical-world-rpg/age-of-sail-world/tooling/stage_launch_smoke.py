@@ -27,6 +27,7 @@ FAILED_TRANSITION_ARTIFACTS = {
     "pr536_hidden_chapters": "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
     "pr536_selector_as_region": "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6",
     "pr536_root_basenames": "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8",
+    "pr536_trade_startup": "9ea9a0e554fe70f6c85ca99c12718bb867d83658cad36635b39bc20dfd3ea742",
 }
 LAUNCH_PROFILE = "launch"
 HANDOFF_PROFILE = "root-basename-handoff"
@@ -226,17 +227,24 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
         "failedTransitionArtifacts": [{"id": name, "sha256": value, "destinationGameplay": "failed"}
                                       for name, value in FAILED_TRANSITION_ARTIFACTS.items()],
         "latestTransitionObservation": {
-            "artifactId": "pr536_root_basenames", "reportedAtUtc": "2026-10-20T13:46:04Z",
-            "sourceRevision": "54911cabe2a993b22f3a5d05b549df5dc3995c9c",
-            "expectedCampaignSha256": FAILED_TRANSITION_ARTIFACTS["pr536_root_basenames"],
-            "candidateAssociation": "owner-confirmed versioned candidate and test sequence",
+            "artifactId": "pr536_trade_startup", "reportedAtUtc": "2026-10-20T16:52:49Z",
+            "sourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+            "expectedCampaignSha256": FAILED_TRANSITION_ARTIFACTS["pr536_trade_startup"],
+            "candidateAssociation": "owner report immediately following delivery of this versioned candidate",
             "installedFileHashRecollected": False, "clientBuild": "not_recollected",
+            "originCommandContext": "/origin choose austria", "scoreScreenContext": "Victory",
+            "continueClicked": True, "postHandoffDisplay": "Windows Warcraft III is not responding dialog",
+            "durationSeconds": None, "processExit": "not_reported_for_this_run",
+            "eventualRecovery": "unknown",
+            "destinationOpenAttempt": "not_observed_for_this_run",
+            "destinationLuaInitialized": "unknown", "destinationGameplay": "failed"},
+        "priorTransitionObservations": [{"artifactId": "pr536_root_basenames",
+            "reportedAtUtc": "2026-10-20T13:46:04Z",
             "selectorLaunch": "pass", "originCommand": "/origin choose austria",
             "scoreScreen": "Victory", "continueClicked": True, "postHandoffDisplay": "black",
             "durationSeconds": None, "processExit": "not_reported_for_this_run",
-            "destinationOpenAttempt": "not_observed_for_this_run",
             "destinationLuaInitialized": "unknown", "destinationGameplay": "failed"},
-        "priorTransitionObservations": [{"artifactId": "pr536_selector_as_region",
+            {"artifactId": "pr536_selector_as_region",
             "selectorLaunch": "pass", "destinationOpenAttempt": "observed",
             "postHandoffDisplay": "black_>120s", "processExit": "owner_force_quit",
             "destinationLuaInitialized": "unknown", "duplicateSelectorIdentityCaveat": True}],

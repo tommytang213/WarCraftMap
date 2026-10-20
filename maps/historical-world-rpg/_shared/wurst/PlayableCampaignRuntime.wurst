@@ -30,6 +30,8 @@ import CampaignUnstuck
 import ScenarioSettings
 import public DiscoveryKnowledge
 import QuestNavigation
+import Table
+import TypeCasting
 
 /** Physical identity is distinct from map tracking and remote command view.
  * Loads and transitions cannot authorize interactions while state is staged. */
@@ -67,9 +69,11 @@ public PiracyRuntime piracyMigrationRuntime = null
 // Validation, reconstruction and observers read many fields of the same
 // immutable document. Index its semicolons once instead of rescanning every
 // domain payload for every key. Only text and offsets are cached; this is never
-// save authority. Changing documents discards the entire derived index.
+// save authority. Untracked document changes rebuild the index; tracked edits
+// derive the next offsets from the unchanged prefix and suffix.
 string indexedAuthority = null
 hashtable authoritySeparators = null
+hashtable editedAuthoritySeparators = null
 int authoritySeparatorCount = 0
 
 function indexAuthoritySeparators(string document)
@@ -85,6 +89,63 @@ function indexAuthoritySeparators(string document)
 		if SubString(document, cursor, cursor + 1) == ";"
 			SaveInteger(authoritySeparators, 0, authoritySeparatorCount, cursor)
 			authoritySeparatorCount++
+
+// Editing uses the first exact marker, while lastAuthorityValue deliberately
+// reads the last one. Semicolons inside trade store IDs remain indexed too.
+function firstAuthorityFieldOffset(string document, string key) returns int
+	indexAuthoritySeparators(document)
+	let marker = ";" + key + "="
+	let markerLength = StringLength(marker)
+	for index = 0 to authoritySeparatorCount - 1
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if SubString(document, separator, separator + markerLength) == marker
+			return separator
+	return -1
+
+// Derive the next index from an edit instead of scanning the full campaign
+// again after each trailing metadata append. Both reusable tables contain only
+// disposable offsets; the immutable returned document is still authoritative.
+// Callers retain the original tail-relative native slice for the suffix.
+function editAuthorityDocument(string document, int start, int finish, string replacement, string suffix) returns string
+	indexAuthoritySeparators(document)
+	let documentLength = StringLength(document)
+	var prefix = document
+	if start != documentLength
+		prefix = SubString(document, 0, start)
+	let result = prefix + replacement + suffix
+	let prefixLength = StringLength(prefix)
+	let replacementLength = StringLength(replacement)
+	// Rebuild if native slicing changed lengths or the legacy two-stage suffix
+	// differs from a direct slice. The returned text always keeps the old path.
+	if prefixLength != start or StringLength(suffix) != documentLength - finish or (finish != documentLength and suffix != SubString(document, finish, documentLength))
+		indexAuthoritySeparators(result)
+		return result
+	if editedAuthoritySeparators == null
+		editedAuthoritySeparators = InitHashtable()
+	else
+		FlushChildHashtable(editedAuthoritySeparators, 0)
+	var count = 0
+	for index = 0 to authoritySeparatorCount - 1
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if separator < start
+			SaveInteger(editedAuthoritySeparators, 0, count, separator)
+			count++
+	for cursor = 0 to replacementLength - 1
+		if SubString(replacement, cursor, cursor + 1) == ";"
+			SaveInteger(editedAuthoritySeparators, 0, count, prefixLength + cursor)
+			count++
+	let shift = prefixLength + replacementLength - finish
+	for index = 0 to authoritySeparatorCount - 1
+		let separator = LoadInteger(authoritySeparators, 0, index)
+		if separator >= finish
+			SaveInteger(editedAuthoritySeparators, 0, count, separator + shift)
+			count++
+	let previous = authoritySeparators
+	authoritySeparators = editedAuthoritySeparators
+	editedAuthoritySeparators = previous
+	authoritySeparatorCount = count
+	indexedAuthority = result
+	return result
 
 function hasUniqueAuthorityValue(string document, string key) returns boolean
 	indexAuthoritySeparators(document)
@@ -170,25 +231,34 @@ function withoutTravelAuthority(string document) returns string
 /** Replace one field without leaving stale authority behind. */
 public function replaceCampaignField(string document, string key, string value) returns string
 	let marker = ";" + key + "="
-	let fieldStart = document.indexOf(marker)
+	let fieldStart = firstAuthorityFieldOffset(document, key)
 	if fieldStart < 0
-		return document + marker + value
-	let tail = SubString(document, fieldStart + StringLength(marker), StringLength(document))
+		let documentEnd = StringLength(document)
+		return editAuthorityDocument(document, documentEnd, documentEnd, marker + value, "")
+	// Retain the historical editing rule: the first following semicolon ends
+	// this value, even when lastAuthorityValue would treat it as embedded data.
+	// Keep the original tail-relative slicing order, including native handling
+	// of any partial multibyte sequence supplied by a caller.
+	let tailStart = fieldStart + StringLength(marker)
+	let tail = SubString(document, tailStart, StringLength(document))
 	let finish = tail.indexOf(";")
 	if finish < 0
-		return SubString(document, 0, fieldStart) + marker + value
-	return SubString(document, 0, fieldStart) + marker + value + SubString(tail, finish, StringLength(tail))
+		return editAuthorityDocument(document, fieldStart, StringLength(document), marker + value, "")
+	let suffix = SubString(tail, finish, StringLength(tail))
+	return editAuthorityDocument(document, fieldStart, tailStart + finish, marker + value, suffix)
 
 function withoutCampaignField(string document, string key) returns string
 	let marker = ";" + key + "="
-	let start = document.indexOf(marker)
+	let start = firstAuthorityFieldOffset(document, key)
 	if start < 0
 		return document
-	let tail = SubString(document, start + StringLength(marker), StringLength(document))
+	let tailStart = start + StringLength(marker)
+	let tail = SubString(document, tailStart, StringLength(document))
 	let finish = tail.indexOf(";")
 	if finish < 0
-		return SubString(document, 0, start)
-	return SubString(document, 0, start) + SubString(tail, finish, StringLength(tail))
+		return editAuthorityDocument(document, start, StringLength(document), "", "")
+	let suffix = SubString(tail, finish, StringLength(tail))
+	return editAuthorityDocument(document, start, tailStart + finish, "", suffix)
 
 public interface CampaignPartyProjection
 	/** Retain the previous objects until commit. Rollback must not respawn them
@@ -611,7 +681,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if origins != null and origins.find(playerAuthorityValue(candidate, "origin")) == null
 			lastDiagnostic = "checkpoint player origin is not an authored campaign origin"
 			return false
-		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or candidate.indexOf(";map=") < 0 or candidate.indexOf(";region=") < 0 or candidate.indexOf(";world=") < 0 or candidate.indexOf(";players=") < 0 or candidate.indexOf(";quests=") < 0 or candidate.indexOf(";discovery=") < 0 or candidate.indexOf(";orders=") < 0 or candidate.indexOf(";diplomacy=") < 0 or candidate.indexOf(";rewards=") < 0 or candidate.indexOf(";trade=") < 0 or (rpg != null and candidate.indexOf(";rpg=") < 0)
+		if (not candidate.startsWith("v2;") and not candidate.startsWith("v1;")) or firstAuthorityFieldOffset(candidate, "map") < 0 or firstAuthorityFieldOffset(candidate, "region") < 0 or firstAuthorityFieldOffset(candidate, "world") < 0 or firstAuthorityFieldOffset(candidate, "players") < 0 or firstAuthorityFieldOffset(candidate, "quests") < 0 or firstAuthorityFieldOffset(candidate, "discovery") < 0 or firstAuthorityFieldOffset(candidate, "orders") < 0 or firstAuthorityFieldOffset(candidate, "diplomacy") < 0 or firstAuthorityFieldOffset(candidate, "rewards") < 0 or firstAuthorityFieldOffset(candidate, "trade") < 0 or (rpg != null and firstAuthorityFieldOffset(candidate, "rpg") < 0)
 			lastDiagnostic = "missing or incompatible authoritative campaign domains"
 			return false
 		if rpg != null and not rpg.validateCampaignState(lastAuthorityValue(candidate,"rpg"))
@@ -620,13 +690,13 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if not hasUniqueAuthorityValue(candidate, "discovery") or not knowledge.validate(lastAuthorityValue(candidate, "discovery"))
 			lastDiagnostic = "invalid region or visited-settlement knowledge"
 			return false
-		if militarySettlements != null and candidate.indexOf(";militarySettlements=") < 0
+		if militarySettlements != null and firstAuthorityFieldOffset(candidate, "militarySettlements") < 0
 			lastDiagnostic = "missing military/settlement authority"
 			return false
-		if religion != null and candidate.indexOf(";religion=") < 0
+		if religion != null and firstAuthorityFieldOffset(candidate, "religion") < 0
 			lastDiagnostic = "missing religion authority"
 			return false
-		if piracy != null and candidate.indexOf(";piracy=") < 0
+		if piracy != null and firstAuthorityFieldOffset(candidate, "piracy") < 0
 			lastDiagnostic = "missing piracy authority"
 			return false
 		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"), campaignClockRecordDay(lastAuthorityValue(candidate, "clock")))
@@ -987,10 +1057,23 @@ class CampaignLoadCheckpoint
 		if identityState != null
 			destroy identityState
 
+// Cache the native hash of the exact string returned by each one-byte slice.
+// This preserves native partial-multibyte normalization and hash collisions.
+// stringToIndex supplies process-local exact-string identity; these IDs never
+// enter the envelope. The pinned Lua backend lowers this identity and Table
+// storage to Lua tables, so cache hits do not cross the native boundary.
+Table runtimeCharacterHashes = null
+
 function runtimeChecksum(string value) returns int
+	if runtimeCharacterHashes == null
+		runtimeCharacterHashes = new Table()
 	var result = 5381
 	for i = 0 to StringLength(value) - 1
-		result = ModuloInteger(result * 33 + StringHash(SubString(value, i, i + 1)), 2147483000)
+		let character = SubString(value, i, i + 1)
+		let identity = stringToIndex(character)
+		if not runtimeCharacterHashes.hasInt(identity)
+			runtimeCharacterHashes.saveInt(identity, StringHash(character))
+		result = ModuloInteger(result * 33 + runtimeCharacterHashes.loadInt(identity), 2147483000)
 	return result
 
 /** Test fixtures use the same envelope constructor as production encoding. */
