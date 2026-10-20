@@ -702,6 +702,14 @@
             "unknown_route_attrition_reduction",
             "research_generation_efficiency"
           ]
+        },
+        {
+          "path": "scenario/progression/trade-finance.json",
+          "contains": [
+            "commissionShareBasisPoints",
+            "remittanceFeeBasisPoints",
+            "canalWorks"
+          ]
         }
       ],
       "headlessVerification": [
@@ -723,6 +731,13 @@
           "contains": [
             "test_exact_design_bindings_values_eras_inputs_and_actor_routes",
             "test_invalid_conditions_bills_materials_routes_and_bindings_reject"
+          ]
+        },
+        {
+          "path": "tests/test_trade_finance.py",
+          "contains": [
+            "test_rejects_fake_banks_missing_materials_duplicate_projects_and_free_bills",
+            "test_source_design_or_incomplete_failed_stale_evidence_cannot_bind"
           ]
         }
       ],
@@ -767,6 +782,17 @@
             "campaign.rpg.research(owner, target",
             "economy.pay(owner, d.settlementId"
           ]
+        },
+        {
+          "path": "wurst/FinanceCampaignRuntime.wurst",
+          "contains": [
+            "class CampaignFinancePort",
+            "function amount",
+            "function remit",
+            "effects.rateAt",
+            "fromStore.money -= amount + fee",
+            "toStore.money += amount"
+          ]
         }
       ],
       "playerEntry": [
@@ -787,6 +813,13 @@
           "path": "wurst/ScienceCampaignRuntime.wurst",
           "contains": [
             "commands.register(\"science\"",
+            "function overview"
+          ]
+        },
+        {
+          "path": "wurst/FinanceCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"finance\"",
             "function overview"
           ]
         }
@@ -811,7 +844,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 14",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 15",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -822,6 +855,14 @@
             "science.states[i].record()",
             "parsed.science = science.fork()",
             "science = parsed.science"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "finance.states[i]",
+            "parsed.finance = finance.fork()",
+            "finance = parsed.finance"
           ]
         }
       ],
@@ -845,6 +886,15 @@
             "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
             "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
             "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
+          ]
+        },
+        {
+          "path": "wurst/TradeFinanceTests.wurst",
+          "contains": [
+            "registeredAuctionAndBrokerageResearchReduceExistingSettlementCostsPrecisely",
+            "registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal",
+            "registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput",
+            "failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority"
           ]
         }
       ],

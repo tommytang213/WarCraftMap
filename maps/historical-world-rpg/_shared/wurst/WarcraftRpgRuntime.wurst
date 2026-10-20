@@ -5,6 +5,7 @@ import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
+import TradeFinance
 import NavalServices
 import ScienceExploration
 import CivicGovernance
@@ -1968,6 +1969,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
 						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires qualifying paid naval activity. Use /naval inspect PORT for bills, gear, era, construction time and upkeep."
 				port = naval.upstream
+			if port instanceof FinanceResearchEffects
+				let finance = port castTo FinanceResearchEffects
+				for k = 0 to finance.definitionCount - 1
+					let binding = finance.definitions[k] castTo FinanceEffect
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    " + I2S(binding.basisPoints) + " bp " + binding.metric + "; eligible activity from campaign day " + I2S(binding.firstDay) + ". Requires actual controlled exchange/banking/canal infrastructure and funded activity. Use /finance inspect for costs, conditions and results."
+				port = finance.upstream
 			if port instanceof ScienceResearchEffects
 				let science = port castTo ScienceResearchEffects
 				for k = 0 to science.definitionCount - 1

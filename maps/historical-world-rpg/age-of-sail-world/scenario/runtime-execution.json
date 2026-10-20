@@ -254,6 +254,26 @@
       "path": "wurst/ScienceCampaignRuntime.wurst",
       "signature": "override function complete(string owner, string target, int paid) returns boolean"
     },
+    "finance_registration": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "public function registerFinanceCommands(CommandRegistry commands, FinanceCampaignRuntime runtime) returns string"
+    },
+    "finance_quote": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function amount(string owner, RuntimeMarket market, int quantity, boolean buying) returns int"
+    },
+    "finance_remit": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function remit(string owner, string sourceId, string destinationId, int amount) returns string"
+    },
+    "finance_canal": {
+      "path": "wurst/TradeFinance.wurst",
+      "signature": "function start(string owner, string id, int day, FinanceResearchEffects effects, FinancePort port) returns string"
+    },
+    "finance_advance": {
+      "path": "wurst/TradeFinance.wurst",
+      "signature": "function advance(int day, FinancePort port)"
+    },
     "naval_registration": {
       "path": "wurst/NavalCampaignRuntime.wurst",
       "signature": "public function registerNavalCommands(CommandRegistry commands, NavalCampaignRuntime runtime) returns string"

@@ -4,6 +4,7 @@ import ExactNatural
 import ExactRational
 import MilitaryTraditionLayer
 import CombatEffects
+import TradeFinance
 import NavalServices
 import ScienceExploration
 import CivicGovernance
@@ -36,7 +37,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 14
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 15
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -499,6 +500,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	LandArmyLedger land = new LandArmyLedger()
 	int landYear = 1450
 	CivicLedger civic = new CivicLedger()
+	FinanceLedger finance = new FinanceLedger()
 	NavalLedger naval = new NavalLedger()
 	NavalResearchEffects navalResearch = null
 	ScienceLedger science = new ScienceLedger()
@@ -547,6 +549,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	ondestroy
 		destroy naval
 		destroy land
+		destroy finance
 		destroy science
 		destroy civic
 		endRegistration()
@@ -1290,6 +1293,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				adapter.removeRepresentation(forces[i].id)
 		if state.controllerId != controllerId
 			civic.controlChanged(settlementId)
+			finance.controlChanged(settlementId)
 			let arsenal = land.index(settlementId)
 			if arsenal >= 0
 				land.arsenals[arsenal].cancel()
@@ -1452,6 +1456,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		for i = 0 to land.count - 1
 			let s = land.arsenals[i]
 			result += "|l," + s.id + "," + s.owner + "," + I2S(s.ready) + "," + I2S(s.upkeepThrough) + "," + s.projectOwner + "," + I2S(s.work) + "," + boolText(s.officeBillPaid) + "," + I2S(s.serial) + "," + I2S(s.lastDay)
+		for i = 0 to finance.count - 1
+			let s = finance.states[i]
+			result += "|q," + finance.projects[i].id + "," + s.owner + "," + I2S(s.work) + "," + I2S(s.lastDay) + "," + boolText(s.completed)
 		for i = 0 to science.count - 1
 			result += "|j," + science.sites[i].id + "," + science.states[i].record()
 		for i = 0 to naval.count - 1
@@ -1550,6 +1557,25 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			s.serial = S2I(record.field(8))
 			s.lastDay = S2I(record.field(9))
 			return (record.field(7) == "0" or record.field(7) == "1") and (s.owner == "") == (s.ready == 0) and s.upkeepThrough >= s.ready and s.work <= target.land.constructionDays * 10000 and (s.projectOwner != "" or s.work == 0 and not s.officeBillPaid) and (s.projectOwner == "" or s.serial > 0)
+		if kind == "q"
+			let i = target.finance.index(record.field(1))
+			if record.count != 6 or i < 0 or target.finance.states[i].restored
+				return false
+			if record.field(2) != "" and not scienceControllerText(record.field(2))
+				return false
+			for j = 3 to 4
+				if not exactNaturalValid(record.field(j)) or exactNaturalCompare(record.field(j), "2147483647") > 0
+					return false
+			if record.field(5) != "0" and record.field(5) != "1"
+				return false
+			let s = target.finance.states[i]
+			let d = target.finance.projects[i]
+			s.restored = true
+			s.owner = record.field(2)
+			s.work = S2I(record.field(3))
+			s.lastDay = S2I(record.field(4))
+			s.completed = record.field(5) == "1"
+			return s.work <= d.constructionDays and s.completed == (s.work == d.constructionDays) and (s.owner != "" or s.work == 0 and not s.completed) and (s.owner == "" or s.lastDay >= d.firstDay) and (s.owner == "" or s.work <= s.lastDay - d.firstDay)
 		if kind == "j"
 			let i = target.science.index(record.field(1))
 			if record.count != 12 or i < 0 or target.science.states[i].restored
@@ -1794,7 +1820,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		if (not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
@@ -1806,12 +1832,14 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		parsed.landYear = landYear
 		destroy parsed.science
 		parsed.science = science.fork()
+		destroy parsed.finance
+		parsed.finance = finance.fork()
 		destroy parsed.naval
 		parsed.naval = naval.fork()
 		parsed.traditionDefinitions = traditionDefinitions
 		parsed.combatBindings = combatBindings
 		parsed.voyages = voyages
-		parsed.legacyVoyages = not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
+		parsed.legacyVoyages = not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
 		parsed.legacyCombatProfiles = parsed.legacyVoyages and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
@@ -1842,18 +1870,27 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if traditionDefinitions != null and not traditionDefinitions.reconcile(parsed, parsed.legacyTraditions)
 			parsed.dispose()
 			return null
-		// Both branches authored v13 independently. Missing domains initialize
-		// unfunded during migration; v14 requires both complete ledgers.
+		for i = 0 to parsed.finance.count - 1
+			if (candidate.startsWith("v15|") or candidate.contains("|q,")) and not parsed.finance.states[i].restored
+				parsed.dispose()
+				return null
+			let state = parsed.finance.states[i]
+			let city = parsed.settlementIndex(parsed.finance.projects[i].settlementId)
+			if state.owner != "" and (city < 0 or not state.completed and parsed.settlements[city].controllerId != state.owner)
+				parsed.dispose()
+				return null
+		// Independent v13/v14 branches may lack naval or finance records.
+		// Missing domains migrate unfunded; v15 requires every configured ledger.
 		for i = 0 to parsed.land.count - 1
-			if (candidate.startsWith("v14|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
+			if (candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.civic.count - 1
-			if (candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
+			if (candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
-			if (candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored
+			if (candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
@@ -1866,7 +1903,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 					return null
 		for i = 0 to parsed.forceCount - 1
 			let f = parsed.forces[i]
-			if candidate.startsWith("v14|") and f.kind == FORCE_FLEET and not f.hull.restored
+			if candidate.startsWith("v15|") and f.kind == FORCE_FLEET and not f.hull.restored
 				parsed.dispose()
 				return null
 			let p = parsed.naval.profile(f.combatProfileId, f.unitTypeId)
@@ -1875,7 +1912,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				return null
 		for i = 0 to parsed.naval.count - 1
 			let s = parsed.naval.states[i]
-			if (candidate.startsWith("v14|") or candidate.contains("|y,")) and not s.restored
+			if (candidate.startsWith("v15|") or candidate.contains("|y,")) and not s.restored
 				parsed.dispose()
 				return null
 			if s.target != ""
@@ -1914,6 +1951,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let parsed = parseSnapshot(candidate)
 		if parsed == null
 			return false
+		for i = 0 to parsed.finance.count - 1
+			if campaignDay >= 0 and parsed.finance.states[i].lastDay > campaignDay
+				parsed.dispose()
+				return false
 		for i = 0 to parsed.land.count - 1
 			if campaignDay >= 0 and parsed.land.arsenals[i].lastDay > campaignDay
 				parsed.dispose()
@@ -1967,11 +2008,14 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			destroy traditions[i]
 		for i = 0 to conflictCount - 1
 			destroy conflicts[i]
+		destroy finance
 		destroy naval
 		naval = parsed.naval
 		parsed.naval = new NavalLedger()
 		destroy science
 		destroy civic
+		finance = parsed.finance
+		parsed.finance = new FinanceLedger()
 		science = parsed.science
 		parsed.science = new ScienceLedger()
 		civic = parsed.civic
