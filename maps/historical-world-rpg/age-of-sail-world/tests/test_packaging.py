@@ -106,7 +106,8 @@ class PackagingTests(unittest.TestCase):
         self.assertGreater(source.count("function configureGeneratedTrade"), 2)
         goods = {row["id"]: row for row in json.loads((self.project / "scenario/economy/global-goods.json").read_text())["goods"]}
         defaults = json.loads((self.project / "scenario/economy/playable-trade.json").read_text())["marketDefaults"]
-        records = re.findall(r'runtime.registerMarketProfile\("([^"]+)","([^"]+)",([^\n]+)\)', source)
+        # Include spaced industrial supply/output registrations in the pricing checks.
+        records = re.findall(r'runtime.registerMarketProfile\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,([^\n]+)\)', source)
         self.assertEqual(source.count("runtime.registerMarketProfile("), len(records))
         for market, good_id, arguments in records:
             with self.subTest(market=market, good=good_id):
