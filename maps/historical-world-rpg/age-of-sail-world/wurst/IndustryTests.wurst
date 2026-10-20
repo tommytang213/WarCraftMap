@@ -231,11 +231,11 @@ class IndustryFixture
 	state.work = 234567
 	f.extension.trade.market.stock = 88
 	let before = f.military.snapshot()
-	let trade = f.extension.trade.captureState()
+	let trade = f.extension.trade.capture()
 	f.extension.fail = true
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
 	f.military.snapshot().assertEquals(before)
-	f.extension.trade.captureState().assertEquals(trade)
+	f.extension.trade.capture().assertEquals(trade)
 	f.extension.fail = false
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.military.industry.states[0].work.assertEquals(123456)
