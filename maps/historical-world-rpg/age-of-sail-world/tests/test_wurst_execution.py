@@ -104,6 +104,14 @@ class WurstExecutionTests(unittest.TestCase):
             "transferDoesNotMaterializeAbstractCompanionAssignedToDestination",
         }.issubset(discovered))
 
+    def test_each_legacy_military_integer_schema_has_an_independent_campaign_test(self):
+        discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)
+                      if row["id"].startswith("wurst/MilitaryCombatEventsTests.wurst:")}
+        self.assertTrue({
+            f"legacyMilitaryIntegerVersion{schema}MigratesThroughFreshCampaignCodec"
+            for schema in range(1, 8)
+        }.issubset(discovered))
+
     def test_required_suite_discovers_production_pirate_founding_and_load_regressions(self):
         discovered = {row["id"].split(":")[1] for row in execution.discover(PROJECT)}
         self.assertTrue({

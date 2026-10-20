@@ -1,5 +1,27 @@
 # Issue #519 focused development evidence
 
+PR #542 CI repair is recorded in `ci-repair-verification.json` and the
+`ci-repair-*` inputs and transcripts. The failed job is linked in `ci-failure.txt`:
+its single seven-schema military migration test exceeded the pinned interpreter's
+20-second per-test deadline. Each schema now has an independent test calling the
+same complete migration journey. All original load, XP, order, consumed-loss,
+save round-trip, replay and invalid-input assertions remain. A discovery test
+requires all seven schema cases; the compiler deadline is unchanged.
+
+Fresh pinned typechecking and all **45 selected Wurst tests pass**, including the
+seven migration schemas, all seven logistics cases, finance, land-army and
+industry tests. The food/freight comparisons emit their real production probes.
+All **163 Python tests pass**: logistics (9), finance (7), compiler execution and
+release gating (23), related gameplay/save/audit regressions (115), and reusable
+framework conformance (9). The Python packaging tests use synthetic compiler
+fixtures; their printed 664-test totals are not real Wurst execution evidence.
+Current-source generation/provenance verification, canonical map-source and
+framework-boundary checks pass. Runtime, release and traceability source reports
+are refreshed with the same outstanding blockers. This focused repair evidence
+does not replace the outer worker's complete repository, packaging and
+same-revision release validation. Both exact logistics findings and native launch
+#438 remain blocking pending their required evidence.
+
 The merge integration repair is recorded separately in
 `integration-verification.json` and the `integration-*` transcripts. It preserves
 both #519 logistics and main's #518 industry consumers. Military snapshot v17
