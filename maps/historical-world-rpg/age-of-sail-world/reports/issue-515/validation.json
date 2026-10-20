@@ -1,0 +1,65 @@
+{
+  "issue": 515,
+  "worktreeBase": "194bd4a028e400bf88f0fa69ab6ef20696a258f0",
+  "scope": "Focused development evidence for this dirty worktree; full repository validation and current-main audits are delegated to the controller.",
+  "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "containerSafety": "Network disabled; input and dependency mounts read-only; compilation in container-private /tmp/project. No permission changes or writable worktree mounts.",
+  "wurst": {
+    "typecheck": "passed",
+    "LandArmyEffectsTests": 8,
+    "lateLoadFailureRestoresLandArmyPolicyWorkAndFiringClock": 1,
+    "installedLandDrillAndBayonetUseProductionWeaponCallbacks": 1,
+    "log": "pinned-focused-wurst.log.gz"
+  },
+  "pythonPassed": {
+    "test_research_generation": 9,
+    "test_release_save_compatibility": 6,
+    "test_civic_governance": 4,
+    "test_combat_effects": 13,
+    "test_military": 12,
+    "test_research_cost_contract": 1,
+    "test_research_gameplay_design": 3,
+    "test_land_army_effects": 5,
+    "test_packaging.test_clean_build_contains_generated_data_lua_metadata_and_no_fixtures": 1,
+    "focused_framework_conformance_checks": 3
+  },
+  "additionalChecks": [
+    "framework content boundary",
+    "cross-scenario physical adapter and generation conformance",
+    "synthetic packaging orchestration/archive inspection (not native execution)",
+    "assembled folder-map runtime inspection; four effects, 97 kit profiles, three authored arsenals"
+  ],
+  "releaseFindingsRetained": [
+    "release:RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL",
+    "release:RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES",
+    "release:RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN",
+    "release:RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM"
+  ],
+  "nativeCrash438": "Unchanged and blocked; no native-playability claim.",
+  "sourceSha256": {
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_map.py": "d709b14d119582cce824395c69bdb7ecff90062e1b660f6630519cb2f9ff8de3",
+    "maps/historical-world-rpg/_shared/wurst-tests/FrameworkPorts.wurst": "dd7c72d530d2d26c9b8a122a20a64d58d74c0dbd8f123c6c1b9cfd6b95cfc4cd",
+    "maps/historical-world-rpg/_shared/wurst/Bootstrap.wurst": "a2485bed3fedb7d479838acf5370c2429221f42f0da12cd35c009637cdfe2231",
+    "maps/historical-world-rpg/_shared/wurst/CampaignRegistration.wurst": "4277e8e6c1def17698884325d82fed2cf80456930fb555fbf6b87e38f0e77240",
+    "maps/historical-world-rpg/_shared/wurst/CombatEffects.wurst": "5306c3bc6fe9e91ae126b975d96583b09edfc185e2bad9b2513ea0418ffc2693",
+    "maps/historical-world-rpg/_shared/wurst/LandArmyEffects.wurst": "6ff527618b08fb6bdf65223db358c64d82ad5d6b287ed8f11594457fc4f5a279",
+    "maps/historical-world-rpg/_shared/wurst/LandArmyRuntime.wurst": "d84b0571b4f9686a1c9665d603252c8d8524591b66da4dd8e3ed2c1a225704af",
+    "maps/historical-world-rpg/_shared/wurst/MilitaryCombatEvents.wurst": "5e148a119b96b6215dc07918a455e7fbe9a8bc2dcb620158ad15dcd35116e978",
+    "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst": "557aa299e1135df59dc2b676153f319c2c23889071e08229059106f66900a0fc",
+    "maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst": "6f4a4d9c6ff4a10a5d5a7bf04ba869386d532b7c2e3229dc59c0b2c2aae6ff52",
+    "maps/historical-world-rpg/_shared/wurst/WC3Compatibility.wurst": "eb7b09c806da4abf3f8131d142cc3100f231fb0c51a9288fd6e7b834edd17806",
+    "maps/historical-world-rpg/_shared/wurst/WarcraftRpgRuntime.wurst": "39373a2419812762921e9b4e760aacc8af3ddf7f4fcaba4bfd0f72ec2c2da6ff",
+    "maps/historical-world-rpg/age-of-sail-world/docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md": "c2aa4bccc524c4e4b62983a877dfef257d2b7c9e4b977f3a86e583ea7d7c0e8f",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/compatibility/release-save-v1.json": "c63177e898ee1d05d8ca13ddcc58a52b7faf87495a3e1bdf022f081c528713b6",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/progression/land-army.json": "b497ecf05fad74499321f922fcbccb85c88a2ab3172be1b560b8ec5dd02b3692",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/runtime-integration.json": "12d9fd3cbc3738414bc9e7b2b9ce6d82b395b1ce9066f0a73439cd43f4fdde8b",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_land_army_effects.py": "71b8f21ab9396bec2423eb51bb68d77e8d4d33002cc68525016d93a83b6cd3d4",
+    "maps/historical-world-rpg/age-of-sail-world/tooling/land_army_catalog.py": "f333ec9ebca9aa68b8045cb8b618ad52a4c05daabb2d4610142a9d741c4108e1",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignLoadTransactionTests.wurst": "85e4e6a02e1dd2e301db5180de5934bf4b363e65f616aecbfd7be97dd2dd95a3",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CivicGovernanceTests.wurst": "07e51a41c93999fc5d5321dca81a42e492c340ed62d17b9929a9db877b427fe2",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/LandArmyEffectsTests.wurst": "39905916f04f97e7f08f9378d36c7712e39ff7ebfc4601f87ec72b685885bcf1",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitaryCombatEventsTests.wurst": "ec8a17dfbcf3fba8937d62e59bbe96eee3e3fae58082e5a2c8ef69e634d0b84b",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitarySettlementRuntimeTests.wurst": "3536dff4b737f31580ac70a00dd7405fab908346b26bc43143c61d7a791fbafd"
+  },
+  "generation": "Final generated executable exactly matches the assembly used by all ten passing pinned Wurst tests. Catalogue/provenance mutation rejection passed."
+}

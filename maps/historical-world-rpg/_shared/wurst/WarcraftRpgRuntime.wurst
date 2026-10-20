@@ -5,8 +5,11 @@ import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
+import TradeFinance
+import NavalServices
 import ScienceExploration
 import CivicGovernance
+import LandArmyEffects
 import QuestStages
 import HeroProgression
 import HeroAllocationDefinitions
@@ -1959,6 +1962,20 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				rows += " - not earned"
 			rows += " (" + runtime.technologies.bindingStatus(entry) + ")"
 			var port = runtime.technologies.effects
+			if port instanceof NavalResearchEffects
+				let naval = port castTo NavalResearchEffects
+				for k = 0 to naval.definitionCount - 1
+					let binding = naval.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires qualifying paid naval activity. Use /naval inspect PORT for bills, gear, era, construction time and upkeep."
+				port = naval.upstream
+			if port instanceof FinanceResearchEffects
+				let finance = port castTo FinanceResearchEffects
+				for k = 0 to finance.definitionCount - 1
+					let binding = finance.definitions[k] castTo FinanceEffect
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    " + I2S(binding.basisPoints) + " bp " + binding.metric + "; eligible activity from campaign day " + I2S(binding.firstDay) + ". Requires actual controlled exchange/banking/canal infrastructure and funded activity. Use /finance inspect for costs, conditions and results."
+				port = finance.upstream
 			if port instanceof ScienceResearchEffects
 				let science = port castTo ScienceResearchEffects
 				for k = 0 to science.definitionCount - 1
@@ -1966,6 +1983,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
 						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires supported funded work, commissioned equipment and actual inputs. Use /science inspect SITE for conditions, expenses and duration."
 				port = science.upstream
+			if port instanceof LandResearchEffects
+				let land = port castTo LandResearchEffects
+				for k = 0 to land.definitionCount - 1
+					let binding = land.definitions[k]
+					if entry.kind == binding.kind and entry.contentId == binding.contentId
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires current control, historical availability and actual compatible equipment/supply. Use /land inspect ARSENAL for costs, conditions, duration and upkeep."
+				port = land.upstream
 			if port instanceof CivicResearchEffects
 				let civic = port castTo CivicResearchEffects
 				for k = 0 to civic.definitionCount - 1

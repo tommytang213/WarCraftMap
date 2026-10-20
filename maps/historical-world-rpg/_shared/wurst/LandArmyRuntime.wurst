@@ -1,0 +1,186 @@
+package LandArmyRuntime
+
+import LandArmyEffects
+import CivicGovernance
+import CivicCampaignRuntime
+import initlater PlayableCampaignRuntime
+import initlater PlayableTrade
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+import CampaignTimeline
+import CommandRouter
+
+/** Real transactions against durable governments, settlements and markets.
+ * A connected route here is a local, unblocked delivery within supplyRadius;
+ * distant/hostile/isolated forces cannot claim a logistics benefit. */
+public class LandArmyRuntime
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	CampaignCivicEconomy economy
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		this.campaign = campaign
+		this.trade = trade
+		economy = new CampaignCivicEconomy(campaign, trade)
+	function available(LandProfile profile, string owner) returns boolean
+		if profile == null or campaign.clock.campaignYear() < profile.firstYear or campaign.clock.campaignYear() > profile.lastYear
+			return false
+		for i = 0 to campaign.rpg.technologies.count - 1
+			let node = campaign.rpg.technologies.definitions[i].id
+			if profile.requiredResearch.contains("," + node + ",") and not campaign.rpg.technologies.isUnlocked(owner, node)
+				return false
+		return true
+	function usable(string id, string owner) returns boolean
+		let military = campaign.militarySettlements
+		return military.land.index(id) >= 0 and economy.controller(id) == owner and economy.lawful(id) and economy.accessible(id)
+	function officeActive(ArsenalState state, int day) returns boolean
+		return state.owner != "" and state.owner == economy.controller(state.id) and usable(state.id, state.owner) and day >= state.ready and day < state.upkeepThrough and campaign.militarySettlements.land.rate(state.owner, "artillery_production_throughput") > 0
+	function advance(int day)
+		let military = campaign.militarySettlements
+		let ledger = military.land
+		military.landYear = campaign.clock.campaignYear()
+		for i = 0 to ledger.count - 1
+			let s = ledger.arsenals[i]
+			if s.lastDay == 0
+				s.lastDay = day
+			while s.lastDay < day
+				s.lastDay++
+				let at = s.lastDay
+				if economy.controller(s.id) != s.owner and s.owner != "" or economy.controller(s.id) != s.projectOwner and s.projectOwner != ""
+					s.cancel()
+				if s.owner != "" and at >= s.ready and at >= s.upkeepThrough and usable(s.id, s.owner)
+					let district = military.civic.index(s.id)
+					if district >= 0 and ledger.rate(s.owner, "artillery_production_throughput") > 0 and economy.pay(s.owner, s.id, civicBill(military.civic.districts[district].annualTax, ledger.upkeepBasisPoints), "", 0)
+						s.upkeepThrough = at + 365
+					else
+						s.owner = ""
+						s.ready = 0
+						s.upkeepThrough = 0
+				let profile = ledger.profile(ledger.commissionProfile)
+				if s.projectOwner != "" and usable(s.id, s.projectOwner) and available(profile, s.projectOwner)
+					var work = 10000
+					if s.officeBillPaid and officeActive(s, at - 1)
+						work += ledger.rate(s.projectOwner, "artillery_production_throughput")
+					// Work completed during the interval ending at this day.
+					s.work = IMinBJ(ledger.constructionDays * 10000, s.work + work)
+					if s.work >= ledger.constructionDays * 10000 and military.forceCount < 4096
+						let city = economy.settlement(s.id)
+						let made = new RuntimeForce("artillery:" + s.id + ":" + I2S(s.serial), s.projectOwner, city.regionId, profile.categoryId, FORCE_ARMY, profile.unitTypeId, profile.strength, ledger.supplyPerBattery, city.x, city.y)
+						made.combatProfileId = profile.id
+						if military.recruit(made)
+							s.projectOwner = ""
+							s.work = 0
+							s.officeBillPaid = false
+						else
+							destroy made
+		military.refreshLandReload()
+	function act(string owner, string action, string id, string forceId) returns string
+		if campaign.loading or campaign.startupLocked or campaign.transitionOpen
+			return "Campaign actions are unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		let military = campaign.militarySettlements
+		let ledger = military.land
+		let i = ledger.index(id)
+		if owner == "" or i < 0 or not usable(id, owner)
+			return "Requires a lawfully controlled, administered arsenal, province and accessible local ordnance market."
+		let s = ledger.arsenals[i]
+		let district = military.civic.index(id)
+		let day = campaign.clock.currentDay
+		if district < 0 or military.civic.districts[district].annualTax <= 0
+			return "The local annual tax assessment is unavailable."
+		if action == "repeal"
+			s.owner = ""
+			s.ready = 0
+			s.upkeepThrough = 0
+			return ""
+		if action == "policy"
+			if ledger.rate(owner, "artillery_production_throughput") <= 0 or s.owner != ""
+				return "Requires completed artillery office research; an existing policy cannot stack."
+			if not economy.pay(owner, id, civicBill(military.civic.districts[district].annualTax, ledger.enactmentBasisPoints), "", 0)
+				return "Insufficient government treasury."
+			s.owner = owner
+			s.ready = day + ledger.transitionDays
+			s.upkeepThrough = s.ready
+			return ""
+		if action == "commission"
+			let kit = ledger.profile(ledger.commissionProfile)
+			let city = economy.settlement(id)
+			if not available(kit, owner) or s.projectOwner != "" or military.forceCount >= 4096 or s.serial >= 2147483646
+				return "Requires historical availability, artillery technology, a free production queue and force capacity."
+			if city.manpower < ledger.crewPerBattery or city.supply < ledger.supplyPerBattery or military.forceIndex("artillery:" + id + ":" + I2S(s.serial + 1)) >= 0
+				return "Insufficient actual crew, supply or unique production identity."
+			var bill = kit.cost
+			let office = officeActive(s, day)
+			if office
+				bill += civicBill(kit.cost, ledger.procurementUpkeepBasisPoints)
+			if not economy.pay(owner, id, bill, ledger.armsGood, ledger.armsPerBattery)
+				return "Insufficient government treasury or actual manufacturing inputs."
+			city.manpower -= ledger.crewPerBattery
+			city.supply -= ledger.supplyPerBattery
+			s.projectOwner = owner
+			s.work = 0
+			s.officeBillPaid = office
+			s.serial++
+			return ""
+		if action == "supply"
+			let f = military.forceIndex(forceId)
+			if f < 0
+				return "Choose a supplied field artillery force at this arsenal."
+			let target = military.forces[f]
+			let kit = military.landKit(target)
+			let city = economy.settlement(id)
+			let dx = target.x - city.x
+			let dy = target.y - city.y
+			if kit == null or not kit.artillery or not target.active or target.strength <= 0 or target.controllerId != owner or target.supply <= 0 or not militaryMapMatches(target.regionId, city.regionId) and not militaryMapMatches(city.regionId, target.regionId) or dx * dx + dy * dy > I2R(ledger.supplyRadius) * I2R(ledger.supplyRadius)
+				return "Requires owned, living, supplied artillery on a connected local route within supply radius."
+			let saved = civicScale(ledger.shipmentWaste, IMinBJ(10000, ledger.rate(owner, "artillery_supply_waste_reduction")))
+			let delivered = ledger.shipmentArms - ledger.shipmentWaste + saved
+			if target.supply > 2147483647 - delivered
+				return "Artillery supply capacity is unavailable."
+			let stock = trade.findMarket(id, ledger.armsGood)
+			if stock == null or stock.blockaded or stock.occupiedByHostile or stock.stock < ledger.shipmentArms
+				return "Insufficient accessible ordnance stock; ammunition cannot be created."
+			stock.stock -= ledger.shipmentArms
+			target.supply += delivered
+			return ""
+		return "Use policy, repeal, commission or supply."
+	function overview(string owner, string id) returns string
+		let military = campaign.militarySettlements
+		let ledger = military.land
+		let i = ledger.index(id)
+		if i < 0 or not economy.known(owner, id)
+			return "Choose a known, lawfully administered arsenal with local production."
+		let d = military.civic.index(id)
+		let kit = ledger.profile(ledger.commissionProfile)
+		let s = ledger.arsenals[i]
+		return "Land army / arsenal " + id + ". Policy: +" + I2S(ledger.rate(owner, "artillery_production_throughput")) + " bp paid artillery production work; enactment " + I2S(civicBill(military.civic.districts[d].annualTax, ledger.enactmentBasisPoints)) + " currency; transition " + I2S(ledger.transitionDays) + " days; annual administration " + I2S(civicBill(military.civic.districts[d].annualTax, ledger.upkeepBasisPoints)) + "; procurement administration +" + I2S(ledger.procurementUpkeepBasisPoints) + " bp. Ready day " + I2S(s.ready) + "; funded through " + I2S(s.upkeepThrough) + ".\nCommission: " + I2S(kit.cost) + " currency plus administration, " + I2S(ledger.armsPerBattery) + " " + ledger.armsGood + ", " + I2S(ledger.crewPerBattery) + " manpower, " + I2S(ledger.supplyPerBattery) + " supply; " + I2S(ledger.constructionDays) + " workshop days before throughput. Work " + I2S(s.work) + ". Requires arsenal, local administrator, legal control, equipment, historical availability and artillery technology.\nSupply: withdraw " + I2S(ledger.shipmentArms) + " " + ledger.armsGood + "; normal handling waste " + I2S(ledger.shipmentWaste) + "; research reduces waste by " + I2S(ledger.rate(owner, "artillery_supply_waste_reduction")) + " bp. Requires supplied field artillery within " + I2S(ledger.supplyRadius) + " map units, on the same local route, and an unblocked ordnance market.\nReload efficiency +" + I2S(ledger.rate(owner, "firearm_reload_efficiency")) + " bp only on land formation arquebus/musket equipment. Bayonet defense +" + I2S(ledger.rate(owner, "anti_cavalry_melee_defense")) + " bp only on socket bayonet equipped infantry against verified cavalry melee. Use /land <inspect|policy|repeal|commission> ARSENAL or /land supply ARSENAL FORCE."
+
+class LandArmyCommand implements CommandHandler
+	LandArmyRuntime runtime
+	CommandOutput output
+	construct(LandArmyRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let cut = arguments.indexOf(" ")
+		if sender != Player(0) or cut <= 0
+			return
+		let action = SubString(arguments, 0, cut)
+		var id = SubString(arguments, cut + 1, StringLength(arguments))
+		var forceId = ""
+		let next = id.indexOf(" ")
+		if next >= 0
+			forceId = SubString(id, next + 1, StringLength(id))
+			id = SubString(id, 0, next)
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			runtime.campaign.rpg.management.open("technology")
+			output.show(sender, runtime.overview(owner, id))
+		else
+			let problem = runtime.act(owner, action, id, forceId)
+			if problem == ""
+				output.show(sender, "Land army action completed.\n" + runtime.overview(owner, id))
+			else
+				output.show(sender, problem)
+
+public function registerLandArmyCommands(CommandRegistry commands, LandArmyRuntime runtime) returns string
+	return commands.register("land", "", "land <inspect|policy|repeal|commission|supply> ARSENAL [FORCE]", "Manage artillery production and local ammunition deliveries.", "Inspect conditions, costs and timelines. Uses government treasury, existing materials, crew and supply. The same legal actions are available to AI controllers.", 2, 3, COMMAND_RELEASE, new LandArmyCommand(runtime, commands.output))

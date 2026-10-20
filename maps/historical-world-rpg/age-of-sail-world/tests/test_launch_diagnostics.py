@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -61,9 +62,17 @@ class LaunchIdentityTests(unittest.TestCase):
                 smoke.build_id(self.identity, self.digest, run, attempt)
 
     def test_known_failed_bytes_cannot_be_relabeled_as_new_candidate(self):
-        for constant in ("FAILING_SHA256", "PREVIOUS_FAILING_SHA256"):
-            with patch.object(smoke, constant, self.digest), self.assertRaisesRegex(ValueError, "repeat the failing"):
-                smoke.stage(self.campaign, self.root / "missing-execution", self.root / "rejected", "a" * 40)
+        failed_hashes = (smoke.FAILING_SHA256, smoke.PREVIOUS_FAILING_SHA256,
+                         "ca03705c83fa714e2799f3be42f109d993d96c39334885b7974d6417f6ae31da",
+                         "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
+                         "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6")
+        for failed in failed_hashes:
+            with self.subTest(digest=failed), patch.object(smoke.hashlib, "sha256") as digest:
+                digest.return_value.hexdigest.return_value = failed
+                with self.assertRaisesRegex(ValueError, "repeat the failing"):
+                    smoke.stage(self.campaign, self.root / "missing-execution", self.root / "rejected", "a" * 40)
+            with self.assertRaisesRegex(ValueError, "repeat the failing"):
+                smoke.publish(self.campaign, self.root / "rejected", self.result() | {"campaignSha256": failed})
         self.assertFalse((self.root / "rejected").exists())
 
     def test_staging_changes_no_archive_or_nested_map_bytes(self):
@@ -105,6 +114,92 @@ class LaunchIdentityTests(unittest.TestCase):
         smoke.publish(self.campaign, self.root / "new", self.result())
         with self.assertRaisesRegex(ValueError, "empty"):
             smoke.publish(self.campaign, self.root / "new", self.result())
+
+
+class RootBasenameHandoffTests(unittest.TestCase):
+    # Static Lua fixture only; no Warcraft or real compiler execution is claimed.
+    LUA = b'''function config() end
+function main()
+ SetDayNightModels("terrain.mdl", "unit.mdl")
+ InitBlizzard()
+ TimerStart(CreateTimer(), 0, false, showPage)
+end
+function showPage() end
+function choose(path) ChangeLevel(path, true) end
+function origins()
+ add("austria", "Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x")
+end
+'''
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.config = SimpleNamespace(map_config_path=self.root / "package.json", maps=(
+            SimpleNamespace(id="bootstrap_runtime_validation", package_path="AgeOfSailWorld.w3x", bootstrap=True, terrain_ids=()),
+            SimpleNamespace(id="europe_central_east", package_path="EuropeCentralEast.w3x", bootstrap=False, terrain_ids=()),
+        ))
+
+    def test_compiled_handoff_rejects_legacy_paths_comments_and_missing_native(self):
+        valid = smoke.inspect_root_basename_handoff(self.config, self.LUA)
+        self.assertEqual(valid["destinationPackagePath"], "EuropeCentralEast.w3x")
+        self.assertEqual(valid["evidenceLevel"], "compiled_text_static_heuristic")
+        cases = (
+            self.LUA.replace(b'"EuropeCentralEast.w3x"', b'"Maps/EuropeCentralEast.w3x"') + b'\n-- "EuropeCentralEast.w3x"',
+            self.LUA + b'\nlegacy = "Maps/EuropeCentralEast.w3x"',
+            self.LUA.replace(b'ChangeLevel(path, true)', b'EndGame(true)') + b'\n-- ChangeLevel(path, true)',
+        )
+        for script in cases:
+            with self.subTest(script=script), self.assertRaises(ValueError):
+                smoke.inspect_root_basename_handoff(self.config, script)
+        self.config.maps[1].package_path = "Maps/EuropeCentralEast.w3x"
+        with self.assertRaisesRegex(ValueError, "root-basename"):
+            smoke.inspect_root_basename_handoff(self.config, self.LUA)
+
+    def test_profile_stages_accurate_receipt_without_granting_native_acceptance(self):
+        identity = {"sourceRevision": "a" * 40, "sourceTreeSha256": "b" * 64}
+        members = {}
+        for physical in self.config.maps:
+            nested = self.root / physical.package_path
+            write_mpq(nested, {"war3map.lua": self.LUA, "war3map.w3i": b"fixture",
+                               "runtime/build-identity.json": json.dumps(identity).encode()})
+            members[physical.package_path] = nested.read_bytes()
+        campaign = self.root / "candidate.w3n"
+        write_mpq(campaign, members)
+        execution = self.root / "execution"
+        execution.mkdir()
+        (execution / "results.json").write_text(json.dumps({"succeeded": 1, "compiler": "unit-test fixture"}))
+        (execution / "execution.log").write_bytes(b"unit-test fixture")
+        output = self.root / "staged"
+        # Existing compiler/binary gates have their own tests. Mock them only
+        # here to isolate profile staging, using actual nested MPQ bytes.
+        with patch.object(smoke, "source_identity", return_value=identity), \
+                patch.object(smoke, "load_campaign_config", return_value=self.config), \
+                patch.object(smoke, "load_config"), patch.object(smoke, "verify_execution_coverage"), \
+                patch.object(smoke, "inspect_campaign"), patch.object(smoke, "_inspect"), \
+                patch.object(smoke, "_inspect_physical_map"), \
+                patch.object(smoke, "parse_w3i", return_value={"format": 33, "gameVersion": [3, 0, 0, 24268]}):
+            result = smoke.stage(campaign, execution, output, "a" * 40, profile=smoke.HANDOFF_PROFILE)
+        self.assertEqual(result["origin_to_region_native"], "not_run")
+        self.assertEqual(result["campaign_native"], "not_run")
+        self.assertEqual(result["nativeClient"]["revisedArtifact"], "not_run")
+        self.assertEqual(result["nativeClient"]["reproduction"], "failed")
+        self.assertEqual(result["reproductionSha256"], smoke.FAILING_SHA256)
+        self.assertEqual(len(result["failedTransitionArtifacts"]), 3)
+        self.assertFalse(result["releaseCandidate"])
+        self.assertFalse(result["playerTestRequested"])
+        self.assertEqual(result["diagnosis"], "diagnosis_unconfirmed")
+        self.assertEqual(result["latestTransitionObservation"]["destinationLuaInitialized"], "unknown")
+        self.assertEqual((output / result["installedCampaignPath"]).read_bytes(), campaign.read_bytes())
+        self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
+        instructions = (output / "LAUNCH-SMOKE-ONLY.txt").read_text()
+        self.assertIn("/origin choose austria", instructions)
+        self.assertIn("terrain AND a player-controlled unit", instructions)
+        self.assertIn("movement order", instructions)
+        self.assertIn("Victory/Continue", instructions)
+        self.assertIn("No player retest is requested", instructions)
+        self.assertNotIn("WGC", instructions + result["remainingDiscriminator"])
+        self.assertIn("unconfirmed", instructions)
 
 
 class NativeDiagnosticTests(unittest.TestCase):

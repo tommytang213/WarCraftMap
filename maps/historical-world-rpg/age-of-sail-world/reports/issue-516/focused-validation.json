@@ -1,0 +1,236 @@
+{
+  "format": "warcraftmap_issue516_focused_development_v1",
+  "scope": "Focused development checks only; full integrated repository, release and native-client validation remain with the controller.",
+  "baseRevision": "1c5ae80352e63abd9fb87cdb36baf8319730222f",
+  "dirtyWorktree": true,
+  "designDependencyMerge": "9db8952",
+  "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "containerSourceMount": "readonly; all build writes in container-private /tmp",
+  "wurst": {
+    "typecheck": "pass",
+    "passed": 28,
+    "tests": [
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonRegisteredResearchChangesQualifiedGameplayExactlyOnce",
+        "line": 1739,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonRejectsWrongWeaponsControllersAndNativeEvents",
+        "line": 1758,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonComposesExactTraditionRefitAndAbstractRatings",
+        "line": 1792,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonSaveLoadReconstructionAndLateRollbackKeepCurrentContribution",
+        "line": 1818,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs",
+        "line": 119,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesOnlyModifyCloseVerifiedCannonHitsAndPreserveOtherRatingsOnCaptureAndReload",
+        "line": 158,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity",
+        "line": 185,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic",
+        "line": 203,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesUseInstalledProductionWeaponCallbacksAndRejectStaleAndIncompatibleHits",
+        "line": 247,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalSourcesReconstructOnceAndLongCampaignFractionsConserveActualHullInputs",
+        "line": 271,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalHistoryInfrastructureGearAndResourceNegativesSuspendWithoutInventedOutput",
+        "line": 296,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision",
+        "line": 329,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl",
+        "line": 58,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:voyageRejectionsKeepProvisionTimeKnowledgeEquipmentAndResearchAuthority",
+        "line": 86,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:voyageEquipmentIsPaidIdempotentAndReevaluatedAtResolution",
+        "line": 124,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:fixedPointVoyageInterruptionsAndControllerChangesPreserveOnlyElapsedBenefit",
+        "line": 145,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:activeAbstractSaveResumeAndRepeatedCallbackHaveExactVoyageParity",
+        "line": 172,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:navigationSaveValidationAndLegacyMigrationAreTransactional",
+        "line": 201,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:rejectedCampaignLoadRestoresVoyageReservationEquipmentAndFractionalCredit",
+        "line": 225,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:sharedCelestialEntitlementsAndReconstructionNeverMultiplyTheVoyageBenefit",
+        "line": 247,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
+        "line": 100,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
+        "line": 131,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills",
+        "line": 156,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceRejectionsCoverResearchEquipmentHistoryInstitutionRouteActorAccessAndResources",
+        "line": 183,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket",
+        "line": 232,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact",
+        "line": 255,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters",
+        "line": 296,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/WC3CompatibilityCompileFixture.wurst:compatibilityTargetAndCapabilitiesArePinned",
+        "line": 5,
+        "status": "pass"
+      }
+    ],
+    "navalProductionProbes": [
+      "naval_action",
+      "naval_advance",
+      "naval_combat",
+      "naval_pay",
+      "naval_registration",
+      "naval_repair",
+      "naval_weather"
+    ]
+  },
+  "python": {
+    "navalServices": 4,
+    "researchGeneration": 9,
+    "combatEffects": 13,
+    "scienceCompilation": 3,
+    "passed": 29
+  },
+  "packaging": {
+    "currentScenarioGeneration": "pass",
+    "currentScenarioVerifyGenerated": "pass",
+    "reusableConformanceGeneration": "pass",
+    "reusableConformanceVerifyGenerated": "pass"
+  },
+  "frameworkBoundary": "pass",
+  "releaseFindingsClosed": [],
+  "logs": {
+    "wurst-final.log.gz": {
+      "sha256": "9f662ba2ebcea6212a996dbde73362644182a7c64d5ab3a8d9970a7a9efb95f0",
+      "bytes": 244352
+    },
+    "python-final.log.gz": {
+      "sha256": "f006b58fc405af2c4692037f15695fbced096836a2eae045fc20a3fe39742601",
+      "bytes": 102
+    },
+    "research-generation.log.gz": {
+      "sha256": "0af9d9f577ce394e99bafa03ec752c4a3f15fb21526a9a14c5cf4f8b57d5d35e",
+      "bytes": 108
+    },
+    "combat.log.gz": {
+      "sha256": "571ddddcc21e8dc504b2fa44ca7455f5e6778b9f6ebf237fc0551e38188bf4b5",
+      "bytes": 112
+    },
+    "science.log.gz": {
+      "sha256": "606e2b4b327997bad20c032fcb674d7fb79477b44873942f4bba7fa6fe8d9e11",
+      "bytes": 101
+    },
+    "boundary-final.log.gz": {
+      "sha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+      "bytes": 50
+    }
+  },
+  "sourceSha256": {
+    "maps/historical-world-rpg/_shared/tooling/package_wurst_map.py": "af697645a2a3dc872e7989b425b549e0e4c73348c1ef3b847cccbf06400cba6f",
+    "maps/historical-world-rpg/_shared/wurst/Bootstrap.wurst": "4253c00fee3c68d4380d92f7aad353f08729f3cdd9ad9b0adaea86edf5c0f46f",
+    "maps/historical-world-rpg/_shared/wurst/CampaignRegistration.wurst": "22effc8da4bb6f9a03df9641a98f21781e35c4163567d5d7e860fd0afc623c1f",
+    "maps/historical-world-rpg/_shared/wurst/MilitaryCombatEvents.wurst": "47b8149d31bf29df9c581d8c7a0d7caa4058d50c7691e08cae31ea3b28669b49",
+    "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst": "7286f988fd6aea46024669b0c981fe06af8fbce4ccc3965a57e15e62cc2dd760",
+    "maps/historical-world-rpg/_shared/wurst/NavalCampaignRuntime.wurst": "a4de602c24c98caafb163187d111973a90e87916f90e023a3a71a01463e5a931",
+    "maps/historical-world-rpg/_shared/wurst/NavalServices.wurst": "f32bd25cce02ddf3d47ee5161c2c0c6367240529847caad3aa4c7e94ac655d84",
+    "maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst": "a770598a78042e7d695d9c5e802b498e5121f8ef04ed29952526d13cdc523c88",
+    "maps/historical-world-rpg/_shared/wurst/ScienceCampaignRuntime.wurst": "4e5600ea36125c4e0211f751c09ff558cf6cc99a288321f567428b97bb8a6b4c",
+    "maps/historical-world-rpg/_shared/wurst/WarcraftRpgRuntime.wurst": "c12d85a8c707229839c2ac5c07d2ad7e1f5075454531c19cf7d9f7989e3435d2",
+    "maps/historical-world-rpg/age-of-sail-world/docs/HISTORICAL_BALANCE_AND_RESEARCH_EFFECTS.md": "22e6e9c5dd2ca24fc906a79e21af139ab38b45e40ca87a890d0927cfb62212bc",
+    "maps/historical-world-rpg/age-of-sail-world/package.json": "52c20c6baf0ddcafff9a95bc705695463bea324e7128cf79bcb3024889631042",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/naval/services.json": "4d41e80d48970419b9635c9947e9e2fc78da14f3f696a93c99b71fb671f3cb0f",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/runtime-execution.json": "ef0d01cc3197af96ac6b72e2b23091a6728dc15108869d1265f661b288002873",
+    "maps/historical-world-rpg/age-of-sail-world/tests/README.md": "0bf15cfb112cc2b8bc8f4a437b1fb19566faa0ece74c3fdec386fc28b3fe75c5",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_naval_services.py": "8984e0ef191d4443687f05ca7f710d0d36c402f0f64576ee9f3d85e254698f9f",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_research_generation.py": "9398a276e2a67a9e9e2ac411184ddce8521a6c810183e376f5c3ffe6046d6594",
+    "maps/historical-world-rpg/age-of-sail-world/tooling/naval_services_catalog.py": "f02edde4577a6297e66fe60da52a70b91211e7b577f9881f0962b49ed9c47dc1",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/AbstractSettlementTests.wurst": "2fafc68e03d1d8b9f8913dc4e947c2651207480cdd7ab4069b035b04853cf064",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignLoadTransactionTests.wurst": "6e3fc8485c7b80c82e79fea3dc6b955c425fa9f222c63eb76cc662196352056d",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CivicGovernanceTests.wurst": "15ee9fd149a0cab92c4ba5cd4388a530f79ac0c790e8308361b997f03238b4b5",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitaryCombatEventsTests.wurst": "be3e59659ca37db22cb8a2ae013acba30e7f269dfed6fe86117d49f7fcbe8d6b",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitaryOrderEventsTests.wurst": "90ff0baed2b7bce418f6cfff88f3d1da36161372afbe2be5444199a520a75454",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitarySettlementRuntimeTests.wurst": "4234ca17fc53cf9616f5c4af8c42918288f22dfbdf1dc314ff3b03a14ab16e1d",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/NavalCampaignRuntime.wurst": "a4de602c24c98caafb163187d111973a90e87916f90e023a3a71a01463e5a931",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/NavalServices.wurst": "f32bd25cce02ddf3d47ee5161c2c0c6367240529847caad3aa4c7e94ac655d84",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/NavalServicesTests.wurst": "cb8da7b24779a11db276eb6232d5d18ade2fd05d6c0d8aed1c062dd22090704e",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/NavigationEfficiencyTests.wurst": "4f9e995d6a1ddad053ce7ddf8b7103fae50c3e7f0345a6d8502818d3ad6d9021",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/ScienceExplorationTests.wurst": "78a4e1195a66d40948b995996c17b42d12eb338d7ee67b55e40f891034c9e155"
+  }
+}

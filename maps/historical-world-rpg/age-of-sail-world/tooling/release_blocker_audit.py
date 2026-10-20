@@ -102,7 +102,7 @@ def _audit_inputs(config):
     return hashes, findings
 
 
-def _audit_research_bindings():
+def _audit_research_bindings(*, execution=None, execution_log=None, revision=None):
     # Definition retention and successful entitlement delivery cannot establish
     # gameplay consumers. Keep each missing typed consumer accountable at release.
     from combat_effect_catalog import build
@@ -110,6 +110,8 @@ def _audit_research_bindings():
     from navigation_efficiency import build as navigation_contract
     navigation, _world = navigation_contract(PROJECT)
     bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
+    from trade_finance import verified_bindings
+    bound |= verified_bindings(PROJECT, execution, execution_log, revision)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
@@ -117,7 +119,7 @@ def _audit_research_bindings():
         for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bound)]
 
 
-def only_unbound_research_blocks(report):
+def only_unbound_research_blocks(report, *, execution=None, execution_log=None, revision=None):
     """Recognize the complete, current consumer gap without accepting other failures.
 
     This selects a publication-blocked result, never release readiness. The
@@ -125,7 +127,7 @@ def only_unbound_research_blocks(report):
     Exact findings prevent a missing consumer or an unrelated defect from being
     hidden by a shared class, ID prefix or caller-supplied count.
     """
-    expected = sorted(_audit_research_bindings(), key=lambda row: row["id"])
+    expected = sorted(_audit_research_bindings(execution=execution, execution_log=execution_log, revision=revision), key=lambda row: row["id"])
     return (bool(expected) and report.get("format") == REPORT_FORMAT
             and report.get("status") == "fail" and report.get("candidateReady") is False
             and report.get("disposition") == "release_blocked"
@@ -243,7 +245,7 @@ def build_report(*, injected_findings=(), execution=None, execution_log=None, re
     if runtime["status"] != "pass" or not runtime["candidateReady"]:
         runtime_findings.append(_finding("RUNTIME-EVIDENCE-INCOMPLETE", "missing_runtime_integration",
                                          "runtime-acceptance", "; ".join(runtime["failures"])))
-    findings = sorted([*report_findings, *input_findings, *runtime_findings, *_audit_research_bindings(),
+    findings = sorted([*report_findings, *input_findings, *runtime_findings, *_audit_research_bindings(execution=execution, execution_log=execution_log, revision=revision),
                        *injected_findings], key=lambda x: x["id"])
     for finding in findings:
         if finding.get("severity") not in taxonomy:

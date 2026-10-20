@@ -1,6 +1,7 @@
 package PlayablePiracyTests
 import PlayablePiracy
 import PiracyCommandTests
+import CampaignTimeline
 
 class OrdinarySystems implements PiratePolityAuthority
 	boolean accept=true
@@ -52,7 +53,10 @@ function rules() returns PiracyRules
 	runtime.state.polityId.assertEquals("")
 
 @test function saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition()
+	let previousClock = getCampaignClock()
+	installCampaignClock(null)
 	let f=new PrizeFixture()
+	(getCampaignClock() == f.clock).assertTrue()
 	let runtime=f.piracy
 	runtime.registerGovernmentForm("pirate_confederacy","Admiral")
 	f.combat.encounters[0].targetKind="military_ship"
@@ -74,3 +78,4 @@ function rules() returns PiracyRules
 	resumed.polity.governmentFormId.assertEquals("pirate_confederacy")
 	(resumed.polity.recognition.indexOf("england,tolerated~")>=0).assertTrue()
 	resumed.state.polityId.assertEquals("free_nassau")
+	installCampaignClock(previousClock)

@@ -17,8 +17,11 @@ import MilitaryOrderEvents
 import CampaignHandoff
 import CampaignSaveManager
 import CampaignRegistration
+import FinanceCampaignRuntime
+import NavalCampaignRuntime
 import ScienceCampaignRuntime
 import CivicCampaignRuntime
+import LandArmyRuntime
 import PlayableCampaignRuntime
 import PlayableTrade
 import CountryDiplomacyScreen
@@ -104,7 +107,10 @@ function initializeRegionalCampaign()
 	if tradeRegistrationProblem != ""
 		error(tradeRegistrationProblem)
 	registerCivicCommands(commands, campaign.state.civicRuntime)
+	registerLandArmyCommands(commands, campaign.state.landRuntime)
 	registerScienceCommands(commands, campaign.state.scienceRuntime)
+	registerFinanceCommands(commands, campaign.state.financeRuntime)
+	registerNavalCommands(commands, campaign.state.navalRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let voyageProblem = registerVoyageCommands(commands, campaign.state)
 	if voyageProblem != ""

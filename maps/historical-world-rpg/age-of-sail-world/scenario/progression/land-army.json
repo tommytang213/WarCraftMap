@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "metrics": [
+    "firearm_reload_efficiency",
+    "artillery_production_throughput",
+    "artillery_supply_waste_reduction",
+    "anti_cavalry_melee_defense"
+  ],
+  "rules": {
+    "transitionDays": 90,
+    "enactmentBasisPoints": 100,
+    "upkeepBasisPoints": 50,
+    "procurementUpkeepBasisPoints": 200,
+    "constructionDays": 90,
+    "armsPerBattery": 30,
+    "crewPerBattery": 30,
+    "supplyPerBattery": 30,
+    "shipmentArms": 100,
+    "shipmentWaste": 25,
+    "supplyRadius": 768
+  },
+  "predicates": {
+    "formationCategory": "land_formation",
+    "firearmWeapons": [
+      "arquebus",
+      "matchlock",
+      "musket_bayonet",
+      "traded_musket"
+    ],
+    "firearmEquipment": [
+      "matchlock_firearm",
+      "flintlock_musket",
+      "traded_firearms",
+      "bayonet_musket"
+    ],
+    "bayonetEquipment": [
+      "bayonet_musket"
+    ],
+    "cavalryWeapons": [
+      "sabre"
+    ],
+    "artilleryWeapons": [
+      "field_cannon",
+      "light_cannon"
+    ],
+    "armsGood": "arms",
+    "arsenalProductionRef": "arms",
+    "commissionProfile": "field_artillery_battery",
+    "firearmReloadMillisByTemplate": {
+      "foot_company_runtime": 1350
+    },
+    "nativeAttackByTemplate": {
+      "foot_company_runtime": "normal",
+      "mounted_company_runtime": "normal"
+    }
+  },
+  "notes": [
+    "An authored arms-producing settlement with an accessible arms market is the bounded arsenal facility. Government legal control and a serving administrator are required. No facility or stock is granted.",
+    "Procurement pays the existing roster cost, withdraws actual arms, manpower and supply, and takes 90 days of workshop labor. An active office contributes 800 bp to daily work only on orders that paid its 2% procurement administration bill. Policy enactment takes 90 days and costs 1% of normal local annual tax; 0.5% annual tax upkeep is prepaid.",
+    "Resupply is a local connected delivery within the configured radius on the same physical map, from a lawful arsenal with unblocked arms stock to a living supplied field artillery force. A 100-unit shipment loses 25 units to handling; train research avoids floor(25*800/10000)=2 losses. It never reduces the useful ammunition input or creates stock.",
+    "Roster equipment is the actual commissioned kit. A musket weapon name alone does not prove socket bayonet equipment. Strict historical roster dates and required research apply; future technology is never a 1450 starting buff."
+  ]
+}

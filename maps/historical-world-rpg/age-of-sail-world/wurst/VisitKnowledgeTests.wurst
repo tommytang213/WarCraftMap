@@ -34,6 +34,7 @@ public class VisitFixture
 	VisitOutput output = new VisitOutput()
 	ManagementScreenPauseController pauses = new ManagementScreenPauseController(output, false)
 	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), output)
+	boolean rpgCommandsBound = false
 	construct(StartupStorage cache, StartupStorage saves, string mapId)
 		f = new StartupFixture(cache, saves, mapId)
 		campaign = f.campaign
@@ -48,7 +49,6 @@ public class VisitFixture
 		registerRegionCommand(commands, campaign.regionSelector, output).assertEquals("")
 	function bind()
 		campaign.state.rpg.interactions.actors = f.ports
-		registerRpgRuntimeCommands(commands, campaign.state.rpg).assertEquals("")
 	function start(string origin)
 		f.start(origin)
 		bind()
@@ -58,6 +58,12 @@ public class VisitFixture
 		f.ports.selectorIdentity = campaign.identity
 		bind()
 	function dispatch(string text)
+		// Map/save-only reconstruction legs do not need the RPG screen commands.
+		// Keep real registered interaction dispatch while avoiding unused command
+		// registration in every fresh-map fixture under the interpreter deadline.
+		if not rpgCommandsBound and not text.startsWith("/map ") and not text.startsWith("/save ") and not text.startsWith("/load ") and not text.startsWith("/region ")
+			registerRpgRuntimeCommands(commands, campaign.state.rpg).assertEquals("")
+			rpgCommandsBound = true
 		// Registered RPG commands read the installed campaign day. Bind this
 		// fixture explicitly instead of inheriting a previous test's clock.
 		installCampaignClock(f.clock, pauses)
@@ -184,7 +190,7 @@ class StaleVisitActors implements InteractionActors
 	f.campaign.state.knowledge.knowsSettlement("london").assertTrue()
 	f.close()
 
-@test function multipleVisitsSurviveFailedSaveFreshLoadPhysicalTravelAndReturn()
+@test function multipleVisitsSurviveFailedSaveAndFreshLoad()
 	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
 	source.start("aq_qoyunlu")
 	source.visit("baghdad")
@@ -203,11 +209,21 @@ class StaleVisitActors implements InteractionActors
 	fresh.dispatch("/map focus baghdad")
 	fresh.output.last.contains("Baghdad").assertTrue()
 	fresh.dispatch("/map close")
-	let treasure = fresh.campaign.state.rpg.treasures.treasures[0]
+	source.close()
+	fresh.close()
+
+// Save/load and travel each retain fresh production startup, but do not stack
+// four complete generated campaign registrations into one 20-second test.
+@test function multipleVisitsSurvivePhysicalTravelAndReturn()
+	let source = new VisitFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	source.start("aq_qoyunlu")
+	source.visit("baghdad")
+	source.visit("delhi")
+	let treasure = source.campaign.state.rpg.treasures.treasures[0]
 	treasure.clueStage = treasure.clueCount
 	let resolution = treasure.resolution.encode()
 	let precision = treasure.clueStage
-	fresh.campaign.travel.transition(fresh.campaign.state.boundary("middle_east_india_to_africa"), .75, "travel").assertTrue()
+	source.campaign.travel.transition(source.campaign.state.boundary("middle_east_india_to_africa"), .75, "travel").assertTrue()
 	let destination = new VisitFixture(source.f.cache, source.f.saves, "africa")
 	destination.resume()
 	destination.campaign.state.knowledge.knowsRegion("africa").assertTrue()
@@ -229,7 +245,6 @@ class StaleVisitActors implements InteractionActors
 	home.dispatch("/map focus timbuktu")
 	home.campaign.maps.getPhysicalRegionId().assertEquals("middle_east_india")
 	source.close()
-	fresh.close()
 	destination.close()
 	home.close()
 

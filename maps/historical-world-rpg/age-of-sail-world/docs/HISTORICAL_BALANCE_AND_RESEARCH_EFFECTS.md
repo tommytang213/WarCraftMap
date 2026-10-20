@@ -144,6 +144,65 @@ until fresh integrated current-main execution, runtime and traceability evidence
 removes them. Focused interpreter execution is development evidence; it does not
 establish native client playability or resolve the unrelated #438 crash.
 
+## Land drill and artillery production consumers (#515)
+
+`scenario/progression/land-army.json` owns the four land research bindings,
+kit predicates, arsenal eligibility and action calibration. The compiler checks
+these exact typed identities against the approved design and resolves equipment,
+weapons, historical dates and required technologies from the inherited roster.
+The shared `LandArmyEffects` and `LandArmyRuntime` consumers use current control;
+research never commissions a force or adds equipment to an existing roster.
+
+`/land inspect ARSENAL` shows bills, conditions, deadlines and work. An arsenal is
+an authored arms-producing settlement, with a local tax district, lawful government
+control, a serving administrator and an accessible local market. `/land policy`
+and `/land repeal` require that settlement ID. Enactment costs 1% of normal annual
+local tax and takes 90 days; annual administration costs 0.5%, paid in advance.
+Failure to fund renewal suspends the office. This is an explicit local choice.
+
+`/land commission ARSENAL` pays the existing field-artillery roster price and
+withdraws 30 actual local arms, 30 manpower and 30 supply. One local order can be
+pending. Completion takes 90 workshop days. An active office adds 800 bp to daily
+work on an order that also paid its 2% procurement administration bill. At the
+initial values, a funded order completes after 84 days. Activating an office later
+does not retroactively accelerate an order that did not pay the surcharge. No
+research, policy or load callback grants a free battery. Blockaded, occupied or
+unadministered workshops cannot operate. Capture cancels the old policy and work;
+spent resources are not refunded or transferred as completed artillery.
+
+`/land supply ARSENAL FORCE` transfers a fixed 100-unit shipment from actual arms
+stock to owned, living field artillery that already has supply. The local route
+must be on the same physical map within 768 map units, with an accessible source.
+Normal handling wastes 25 units. Artillery Train avoids floor(25 × 800 / 10000)
+= 2 units of waste, so the force receives 77 instead of 75 supply. The full shipment
+is withdrawn either way. A disconnected, hostile, dead, unequipped or empty-supply
+force cannot use this delivery action or obtain a train bonus.
+
+Arquebus drill contributes 500 bp to firing frequency, independently of volley
+damage and tradition defense: interval = floor(base milliseconds × 10000 / 10500),
+with a positive minimum. The scenario owns the base primary-weapon interval for
+eligible runtime templates (initial foot company: 1350 ms). Native cooldown and
+abstract firing use the same calculation. Native/abstract duplicate deliveries
+share a hit receipt; the next-shot deadline survives reconstruction and save/load.
+Socket Bayonet System adds 800 bp to the defense bucket only for actual compatible
+socket-bayonet infantry receiving a verified cavalry melee hit. A musket weapon
+name alone does not establish bayonet equipment. Swords, bows, siege, spells and
+unqualified kit receive no drill/defense substitution. All four effects and actions
+use the same legal rules for player and AI controllers.
+
+Military/settlement snapshot schema **13** adds the local arsenal policy, prepaid
+upkeep, order work, paid surcharge, serial identity, accounting day and firearm
+reload deadline, using distinct `h` firearm, `l` arsenal and `j` science records.
+Schema 12 science state remains authoritative during migration. Schemas 1–12
+migrate with inactive artillery projects and no invented past charges or deliveries. The first live day anchors legacy accounting.
+All fields participate in detached validation and the existing campaign rollback.
+Balance quantities remain scenario-owned; gains round down and positive bills
+round up once at the transaction boundary.
+
+The four exact research-unbound findings from #515 remain release blockers until
+fresh current-main production execution, runtime and traceability audits remove
+them. Focused tests establish development behavior, not native client playability;
+the unrelated #438 crash remains blocked.
 ## Science, weather and exploration production consumers (#514)
 
 `scenario/progression/science-exploration.json` configures the shared
@@ -196,8 +255,9 @@ completed equipment survives while the new controller needs its own research,
 administration, supplies and actor access. Critical state is independent of
 Warcraft object survival and follows the same day replay on inactive maps.
 
-Military/settlement snapshot schema **12** persists equipment commissioning,
-controller, target, paid research bill, committed day, work, fractional credit and
+Military/settlement snapshot schema **12** introduced (and schema **13** retains)
+equipment commissioning, controller, target, paid research bill, committed day,
+work, fractional credit and
 actual hazard outcome counters. Versions 1–11 migrate with inactive science work
 and no invented assets or past output. Parsing stages a separate ledger, rejects
 missing/duplicate/invalid records and future committed days, and campaign load
@@ -207,3 +267,166 @@ The three exact issue #514 research-unbound release findings remain pending the
 controller's fresh integrated current-main execution/runtime/traceability audit.
 Focused development tests do not establish native client playability or resolve
 the unrelated #438 crash.
+
+## Trade exchange, remittance and canal finance consumers (issue #517)
+
+`scenario/progression/trade-finance.json` supplies the shared `TradeFinance` and
+`FinanceCampaignRuntime` adapters. The active map and inactive regions use the
+same campaign ledgers and integer calculations. Player and AI controllers use
+these same action methods. Research delivery rebuilds one named entitlement
+layer; duplicate provenance does not multiply an effect. Activity starts no
+earlier than the technology's authored preferred year (1580 auction, 1475 bills,
+1710 brokerage, 1750 canal finance); early research retains its existing premium
+and prerequisites but cannot confer an out-of-era finance benefit.
+
+* A formal exchange requires an existing market, warehouse and authored urban
+  trade role, lawful current control, administration and access. The existing
+  commodity spread is now explicitly accounted as 50% transaction commission and
+  50% liquidity/execution slippage. Auction research reduces only the commission
+  component by 500 bp; brokerage reduces only execution slippage by 700 bp.
+  Both components are portions of the existing spread, not extra charges.
+  Actual marginal stock prices and scarcity remain unchanged. Savings round
+  down independently against actual settled costs; each nonzero component keeps
+  a positive minimum charge. Tiny orders can have zero saving. Buying and selling
+  still validate stock, counterparty funds, compatible cargo, capacity, physical
+  presence and transaction replay. No same-market merchant standing is awarded.
+* `/finance remit SOURCE DESTINATION AMOUNT` transfers existing warehouse
+  currency between controlled, administered banks in different provinces of the
+  authored European correspondent network (London, Bruges, Venice and Genoa).
+  Both endpoints require real banking/warehouse services, accessible markets and
+  earned double-entry bookkeeping. The service bill is 200 bp of the principal,
+  rounded up with a minimum of one minor currency unit; earned bills research
+  reduces that bill by 600 bp, rounding the saving down. A transfer of 10,000
+  costs 200 without research or 188 with it. The principal arrives in the other
+  existing store and the fee is consumed. This is a currency transfer through
+  banks, not commodity shipping, a loan or a new credit balance. Transfers use
+  the existing persisted transaction history and never award trade standing.
+* `/finance canal yangzhou_canal_quay` funds one durable refurbishment of the
+  existing Grand Canal quay at the authored Yangzhou canal node. From 1750 it
+  requires river transport bureaus, lawful local administration and market
+  access, ten available local workers, 20 existing timber stock units, 1,000
+  principal and 100 financing currency units from government treasury. Canal
+  finance reduces only the financing bill to 94; principal and materials remain
+  unchanged. Each of 90 funded workdays also requires the real local workforce
+  and pays two treasury units in wages. Worker availability is a daily service
+  capacity; workers are not consumed as casualties. Missing wages or workers
+  suspend work without retroactive free days. Completion adds 200 cargo units to
+  that existing local warehouse once, as a derived canal capacity contribution.
+  Repeated starts, grants or refreshes cannot add a second quay. Capture cancels
+  unfinished work without refund. Completed physical infrastructure survives
+  transfer; research and its fee reduction do not transfer.
+
+`/finance inspect [PROJECT]` explains conditions, bills, labor, materials, time
+and expected output. `/technology` identifies each exact metric and its activity
+availability; `/trade inspect` previews current one-stock-unit settlements with
+eligible research. Existing discovery, ownership, supply, route and cargo checks
+continue to govern the underlying actions. There are no new ships or equipment,
+policy enactments, general construction discounts or treasury income passives.
+
+Military/settlement snapshot schema **15** adds canonical canal project records
+(owner, committed day, paid work and completion). Versions 1–14 without canal
+records migrate to unstarted projects with no invented capital or capacity. Staging rejects missing,
+duplicate, unknown, inconsistent, wrong-controller and future-day records before
+mutating authority. The existing campaign transaction rolls back project state,
+research, treasury, bank stores and stock together. Warehouse capacity is rebuilt
+from completed works after load and before cargo use, avoiding duplicate layers.
+
+The four exact research-unbound findings stay blocking without verified full
+same-revision execution. The release audit now checks current source identity,
+pinned compiler evidence, production probes and all required trade-finance
+consumer tests before recognizing these four bindings. Focused development logs
+are not that full release evidence. Native campaign launch issue #438 remains
+separately owned; repository validation and integrated audit regeneration belong
+to the controller.
+
+## Naval construction and fleet services production consumers (#516)
+
+`scenario/naval/services.json` supplies paid service recipes, compatible hull
+profiles and facility calibration. `naval_services_catalog.py` reads the four
+exact typed entitlements and 1500/1000/800-bp values from the approved design,
+and construction price, upkeep, crew, provisions, weapon profile and recruitment
+window from the resolved existing `ship_of_the_line_generic` roster. No national
+starting strength, research prerequisite, research cost or historical roster is
+rebalanced by these consumers.
+
+`/naval inspect PORT` lists conditions, calendar availability, currency/material
+bills, durations and results. `/naval dock PORT` commissions a dock for 200
+currency, 20 timber and 10 iron, taking 90 days. `/naval board PORT` is a separate
+100-currency, 90-day naval-board choice. Both require lawful administration,
+labor, supporting dockyard technology and accessible markets. Port/banking/
+warehouse services and nearby real naval pathing determine eligible yards;
+current authored markets qualify London and Ragusa. They start without new docks
+or boards. A government can administer its own port on an inactive physical map.
+The same action API serves player and AI controllers.
+
+* `/naval build PORT` commissions one existing roster hull after earned
+  Battlefleet Doctrine, Public Credit, the local board and dock, and historical
+  eligibility. The roster's early-access window starts in 1630 and ends in 1820.
+  The bill is 1540 currency, 700 real manpower, 78 ship-provision stock units and
+  settlement supply, 40 timber and 20 iron; paid ordnance is included in this
+  construction recipe. At least one local worker must remain. Construction takes
+  180 campaign days. Completion creates a durable fleet record and only then
+  projects it locally. Existing ships never change archetype or receive free gear.
+* Fleet maintenance uses the roster's 98 currency per 30 days, carried exactly
+  across daily installments, plus one provision per day. Unpaid fleets cannot
+  deliver attacks or receive carronade/carvel bonuses, and remain vulnerable
+  to enemy attacks. `/naval supply PORT SHIP` transfers 78 actual local provision
+  stock/supply units for 156 currency after one day; no supply or money is minted.
+* `/naval repair PORT SHIP` consumes two currency, one timber and one local
+  provision/supply unit per funded day. Base output is 100 hull-integrity units;
+  earned Careening Stations makes it 115. Hull capacity is 10000. Repairs need
+  an owned, living naval recipient at an operational dock and never heal at sea.
+  Unknown legacy armament does not prevent ordinary repairs or invent a profile.
+* `/naval mount PORT SHIP` installs a compatible carronade battery for 200
+  currency, two timber and ten iron, taking seven days, from 1780. Completed
+  Carronade Batteries, a qualified broadside-warship roster profile and paid
+  mounts are all required. The +1000-bp source enters the existing exact gunfire
+  rating calculation only for verified cannon attacks within 300 world units.
+  A base-100 zero-rating control becomes 110. Long-range, spell, boarding and
+  incompatible-weapon hits gain nothing. Existing doctrine, Cast Cannon and
+  independent refit ratings retain their own sources.
+* Carvel Hull Construction avoids 800 bp of actual voyage hull weather losses
+  only for historically compatible carvel-built or paid-refitted ships, from
+  1460. `/naval carvel PORT SHIP` requires an explicitly compatible refit profile
+  and costs 200 currency, 20 timber and two iron, taking 30 days. It never
+  automatically redesigns a legacy hull. The existing provisioned station-return
+  circuit supplies geography and elapsed time; actual exposed days lose 100 hull
+  integrity, reduced to 92 with the earned qualifying effect. Four exposures
+  therefore cost 368 instead of 400 integrity. Supply-weather observations,
+  navigation equipment and combat damage remain separate quantities. Zero hull
+  integrity causes a real fleet loss, without combat invulnerability.
+
+`/naval stop PORT` cancels the current project without refund. Service recipients
+retire their representations while working; orders, voyages and scientific work
+cannot double-use them. Repeated daily delivery, repeated research grants and
+reconstruction cannot multiply output. Fixed-point repair/weather fractions and
+maintenance installments persist. Capture cancels unfinished work and board
+choices, preserves completed docks and ship gear, clears controller-specific
+fractional research credit, and immediately re-evaluates the new controller's
+own research and resource conditions.
+
+Military snapshot schema **15** combines hull/service state (`h`), local shipyard
+projects (`y`), land arsenals (`l`) and weapon deadlines (three-field `h`).
+Versions 1–12 migrate with sound hulls, no invented paid mounts, refits, docks,
+boards or projects, and no replayed historical losses or bills. Version 13 saves
+from either implementation preserve their domain and initialize absent domain
+state without funded projects. Three-field weapon deadlines and ten-field hull
+records have independent validation and duplicate detection. Version 14 saves
+from before finance integration retain land/naval state and initialize unfunded
+canal projects; finance-only v14 saves retain canal/land state and initialize
+unfunded naval state. Current saves require complete configured
+land/naval/finance ledgers and every fleet's hull record.
+Campaign envelopes remain unchanged. Parsing stages a detached ledger, rejects
+invalid, duplicate, missing-current-version and future-day state, and campaign
+load failure rolls back military authority together with research, treasury,
+trade stock and projections. Active and inactive regions use the same campaign
+runtime and calendar delivery.
+
+`NavalServicesTests.wurst` executes registered research/actions, construction,
+paid repairs/mounts, installed weapon callbacks, exact control comparisons,
+negatives, source deduplication, capture, migration, rollback and a 50-year
+fraction-conservation fixture. The integrated trace test exercises all seven
+`naval_services` production probes. Focused evidence is retained under
+`reports/issue-516`; the exact four release findings remain blocking until the
+controller completes fresh integrated repository/runtime/traceability validation.
+This work does not establish native-client launch or close #438.
