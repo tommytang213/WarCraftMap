@@ -627,6 +627,17 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				combatBindings.research = new CombatResearchEffects(combatBindings, rpg.technologies.effects)
 				rpg.technologies.effects = combatBindings.research
 			rpg.technologies.reconstructAll()
+	/** Campaign authority also runs without installing a native-map singleton.
+	 * Prefer its transactionally restored clock over another map's global clock. */
+	function authorityClock() returns CampaignClock
+		if rpg != null and rpg.heroes.clock != null
+			return rpg.heroes.clock
+		return getCampaignClock()
+	function authorityDay() returns int
+		let clock = authorityClock()
+		if clock != null
+			return clock.campaignDay()
+		return 0
 	/** Only register/appoint while this catalogue batch is open. Discard the
 	 * indexes before gameplay, where reconstruction can replace the arrays. */
 	function beginRegistration()
@@ -1154,10 +1165,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			awardTradition(traditions[track].controllerId, traditions[track].categoryId, experience)
 		adapter.removeRepresentation(victim.id)
 		if victim.kind == FORCE_GARRISON and city >= 0 and rpg != null
-			rpg.worldEventAt("combat", settlements[city].id, loss, getCampaignDay())
+			rpg.worldEventAt("combat", settlements[city].id, loss, authorityDay())
 		return true
 	function transferControl(string forceId, string controllerId)
-		transferControl(forceId, controllerId, getCampaignDay())
+		transferControl(forceId, controllerId, authorityDay())
 	function transferControl(string forceId, string controllerId, int day)
 		resolveVoyages(day)
 		let found = forceIndex(forceId)
@@ -1255,7 +1266,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		settlements[found].garrisonStrength = IMaxBJ(0, settlements[found].garrisonStrength - actual)
 		recordLoss(forceId, actual)
 		if rpg != null and actual > 0
-			rpg.worldEventAt("combat",settlementId,actual,getCampaignDay())
+			rpg.worldEventAt("combat",settlementId,actual,authorityDay())
 	function replenishGarrison(string settlementId, int amount, int manpowerCost, int supplyCost) returns boolean
 		let found = settlementIndex(settlementId)
 		if found < 0 or settlements[found].underAttack or amount <= 0 or settlements[found].manpower < manpowerCost or settlements[found].supply < supplyCost
@@ -1283,7 +1294,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if hasPrefix(forces[i].id, "defense:" + settlementId + ":")
 				adapter.protectRepresentation(forces[i].id, true)
 		if rpg != null
-			rpg.worldEventAt("settlement",settlementId,1,getCampaignDay())
+			rpg.worldEventAt("settlement",settlementId,1,authorityDay())
 		return true
 	/** Territorial authority owns control, defenses and office reconciliation. */
 	function transferSettlement(string settlementId, string controllerId)
@@ -1298,8 +1309,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			// Standalone authorities may have no installed campaign clock. As
 			// with science, retain each project's last committed day in that case.
 			var transferDay = -1
-			if getCampaignClock() != null
-				transferDay = getCampaignDay()
+			if authorityClock() != null
+				transferDay = authorityDay()
 			industry.controlChanged(settlementId, controllerId, transferDay)
 			civic.controlChanged(settlementId)
 			finance.controlChanged(settlementId)

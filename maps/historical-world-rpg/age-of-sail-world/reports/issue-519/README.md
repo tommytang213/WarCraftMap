@@ -1,5 +1,38 @@
 # Issue #519 focused development evidence
 
+The resumed validation repair is recorded in `clock-repair-verification.json`
+and the `clock-repair-*` inputs and transcripts. The reported capture failure
+was an inlined dereference of the uninstalled native-map campaign-clock
+singleton. Military capture, garrison events, default force transfers and
+capture project deadlines now prefer the owning campaign's transactionally
+restored clock. Detached runtimes retain their legacy clock fallback. No save
+schema or logistics balance changes are needed.
+
+Fresh pinned typechecking and all **131 selected Wurst tests pass**, including
+every logistics, finance, land-army, industry, startup, campaign-load, military
+settlement and remote-region authority case. The previously failing capture
+case passes. A new regression covers capture and transfer without the native
+singleton, then capture and garrison losses with an unrelated global clock.
+The complete logistics production probes are present in the interpreter log.
+
+All **185 distinct selected Python tests pass** after refreshing source reports:
+176 gameplay/generation/save/audit/packaging/execution cases and nine reusable
+framework cases. The initial run's two stale runtime/release report assertions
+are retained in its transcript; all 35 tests in those suites pass in the final
+rerun. Synthetic packaging fixtures deliberately print passing and failed
+compiler totals; those are protocol tests, not real Wurst execution evidence.
+Generation/provenance verification, canonical map source, framework boundary,
+report freshness and whitespace checks pass. Source reports retain the exact
+two logistics release findings until the outer worker supplies complete
+same-revision validation. Native campaign launch #438 remains separate.
+
+The fresh assembly and cached standard library were mounted read-only into the
+pinned compiler container with networking disabled. All compilation ran in
+container-private `/tmp`; the worktree was not mounted. The compressed prepare
+and run scripts, selected discovery, exact source hashes and transcripts allow
+review of the focused result. No commits, GitHub writes, tooling installation,
+container ownership changes or player QA were performed.
+
 PR #542 CI repair is recorded in `ci-repair-verification.json` and the
 `ci-repair-*` inputs and transcripts. The failed job is linked in `ci-failure.txt`:
 its single seven-schema military migration test exceeded the pinned interpreter's
