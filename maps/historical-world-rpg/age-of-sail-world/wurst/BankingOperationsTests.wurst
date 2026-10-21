@@ -17,6 +17,7 @@ import CampaignSaveManager
 import ManagementScreenPauseController
 import ManagementCommandTests
 import ScenarioData
+import TradeFinance
 
 class BankingResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
@@ -223,7 +224,7 @@ function bankingReceipt(string name)
 	f.act("lodge london 10000")
 	let saved = f.military.snapshot()
 	let record = "|b,london," + f.state().record()
-	saved.startsWith("v17|").assertTrue()
+	saved.startsWith("v18|").assertTrue()
 	f.military.restore(saved).assertTrue()
 	f.military.snapshot().assertEquals(saved)
 	f.runtime.commit("player", replay).startsWith("Banking quote is stale").assertTrue()
@@ -239,7 +240,7 @@ function bankingReceipt(string name)
 	f.runtime.commit("player", q).startsWith("Banking conditions").assertTrue()
 	f.effects.rateAt("other", "treasury_counting_cost_reduction", f.clock.currentDay).assertEquals(0)
 	f.military.restore(saved).assertTrue()
-	var legacy = saved.replace("v17|", "v16|")
+	var legacy = saved.replace("v18|", "v16|")
 	for i = 0 to f.military.banking.count - 1
 		legacy = legacy.replace("|b," + f.military.banking.sites[i].id + "," + f.military.banking.states[i].record(), "")
 	f.military.restore(legacy).assertTrue()
@@ -284,6 +285,40 @@ function bankingReceipt(string name)
 	trade.findStore("warehouse:port").money.assertEquals(10000)
 	load.campaign.countries.treasury[0].assertEquals(1000)
 	bankingReceipt("capture-migration-rollback")
+
+@test function bankingAndFreightIndependentV17SavesMigrateWithoutGrantingAbsentState()
+	let f = new BankingFixture(false, true)
+	f.research(true)
+	f.operating()
+	let canal = new CanalWork("canal", "london", "", "timber", 0, 1, 1, 1, 1, 1, 1, 1)
+	canal.freightCapacity = 100
+	f.military.finance.register(canal)
+	let state = f.military.finance.states[0]
+	state.completed = true
+	state.work = canal.constructionDays
+	state.owner = "player"
+	state.lastDay = f.clock.currentDay
+	state.freightDay = f.clock.currentDay
+	state.freightUsed = 17
+	let saved = f.military.snapshot()
+	let freight = "|z,canal," + I2S(state.freightDay) + ",17"
+	let banking17 = saved.replace("v18|", "v17|").replace(freight, "")
+	f.military.restore(banking17).assertTrue()
+	f.state().owner.assertEquals("player")
+	f.military.finance.states[0].completed.assertTrue()
+	f.military.finance.states[0].freightUsed.assertEquals(0)
+	f.military.restore(saved).assertTrue()
+	var logistics17 = saved.replace("v18|", "v17|")
+	for i = 0 to f.military.banking.count - 1
+		logistics17 = logistics17.replace("|b," + f.military.banking.sites[i].id + "," + f.military.banking.states[i].record(), "")
+	f.military.restore(logistics17).assertTrue()
+	f.state().owner.assertEquals("")
+	f.state().serial.assertEquals(0)
+	f.military.finance.states[0].freightUsed.assertEquals(17)
+	f.military.restore(saved).assertTrue()
+	f.military.restore(saved.replace(freight, "")).assertFalse()
+	f.military.restore(banking17.replace("|b,london," + f.state().record(), "")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
 
 @test function bankingLongCampaignActiveAbstractUpkeepAndConservation()
 	let active = new BankingFixture(false, true)

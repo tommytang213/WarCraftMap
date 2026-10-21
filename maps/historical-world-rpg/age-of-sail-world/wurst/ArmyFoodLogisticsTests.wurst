@@ -1,0 +1,362 @@
+package ArmyFoodLogisticsTests
+
+import PartyLocations
+import ArmyFoodLogistics
+import TradeFinanceTests
+import TradeFinance
+import FinanceCampaignRuntime
+import LandArmyEffects
+import MilitarySettlementRuntime
+import PlayableTrade
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CivicGovernance
+import CommandRouter
+import CampaignTimeline
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ScenarioData
+import Wurstunit
+
+class LogisticsFixture
+	FinanceFixture f
+	ArmyFoodLogistics logistics
+	RuntimeForce army
+	construct(boolean ai, boolean active)
+		f = new FinanceFixture(ai, active)
+		f.addSettlement("zhenjiang")
+		f.military.finance.foodMaps[0] = logisticsTestNavigation()
+		f.military.finance.foodMapCount = 1
+		for i = 0 to f.military.finance.foodSiteCount - 1
+			f.military.finance.foodDepots[i] = new FoodDepot(f.military.finance.foodSites[i], "europe_west", 0., 0.)
+		let land = new LandResearchEffects(new UnboundResearchEffects())
+		configureGeneratedLandArmy(f.military.land, land, f.day)
+		f.military.rpg = f.rpg
+		f.military.combatBindings = createGeneratedCombatBindings()
+		let kit = f.military.land.profile("african_regional_levy")
+		army = new RuntimeForce("army", f.resources.owner, "europe_west", kit.categoryId, FORCE_ARMY, kit.unitTypeId, 100, 100, 0., 0.)
+		army.combatProfileId = kit.id
+		f.military.registerForce(army)
+		for i = 0 to f.military.settlementCount - 1
+			f.trade.registerMarket(new RuntimeMarket(f.military.settlements[i].id, "grain", 10000, 100000, 10, 10))
+		logistics = new ArmyFoodLogistics(f.runtime)
+		registerLogisticsCommands(f.commands, logistics).assertEquals("")
+	function research()
+		// The historical prerequisite graph is real; only setup prerequisites are seeded.
+		f.rpg.restoreState(f.rpg.captureState() + "|u," + f.resources.owner + ",contract_victualling|u," + f.resources.owner + ",turnpike_networks").assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.unlock("campaign_bakeries")
+		f.unlock("canal_logistics")
+	function action(string text)
+		f.commands.dispatch(Player(0), "/logistics " + text).assertTrue()
+		f.resources.output.assertEquals("Logistics action completed.")
+	function build()
+		f.action("canal yangzhou_canal_quay")
+		f.clock.advanceTo(f.day + 90).assertTrue()
+		f.military.finance.states[0].completed.assertTrue()
+	function grain(string id) returns RuntimeMarket
+		return f.trade.findMarket(id, "grain")
+
+@test function registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage()
+	let control = new LogisticsFixture(false, false)
+	let f = new LogisticsFixture(false, true)
+	f.research()
+	f.f.resources.balance.assertEquals(100000 - 304 - 373)
+	control.action("food yangzhou army")
+	f.action("food yangzhou army")
+	control.army.supply.assertEquals(175)
+	f.army.supply.assertEquals(177)
+	control.grain("yangzhou").stock.assertEquals(9900)
+	f.grain("yangzhou").stock.assertEquals(9900)
+	f.f.campaign.countries.treasury[0].assertEquals(99999)
+	f.f.commands.dispatch(Player(0), "/logistics inspect").assertTrue()
+	f.f.resources.output.contains("800 bp").assertTrue()
+	f.f.resources.output.contains("100 units/day").assertFalse() // Research raises capacity, even though works still unbuilt.
+	f.f.resources.output.contains("110 units/day").assertTrue()
+	f.f.commands.dispatch(Player(0), "/technology").assertTrue()
+	f.f.resources.output.contains("grain_supply_spoilage_reduction").assertTrue()
+	f.f.resources.output.contains("canal_freight_throughput").assertTrue()
+
+@test function registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction()
+	let control = new LogisticsFixture(false, false)
+	let f = new LogisticsFixture(true, true)
+	f.research()
+	control.build()
+	f.build()
+	control.action("freight yangzhou_canal_quay grain 100")
+	f.action("freight yangzhou_canal_quay grain 110")
+	control.grain("zhenjiang").stock.assertEquals(10100)
+	f.grain("zhenjiang").stock.assertEquals(10110)
+	f.grain("yangzhou").stock.assertEquals(9890)
+	f.f.campaign.countries.treasury[0].assertEquals(98718) // 1100 construction + 180 labor + ceil(110*.01).
+	f.f.military.finance.states[0].freightUsed.assertEquals(110)
+	f.logistics.freight("ai", "yangzhou_canal_quay", "grain", 1, false).contains("exhausted").assertTrue()
+	f.logistics.freight("ai", "yangzhou_canal_quay", "timber", 1, true).contains("exhausted").assertTrue()
+	f.f.trade.progress.standing.assertEquals(0)
+
+@test function logisticsRejectsMissingEraControllerGearResourcesInfrastructureAndDisconnectedRoutes()
+	let f = new LogisticsFixture(false, false)
+	f.research()
+	f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("completed paid").assertTrue()
+	f.logistics.food("other", "yangzhou", "army").contains("lawfully").assertTrue()
+	f.logistics.food("player", "imaginary", "army").contains("depot").assertTrue()
+	f.army.supply = 0
+	f.logistics.food("player", "yangzhou", "army").contains("supplied").assertTrue()
+	f.army.supply = 100
+	f.army.controllerId = "other"
+	f.logistics.food("player", "yangzhou", "army").contains("owned").assertTrue()
+	f.army.controllerId = "player"
+	f.army.x = 769.
+	f.logistics.food("player", "yangzhou", "army").contains("local route").assertTrue()
+	f.army.x = 128.
+	f.logistics.food("player", "yangzhou", "army").contains("disconnected").assertTrue()
+	f.army.x = 0.
+	f.army.regionId = "africa"
+	f.logistics.food("player", "yangzhou", "army").contains("local route").assertTrue()
+	f.army.regionId = "europe_west"
+	f.army.kind = FORCE_FLEET
+	f.logistics.food("player", "yangzhou", "army").contains("gear").assertTrue()
+	f.army.kind = FORCE_ARMY
+	f.army.combatProfileId = "invented"
+	f.logistics.food("player", "yangzhou", "army").contains("gear").assertTrue()
+	f.army.combatProfileId = "african_regional_levy"
+	f.grain("yangzhou").stock = 99
+	f.logistics.food("player", "yangzhou", "army").contains("Insufficient").assertTrue()
+	f.f.campaign.countries.treasury[0].assertEquals(100000)
+	f.grain("yangzhou").stock = 10000
+	f.grain("yangzhou").blockaded = true
+	f.logistics.food("player", "yangzhou", "army").contains("Insufficient").assertTrue()
+	f.grain("yangzhou").blockaded = false
+	f.f.campaign.countries.treasury[0] = 0
+	f.logistics.food("player", "yangzhou", "army").contains("Insufficient").assertTrue()
+	f.grain("yangzhou").stock.assertEquals(10000)
+	f.f.campaign.countries.treasury[0] = 100000
+	let city = f.f.military.settlements[f.f.military.settlementIndex("yangzhou")]
+	city.manpower = 0
+	f.logistics.food("player", "yangzhou", "army").contains("labor").assertTrue()
+	city.manpower = 10000
+	f.army.supply = 2147483640
+	f.logistics.food("player", "yangzhou", "army").contains("capacity").assertTrue()
+	f.army.supply = 100
+	// Restored future research cannot provide a benefit before the historical year.
+	let day = f.f.clock.currentDay
+	f.f.clock.currentDay = 529237
+	f.action("food yangzhou army")
+	f.army.supply.assertEquals(175)
+	f.f.clock.currentDay = day
+	f.build()
+	f.logistics.freight("other", "yangzhou_canal_quay", "grain", 1, false).contains("lawful").assertTrue()
+	f.logistics.freight("player", "desert_road", "grain", 1, false).contains("built canal").assertTrue()
+	f.logistics.freight("player", "yangzhou_canal_quay", "arms", 1, false).contains("commodity").assertTrue()
+	f.grain("zhenjiang").blockaded = true
+	f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("accessible").assertTrue()
+	f.grain("zhenjiang").blockaded = false
+	f.grain("zhenjiang").storageCapacity = 10000
+	f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("storage capacity").assertTrue()
+	f.grain("zhenjiang").storageCapacity = 2147483647
+	f.f.campaign.countries.treasury[0] = 0
+	f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("treasury").assertTrue()
+	f.f.military.finance.states[0].freightUsed.assertEquals(0)
+	f.f.clock.currentDay = 529237
+	f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("historical").assertTrue()
+	f.f.clock.currentDay = day + 90
+	f.army.combatProfileId = "european_musket_battalion"
+	f.logistics.food("player", "yangzhou", "army").contains("gear").assertTrue() // Missing roster prerequisites.
+
+@test function logisticsNamedLayersRepairDeduplicateAndAddCompatibleRatesOnce()
+	let f = new LogisticsFixture(false, false)
+	f.research()
+	let duplicate = new RuntimeTechnology("duplicate_food", "Duplicate", 1450, 1)
+	duplicate.addUnlock(duplicate.id, "modifier", "progression_campaign_bakeries")
+	f.f.rpg.technologies.register(duplicate).assertTrue()
+	f.f.unlock(duplicate.id)
+	let independent = new RuntimeTechnology("independent_food", "Independent", 1450, 1)
+	independent.addUnlock(independent.id, "modifier", "independent_food")
+	f.f.effects.register(new FinanceEffect("modifier", "independent_food", "grain_supply_spoilage_reduction", 400, 0))
+	f.f.rpg.technologies.register(independent).assertTrue()
+	f.f.unlock(independent.id)
+	let duplicateCanal = new RuntimeTechnology("duplicate_canal", "Duplicate canal", 1450, 1)
+	duplicateCanal.addUnlock(duplicateCanal.id, "modifier", "progression_canal_logistics")
+	f.f.rpg.technologies.register(duplicateCanal).assertTrue()
+	f.f.unlock(duplicateCanal.id)
+	let compatible = new RuntimeTechnology("compatible_freight", "Compatible freight", 1450, 1)
+	compatible.addUnlock(compatible.id, "modifier", "compatible_freight")
+	f.f.effects.register(new FinanceEffect("modifier", "compatible_freight", "canal_freight_throughput", 500, 0))
+	f.f.rpg.technologies.register(compatible).assertTrue()
+	f.f.unlock(compatible.id)
+	let saved = f.f.rpg.captureState()
+	for repeat = 1 to 3
+		f.f.rpg.restoreState(saved).assertTrue()
+		f.f.rpg.technologies.reconstructAll()
+		f.f.effects.rateAt("player", "grain_supply_spoilage_reduction", f.f.day).assertEquals(1200)
+		f.f.effects.rateAt("player", "canal_freight_throughput", f.f.day).assertEquals(1500)
+		f.logistics.freightCapacity("player", f.f.military.finance.projects[0]).assertEquals(115)
+	f.action("food yangzhou army")
+	f.army.supply.assertEquals(178)
+	f.f.effects.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	f.f.effects.rateAt("player", "grain_supply_spoilage_reduction", f.f.day).assertEquals(0)
+	f.f.rpg.technologies.reconstructAll()
+	f.f.effects.rateAt("player", "grain_supply_spoilage_reduction", f.f.day).assertEquals(1200)
+	f.f.rpg.restoreState(saved + "|u,player,unknown").assertFalse()
+	f.f.effects.rateAt("player", "grain_supply_spoilage_reduction", f.f.day).assertEquals(1200)
+	civicScale(2147483647, 800).assertEquals(171798691)
+
+@test function logisticsCaptureTravelSaveMigrationAndRollbackKeepDailyCapacity()
+	let active = new LogisticsFixture(false, true)
+	let remote = new LogisticsFixture(false, false)
+	active.research()
+	remote.research()
+	active.build()
+	remote.build()
+	active.action("food yangzhou army")
+	remote.action("food yangzhou army")
+	active.action("freight yangzhou_canal_quay grain 100")
+	remote.action("freight yangzhou_canal_quay grain 100")
+	active.army.supply.assertEquals(remote.army.supply)
+	active.grain("zhenjiang").stock.assertEquals(remote.grain("zhenjiang").stock)
+	let saved = active.f.military.snapshot()
+	let trade = active.f.trade.capture()
+	for repeat = 1 to 3
+		active.f.military.restore(saved, false).assertTrue()
+		active.f.trade.applyState(trade).assertTrue()
+		active.f.military.activateRegion("africa")
+		active.f.military.activateRegion("europe_west")
+		active.f.military.finance.states[0].freightUsed.assertEquals(100)
+	active.action("freight yangzhou_canal_quay grain 10")
+	active.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("exhausted").assertTrue()
+	let full = active.f.military.snapshot()
+	active.f.military.restore(full + "|z,yangzhou_canal_quay,0,0", false).assertFalse()
+	active.f.military.snapshot().assertEquals(full)
+	let z = "|z,yangzhou_canal_quay," + I2S(active.f.clock.currentDay) + ",110"
+	active.f.military.restore(full.replace(z, ""), false).assertFalse()
+	active.f.military.validateSnapshot(full.replace(z, "|z,yangzhou_canal_quay,700000,110"), active.f.clock.currentDay).assertFalse()
+	active.f.military.snapshot().assertEquals(full)
+	// v15 retains paid construction; its absent freight counter migrates empty.
+	active.f.military.restore(full.replace("v18|", "v15|").replace(z, ""), false).assertTrue()
+	active.f.military.finance.states[0].completed.assertTrue()
+	active.f.military.finance.states[0].freightUsed.assertEquals(0)
+	active.f.military.restore(full, false).assertTrue()
+	active.f.campaign.countries.registerPolity("ai", 10000)
+	active.f.rpg.restoreState(active.f.rpg.captureState() + "|u,ai,river_transport_bureaus").assertTrue()
+	active.f.rpg.technologies.reconstructAll()
+	for i = 0 to active.f.military.settlementCount - 1
+		let city = active.f.military.settlements[i]
+		active.f.military.transferSettlement(city.id, "ai")
+		active.f.military.appoint(city.id, new AdministratorState(city.id + "_new", "New", "Administrator", "ai", city.regionId, city.id, 50, 50, 40, 1))
+	active.logistics.freight("ai", "yangzhou_canal_quay", "grain", 1, false).contains("lawful").assertTrue() // Occupation has no lawful title.
+	for i = 0 to active.f.military.settlementCount - 1
+		active.f.military.transferSovereignty(active.f.military.settlements[i].id, "ai")
+	active.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("lawful").assertTrue()
+	active.logistics.freight("ai", "yangzhou_canal_quay", "grain", 1, false).contains("exhausted").assertTrue()
+	active.f.clock.advanceTo(active.f.clock.currentDay + 1).assertTrue()
+	active.logistics.freight("ai", "yangzhou_canal_quay", "grain", 101, false).contains("exhausted").assertTrue()
+	active.logistics.freight("ai", "yangzhou_canal_quay", "grain", 100, false).assertEquals("")
+	active.f.military.finance.states[0].completed.assertTrue()
+	active.f.military.transferControl("army", "ai", active.f.clock.currentDay)
+	let army = active.f.military.forces[active.f.military.forceIndex("army")]
+	let oldSupply = army.supply
+	active.logistics.food("ai", "yangzhou", "army").assertEquals("")
+	army.supply.assertEquals(oldSupply + 75) // Capturing logistics never transfers research.
+	print("TRACEABILITY {\"requirement\":\"ROAD-0045.01\",\"case\":\"army-food-canal-logistics\",\"entryPoint\":\"production-army-food-logistics\",\"scope\":\"registered-research-food-freight-capture-persistence\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch()
+	let f = new LoadFixture()
+	f.clock.endDay = 700000
+	f.clock.advanceTo(657072).assertTrue()
+	let trade = f.extension.trade
+	let ledger = f.military.finance
+	ledger.register(new CanalWork("quay", "port", "printing", "grain", 0, 1, 10, 2, 1, 1, 100, 1))
+	let route = ledger.projects[0]
+	route.freightDestination = "destination"
+	route.freightGoods = "grain"
+	route.freightCapacity = 100
+	route.freightFee = 100
+	route.freightLabor = 1
+	ledger.foodGood = "grain"
+	ledger.foodShipment = 100
+	ledger.foodWaste = 25
+	ledger.foodLabor = 1
+	ledger.foodCost = 1
+	ledger.foodRadius = 768
+	ledger.foodSites[0] = "port"
+	ledger.foodSiteCount = 1
+	ledger.foodDepots[0] = new FoodDepot("port", "europe_west", 0., 0.)
+	ledger.foodMaps[0] = logisticsTestNavigation()
+	ledger.foodMapCount = 1
+	f.military.registerSettlement(new SettlementRuntimeState("destination", "england", "europe_west", 'htow', 'hfoo', 30, 20, 50, 50, 0., 0.))
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	f.military.appoint("destination", new AdministratorState("clerk2", "Clerk", "Administrator", "england", "europe_west", "destination", 50, 50, 40, 1))
+	trade.registerMarket(new RuntimeMarket("destination", "grain", 0, 1000, 10, 10))
+	trade.registerMarket(new RuntimeMarket("destination", "timber", 1, 1000, 10, 10))
+	let land = new LandResearchEffects(new UnboundResearchEffects())
+	configureGeneratedLandArmy(f.military.land, land, f.clock.currentDay)
+	f.military.rpg = f.rpg
+	f.military.combatBindings = createGeneratedCombatBindings()
+	let kit = f.military.land.profile("african_regional_levy")
+	let army = new RuntimeForce("food_army", "england", "europe_west", kit.categoryId, FORCE_ARMY, kit.unitTypeId, 100, 100, 0., 0.)
+	army.combatProfileId = kit.id
+	f.military.registerForce(army)
+	let bakeries = new RuntimeTechnology("campaign_bakeries", "Campaign Bakeries", 1700, 304)
+	bakeries.addUnlock(bakeries.id, "modifier", "progression_campaign_bakeries")
+	f.rpg.technologies.register(bakeries).assertTrue()
+	f.rpg.restoreState(f.rpg.captureState() + "|u,england,printing").assertTrue()
+	let effects = new FinanceResearchEffects(f.rpg.technologies.effects)
+	effects.register(new FinanceEffect("modifier", "progression_campaign_bakeries", "grain_supply_spoilage_reduction", 800, 0))
+	f.rpg.technologies.effects = effects
+	let finance = new FinanceCampaignRuntime(f.campaign.state, trade, effects)
+	f.campaign.state.financeRuntime = finance
+	let logistics = new ArmyFoodLogistics(finance)
+	finance.start("england", "quay").assertEquals("")
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	trade.market.stock = 500
+	f.recordingTimer.expected = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "logistics").assertTrue()
+	f.rpg.restoreState(f.rpg.captureState() + "|u,england,campaign_bakeries").assertTrue()
+	f.rpg.technologies.reconstructAll()
+	logistics.food("england", "port", "food_army").assertEquals("")
+	logistics.freight("england", "quay", "grain", 100, false).assertEquals("")
+	let before = f.campaign.state.captureAuthoritativeState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.campaign.state.captureAuthoritativeState().assertEquals(before)
+	effects.rateAt("england", "grain_supply_spoilage_reduction", f.clock.currentDay).assertEquals(800)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.finance.states[0].freightUsed.assertEquals(0)
+	f.military.forces[f.military.forceIndex("food_army")].supply.assertEquals(100)
+	trade.market.stock.assertEquals(500)
+	trade.findMarket("destination", "grain").stock.assertEquals(0)
+	effects.rateAt("england", "grain_supply_spoilage_reduction", f.clock.currentDay).assertEquals(0)
+
+@test function logisticsLongCampaignConservesGrainAndCannotBankOrReplayCapacity()
+	let f = new LogisticsFixture(false, false)
+	f.research()
+	f.build()
+	let fromStock = f.grain("yangzhou")
+	let toStock = f.grain("zhenjiang")
+	let initialMoney = f.f.campaign.countries.treasury[0]
+	var meals = 0
+	for year = 1 to 50
+		f.f.clock.advanceTo(f.f.day + 90 + 365 * year).assertTrue()
+		let total = fromStock.stock + toStock.stock
+		f.action("freight yangzhou_canal_quay grain 110")
+		f.logistics.freight("player", "yangzhou_canal_quay", "grain", 1, false).contains("exhausted").assertTrue()
+		(fromStock.stock + toStock.stock).assertEquals(total)
+		// Return cargo on the following day, paying the same real service bill.
+		f.f.clock.advanceTo(f.f.clock.currentDay + 1).assertTrue()
+		f.action("freight yangzhou_canal_quay grain 110 reverse")
+		fromStock.stock.assertEquals(10000 - meals * 100)
+		toStock.stock.assertEquals(10000)
+		// The food roster still has an end date; test each delivery in its era.
+		if f.f.clock.campaignYear() <= 1820
+			f.action("food yangzhou army")
+			meals++
+		(fromStock.stock + toStock.stock + f.army.supply + meals * 23).assertEquals(20100)
+	f.f.campaign.countries.treasury[0].assertEquals(initialMoney - 200 - meals)
+
+function logisticsTestNavigation() returns PartyNavigation
+	let grid = new PartyNavigation("europe_west", -128., -128., 8, 2)
+	grid.rows[0] = "2:1,8:2,"
+	grid.rows[1] = "2:1,8:2,"
+	return grid

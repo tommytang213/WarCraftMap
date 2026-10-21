@@ -2,6 +2,8 @@ package MilitarySettlementRuntimeTests
 
 import MilitarySettlementRuntime
 import CampaignTimeline
+import WarcraftRpgRuntime
+import ResearchEntitlements
 import MilitaryTraditionLayer
 import CommandRouter
 import ManagementScreenPauseController
@@ -87,6 +89,39 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 	runtime.registerSettlement(new SettlementRuntimeState("london", "england", "europe", 'htow', 'hfoo', 30, 20, 50, 50, 0., 0.))
 	runtime.registerForce(new RuntimeForce("defense:london:gate", "england", "europe", "siege", FORCE_DEFENSE, 'hgtw', 100, 0, 64., 0.))
 	return runtime
+
+class MilitaryEventRecorder extends WarcraftRpgRuntime
+	string events = ""
+	construct()
+		super(new UnboundResearchEffects())
+	override function worldEventAt(string eventKind, string locationId, int amount, int day) returns boolean
+		events += eventKind + ":" + I2S(day) + "|"
+		return false
+
+@test function abstractMilitaryCaptureAndTransferUseOwningCampaignClock()
+	let previous = getCampaignClock()
+	installCampaignClock(null)
+	let runtime = fixture(new RecordingMilitaryAdapter())
+	let rpg = new MilitaryEventRecorder()
+	rpg.heroes.clock = new CampaignClock(100, 200, 100, .25)
+	runtime.setRpgRuntime(rpg)
+	runtime.setWar("england", "france", true)
+	runtime.capture("london", "france", 10.).assertTrue()
+	rpg.events.assertEquals("settlement:100|")
+	runtime.registerForce(new RuntimeForce("army", "france", "europe", "infantry", FORCE_ARMY, 'hfoo', 40, 20, 0., 0.))
+	runtime.transferControl("army", "england")
+	runtime.forces[runtime.forceIndex("army")].controllerId.assertEquals("england")
+	// A native clock for another campaign must not replace owned authority.
+	installCampaignClock(new CampaignClock(300, 400, 300, .25))
+	rpg.heroes.clock.advanceTo(101).assertTrue()
+	runtime.capture("london", "england", 16.).assertTrue()
+	rpg.events.assertEquals("settlement:100|settlement:101|")
+	let garrison = new RuntimeForce("garrison:london:test", "england", "europe", "infantry", FORCE_GARRISON, 'hfoo', 10, 10, 0., 0.)
+	runtime.registerForce(garrison)
+	runtime.recordGarrisonLoss("london", garrison.id, 1, 17.)
+	runtime.commitCombatLoss(runtime.forceIndex(garrison.id), -1, 18.).assertTrue()
+	rpg.events.assertEquals("settlement:100|settlement:101|combat:101|combat:101|")
+	installCampaignClock(previous)
 
 @test function recruitmentLossReinforcementAndTraditionReachRuntimeUnits()
 	let adapter = new RecordingMilitaryAdapter()
@@ -308,7 +343,7 @@ function fixture(RecordingMilitaryAdapter adapter) returns MilitarySettlementRun
 /** Recreate the pre-policy settlement layout when exercising old save versions. */
 public function withoutMilitarySettlementPolicy(string input) returns string
 	var candidate = input
-	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|") and not candidate.startsWith("v8|") and not candidate.startsWith("v9|") and not candidate.startsWith("v10|") and not candidate.startsWith("v11|") and not candidate.startsWith("v12|") and not candidate.startsWith("v13|") and not candidate.startsWith("v14|") and not candidate.startsWith("v15|") and not candidate.startsWith("v16|") and not candidate.startsWith("v17|")
+	if not candidate.startsWith("v6|") and not candidate.startsWith("v7|") and not candidate.startsWith("v8|") and not candidate.startsWith("v9|") and not candidate.startsWith("v10|") and not candidate.startsWith("v11|") and not candidate.startsWith("v12|") and not candidate.startsWith("v13|") and not candidate.startsWith("v14|") and not candidate.startsWith("v15|") and not candidate.startsWith("v16|") and not candidate.startsWith("v17|") and not candidate.startsWith("v18|")
 		candidate = withoutMilitaryOrderTargets(candidate)
 	var result = ""
 	var start = 0
