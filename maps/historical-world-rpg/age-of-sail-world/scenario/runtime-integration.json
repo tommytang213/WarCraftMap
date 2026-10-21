@@ -717,6 +717,14 @@
             "remittanceFeeBasisPoints",
             "canalWorks"
           ]
+        },
+        {
+          "path": "scenario/progression/army-food-logistics.json",
+          "contains": [
+            "shipmentUnits",
+            "wasteUnits",
+            "canalRoutes"
+          ]
         }
       ],
       "headlessVerification": [
@@ -752,6 +760,13 @@
           "contains": [
             "test_rejects_fake_banks_missing_materials_duplicate_projects_and_free_bills",
             "test_source_design_or_incomplete_failed_stale_evidence_cannot_bind"
+          ]
+        },
+        {
+          "path": "tests/test_army_food_logistics.py",
+          "contains": [
+            "test_scenario_owned_quantities_capacity_and_bonus_sensitivity",
+            "test_design_or_missing_failed_stale_execution_cannot_clear_findings"
           ]
         }
       ],
@@ -815,6 +830,15 @@
             "fromStore.money -= amount + fee",
             "toStore.money += amount"
           ]
+        },
+        {
+          "path": "wurst/ArmyFoodLogistics.wurst",
+          "contains": [
+            "registerLogisticsCommands",
+            "grain_supply_spoilage_reduction",
+            "canal_freight_throughput",
+            "connected(depot, target)"
+          ]
         }
       ],
       "playerEntry": [
@@ -873,7 +897,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 16",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 17",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -934,6 +958,14 @@
             "registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal",
             "registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput",
             "failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority"
+          ]
+        },
+        {
+          "path": "wurst/ArmyFoodLogisticsTests.wurst",
+          "contains": [
+            "registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage",
+            "registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction",
+            "failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch"
           ]
         }
       ],

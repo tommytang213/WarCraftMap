@@ -133,6 +133,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= _verified_industry_bindings(execution, execution_log, revision)
     from trade_finance import verified_bindings
     bound |= verified_bindings(PROJECT, execution, execution_log, revision)
+    from army_food_logistics import verified_bindings as verified_logistics
+    bound |= verified_logistics(PROJECT, execution, execution_log, revision)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',

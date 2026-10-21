@@ -18,6 +18,7 @@ import MilitaryOrderEvents
 import CampaignHandoff
 import CampaignSaveManager
 import CampaignRegistration
+import ArmyFoodLogistics
 import FinanceCampaignRuntime
 import NavalCampaignRuntime
 import ScienceCampaignRuntime
@@ -112,6 +113,7 @@ function initializeRegionalCampaign()
 	registerLandArmyCommands(commands, campaign.state.landRuntime)
 	registerScienceCommands(commands, campaign.state.scienceRuntime)
 	registerFinanceCommands(commands, campaign.state.financeRuntime)
+	registerLogisticsCommands(commands, new ArmyFoodLogistics(campaign.state.financeRuntime))
 	registerNavalCommands(commands, campaign.state.navalRuntime)
 	initializeMilitarySettlementRuntime(commands)
 	let voyageProblem = registerVoyageCommands(commands, campaign.state)

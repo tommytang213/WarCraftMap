@@ -343,7 +343,7 @@ class CombatFixture
 	f.captureViaNatives()
 	f.natives.advance(0.0625)
 	let saved = f.runtime.snapshot()
-	saved.startsWith("v16|k,").assertTrue()
+	saved.startsWith("v17|k,").assertTrue()
 	f.runtime.restore(saved).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	f.runtime.restore(saved + "|k,0").assertFalse()
@@ -978,70 +978,93 @@ function exactCombatVector(CombatFixture f, string controller, string category, 
 	runtime.snapshot().assertEquals(saved)
 	runtime.commitCombatLoss(1, 0, 0.).assertFalse()
 
-@test function everyLegacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec()
+function legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(int schema)
 	let source = traditionCombatFixture()
 	let document = source.startup.campaign.state.captureAuthoritativeState()
 	let originalMilitary = source.runtime.snapshot()
 	source.close()
 	let f = traditionCombatFixture()
-	for schema = 1 to 7
-		var military = "v" + I2S(schema)
-		if schema >= 3
-			military += "|k,0"
-		military += "|a,europe_west"
-		var playerOrder = ""
-		var enemyOrder = ""
-		if schema >= 6
-			playerOrder = ",,player"
-			enemyOrder = ",,france"
-		military += "|f,survivor,player,europe_west,land_formation,1," + I2S('hfoo') + ",40,40,20,0.0,0.0,1,move,12.0,34.0" + playerOrder
-		military += "|f,consumed,france,europe_west,land_formation,1," + I2S('hfoo') + ",0,40,20,0.0,0.0,0,hold,0.0,0.0" + enemyOrder
-		military += "|f,fresh,france,europe_west,land_formation,1," + I2S('hfoo') + ",1,1,20,0.0,0.0,1,hold,0.0,0.0" + enemyOrder
-		if schema == 1
-			military += "|w,england,france"
-		else
-			military += "|c,legacy_war,0|m,legacy_war,england,1|m,legacy_war,france,2"
-		military += "|t,player,land_formation,2147483647,0,1000,0"
-		military += "|t,england,land_formation,73,0,1000,0|t,france,land_formation,9,0,1000,0"
-		military += "|t,england,sailing_naval,0,0,1200,0|t,france,sailing_naval,0,0,1200,0"
-		if schema == 7
-			military += "|t,player,sailing_naval,0,0,1200,0"
-		let candidate = document.replace(originalMilitary, military)
-		let encoded = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", candidate)
-		f.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
-		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
-		traditionXp(f, "player", "land_formation").assertEquals("2147483647")
-		traditionXp(f, "england", "land_formation").assertEquals("73")
-		traditionXp(f, "france", "land_formation").assertEquals("9")
-		traditionXp(f, "player", "sailing_naval").assertEquals("0")
-		let survivor = f.runtime.forces[f.runtime.forceIndex("survivor")]
-		survivor.controllerId.assertEquals("player")
-		survivor.orderId.assertEquals("move")
-		survivor.orderControllerId.assertEquals("player")
-		survivor.orderX.assertEquals(12.)
-		survivor.orderY.assertEquals(34.)
-		f.runtime.forces[f.runtime.forceIndex("consumed")].active.assertFalse()
-		f.token("consumed").assertEquals(0)
-		let victim = f.token("fresh")
-		f.natives.death(victim, f.token("survivor"))
-		traditionXp(f, "player", "land_formation").assertEquals("2147483648")
-		f.representations.traditionLayers.get("survivor").modifier("attack_basis_points").display().assertEquals("1073741824/5")
-		f.representations.traditionLayers.get("survivor").effects().assertEquals("platoon_fire")
-		let saved = f.runtime.snapshot()
-		saved.startsWith("v16|").assertTrue()
-		f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
-		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
-		f.natives.death(victim, f.token("survivor"))
-		f.runtime.snapshot().assertEquals(saved)
-		f.startup.saves.read("manual_01").assertEquals(encoded)
-		// A legacy integer record never legitimately contained this number.
-		let bad = candidate.replace(",2147483647,0,1000,0", ",2147483648,0,1000,0")
-		let invalid = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "invalid-legacy", bad)
-		f.startup.saves.writeTransactional("manual_01", invalid).assertTrue()
-		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
-		f.runtime.snapshot().assertEquals(saved)
-		f.startup.saves.read("manual_01").assertEquals(invalid)
+	var military = "v" + I2S(schema)
+	if schema >= 3
+		military += "|k,0"
+	military += "|a,europe_west"
+	var playerOrder = ""
+	var enemyOrder = ""
+	if schema >= 6
+		playerOrder = ",,player"
+		enemyOrder = ",,france"
+	military += "|f,survivor,player,europe_west,land_formation,1," + I2S('hfoo') + ",40,40,20,0.0,0.0,1,move,12.0,34.0" + playerOrder
+	military += "|f,consumed,france,europe_west,land_formation,1," + I2S('hfoo') + ",0,40,20,0.0,0.0,0,hold,0.0,0.0" + enemyOrder
+	military += "|f,fresh,france,europe_west,land_formation,1," + I2S('hfoo') + ",1,1,20,0.0,0.0,1,hold,0.0,0.0" + enemyOrder
+	if schema == 1
+		military += "|w,england,france"
+	else
+		military += "|c,legacy_war,0|m,legacy_war,england,1|m,legacy_war,france,2"
+	military += "|t,player,land_formation,2147483647,0,1000,0"
+	military += "|t,england,land_formation,73,0,1000,0|t,france,land_formation,9,0,1000,0"
+	military += "|t,england,sailing_naval,0,0,1200,0|t,france,sailing_naval,0,0,1200,0"
+	if schema == 7
+		military += "|t,player,sailing_naval,0,0,1200,0"
+	let candidate = document.replace(originalMilitary, military)
+	let encoded = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "legacy", candidate)
+	f.startup.saves.writeTransactional("manual_01", encoded).assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	traditionXp(f, "player", "land_formation").assertEquals("2147483647")
+	traditionXp(f, "england", "land_formation").assertEquals("73")
+	traditionXp(f, "france", "land_formation").assertEquals("9")
+	traditionXp(f, "player", "sailing_naval").assertEquals("0")
+	let survivor = f.runtime.forces[f.runtime.forceIndex("survivor")]
+	survivor.controllerId.assertEquals("player")
+	survivor.orderId.assertEquals("move")
+	survivor.orderControllerId.assertEquals("player")
+	survivor.orderX.assertEquals(12.)
+	survivor.orderY.assertEquals(34.)
+	f.runtime.forces[f.runtime.forceIndex("consumed")].active.assertFalse()
+	f.token("consumed").assertEquals(0)
+	let victim = f.token("fresh")
+	f.natives.death(victim, f.token("survivor"))
+	traditionXp(f, "player", "land_formation").assertEquals("2147483648")
+	f.representations.traditionLayers.get("survivor").modifier("attack_basis_points").display().assertEquals("1073741824/5")
+	f.representations.traditionLayers.get("survivor").effects().assertEquals("platoon_fire")
+	let saved = f.runtime.snapshot()
+	saved.startsWith("v17|").assertTrue()
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 2).assertTrue()
+	f.natives.death(victim, f.token("survivor"))
+	f.runtime.snapshot().assertEquals(saved)
+	f.startup.saves.read("manual_01").assertEquals(encoded)
+	// A legacy integer record never legitimately contained this number.
+	let bad = candidate.replace(",2147483647,0,1000,0", ",2147483648,0,1000,0")
+	let invalid = campaignSaveEnvelope(CAMPAIGN_SAVE_SCHEMA_CURRENT, "manual_01", SAVE_SLOT_MANUAL, 1, "invalid-legacy", bad)
+	f.startup.saves.writeTransactional("manual_01", invalid).assertTrue()
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.runtime.snapshot().assertEquals(saved)
+	f.startup.saves.read("manual_01").assertEquals(invalid)
 	f.close()
+
+// Each schema exercises the complete campaign load independently. Keeping seven
+// load/save/rejection journeys in one test exceeded the pinned interpreter timeout.
+
+@test function legacyMilitaryIntegerVersion1MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(1)
+
+@test function legacyMilitaryIntegerVersion2MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(2)
+
+@test function legacyMilitaryIntegerVersion3MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(3)
+
+@test function legacyMilitaryIntegerVersion4MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(4)
+
+@test function legacyMilitaryIntegerVersion5MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(5)
+
+@test function legacyMilitaryIntegerVersion6MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(6)
+
+@test function legacyMilitaryIntegerVersion7MigratesThroughFreshCampaignCodec()
+	legacyMilitaryIntegerVersionMigratesThroughFreshCampaignCodec(7)
 
 /** Observe the actual delivered layer after an installed, eligible callback.
  * The Python verifier compares each field with the independent Fraction oracle. */
@@ -1445,7 +1468,7 @@ function milestoneDamageVector(CombatFixture f, string category, string xp, stri
 	f.runtime.restore(malformed).assertFalse()
 	f.runtime.snapshot().assertEquals(before)
 	// Literal old records remain loadable without assigning invented weapons.
-	var legacy = before.replace("v16|", "v8|")
+	var legacy = before.replace("v17|", "v8|")
 	for i = 0 to f.runtime.forceCount - 1
 		let combatForce = f.runtime.forces[i]
 		if combatForce.combatProfileId != ""
@@ -1681,7 +1704,7 @@ function disciplineVector(CombatFixture f, string xp, string expected)
 		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 		deliveredMilestoneDamage(f, "enemy", "player_army", "firearm_volley", "normal").assertEquals("20000/213")
 	// V8 military migration leaves unknown weapons; defensive category survives.
-	var legacy = saved.replace("v16|", "v8|")
+	var legacy = saved.replace("v17|", "v8|")
 	for i = 0 to f.runtime.forceCount - 1
 		let savedForce = f.runtime.forces[i]
 		if savedForce.combatProfileId != ""
