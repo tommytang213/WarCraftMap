@@ -1,0 +1,74 @@
+{
+  "checks": [
+    {
+      "command": "python3 tests/test_industry.py",
+      "id": "industry",
+      "log": "industry.log.gz",
+      "logSha256": "b19aa119d8014601510f03470cebb91f1f7628a8a5c1a87e663883557f8b35bd",
+      "status": "pass",
+      "testCount": 16
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_research*.py'",
+      "id": "research",
+      "log": "research.log.gz",
+      "logSha256": "9b150de59fe9c9e6e8c997707418bf9c2c9e5b53beabd173a31df3c3d57e2e04",
+      "status": "pass",
+      "testCount": 13
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_runtime_acceptance.py'",
+      "id": "runtime_acceptance",
+      "log": "runtime_acceptance.log.gz",
+      "logSha256": "418f7c3bf74ecd1600acd47083947a38cefb87a804bbeccc6b17195d36f15b25",
+      "status": "pass",
+      "testCount": 24
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_release_blocker_audit.py'",
+      "id": "release_audit_regressions",
+      "log": "release_audit_regressions.log.gz",
+      "logSha256": "8abdc2ced6147b35ad324066255a62f6bda83036065d84fdf5ebd5c61de69dd4",
+      "status": "pass",
+      "testCount": 10
+    },
+    {
+      "command": "Three selected FrameworkConformanceTests: assembly shadow rejection, command authority resolution, instrumented aliases",
+      "id": "framework_adapter_contracts",
+      "log": "framework_adapter_contracts.log.gz",
+      "logSha256": "30d4bcf2fa86eb1aef123f1b931cf1dc4b24797be71a6e6cd999bf3333f1e6f9",
+      "status": "pass",
+      "testCount": 3
+    },
+    {
+      "command": "python3 ../_shared/tooling/audit_framework_boundary.py",
+      "id": "framework_boundary",
+      "log": "framework_boundary.log.gz",
+      "logSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+      "status": "pass",
+      "testCount": null
+    }
+  ],
+  "controllerHandoff": "Implementation and available focused/headless checks are complete. Run authoritative repository, pinned Wurst, packaging and same-revision production-trace validation after integration preflight.",
+  "format": "issue_518_focused_verification_v1",
+  "frameworkScope": "Selected framework tests use synthetic compiler fixtures to verify orchestration; they are not pinned Wurst execution. The complete slow framework suite was interrupted and remains for the controller.",
+  "pinnedWurst": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "reason": "Grill and Java are absent; Docker daemon access is denied. Full pinned validation is reserved for the controller.",
+    "status": "not_run"
+  },
+  "releaseAudit": {
+    "industryFindings": [
+      "RESEARCH-UNBOUND-BLAST-FURNACE-PRACTICE-MODIFIER-PROGRESSION-BLAST-FURNACE-PRACTICE",
+      "RESEARCH-UNBOUND-BORING-MILLS-MODIFIER-PROGRESSION-BORING-MILLS"
+    ],
+    "status": "release_blocked",
+    "unresolvedCampaignBlockers": 238
+  },
+  "sourceRevision": "3002fc82383321784f87f85515d613a611dc651c",
+  "sourceTreeSha256": "cbaa772546b82c7b6aa83049972d81afaa7502350ca1720084c8cdb532378fc0",
+  "traceability": {
+    "report": "source-traceability.json.gz",
+    "scope": "Current-source inventory only; 643 obligations, no authority-drift or invalid-mapping errors. Runtime/artifact and other existing publication gaps remain open."
+  }
+}

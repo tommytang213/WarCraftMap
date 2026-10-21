@@ -108,12 +108,34 @@ class ResearchGenerationTests(unittest.TestCase):
         self.assertEqual(self.runtime['researchIntegrationBlockers'], [
             dict(nodeId=n, kind=k, contentId=c, bindingStatus='unbound', reason='missing_gameplay_consumer')
             for n, k, c in expected if (k, c) not in {('modifier', 'army_discipline'),
+                ('modifier', 'progression_campaign_bakeries'), ('modifier', 'progression_canal_logistics'),
                 ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon'),
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
                 ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance'), ('unit', 'ship_of_the_line'),
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
-                ('modifier', 'progression_carvel_hull_construction')}])
+                ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),
+                ('modifier', 'progression_boring_mills')}])
         self.assertNotIn('effectMagnitude', self.source)
+
+    def test_logistics_depots_use_materialized_service_positions_and_land_connectivity(self):
+        import re
+        anchors = {r['id']: r for r in self.runtime['interactionLocations'] if r['kind'] == 'settlement'}
+        catalog = self.runtime['armyFoodLogistics']
+        self.assertEqual(set(catalog['foodSiteIds']) - set(catalog['unreachableDepotIds']), {d['id'] for d in catalog['depots']})
+        for depot in catalog['depots']:
+            self.assertEqual(anchors[depot['id']]['world'], depot['servicePosition'])
+            self.assertLessEqual(sum((a-b)**2 for a,b in zip(depot['servicePosition'], [depot['x'], depot['y']])), catalog['food']['approachRadius'] ** 2)
+            self.assertEqual(anchors[depot['id']]['mapId'], depot['mapId'])
+            grid = self.runtime['partyNavigation'][depot['mapId']]
+            x = int((depot['x'] - grid['minX']) // 128)
+            y = int((depot['y'] - grid['minY']) // 128)
+            self.assertTrue(0 <= x < grid['width'] and 0 <= y < grid['height'], depot['id'])
+            component = next(int(label) for end, label in re.findall(r'(\d+):(\d+),', grid['rows'][y]) if x < int(end))
+            self.assertGreater(component, 0, depot['id'])
+        self.assertTrue(catalog['depots'])
+        self.assertIn('yangzhou', {d['id'] for d in catalog['depots']})
+        self.assertIn('generatedLogisticsNavigation', self.source)
+        self.assertIn('configureGeneratedLogisticsNavigation(ledger)', self.source)
 
     def test_production_adapter_cannot_substitute_native_food_capacity(self):
         bootstrap=(PROJECT.parent / '_shared/wurst/Bootstrap.wurst').read_text()

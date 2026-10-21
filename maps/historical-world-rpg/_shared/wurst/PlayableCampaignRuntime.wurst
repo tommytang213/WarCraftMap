@@ -1,4 +1,5 @@
 package PlayableCampaignRuntime
+import IndustryCampaignRuntime
 import FinanceCampaignRuntime
 import NavalCampaignRuntime
 import ScienceCampaignRuntime
@@ -410,6 +411,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		countries.setMilitaryAuthority(militarySettlements)
 	CivicCampaignRuntime civicRuntime = null
 	NavalCampaignRuntime navalRuntime = null
+	IndustryCampaignRuntime industryRuntime = null
 	LandArmyRuntime landRuntime = null
 	FinanceCampaignRuntime financeRuntime = null
 	ScienceCampaignRuntime scienceRuntime = null
@@ -426,6 +428,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			recoverHeroes(day)
 			if navalRuntime != null
 				navalRuntime.advance(day)
+			if industryRuntime != null
+				industryRuntime.advance(day)
 			if landRuntime != null
 				landRuntime.advance(day)
 			if financeRuntime != null
@@ -2164,10 +2168,10 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			if saves.loading
 				candidate = state.captureStagedAuthoritativeState()
 			let session = saves.codec.encode("session_start", SAVE_SLOT_SESSION_START, 0, "campaign-start", candidate)
-			if not saves.storage.writeTransactional("session_start", session)
+			if session == "" or not saves.storage.writeTransactional("session_start", session)
 				return rejectStartup("The session checkpoint could not be committed; the start request is recoverable.")
 			let milestone = saves.codec.encode("major_milestone", SAVE_SLOT_MAJOR_MILESTONE, 0, "campaign-start", candidate)
-			if not saves.storage.writeTransactional("major_milestone", milestone)
+			if milestone == "" or not saves.storage.writeTransactional("major_milestone", milestone)
 				return rejectStartup("The campaign milestone could not be committed; the start request is recoverable.")
 			if not handoff.acknowledge(request)
 				return rejectStartup("Campaign acknowledgement was interrupted; the start checkpoint is recoverable.")

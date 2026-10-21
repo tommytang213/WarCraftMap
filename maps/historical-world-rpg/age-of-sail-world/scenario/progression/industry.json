@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "setup": {
+    "days": 90,
+    "money": 120,
+    "workers": 10,
+    "equipment": 10,
+    "fuel": 20
+  },
+  "daily": {
+    "money": 1,
+    "supply": 1
+  },
+  "recipes": [
+    {
+      "id": "iron_refining",
+      "productionRef": "iron",
+      "metric": "iron_refining_yield",
+      "prerequisite": "water_powered_machinery",
+      "firstYear": 1450,
+      "inputGood": "iron",
+      "inputUnits": 200,
+      "fuelUnits": 50,
+      "wearUnits": 2,
+      "money": 20,
+      "outputGood": "iron_goods",
+      "outputUnits": 100,
+      "workRequired": 1000,
+      "dailyWork": 100,
+      "mode": "yield"
+    },
+    {
+      "id": "gun_barrels",
+      "productionRef": "arms",
+      "metric": "gun_barrel_production_throughput",
+      "prerequisite": "cast_cannon",
+      "firstYear": 1450,
+      "inputGood": "iron_goods",
+      "inputUnits": 100,
+      "fuelUnits": 20,
+      "wearUnits": 5,
+      "money": 40,
+      "outputGood": "arms",
+      "outputUnits": 30,
+      "workRequired": 10000,
+      "dailyWork": 100,
+      "mode": "throughput"
+    }
+  ],
+  "fuelGood": "timber",
+  "equipmentGood": "tools",
+  "notes": [
+    "Existing raw-material iron lots aggregate ore/feedstock; refining converts them to iron_goods, never creates raw iron. Timber is consumed as charcoal fuel. Arms output represents finished gun barrels in the existing ordnance supply commodity; no combat statistic or free cannon changes.",
+    "Only authored iron-producing or arms-producing settlements qualify. Equipment commissions assign actual manpower to a durable workshop, take 90 days and pay tools, timber and treasury. No starting facility is granted. Daily paid workshop labor consumes actual local supply.",
+    "Batches reserve their complete material bill up front, pay labor daily, and deposit output only on completion. Capture cancels work without refund; completed equipment/workforce transfers, unfinished commissioning is lost. New owners need their own prerequisite and research. Missing market definitions start with zero stock and zero liquidity; supplies must arrive through ordinary trade.",
+    "An operating market and warehouse are required to sustain a commissioned facility. Materials consume existing local market stock first, then delivered local warehouse cargo with provenance. This permits normal trade deliveries even where a newly defined import market has zero cash. Ore sites without warehouse infrastructure remain raw-material suppliers."
+  ],
+  "requiredServices": [
+    "market",
+    "warehouse"
+  ]
+}

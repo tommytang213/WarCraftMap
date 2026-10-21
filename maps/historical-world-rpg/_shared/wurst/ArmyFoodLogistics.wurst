@@ -1,0 +1,148 @@
+package ArmyFoodLogistics
+
+import FinanceCampaignRuntime
+import TradeFinance
+import CivicGovernance
+import MilitarySettlementRuntime
+import CampaignTimeline
+import PlayableTrade
+import PlayableCampaignRuntime
+import WarcraftRpgRuntime
+import CommandRouter
+import ExactNatural
+
+/** Both active-map commands and abstract government actions transact against
+ * the same campaign stock, treasury, commissioned kit and durable canal works.
+ * No output is derived from a transient Warcraft object or active map flag. */
+public class ArmyFoodLogistics
+	FinanceCampaignRuntime finance
+	construct(FinanceCampaignRuntime finance)
+		this.finance = finance
+	function connected(FoodDepot depot, RuntimeForce target) returns boolean
+		let ledger = finance.ledger()
+		for i = 0 to ledger.foodMapCount - 1
+			let grid = ledger.foodMaps[i]
+			if depot.mapId == grid.mapId
+				let component = grid.componentAt(depot.x, depot.y)
+				return component > 0 and component == grid.componentAt(target.x, target.y)
+		return false
+	function food(string owner, string id, string forceId) returns string
+		let campaign = finance.campaign
+		let military = campaign.militarySettlements
+		let ledger = finance.ledger()
+		let depot = ledger.foodDepot(id)
+		if not campaign.isSaveSafe() or depot == null or not finance.port.eligible(owner, id)
+			return "Requires a lawfully administered, accessible food depot with warehouse service."
+		let i = military.forceIndex(forceId)
+		if i < 0
+			return "Choose a supplied land army on the depot's connected local route."
+		let target = military.forces[i]
+		military.landYear = campaign.clock.campaignYear()
+		let dx = target.x - depot.x
+		let dy = target.y - depot.y
+		if not target.active or target.strength <= 0 or target.supply <= 0 or target.controllerId != owner or military.landKit(target) == null or not militaryMapMatches(target.regionId, depot.mapId) or dx * dx + dy * dy > I2R(ledger.foodRadius) * I2R(ledger.foodRadius)
+			return "Requires owned, living, supplied land army with historically available commissioned gear on the same local route within delivery radius."
+		if not connected(depot, target)
+			return "The army is disconnected from this depot's traversable land supply component."
+		let foodStock = finance.trade.findMarket(id, ledger.foodGood)
+		if foodStock == null or not foodStock.discovered
+			return "Requires a known actual food market."
+		let saved = civicScale(ledger.foodWaste, IMinBJ(10000, finance.effects.rateAt(owner, "grain_supply_spoilage_reduction", campaign.clock.currentDay)))
+		let delivered = ledger.foodShipment - ledger.foodWaste + saved
+		if target.supply > 2147483647 - delivered
+			return "Army supply capacity is unavailable."
+		if not finance.port.workforce(id, ledger.foodLabor) or not finance.port.pay(owner, id, ledger.foodCost, ledger.foodGood, ledger.foodShipment)
+			return "Insufficient real food stock, paid handling labor or government treasury."
+		target.supply += delivered
+		return ""
+	function freightCapacity(string owner, CanalWork route) returns int
+		return route.freightCapacity + civicScale(route.freightCapacity, finance.effects.rateAt(owner, "canal_freight_throughput", finance.campaign.clock.currentDay))
+	function freight(string owner, string id, string good, int quantity, boolean reverse) returns string
+		let campaign = finance.campaign
+		let ledger = finance.ledger()
+		let i = ledger.index(id)
+		if not campaign.isSaveSafe() or i < 0 or quantity <= 0
+			return "Choose a built canal freight route and positive cargo quantity."
+		let d = ledger.projects[i]
+		let s = ledger.states[i]
+		let day = campaign.clock.currentDay
+		if d.freightDestination == "" or not s.completed or day < d.firstDay or not finance.port.technology(owner, d.prerequisite) or not finance.port.eligible(owner, d.settlementId) or not finance.port.eligible(owner, d.freightDestination)
+			return "Requires completed paid canal works, historical availability, supporting technology and lawful accessible control of both canal endpoints."
+		if not ("," + d.freightGoods + ",").contains("," + good + ",")
+			return "This canal route cannot handle that commodity."
+		var origin = d.settlementId
+		var destination = d.freightDestination
+		if reverse
+			origin = d.freightDestination
+			destination = d.settlementId
+		let fromStock = finance.trade.findMarket(origin, good)
+		let toStock = finance.trade.findMarket(destination, good)
+		if fromStock == null or toStock == null or fromStock.blockaded or toStock.blockaded or fromStock.occupiedByHostile or toStock.occupiedByHostile or not fromStock.discovered or not toStock.discovered or fromStock.stock < quantity
+			return "Insufficient accessible real freight stock or endpoint markets."
+		if toStock.storageCapacity - toStock.stock < quantity
+			return "Destination commodity storage capacity is insufficient."
+		var used = s.freightUsed
+		if day < s.freightDay
+			return "Canal freight day is inconsistent with the campaign clock."
+		if day > s.freightDay
+			used = 0
+		if quantity > freightCapacity(owner, d) - used
+			return "Daily canal throughput is exhausted; both directions and all goods share the same limit."
+		if not finance.port.workforce(origin, d.freightLabor) or not finance.port.workforce(destination, d.freightLabor) or not finance.port.pay(owner, origin, civicBill(quantity, d.freightFee), "", 0)
+			return "Insufficient canal workforce or government treasury for freight handling."
+		// All rejections precede the atomic mutation. Capture does not reset used
+		// capacity; a new controller's technology only changes today's ceiling.
+		fromStock.stock -= quantity
+		toStock.stock += quantity
+		s.freightDay = day
+		s.freightUsed = used + quantity
+		return ""
+	function overview(string owner) returns string
+		let l = finance.ledger()
+		var result = "Army food: withdraw " + I2S(l.foodShipment) + " " + l.foodGood + "; ordinary spoilage " + I2S(l.foodWaste) + "; research avoids " + I2S(finance.effects.rateAt(owner, "grain_supply_spoilage_reduction", finance.campaign.clock.currentDay)) + " bp of actual waste (rounded down). Handling costs " + I2S(l.foodCost) + " treasury currency; requires " + I2S(l.foodLabor) + " local workforce, lawful depot/warehouse access, commissioned historical land gear and a living supplied army within " + I2S(l.foodRadius) + " map units on the same traversable land component. Expected delivery " + I2S(l.foodShipment - l.foodWaste + civicScale(l.foodWaste, IMinBJ(10000, finance.effects.rateAt(owner, "grain_supply_spoilage_reduction", finance.campaign.clock.currentDay)))) + " supply units. No disconnected hunger relief."
+		for i = 0 to l.count - 1
+			let d = l.projects[i]
+			if d.freightDestination != ""
+				let s = l.states[i]
+				var used = 0
+				if s.freightDay == finance.campaign.clock.currentDay
+					used = s.freightUsed
+				result += "\nCanal " + d.id + ": " + d.settlementId + " <-> " + d.freightDestination + ", " + d.freightGoods + "; " + I2S(freightCapacity(owner, d)) + " units/day (base " + I2S(d.freightCapacity) + ", research +" + I2S(finance.effects.rateAt(owner, "canal_freight_throughput", finance.campaign.clock.currentDay)) + " bp); used " + I2S(used) + ". Fee " + I2S(d.freightFee) + " bp of quantity, rounded up, minimum 1 treasury currency; " + I2S(d.freightLabor) + " workforce at each endpoint. Requires paid completed /finance canal works, supporting technology, lawful administration and unblocked endpoint markets. Both directions share capacity; missed days never accumulate."
+		return result + "\nUse /logistics food DEPOT FORCE, /logistics freight PROJECT GOOD QUANTITY [reverse], /logistics inspect. /finance inspect shows construction bills and duration."
+
+class LogisticsCommand implements CommandHandler
+	ArmyFoodLogistics runtime
+	CommandOutput output
+	construct(ArmyFoodLogistics runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		let action = logisticsArgument(arguments, 0)
+		let owner = runtime.finance.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect" and countArguments(arguments) == 1
+			output.show(sender, runtime.overview(owner))
+			return
+		var problem = "Use /logistics inspect, food DEPOT FORCE or freight PROJECT GOOD QUANTITY [reverse]."
+		if action == "food" and countArguments(arguments) == 3
+			problem = runtime.food(owner, logisticsArgument(arguments, 1), logisticsArgument(arguments, 2))
+		if action == "freight" and (countArguments(arguments) == 4 or countArguments(arguments) == 5 and logisticsArgument(arguments, 4) == "reverse")
+			let amount = logisticsArgument(arguments, 3)
+			if exactNaturalValid(amount) and exactNaturalCompare(amount, "2147483647") <= 0
+				problem = runtime.freight(owner, logisticsArgument(arguments, 1), logisticsArgument(arguments, 2), S2I(amount), countArguments(arguments) == 5)
+		if problem == ""
+			problem = "Logistics action completed."
+		output.show(sender, problem)
+
+function logisticsArgument(string arguments, int wanted) returns string
+	var start = 0
+	var field = 0
+	for i = 0 to StringLength(arguments)
+		if i == StringLength(arguments) or SubString(arguments, i, i + 1) == " "
+			if field == wanted
+				return SubString(arguments, start, i)
+			field++
+			start = i + 1
+	return ""
+
+public function registerLogisticsCommands(CommandRegistry commands, ArmyFoodLogistics runtime) returns string
+	return commands.register("logistics", "", "logistics <inspect|food DEPOT FORCE|freight PROJECT GOOD QUANTITY [reverse]>", "Deliver real army food or move freight on built canal routes.", "Inspect costs, resources, exact expected output and conditions. Same campaign actions for player and AI governments, active and inactive regions. Paid canal construction stays a separate /finance action.", 1, 5, COMMAND_RELEASE, new LogisticsCommand(runtime, commands.output))

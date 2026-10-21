@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "designSource": "scenario/progression/gameplay-effect-design.json",
+  "food": {
+    "goodId": "grain",
+    "shipmentUnits": 100,
+    "wasteUnits": 25,
+    "laborUnits": 1,
+    "deliveryCost": 1,
+    "radius": 768,
+    "approachRadius": 512
+  },
+  "canalRoutes": [
+    {
+      "projectId": "yangzhou_canal_quay",
+      "destinationId": "zhenjiang",
+      "routeSource": "scenario/settlements/east-asia-1450.json",
+      "routeId": "route_density_land_zhenjiang",
+      "dailyCapacity": 100,
+      "feeBasisPoints": 100,
+      "laborUnits": 10,
+      "goodIds": [
+        "grain",
+        "timber"
+      ]
+    }
+  ],
+  "notes": [
+    "Food deliveries use administered warehouse markets with actual grain, paid handling labor and a supplied, historically eligible land army on the same local route. A 100-unit shipment normally loses 25 units; 800 bp avoids floor(25*800/10000)=2 units of waste. No output when disconnected.",
+    "The Yangzhou-Zhenjiang authored river link connects two historical canal nodes at the Grand Canal/Yangtze crossing. Freight requires the paid Yangzhou canal quay and both administered endpoints. This is local canal transshipment, not a new ocean passage. Existing construction bills and daily labor remain real.",
+    "Freight moves existing allowed commodity stock between endpoint markets, capped per campaign day across both directions and all commodities. Fee is ceil(quantity*100/10000), minimum 1 treasury currency unit; the endpoint workforce must exist. Research raises 100 units/day to 110, with no accumulated missed-day allowance. Capture retains infrastructure and used capacity, while benefits follow the current controller's research.",
+    "Food uses the materialized market service location or its nearest traversable land approach within 512 map units. A warehouse without a verified nearby land approach is not an operational army-food depot."
+  ],
+  "goodsSource": "scenario/economy/global-goods.json"
+}

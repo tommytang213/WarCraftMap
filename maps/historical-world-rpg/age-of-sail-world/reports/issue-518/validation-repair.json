@@ -1,0 +1,45 @@
+{
+  "additionalChecks": {
+    "designDependency511": "merged_ancestor",
+    "frameworkBoundary": "pass",
+    "gitDiffCheck": "pass",
+    "mapSource": "pass",
+    "unmergedPaths": false
+  },
+  "checks": [
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_industry test_trade_finance test_research_gameplay_design test_research_generation test_runtime_acceptance test_release_save_compatibility test_framework_conformance test_packaging",
+      "elapsedSeconds": 620.708,
+      "log": "validation-repair-focused.log.gz",
+      "logSha256": "072b673d2bd805760066f7e86b370a18d427041dbf6a048356f03af5660ef7ea",
+      "status": "pass",
+      "testCount": 86
+    },
+    {
+      "command": "PYTHONPATH=tests python3 -m unittest -v test_release_blocker_audit test_requirement_traceability",
+      "elapsedSeconds": 76.729,
+      "log": "validation-repair-audit-repair.log.gz",
+      "logSha256": "f0c593fc7f3b45fe93a38fdf9bd7d8fc4ef7ca4a91aee66b1d36a0e9857efadb",
+      "status": "pass",
+      "testCount": 63
+    }
+  ],
+  "controllerHandoff": "Run authoritative repository, pinned Wurst, runtime/artifact and traceability validation on the integrated revision. No predecessor evidence was reused. Native campaign launch #438 remains separately owned.",
+  "evidenceScope": "Headless industry simulations and Python packaging/evidence protocol tests. Compiler fixtures used by framework/packaging tests are synthetic; Wurst counts in their logs are not actual pinned compiler gameplay execution.",
+  "format": "issue_518_validation_repair_v1",
+  "pinnedWurst": {
+    "command": "python3 ../_shared/tooling/run_wurst_tests.py package.json",
+    "reason": "Wurst execution failed: inputs stage failed: required tool 'grill' was not found on PATH",
+    "status": "not_run"
+  },
+  "pythonTestsPassed": 149,
+  "releaseAudit": {
+    "industryFindingsRemainBlocking": true,
+    "unresolvedCampaignBlockers": 238
+  },
+  "releaseEvidence": false,
+  "repair": "Regenerated source-only runtime, release-blocker and traceability reports after the merged packaging-test assertion repair changed the source hash. Preserved the merged industry and finance implementation and all release gates.",
+  "sourceRevision": "d15e08b54d867b6977785c2499c809cde3d61b90",
+  "sourceTreeSha256": "29eba4c0786b948b028c3fd661742f1af6ca2d1d723e0b2e29065566321e7208",
+  "status": "pass"
+}

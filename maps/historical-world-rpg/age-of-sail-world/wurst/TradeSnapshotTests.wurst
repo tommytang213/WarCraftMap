@@ -287,3 +287,72 @@ function reverseSnapshotCatalogue(PlayableTradeRuntime r)
 	r.reconstruct(saved).assertTrue()
 	r.capture().assertEquals(saved)
 	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(20)
+
+
+@test function tradeSnapshotDecimalDigitsRoundTripThroughSignedAuthority()
+	let r=snapshotRuntime()
+	let saved=r.capture()
+	// Exercise the public validator and reconstruction, rather than repeating
+	// the production digit lookup. Realized profit is a signed saved field.
+	string array[12] values
+	for i=0 to 9
+		values[i]=i.toString()
+	values[10]="1234567890"
+	values[11]="-1234567890"
+	for i=0 to 11
+		let candidate=replaceSnapshotField(saved,12,values[i])
+		let before=r.capture()
+		r.validate(candidate).assertTrue()
+		r.capture().assertEquals(before)
+		r.reconstruct(candidate).assertTrue()
+		r.progress.realizedProfit.assertEquals(S2I(values[i]))
+		r.capture().assertEquals(candidate)
+
+@test function tradeSnapshotRejectsNonDecimalCharactersWithoutMutation()
+	let r=snapshotRuntime()
+	r.marketSelected=true
+	r.storeSelected=true
+	let saved=r.capture()
+	// Unicode digits are not ASCII save integers. Include invalid characters
+	// before and after valid digits so no partial parse can be published.
+	string array[15] values
+	values[0]="a"
+	values[1]="/"
+	values[2]="+"
+	values[3]="."
+	values[4]="1a"
+	values[5]="a1"
+	values[6]="1.0"
+	values[7]="1e2"
+	values[8]="0x1"
+	values[9]="１"
+	values[10]="١"
+	values[11]="𝟙"
+	values[12]="½"
+	values[13]="雪"
+	values[14]="1😀"
+	for i=0 to 14
+		rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,12,values[i]))
+
+@test function tradeSnapshotRejectsNoncanonicalSignedIntegersWithoutMutation()
+	let r=snapshotRuntime()
+	r.marketSelected=true
+	r.storeSelected=true
+	let saved=r.capture()
+	// Signed range endpoints and one-step overflow are covered by the existing
+	// malformed-row test. These cases cover syntax and the length guard.
+	string array[12] values
+	values[0]=""
+	values[1]="-"
+	values[2]="+1"
+	values[3]=" 1"
+	values[4]="1 "
+	values[5]="00"
+	values[6]="01"
+	values[7]="-0"
+	values[8]="-01"
+	values[9]="--1"
+	values[10]="1-"
+	values[11]="12345678901"
+	for i=0 to 11
+		rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,12,values[i]))

@@ -1,5 +1,6 @@
 package TradeFinance
 
+import PartyLocations
 import CivicGovernance
 import ResearchEntitlements
 
@@ -43,6 +44,12 @@ public class ExchangeSite
 public class CanalWork
 	string id
 	string settlementId
+	// Optional scenario-authored canal freight connection; never generic movement.
+	string freightDestination = ""
+	string freightGoods = ""
+	int freightCapacity = 0
+	int freightFee = 0
+	int freightLabor = 0
 	string prerequisite
 	string good
 	int firstDay
@@ -67,7 +74,22 @@ public class CanalWork
 		this.capacityUnits = capacityUnits
 		this.laborUnits = laborUnits
 
+/** Immutable supply service anchor from the same physical placement as markets. */
+public class FoodDepot
+	string id
+	string mapId
+	real x
+	real y
+	construct(string id, string mapId, real x, real y)
+		this.id = id
+		this.mapId = mapId
+		this.x = x
+		this.y = y
+
 public class CanalState
+	boolean freightRestored = false
+	int freightDay = 0
+	int freightUsed = 0
 	boolean restored = false
 	string owner = ""
 	int work = 0
@@ -91,6 +113,23 @@ public class FinanceLedger
 	int commissionShare = 0
 	int remittanceFee = 0
 	string bankPrerequisite = ""
+	string foodGood = ""
+	int foodShipment = 0
+	int foodWaste = 0
+	int foodLabor = 0
+	int foodCost = 0
+	int foodRadius = 0
+	FoodDepot array[1024] foodDepots
+	string array[1024] foodSites
+	int foodSiteCount = 0
+	// Immutable land-component rasters shared with physical party navigation.
+	PartyNavigation array[64] foodMaps
+	int foodMapCount = 0
+	function foodDepot(string id) returns FoodDepot
+		for i = 0 to foodSiteCount - 1
+			if foodSites[i] == id
+				return foodDepots[i]
+		return null
 	function site(string id) returns ExchangeSite
 		for i = 0 to siteCount - 1
 			if sites[i].id == id
@@ -110,6 +149,19 @@ public class FinanceLedger
 		copy.commissionShare = commissionShare
 		copy.remittanceFee = remittanceFee
 		copy.bankPrerequisite = bankPrerequisite
+		copy.foodGood = foodGood
+		copy.foodShipment = foodShipment
+		copy.foodWaste = foodWaste
+		copy.foodLabor = foodLabor
+		copy.foodCost = foodCost
+		copy.foodRadius = foodRadius
+		copy.foodMapCount = foodMapCount
+		for i = 0 to foodMapCount - 1
+			copy.foodMaps[i] = foodMaps[i]
+		copy.foodSiteCount = foodSiteCount
+		for i = 0 to foodSiteCount - 1
+			copy.foodSites[i] = foodSites[i]
+			copy.foodDepots[i] = foodDepots[i]
 		copy.siteCount = siteCount
 		for i = 0 to siteCount - 1
 			copy.sites[i] = sites[i]

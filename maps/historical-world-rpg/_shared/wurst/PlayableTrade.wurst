@@ -381,6 +381,33 @@ function tradeFieldCount(string document,string separator) returns int
 			count++
 	return count
 
+// Decimal digits are the common case in every market/store record. Avoid a
+// native substring search of the fixed alphabet for each already-sliced digit.
+// Keep the old search for other slice results, including an empty string: its
+// exact behavior remains authoritative for unusual native string handling.
+function tradeDecimalDigit(string character) returns int
+	if character=="0"
+		return 0
+	if character=="1"
+		return 1
+	if character=="2"
+		return 2
+	if character=="3"
+		return 3
+	if character=="4"
+		return 4
+	if character=="5"
+		return 5
+	if character=="6"
+		return 6
+	if character=="7"
+		return 7
+	if character=="8"
+		return 8
+	if character=="9"
+		return 9
+	return "0123456789".indexOf(character)
+
 function tradeInteger(string value) returns boolean
 	// Check the range before S2I: both command input and saves are untrusted,
 	// and the pinned interpreter throws on integers outside the Warcraft range.
@@ -397,7 +424,7 @@ function tradeInteger(string value) returns boolean
 		return false
 	var total=0
 	for i=start to StringLength(value)-1
-		let digit="0123456789".indexOf(SubString(value,i,i+1))
+		let digit=tradeDecimalDigit(SubString(value,i,i+1))
 		if digit<0 or total < -214748364 or (total == -214748364 and digit>lastDigit)
 			return false
 		total=total*10-digit
