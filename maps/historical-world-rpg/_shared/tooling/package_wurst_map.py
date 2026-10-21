@@ -492,7 +492,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
             row["regionId"] = points[row["id"]]["mapId"]
             row["x"], row["y"] = points[row["id"]]["world"]
     templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
-    military_lines = ["\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
+    # Keep early returns in the catalogue reconciler as real returns. Inlining
+    # it into SettlementDefinitions.reconcile expands return guards across every
+    # settlement, pushing regional Lua over the runtime payload budget.
+    military_lines = ["\n@noinline\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
     for row in settlement_runtime:
         policy = f'{str(row["projectMilitary"]).lower()}, {str(row["capturable"]).lower()}, "{ws(row["governanceExceptionId"])}"'
         start = len(military_lines)
