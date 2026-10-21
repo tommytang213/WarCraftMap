@@ -1054,6 +1054,7 @@ public class TechnologyRuntime
 	int unlockedCount=0
 	TechnologyEffectPort effects
 	ResearchAdoptionPort adoption=null
+	ResearchEligibilityPort eligibility=null
 	boolean malformed = false
 	// Includes old controllers until reconstruction clears their obsolete layers.
 	string knownControllers = "|"
@@ -1113,6 +1114,8 @@ public class TechnologyRuntime
 		for i=0 to technology.prerequisiteCount-1
 			if not isUnlocked(controllerId,technology.prerequisiteIds[i])
 				return false
+		if eligibility != null and not eligibility.eligibleResearch(controllerId, id)
+			return false
 		unlockedKeys[unlockedCount]=controllerId+":"+id
 		unlockedCount++
 		reconstruct(controllerId)
@@ -2003,7 +2006,7 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				for k = 0 to civic.definitionCount - 1
 					let binding = civic.definitions[k]
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
-						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires paid local activation. Use /civic inspect DISTRICT for conditions, currency, supplies, duration and upkeep."
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires current qualified administration; policies require separate paid local enactment. Use /civic inspect DISTRICT for conditions, currency, supplies, duration and upkeep."
 				port = civic.upstream
 			if port instanceof CombatResearchEffects
 				let effects = port castTo CombatResearchEffects

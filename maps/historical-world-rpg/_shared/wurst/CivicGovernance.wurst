@@ -76,6 +76,7 @@ public class CivicDistrict
 	string id
 	string provinceId
 	int annualTax
+	int urbanization = 0
 	boolean civicCenter
 	int discussionFirstDay
 	int discussionPerDay
@@ -100,6 +101,11 @@ public class CivicDistrict
 		this.tradeCapacity = tradeCapacity
 
 public class CivicLocalState
+	boolean municipalRestored = false
+	string municipalOwner = ""
+	int municipalReady = 0
+	int municipalThrough = 0
+	int urbanization = 0
 	boolean restored = false
 	string policyOwner = ""
 	int policyReady = 0
@@ -123,6 +129,7 @@ public class CivicLocalState
 /** The campaign port reads current control and real stocks, not projected
  * object handles. Transactions must validate the entire bill before mutation. */
 public interface CivicEconomyPort
+	function administration(string id) returns int
 	function controller(string id) returns string
 	function lawful(string id) returns boolean
 	function known(string controllerId, string id) returns boolean
@@ -141,6 +148,10 @@ public class CivicLedger
 	// catalogue size without treating a hash as an authoritative identity.
 	hashtable districtIndex = InitHashtable()
 	int array[1024] previousDistrict
+	string municipalNode = ""
+	int municipalMinimumUrbanization = 101
+	int archiveUpkeepBasisPoints = 25
+	int minimumAdministration = 40
 	int transitionDays = 90
 	int enactmentBasisPoints = 100
 	int upkeepBasisPoints = 50
@@ -152,6 +163,10 @@ public class CivicLedger
 	int baseTaxBasisPoints = 9000
 	function fork() returns CivicLedger
 		let copy = new CivicLedger()
+		copy.municipalNode = municipalNode
+		copy.municipalMinimumUrbanization = municipalMinimumUrbanization
+		copy.archiveUpkeepBasisPoints = archiveUpkeepBasisPoints
+		copy.minimumAdministration = minimumAdministration
 		copy.transitionDays = transitionDays
 		copy.enactmentBasisPoints = enactmentBasisPoints
 		copy.upkeepBasisPoints = upkeepBasisPoints
@@ -178,11 +193,22 @@ public class CivicLedger
 			SaveInteger(districtIndex, 0, hash, count + 1)
 			districts[count] = district
 			states[count] = new CivicLocalState(day)
+			states[count].urbanization = district.urbanization
 			count++
+	function configureAdministration(string id, int urbanization)
+		let i = index(id)
+		if i >= 0
+			districts[i].urbanization = urbanization
+			states[i].urbanization = urbanization
+	function municipalEligible(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
+		return owner != "" and economy.controller(districts[i].id) == owner and economy.lawful(districts[i].id) and economy.administration(districts[i].id) >= minimumAdministration and states[i].urbanization >= municipalMinimumUrbanization and research.rate(owner, "archive_tax_collection_efficiency") > 0 and research.rate(owner, "municipal_tax_collection_efficiency") > 0
 	function controlChanged(string id)
 		let i = index(id)
 		if i >= 0
 			let s = states[i]
+			s.municipalOwner = ""
+			s.municipalReady = 0
+			s.municipalThrough = 0
 			s.policyOwner = ""
 			s.policyReady = 0
 			s.upkeepThrough = 0
@@ -225,6 +251,22 @@ public class CivicLedger
 		let s = states[i]
 		if day < s.lastDay or d.annualTax <= 0
 			return "Local tax assessment or campaign date is unavailable."
+		if action == "municipal-repeal"
+			if s.municipalOwner != controllerId
+				return "No municipal policy is enacted by this controller."
+			s.municipalOwner = ""
+			s.municipalReady = 0
+			s.municipalThrough = 0
+			return ""
+		if action == "municipal"
+			if s.municipalOwner != "" or not municipalEligible(i, controllerId, research, economy)
+				return "Requires Archives, municipal adoption, qualified administration and sufficient urbanization; already enacted policies cannot stack."
+			if not economy.pay(controllerId, id, civicBill(d.annualTax, enactmentBasisPoints), "", 0)
+				return "Treasury resources are insufficient."
+			s.municipalOwner = controllerId
+			s.municipalReady = day + transitionDays
+			s.municipalThrough = s.municipalReady
+			return ""
 		if action == "repeal"
 			if s.policyOwner != controllerId
 				return "No local policy is enacted by this controller."
@@ -279,6 +321,13 @@ public class CivicLedger
 				let at = s.lastDay
 				let owner = economy.controller(d.id)
 				let lawful = economy.lawful(d.id)
+				if s.municipalOwner != owner
+					s.municipalOwner = ""
+					s.municipalReady = 0
+					s.municipalThrough = 0
+				if s.municipalOwner == owner and owner != "" and at >= s.municipalReady and at >= s.municipalThrough and municipalEligible(i, owner, research, economy)
+					if economy.pay(owner, d.id, civicBill(d.annualTax, upkeepBasisPoints), "", 0)
+						s.municipalThrough = at + 365
 				// Capture keeps completed land records; opt-in policy and medical
 				// authority never transfer to another controller.
 				if s.policyOwner != owner
@@ -313,6 +362,14 @@ public class CivicLedger
 					var bonus = 0
 					if s.surveyed
 						bonus = research.rate(owner, "land_tax_collection_efficiency")
+					// Archives operate before the separately elected charter. Distinct
+					// sources add once to the survey layer before a single tax rounding.
+					let skill = economy.administration(d.id)
+					if skill >= minimumAdministration and research.rate(owner, "archive_tax_collection_efficiency") > 0
+						if economy.pay(owner, d.id, civicBill(d.annualTax, archiveUpkeepBasisPoints), "", 0)
+							bonus += civicScale(research.rate(owner, "archive_tax_collection_efficiency"), skill * 100)
+					if s.municipalOwner == owner and owner != "" and at >= s.municipalReady and at < s.municipalThrough and municipalEligible(i, owner, research, economy)
+						bonus += research.rate(owner, "municipal_tax_collection_efficiency")
 					let collected = economy.collect(owner, d.id, civicTax(d.annualTax, baseTaxBasisPoints, bonus))
 					s.taxesCollected += collected
 				if outbreak(i, at - 1)

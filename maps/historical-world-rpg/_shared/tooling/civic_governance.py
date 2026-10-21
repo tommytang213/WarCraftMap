@@ -36,8 +36,11 @@ def configuration(project, world, settlements, authored, trade_records):
         identities.add(pair)
     if len(definitions) != 3:
         raise ValueError('civic governance: missing effect contract')
+    from administrative_governance import configuration as administration_configuration
+    admin_lines, admin_effects, urban, admin_sources = administration_configuration(project, world)
+    definitions += admin_effects
     q = json.dumps
-    lines = [header]
+    lines = [header, *admin_lines]
     for key, value in data['rules'].items():
         lines.append(f'\tledger.{key} = {value}')
     for effect in definitions:
@@ -81,9 +84,12 @@ def configuration(project, world, settlements, authored, trade_records):
                       medicalGood=medical_good, medicalUnits=cfg['medicalUnits'], tradeCapacity=cfg['dailyTradeCapacityUnits'])
         args = ', '.join(str(v).lower() if isinstance(v, bool) else q(v) if isinstance(v, str) else str(v) for v in record.values())
         records.append(f'\tledger.register(new CivicDistrict({args}), day)')
+        if urban:
+            percent = urban['urbanPercent'] if roles & set(urban['urbanRoles']) else urban['otherPercent']
+            records[-1] += f'\n\tledger.configureAdministration({q(ident)}, {percent})'
     # Keep generated registration functions below compiler complexity limits.
     for start in range(0, len(records), 40):
         lines.append(f'\tconfigureCivicDistricts{start}(ledger, day)')
     for start in range(0, len(records), 40):
         lines.extend([f'\nfunction configureCivicDistricts{start}(CivicLedger ledger, int day)', *records[start:start + 40]])
-    return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records)}, [path, design_path, __import__('pathlib').Path(__file__)]
+    return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records)}, [path, design_path, __import__('pathlib').Path(__file__), *admin_sources]

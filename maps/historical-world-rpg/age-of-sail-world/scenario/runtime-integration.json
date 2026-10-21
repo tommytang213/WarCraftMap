@@ -488,6 +488,13 @@
           "contains": [
             "Administration"
           ]
+        },
+        {
+          "path": "scenario/progression/administrative-contracts.json",
+          "contains": [
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
         }
       ],
       "headlessVerification": [
@@ -496,6 +503,12 @@
           "contains": [
             "administrator"
           ]
+        },
+        {
+          "path": "tests/test_administrative_contracts.py",
+          "contains": [
+            "test_exact_typed_effects_and_catalogue_adoption_requirements"
+          ]
         }
       ],
       "runtime": [
@@ -503,6 +516,14 @@
           "path": "wurst/Bootstrap.wurst",
           "contains": [
             "initializeMilitarySettlementRuntime"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernance.wurst",
+          "contains": [
+            "function municipalEligible",
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
           ]
         }
       ],
@@ -513,6 +534,13 @@
             "administration",
             "appoint"
           ]
+        },
+        {
+          "path": "wurst/CivicCampaignRuntime.wurst",
+          "contains": [
+            "municipal-repeal",
+            "registerCivicCommands"
+          ]
         }
       ],
       "persistence": [
@@ -522,6 +550,14 @@
             "snapshot",
             "restore"
           ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "s.municipalOwner",
+            "state.municipalRestored",
+            "civic = parsed.civic"
+          ]
         }
       ],
       "runtimeVerification": [
@@ -529,6 +565,13 @@
           "path": "wurst/MilitarySettlementRuntimeTests.wurst",
           "contains": [
             "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernanceTests.wurst",
+          "contains": [
+            "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+            "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
           ]
         }
       ],
@@ -725,6 +768,13 @@
             "wasteUnits",
             "canalRoutes"
           ]
+        },
+        {
+          "path": "scenario/progression/administrative-contracts.json",
+          "contains": [
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
         }
       ],
       "headlessVerification": [
@@ -767,6 +817,12 @@
           "contains": [
             "test_scenario_owned_quantities_capacity_and_bonus_sensitivity",
             "test_design_or_missing_failed_stale_execution_cannot_clear_findings"
+          ]
+        },
+        {
+          "path": "tests/test_administrative_contracts.py",
+          "contains": [
+            "test_exact_typed_effects_and_catalogue_adoption_requirements"
           ]
         }
       ],
@@ -839,6 +895,14 @@
             "canal_freight_throughput",
             "connected(depot, target)"
           ]
+        },
+        {
+          "path": "wurst/CivicGovernance.wurst",
+          "contains": [
+            "function municipalEligible",
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
         }
       ],
       "playerEntry": [
@@ -875,6 +939,13 @@
             "commands.register(\"finance\"",
             "function overview"
           ]
+        },
+        {
+          "path": "wurst/CivicCampaignRuntime.wurst",
+          "contains": [
+            "municipal-repeal",
+            "registerCivicCommands"
+          ]
         }
       ],
       "persistence": [
@@ -897,7 +968,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 17",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 18",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -919,6 +990,14 @@
             "finance.states[i]",
             "parsed.finance = finance.fork()",
             "finance = parsed.finance"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "s.municipalOwner",
+            "state.municipalRestored",
+            "civic = parsed.civic"
           ]
         }
       ],
@@ -966,6 +1045,13 @@
             "registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage",
             "registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction",
             "failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernanceTests.wurst",
+          "contains": [
+            "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+            "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
           ]
         }
       ],
