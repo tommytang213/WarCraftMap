@@ -1,0 +1,217 @@
+package MilitarySnapshotValidationTests
+
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import PrizeCombat
+import TradeFinance
+import ScienceExploration
+import NavalServices
+import VoyageNavigation
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayablePiracy
+import ReligionRuntime
+import CampaignTimeline
+import WarcraftRegionalRuntime
+import Wurstunit
+
+class ValidationLifetime
+	int parsed = 0
+	int retired = 0
+	int destroyed = 0
+	boolean publishedBeforeRetirement = false
+	PlayableCampaignState campaign = null
+
+class ValidationPrizeLifetime implements PrizeCombatAuthority
+	ValidationLifetime observed
+	construct(ValidationLifetime observed)
+		this.observed = observed
+	override function resolve(string actorId, string targetId) returns PrizeEncounter
+		return null
+	override function consume(string encounterId, string prisonerOutcome)
+		skip
+	override function retire()
+		observed.retired++
+		if observed.campaign != null and observed.campaign.staged != ""
+			observed.publishedBeforeRetirement = true
+	ondestroy
+		observed.destroyed++
+
+// Test-only lifetime observations do not affect reconciliation results or any
+// saved record. Production definitions are stateless and mutate only the copy.
+class ValidationDefinitions implements SettlementDefinitions
+	ValidationLifetime observed
+	construct(ValidationLifetime observed)
+		this.observed = observed
+	override function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
+		observed.parsed++
+		destroy runtime.prizeCombat
+		runtime.prizeCombat = new ValidationPrizeLifetime(observed)
+		return true
+
+class MilitaryValidationFixture
+	RecordingMilitaryAdapter adapter = new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(adapter)
+	ValidationLifetime observed = new ValidationLifetime()
+	construct()
+		military.definitions = new ValidationDefinitions(observed)
+		military.finance.register(new CanalWork("canal", "port", "", "wood", 0, 1, 1, 1, 1, 10, 1, 1))
+		military.land.register("port", 10)
+		military.science.register(new ScienceSite("study", "port", "", "", "", "cloth", 0, 1, 1, 1, 1, 1, 10, 1, 0, 0, 1, 0))
+		military.naval.register(new NavalYard("port", "sea", 0., 0., "", "", "", 'hbot', 0, 100, 1, 1, 100, 1, 10))
+		let ship = new RuntimeForce("ship", "player", "sea", "", FORCE_FLEET, 'hbot', 10, 100, 0., 0.)
+		military.registerForce(ship)
+		military.voyages = new VoyageContract("technology", "navigation", 0, 0)
+		let route = new VoyageRoute("circuit", "sea", "", 3, 1, 0)
+		military.voyages.addRoute(route)
+		military.voyages.addShip(new VoyageShip("ship", 'hbot', "sea", 0., 0., "|circuit|"))
+		military.voyages.start(ship.navigation, route, 10, 100).assertTrue()
+		for domain = 0 to 5
+			setDay(domain, 10)
+	function setDay(int domain, int day)
+		if domain == 0
+			military.finance.states[0].lastDay = day
+		else if domain == 1
+			military.land.arsenals[0].lastDay = day
+		else if domain == 2
+			military.forces[0].navigation.lastDay = day
+		else if domain == 3
+			military.science.states[0].lastDay = day
+		else if domain == 4
+			military.forces[0].hull.lastDay = day
+		else
+			military.naval.states[0].lastDay = day
+	function assertDisposed(int expected)
+		observed.parsed.assertEquals(expected)
+		observed.retired.assertEquals(expected)
+		observed.destroyed.assertEquals(expected)
+		assertTrue(not observed.publishedBeforeRetirement, "military copy was retired after publication at parse " + observed.parsed.toString())
+		adapter.created.assertEquals("")
+		adapter.removed.assertEquals("")
+		adapter.protectedId.assertEquals("")
+	function campaign() returns PlayableCampaignState
+		let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), new CampaignClock(1, 100, 10, 1.))
+		state.setMilitarySettlementRuntime(military)
+		state.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		observed.campaign = state
+		return state
+
+@test function validatedMilitarySnapshotsKeepOwnershipAndAllSixCampaignDayLimits()
+	let f = new MilitaryValidationFixture()
+	let saved = f.military.snapshot()
+	let parsed = f.military.parseValidatedSnapshot(saved, 10)
+	(parsed != null and parsed != f.military).assertTrue()
+	parsed.snapshot().assertEquals(saved)
+	f.observed.parsed.assertEquals(1)
+	f.observed.retired.assertEquals(0)
+	parsed.forces[0].strength = 1
+	f.military.snapshot().assertEquals(saved)
+	parsed.dispose()
+	f.assertDisposed(1)
+	for domain = 0 to 5
+		f.setDay(domain, 11)
+		let future = f.military.snapshot()
+		(f.military.parseValidatedSnapshot(future, 10) == null).assertTrue()
+		f.military.validateSnapshot(future, 10).assertFalse()
+		// The same record is structurally valid; only the campaign-day bound
+		// rejects it. The legacy unbounded boolean overload remains compatible.
+		f.military.validateSnapshot(future).assertTrue()
+		f.assertDisposed(1 + (domain + 1) * 3)
+		f.military.snapshot().assertEquals(future)
+		f.setDay(domain, 10)
+	f.military.snapshot().assertEquals(saved)
+	// Disposing each copy must leave the borrowed authored ledgers usable.
+	f.military.finance.projects[0].id.assertEquals("canal")
+	f.military.science.sites[0].id.assertEquals("study")
+	f.military.naval.yards[0].id.assertEquals("port")
+
+class ValidationTradeExtension implements CampaignRuntimeExtension
+	ValidationLifetime observed
+	int validations = 0
+	construct(ValidationLifetime observed)
+		this.observed = observed
+	override function newCampaign(string settlementId)
+		skip
+	override function validate(string document) returns boolean
+		validations++
+		// Independent economy validation must not retain the military copy.
+		observed.retired.assertEquals(observed.parsed)
+		observed.destroyed.assertEquals(observed.parsed)
+		return document != "invalid"
+	override function beginLoad()
+		skip
+	override function reconstruct(string document) returns boolean
+		return false
+	override function rollbackLoad()
+		skip
+	override function commitLoad()
+		skip
+	override function capture() returns string
+		return "trade"
+
+@test function campaignCountryValidationReusesDetachedMilitaryBeforeEconomyAndPublication()
+	let f = new MilitaryValidationFixture()
+	let state = f.campaign()
+	let economy = new ValidationTradeExtension(f.observed)
+	state.setExtension(economy)
+	f.military.setWar("player", "enemy", true)
+	state.countries.registerPolity("player", 100)
+	state.countries.registerPolity("enemy", 200)
+	let conflict = f.military.activeConflictBetween("player", "enemy")
+	state.countries.restoreRecord("o,offer,enemy,0,peace," + conflict + ",player").assertTrue()
+	let candidate = state.captureDomains(state.authorityDocument(), false)
+	// The saved offer needs the saved conflict, even after live membership
+	// changes. Validation must neither read nor replace that live authority.
+	f.military.conflicts[0].polities[1] = "other"
+	let liveMilitary = f.military.snapshot()
+	let liveCountries = state.countries.captureState()
+	let liveCampaign = state.authorityDocument()
+	state.validateAuthoritativeState(candidate).assertTrue()
+	f.assertDisposed(1)
+	economy.validations.assertEquals(1)
+	state.staged.assertEquals(candidate)
+	state.lastDiagnostic.assertEquals("")
+	f.military.snapshot().assertEquals(liveMilitary)
+	state.countries.captureState().assertEquals(liveCountries)
+	state.authorityDocument().assertEquals(liveCampaign)
+
+@test function campaignDomainRejectionsDisposeMilitaryAndRetainDiagnosticOrder()
+	let f = new MilitaryValidationFixture()
+	let state = f.campaign()
+	state.setPiracyRuntime(new PiracyRuntime(new PiracyRules(30, 20, 5000, 3, 150)))
+	state.setReligionRuntime(new ReligionRuntime(null))
+	let economy = new ValidationTradeExtension(f.observed)
+	state.setExtension(economy)
+	let candidate = state.captureDomains(state.authorityDocument(), false)
+	let live = f.military.snapshot()
+	string array[5] keys
+	keys[0] = "piracy"
+	keys[1] = "religion"
+	keys[2] = "diplomacy"
+	keys[3] = "rewards"
+	keys[4] = "trade"
+	string array[5] diagnostics
+	diagnostics[0] = "Piracy authority is malformed."
+	diagnostics[1] = "Religion authority is malformed."
+	diagnostics[2] = "country interaction state contains an invalid record"
+	diagnostics[3] = "country interaction state contains an invalid record"
+	diagnostics[4] = "trade authority is invalid"
+	for rejected = 0 to 4
+		var invalid = candidate
+		// Fail this domain and every later one: the earliest diagnostic and
+		// country short-circuit order remain visible after lifetime cleanup.
+		for later = rejected to 4
+			// Domain reads use the last record; capture may retain an older one.
+			invalid += ";" + keys[later] + "=invalid"
+			lastAuthorityValue(invalid, keys[later]).assertEquals("invalid")
+		state.staged = candidate
+		assertTrue(not state.validateAuthoritativeState(invalid), "accepted invalid " + keys[rejected] + " authority")
+		f.assertDisposed(rejected + 1)
+		state.staged.assertEquals("")
+		state.lastDiagnostic.assertEquals(diagnostics[rejected])
+		f.military.snapshot().assertEquals(live)
+	economy.validations.assertEquals(1)
+	state.validateAuthoritativeState(candidate).assertTrue()
+	f.assertDisposed(6)
+	economy.validations.assertEquals(2)
+	state.staged.assertEquals(candidate)

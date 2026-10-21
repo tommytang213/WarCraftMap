@@ -2,6 +2,9 @@ package CampaignAuthorityPerformanceTests
 
 import PlayableCampaignRuntime
 import CampaignSaveManager
+import CampaignTimeline
+import CampaignAutosaveScheduler
+import WarcraftRegionalRuntime
 import TypeCasting
 
 // Independent retained pre-optimization editing rule. In particular it replaces
@@ -70,6 +73,26 @@ function replacementMatchesPrevious(string document, string key, string value) r
 	lastAuthorityValue(document, "new").assertEquals("雪,😀")
 	document = replacementMatchesPrevious(document, "名字", "")
 	lastAuthorityValue(document, "label").assertEquals("München,東京,😀")
+
+@test function capturedMetadataRetainsInputAuthorityAndExistingFieldOrder()
+	let clock = new CampaignClock(1, 100, 1, 1.)
+	let state = new PlayableCampaignState(new WarcraftRegionalAdapter(), clock)
+	state.loadedPhysicalMap = "west"
+	let trade = "v5:warehouse;london:grain,2;warehouse;東京:sugar,3"
+	let context = commandContext("east", true, "|europe|")
+	let locations = "arrival|captain,east,20,30,1,20,30"
+	let scheduler = autosaveMetadata(3, 123.5)
+	let document = "v2;map=east;trade=" + trade + ";commandContext=" + context + ";partyLocations=" + locations + ";autosave=" + scheduler + ";clock=old"
+	state.replaceAuthority(document)
+	// Metadata comes from the immutable input. A remote pending party must not
+	// be sampled locally, and an existing scheduler keeps its encoded value.
+	let captured = state.captureDomains(document, false)
+	captured.assertEquals("v2;map=east;trade=" + trade + ";autosave=" + scheduler + ";clock=" + clock.captureState() + ";discovery=v1;commandContext=" + context + ";partyLocations=" + locations)
+	state.authorityDocument().assertEquals(document)
+	lastAuthorityValue(captured, "trade").assertEquals(trade)
+	lastAuthorityValue(captured, "commandContext").assertEquals(context)
+	lastAuthorityValue(captured, "partyLocations").assertEquals(locations)
+	lastAuthorityValue(captured, "autosave").assertEquals(scheduler)
 
 // Reference checksum and envelope from the prior save implementation. Never
 // substitute process-local string IDs for native hashes in persisted bytes.

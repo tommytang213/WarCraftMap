@@ -1,8 +1,8 @@
 # Issue #438: persistent Begin Campaign crash
 
-## Current continuation: destination startup, 2026-10-20
+## Current continuation: destination startup, 2026-10-21
 
-**Latest native observation, 16:52 UTC: the `a1b4396` trade-startup candidate
+**Latest native observation, 2026-10-20 at 16:52 UTC: the `a1b4396` trade-startup candidate
 was unresponsive after Continue.** The supplied image shows the Windows
 "Warcraft III is not responding" dialog. No destination terrain or responsive
 player-controlled unit was observed. Duration, eventual recovery, client build
@@ -13,9 +13,29 @@ of an installed-file hash are recorded in
 Do not request another run of these unchanged bytes. The staging guard rejects
 their campaign hash alongside the earlier failed candidates.
 
-### Source correction after the latest native failure
+### Latest source correction: capture scans and military validation
 
-The next source correction checks the actual `StoreString` result, exact
+The latest source change reads capture metadata before editing the expanded
+save and reuses one validated detached military snapshot for country checks.
+The actual compiled Europe startup now performs 10,056,374 `SubString` calls,
+down from 15,095,868 at published baseline `264b34c`: 5,039,494 fewer calls.
+The four saved payloads remain byte-identical, and all 37 modeled initial
+callbacks complete. The full unchanged Wurst gate passes 671/671 tests,
+including four new regressions for capture order, date bounds, authority
+ownership and rejection cleanup. The combined map passes compilation and
+independent archive checks with the pinned compiler and dependency inputs.
+
+These results establish reduced compiled startup work under the explicit
+native model, not resolution of the observed Warcraft stall. The prior native
+failure remains the latest client result. No complete player campaign or
+player retest is produced by this source-only work. Source identity, retained
+failed attempts, compiled comparisons, exact saved payloads and the executable
+evidence verifier are in
+[`startup-work-reduction/README.md`](startup-work-reduction/README.md).
+
+### Earlier source correction: cache writes and separator scans
+
+The preceding source correction checks the actual `StoreString` result, exact
 in-memory cache readback and rollback outcomes before acknowledging a saved
 checkpoint. A controlled native failure against the actual delivered Lua
 reproduced a false success; the same control against the revised, archived
@@ -65,7 +85,7 @@ Keep PR #536 draft and #438 open until a new source-bound campaign displays
 destination terrain and a player-controlled unit responds to movement. The
 sections below preserve the earlier crash investigation; their proposed next
 experiments and "no startup repair" descriptions are historical, not the current
-trade-startup change.
+startup corrections.
 
 ## Historical crash investigation
 

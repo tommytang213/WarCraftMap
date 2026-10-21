@@ -512,7 +512,6 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			context = commandContext(captureCommandMap(document), commandPauses.isManuallyPaused(), commandAccess.captureKnowledge())
 		else if context == ""
 			context = commandContext(lastAuthorityValue(document, "map"), false, initialCommandKnowledge(lastAuthorityValue(document, "map")))
-		result = replaceCampaignField(result, "commandContext", context)
 		var locations = "v1"
 		// A source map cannot sample coordinates for the destination checkpoint.
 		if pendingPartyArrival(lastAuthorityValue(document, "partyLocations")) and lastAuthorityValue(document, "map") != loadedPhysicalMap
@@ -521,12 +520,16 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 			locations = capturePartyLocations(document)
 			if locations == ""
 				return ""
-		result = replaceCampaignField(result, "partyLocations", locations)
 		var schedulerState = lastAuthorityValue(document, "autosave")
 		if includeIdentity and autosaves != null
 			schedulerState = autosaves.captureState()
 		else if schedulerState == ""
 			schedulerState = autosaveMetadata(1, CAMPAIGN_AUTOSAVE_SECONDS)
+		// Read the immutable input before editing the expanded output. Alternating
+		// these documents evicts the separator index and rescans every captured
+		// domain. Callback order and the serialized metadata order stay unchanged.
+		result = replaceCampaignField(result, "commandContext", context)
+		result = replaceCampaignField(result, "partyLocations", locations)
 		result = replaceCampaignField(result, "autosave", schedulerState)
 		return replaceCampaignField(result, "clock", clock.captureState())
 	function localHero(RpgHero hero, string regionId) returns boolean
@@ -699,9 +702,33 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 		if piracy != null and firstAuthorityFieldOffset(candidate, "piracy") < 0
 			lastDiagnostic = "missing piracy authority"
 			return false
-		if militarySettlements != null and not militarySettlements.validateSnapshot(lastAuthorityValue(candidate, "militarySettlements"), campaignClockRecordDay(lastAuthorityValue(candidate, "clock")))
-			lastDiagnostic = "military/settlement authority is invalid"
+		var warfare = militarySettlements
+		if warfare != null
+			warfare = militarySettlements.parseValidatedSnapshot(lastAuthorityValue(candidate, "militarySettlements"), campaignClockRecordDay(lastAuthorityValue(candidate, "clock")))
+			if warfare == null
+				lastDiagnostic = "military/settlement authority is invalid"
+				return false
+		let countriesValid = validateCountryAuthority(candidate, warfare)
+		if warfare != null
+			warfare.dispose()
+		if not countriesValid
 			return false
+		if extension != null and not extension.validate(lastAuthorityValue(candidate, "trade"))
+			lastDiagnostic = "trade authority is invalid"
+			return false
+		let tradeState=lastAuthorityValue(candidate,"trade")
+		if agriculture!=null and tradeState.startsWith("v5:")
+			let header=agricultureField(agricultureField(tradeState,":",24),"~",0)
+			let day=campaignClockRecordDay(lastAuthorityValue(candidate,"clock"))
+			if agricultureField(header,",",1)!=day.toString() or S2I(agricultureField(header,",",2))!=agricultureYear(day)
+				lastDiagnostic="agricultural deadlines do not match the saved campaign clock"
+				return false
+		staged = candidate
+		lastDiagnostic = ""
+		return true
+	// The caller retains ownership across every early rejection in these
+	// read-only checks, then disposes before validating the independent economy.
+	private function validateCountryAuthority(string candidate, MilitarySettlementRuntime warfare) returns boolean
 		if piracy != null and not piracy.validateAuthority(lastAuthorityValue(candidate,"piracy"))
 			lastDiagnostic=piracy.lastDiagnostic
 			return false
@@ -715,27 +742,10 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 				lastDiagnostic = "ordinary campaign authorities rejected staged pirate-polity reconciliation"
 				return false
 		if countries != null
-			var warfare = militarySettlements
-			if warfare != null
-				warfare = militarySettlements.parseSnapshot(lastAuthorityValue(candidate, "militarySettlements"))
 			let valid = countries.validateState(lastAuthorityValue(candidate, "diplomacy"), warfare, foundedPolity) and countries.validateState(lastAuthorityValue(candidate, "rewards"), warfare, foundedPolity)
-			if warfare != null
-				warfare.dispose()
 			if not valid
 				lastDiagnostic = countries.diagnostic()
 				return false
-		if extension != null and not extension.validate(lastAuthorityValue(candidate, "trade"))
-			lastDiagnostic = "trade authority is invalid"
-			return false
-		let tradeState=lastAuthorityValue(candidate,"trade")
-		if agriculture!=null and tradeState.startsWith("v5:")
-			let header=agricultureField(agricultureField(tradeState,":",24),"~",0)
-			let day=campaignClockRecordDay(lastAuthorityValue(candidate,"clock"))
-			if agricultureField(header,",",1)!=day.toString() or S2I(agricultureField(header,",",2))!=agricultureYear(day)
-				lastDiagnostic="agricultural deadlines do not match the saved campaign clock"
-				return false
-		staged = candidate
-		lastDiagnostic = ""
 		return true
 	override function reconstructRuntime(string candidate) returns boolean
 		if loading
