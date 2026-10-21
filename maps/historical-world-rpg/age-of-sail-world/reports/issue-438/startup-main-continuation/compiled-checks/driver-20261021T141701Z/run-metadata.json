@@ -1,0 +1,405 @@
+{
+  "administrativeNotes": [
+    {
+      "action": "read-only resumption receipt verification",
+      "at": "2026-10-21T14:26:51.007945+00:00",
+      "effect": "No validation stage was started or rerun and no reviewed/source files changed. Corrected read-only call uses load_build(path, revised).",
+      "error": "TypeError: load_build() missing 1 required positional argument: mode",
+      "reportedToRoot": true
+    }
+  ],
+  "completedAt": "2026-10-21T14:43:29.260647+00:00",
+  "format": "pr536_compiled_sequence_driver_v1",
+  "frozenInputsUnchanged": true,
+  "fullGateReceipt": {
+    "bytes": 50124,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/full-attempt1/receipt.json",
+    "sha256": "6f1943e037b0b2f1924545a46405a8b76a9cec3d96b4d321702740fd79a5bb11"
+  },
+  "fullGateResults": {
+    "bytes": 534312,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/full-attempt1/results.json",
+    "sha256": "262b9a336a7a7346b6b2b80c0605256200376dd73eb11b3576c86a4a160eda60"
+  },
+  "nativeHangResolution": "not_established",
+  "nativeStatus": "not_run",
+  "noActiveJvms": true,
+  "noActiveModels": true,
+  "preparationManifest": {
+    "bytes": 6857,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/preparation-manifest.json",
+    "sha256": "f852f3a2118a95c9fd8f0e8caa76b2a78ce8c1944e49c41a41ed53e15d4308b6"
+  },
+  "preservedFailures": [
+    {
+      "receipt": {
+        "bytes": 6012,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+        "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+      },
+      "resolution": "Independent source-derived 8426 count and reviewed read-only derivation; original failure unchanged, no startup reexecution.",
+      "stage": "startup-comparison",
+      "stageNumber": 5
+    }
+  ],
+  "resumedAt": "2026-10-21T14:39:49.058270+00:00",
+  "resumptionAuthorization": "Root GO after reviewed source-derived cardinality adaptation; derive existing startup outputs, then first full-scale only.",
+  "resumptionPreparation": {
+    "bytes": 21081,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-receipt.json",
+    "sha256": "75cd8e3819a8a67e9400d510ac9bec1476dfc8372ba73436c1bf31fad84a266e"
+  },
+  "resumptionReview": {
+    "bytes": 9601,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json",
+    "sha256": "b188e4d4c0b6dbad76fcc0a21fa90c8c6ea1cc8e643b2a1178b695afcd629c75"
+  },
+  "reviewedScriptsUnchanged": true,
+  "sourceIdentity": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "sourceIdentityAtCompletion": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "sourceIdentityAtStop": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "stages": [
+    {
+      "command": [
+        "python",
+        "-B",
+        "compile_europe.py",
+        "prepare"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:18:11.816999+00:00",
+      "name": "prepare",
+      "number": 1,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/01-prepare.log",
+      "outerLogIdentity": {
+        "bytes": 145,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/01-prepare.log",
+        "sha256": "dbe54264ca5c0b54efba3c0f92f0a42c24583e1eebf0797025897a27022a0958"
+      },
+      "receipt": {
+        "bytes": 67505,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/europe-seed/seed-receipt.json",
+        "sha256": "e130e09e4f9ea23122cfc80ae5f0c4af42fe7147b43e40633fae792d200e5d20"
+      },
+      "startedAt": "2026-10-21T14:17:49.818915+00:00",
+      "status": "pass",
+      "toolSessionId": 43609
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "compile_europe.py",
+        "baseline"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:21:15.042463+00:00",
+      "frozenInputsUnchanged": true,
+      "name": "baseline",
+      "number": 2,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/02-baseline.log",
+      "outerLogIdentity": {
+        "bytes": 227,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/02-baseline.log",
+        "sha256": "cc7c068951f73211d2df463e6d1df5e5a496bde7c21183a866de2ae297cb4b53"
+      },
+      "receipt": {
+        "bytes": 35171,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/baseline/build-result.json",
+        "sha256": "81da2b80deb4d40381d3e0daa49f06bfe5e2e3abb8135049d02aafaa58d07a49"
+      },
+      "reviewedScriptsUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "startedAt": "2026-10-21T14:18:50.743325+00:00",
+      "status": "pass",
+      "toolSessionId": 65755
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "compile_europe.py",
+        "revised"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:24:21.512861+00:00",
+      "frozenInputsUnchanged": true,
+      "name": "revised",
+      "number": 3,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/03-revised.log",
+      "outerLogIdentity": {
+        "bytes": 224,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/03-revised.log",
+        "sha256": "0b195e6ad93d9fee94bcfc59064fca75873dd5853acb91c9d7bb725fe08f5604"
+      },
+      "receipt": {
+        "bytes": 34614,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+        "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+      },
+      "reviewedScriptsUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "startedAt": "2026-10-21T14:21:34.659524+00:00",
+      "status": "pass",
+      "toolSessionId": 28641
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "trade_integer_differential.py"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:27:43.262496+00:00",
+      "frozenInputsUnchanged": true,
+      "name": "integer-differential",
+      "number": 4,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/04-integer-differential.log",
+      "outerLogIdentity": {
+        "bytes": 840,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/04-integer-differential.log",
+        "sha256": "1dc7ca1690490499bc7cd50384ac54f7fbdbae81e7cc528b86fab4b824f24fc2"
+      },
+      "receipt": {
+        "bytes": 15432,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/trade-integer-differential/receipt.json",
+        "sha256": "d93a697d385f20167e1fa2312cbdbff59bd683acd71627a611330e9f05875b80"
+      },
+      "reviewedScriptsUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "startedAt": "2026-10-21T14:27:03.395978+00:00",
+      "status": "pass",
+      "toolSessionId": 29746
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "compare_startup.py"
+      ],
+      "exitCode": 1,
+      "failure": "compare_startup.py:113 retained historical assertion requires 8422 markets; both current integrated arms report 8426 markets and 829 stores.",
+      "finishedAt": "2026-10-21T14:29:44.194937+00:00",
+      "frozenInputsUnchanged": true,
+      "name": "startup-comparison",
+      "number": 5,
+      "observed": {
+        "baseline": {
+          "callbackPhase": {
+            "budget": 200000000,
+            "callbackCount": 37,
+            "completed": true,
+            "instructions": 14710000,
+            "throughSeconds": 1.001
+          },
+          "frozenStatus": "completed_under_stubs",
+          "instructions": 875150000,
+          "observerStatus": "completed_under_explicit_stubs",
+          "payloadCount": 4,
+          "runtimeCounts": {
+            "forces": 1553,
+            "markets": 8426,
+            "provenanceLots": 0,
+            "settlements": 827,
+            "stores": 829
+          },
+          "substringCalls": 10060261
+        },
+        "revised": {
+          "callbackPhase": {
+            "budget": 200000000,
+            "callbackCount": 37,
+            "completed": true,
+            "instructions": 14710000,
+            "throughSeconds": 1.001
+          },
+          "frozenStatus": "completed_under_stubs",
+          "instructions": 834300000,
+          "observerStatus": "completed_under_explicit_stubs",
+          "payloadCount": 4,
+          "runtimeCounts": {
+            "forces": 1553,
+            "markets": 8426,
+            "provenanceLots": 0,
+            "settlements": 827,
+            "stores": 829
+          },
+          "substringCalls": 9298589
+        }
+      },
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/05-startup-comparison.log",
+      "outerLogIdentity": {
+        "bytes": 1066,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/05-startup-comparison.log",
+        "sha256": "350faab4ff4f1404a0ead1a6abf76d7a705dd64da3c60ab12f63409aae66d138"
+      },
+      "receipt": {
+        "bytes": 6012,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+        "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+      },
+      "reviewedScriptsUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "startedAt": "2026-10-21T14:28:10.792678+00:00",
+      "status": "fail",
+      "toolSessionId": 65930
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "catalogue-adaptation/compare_completed_startup.py"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:40:06.437212+00:00",
+      "frozenInputsUnchanged": true,
+      "modelReexecution": false,
+      "name": "startup-current-catalogue",
+      "number": 6,
+      "originalInputsUnchanged": true,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/06-startup-current-catalogue.log",
+      "outerLogIdentity": {
+        "bytes": 141,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/06-startup-current-catalogue.log",
+        "sha256": "ad00ee23cb475751ad9d0f3e456abbf38f442531901451d4ff695b4eecc9f46a"
+      },
+      "receipt": {
+        "bytes": 25508,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison-current-catalogue.json",
+        "sha256": "3a5f7157454983306bdd6d92d4a5c97975c188c6fd0022f31385db40c7115b9e"
+      },
+      "reviewedAdaptationUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "status": "pass",
+      "toolSessionId": null
+    },
+    {
+      "command": [
+        "python",
+        "-B",
+        "catalogue-adaptation/run_full_scale_current_catalogue.py"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-10-21T14:43:29.260647+00:00",
+      "firstFullScaleExecution": true,
+      "frozenInputsUnchanged": true,
+      "name": "full-scale-current-catalogue",
+      "number": 7,
+      "originalInputsUnchanged": true,
+      "outerLog": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/07-full-scale-current-catalogue.log",
+      "outerLogIdentity": {
+        "bytes": 167,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/07-full-scale-current-catalogue.log",
+        "sha256": "e46074795bf553c5c38325df805949643b97a80c068d19b048513662ffd6ec34"
+      },
+      "receipt": {
+        "bytes": 9941,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/receipt.json",
+        "sha256": "fe8f1ae65b6c72ca8a1471a7fd20d6472c9870a4a0eff72f305e410011579de8"
+      },
+      "reviewedAdaptationUnchanged": true,
+      "sourceIdentity": {
+        "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+        "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+      },
+      "startedAt": "2026-10-21T14:40:55.232797+00:00",
+      "status": "pass",
+      "toolSessionId": 20916
+    }
+  ],
+  "startedAt": "2026-10-21T14:17:01.542978+00:00",
+  "staticReview": {
+    "bytes": 13340,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/static-review.json",
+    "sha256": "92342231aebb1ac033e904a19846ac78b4caa3f8e3b187b457205e2495bfee5c"
+  },
+  "status": "completed",
+  "stoppedAt": "2026-10-21T14:29:44.194937+00:00",
+  "terminalEvidence": {
+    "adaptationPreparation": {
+      "bytes": 21081,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-receipt.json",
+      "sha256": "75cd8e3819a8a67e9400d510ac9bec1476dfc8372ba73436c1bf31fad84a266e"
+    },
+    "adaptationReview": {
+      "bytes": 9601,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json",
+      "sha256": "b188e4d4c0b6dbad76fcc0a21fa90c8c6ea1cc8e643b2a1178b695afcd629c75"
+    },
+    "baseline": {
+      "bytes": 35171,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/baseline/build-result.json",
+      "sha256": "81da2b80deb4d40381d3e0daa49f06bfe5e2e3abb8135049d02aafaa58d07a49"
+    },
+    "cardinalityProof": {
+      "bytes": 10405,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.json",
+      "sha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44"
+    },
+    "currentCatalogueComparison": {
+      "bytes": 25508,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison-current-catalogue.json",
+      "sha256": "3a5f7157454983306bdd6d92d4a5c97975c188c6fd0022f31385db40c7115b9e"
+    },
+    "fullScale": {
+      "bytes": 9941,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/receipt.json",
+      "sha256": "fe8f1ae65b6c72ca8a1471a7fd20d6472c9870a4a0eff72f305e410011579de8"
+    },
+    "fullScaleResult": {
+      "bytes": 8839,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/result.json",
+      "sha256": "3fa77842e79bc9e20a44855bec37558f7e055c13086b588f6820ead416ebdeac"
+    },
+    "independentModelReview": {
+      "bytes": 6990,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/model-review.json",
+      "sha256": "5d1dd7814a230aabc25a77f415deae75afb1d7fdb2ab8c4c5513a213719aa9d1"
+    },
+    "integerDifferential": {
+      "bytes": 15432,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/trade-integer-differential/receipt.json",
+      "sha256": "d93a697d385f20167e1fa2312cbdbff59bd683acd71627a611330e9f05875b80"
+    },
+    "originalStartupFailure": {
+      "bytes": 6012,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+      "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+    },
+    "revised": {
+      "bytes": 34614,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+      "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+    },
+    "seed": {
+      "bytes": 67505,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/europe-seed/seed-receipt.json",
+      "sha256": "e130e09e4f9ea23122cfc80ae5f0c4af42fe7147b43e40633fae792d200e5d20"
+    }
+  },
+  "validationStatus": "pass_under_explicit_models_after_reviewed_catalogue_adaptation"
+}

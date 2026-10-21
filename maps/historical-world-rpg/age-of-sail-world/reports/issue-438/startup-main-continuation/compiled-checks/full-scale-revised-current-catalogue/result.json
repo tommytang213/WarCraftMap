@@ -1,0 +1,249 @@
+{
+  "captures": {
+    "mutated": {
+      "bytes": 474302,
+      "sha256": "7c20195f2edaf216577ad198ce6fc7190fc4f8d80eade58293e0ec7e5250bc51"
+    },
+    "restored": {
+      "bytes": 617090,
+      "sha256": "a5807d07e4098bf288d6d8c3e4ae0dba877e6a09631588caa08935b3f20509d4"
+    },
+    "saved": {
+      "bytes": 617090,
+      "sha256": "a5807d07e4098bf288d6d8c3e4ae0dba877e6a09631588caa08935b3f20509d4"
+    }
+  },
+  "compiledFunctionsCheckedUnchanged": 2509,
+  "execution": {
+    "nativeStatus": "not_run",
+    "phases": {
+      "roundtrip": {
+        "budget": 2000000000,
+        "completed": true,
+        "cpuSeconds": 6.519423,
+        "instructions": 272740000,
+        "name": "roundtrip",
+        "observations": {},
+        "stages": [
+          {
+            "completed": true,
+            "cpuSeconds": 0.0059849999999955,
+            "instructions": 490000,
+            "name": "populate_actual_catalogue",
+            "startInstructions": 0
+          },
+          {
+            "completed": true,
+            "cpuSeconds": 2.33776,
+            "instructions": 100080000,
+            "name": "capture_and_validate_populated_state",
+            "startInstructions": 490000
+          },
+          {
+            "completed": true,
+            "cpuSeconds": 1.276543,
+            "instructions": 9660000,
+            "name": "mutate_and_reverse_both_catalogues",
+            "startInstructions": 100570000
+          },
+          {
+            "completed": true,
+            "cpuSeconds": 1.505592,
+            "instructions": 151900000,
+            "name": "reconstruct_through_actual_compiled_functions",
+            "startInstructions": 110230000
+          },
+          {
+            "completed": true,
+            "cpuSeconds": 1.393494,
+            "instructions": 10610000,
+            "name": "restore_original_order_and_compare_every_saved_byte",
+            "startInstructions": 262130000
+          }
+        ]
+      },
+      "startup": {
+        "budget": 2000000000,
+        "completed": true,
+        "cpuSeconds": 107.075224,
+        "instructions": 1084930000,
+        "name": "startup",
+        "observations": {
+          "PlayableCampaignServices_PlayableCampaignServices_finishStartup": {
+            "entries": 1,
+            "returns": [
+              {
+                "line": 43582,
+                "literal": "true"
+              }
+            ],
+            "tailEntries": 1
+          },
+          "PlayableCampaignServices_PlayableCampaignServices_startup": {
+            "entries": 1,
+            "returns": {},
+            "tailEntries": 0
+          }
+        },
+        "stages": {}
+      }
+    },
+    "roundtrip": {
+      "catalogueOrderChanged": true,
+      "catalogueOrderRestored": true,
+      "clearedLots": 829,
+      "distinctGoods": 50,
+      "distinctOrigins": 750,
+      "exactCaptureEquality": true,
+      "marketCount": 8426,
+      "mutatedMarkets": 8426,
+      "mutatedStores": 829,
+      "populatedLots": 829,
+      "populatedStores": 829,
+      "reconstructReturned": true,
+      "restoredBytes": 617090,
+      "restoredLots": 829,
+      "savedBytes": 617090,
+      "selection": {
+        "savedGoodId": "iron_goods",
+        "savedMarketId": "vienna",
+        "savedStoreId": "cargo:english_patrol_ship"
+      },
+      "selectionChanged": true,
+      "selectionRestored": true,
+      "storeCount": 829,
+      "totalCargoUnits": 1658,
+      "transientSelectionFlagsCleared": true
+    },
+    "startup": {
+      "finalCacheRequest": "v1|1|consumed|austria|europe_central_east|europe_central_alpine|vienna",
+      "finishStartupReturn": true,
+      "messages": [
+        "Age of Sail: The World - development bootstrap loaded."
+      ],
+      "registered": true,
+      "runtimeCounts": {
+        "forces": 1553,
+        "markets": 8426,
+        "provenanceLots": 0,
+        "settlements": 827,
+        "stores": 829
+      },
+      "started": true,
+      "startupReturn": true,
+      "startupReturnObservation": "tail_return_through_finishStartup",
+      "syntheticUnitCount": 206,
+      "timerRegistrations": [
+        {
+          "destroyed": false,
+          "hasCallback": false,
+          "repeated": false,
+          "seconds": 100000.0
+        },
+        {
+          "callbackDefinedLine": 124500,
+          "destroyed": false,
+          "hasCallback": true,
+          "repeated": true,
+          "seconds": 0.03
+        },
+        {
+          "callbackDefinedLine": 25980,
+          "destroyed": false,
+          "hasCallback": true,
+          "repeated": false,
+          "seconds": 1.0
+        },
+        {
+          "callbackDefinedLine": 10047,
+          "destroyed": false,
+          "hasCallback": true,
+          "repeated": true,
+          "seconds": 1.0
+        },
+        {
+          "callbackDefinedLine": 6267,
+          "destroyed": false,
+          "hasCallback": true,
+          "repeated": false,
+          "seconds": 300.0
+        },
+        {
+          "callbackDefinedLine": 120518,
+          "destroyed": false,
+          "hasCallback": true,
+          "repeated": true,
+          "seconds": 1.0
+        }
+      ]
+    },
+    "timerCallbacksExecuted": 0
+  },
+  "format": "compiled_lua_full_scale_trade_roundtrip_v1",
+  "initialRequest": "v1|1|pending|austria|europe_central_east|europe_central_alpine|vienna",
+  "inputs": {
+    "buildReceipt": {
+      "bytes": 34614,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+      "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+    },
+    "compiledLua": {
+      "bytes": 16787823,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/war3map.lua",
+      "sha256": "2ad8a0906a40b6c4b85fa4ef73cccfb4d0b3e1be4e3aff330945904f959c1227"
+    },
+    "frozenHarness": {
+      "bytes": 17193,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/probe-lua54-initialization.py",
+      "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+    },
+    "frozenNativeStubs": {
+      "bytes": 13205,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/late-startup-stubs.lua",
+      "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+    },
+    "pathing": {
+      "bytes": 262160,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east/war3map.wpm",
+      "sha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd"
+    },
+    "productionSourceSha256": "4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83",
+    "roundtripCase": {
+      "bytes": 14746,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua",
+      "sha256": "d369236d79ec1a8cabc77e8ae17bc91e164503f353d371b6b78e349948b27a47"
+    },
+    "roundtripHarness": {
+      "bytes": 11138,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/verify-trade-full-scale-current-catalogue.py",
+      "sha256": "5d7efcbb173d632cbf4bd16b1c029f5647762c212afd203f366c98cc2c1a5386"
+    }
+  },
+  "instructionBudgetPerPhase": 2000000000,
+  "limitations": [
+    "Local stock Lua with explicit typed native stubs; no Warcraft client is run.",
+    "StringHash is a collision-free ID stub, not Warcraft hashing; collision semantics require separate Wurst regressions.",
+    "InitBlizzard is a no-op and player slots are 24; synthetic units, orders, regions and timers have the frozen model defaults.",
+    "No timer/trigger callback, rendering, transition, engine collision, assets or disk game-cache behavior is exercised.",
+    "Pathing uses retained base WPM only; game-cache save always succeeds in memory.",
+    "Two independent sampled 2B instruction safety budgets include Lua stub work; this is not a Warcraft operation limit.",
+    "Startup call/return debug-hook observation adds overhead. These timings are not the frozen before/after startup comparison or native load times.",
+    "The exact embedded Warcraft Lua patch version is unverified; stock Lua 5.3.6 is not asserted binary-equivalent."
+  ],
+  "nativeStatus": "not_run",
+  "phaseWallSeconds": {
+    "roundtrip": 6.520126,
+    "startup": 107.082153
+  },
+  "productionFunctionOverrides": false,
+  "releaseStatus": "not_a_release_gate",
+  "runtimeLibrary": {
+    "bytes": 274024,
+    "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+    "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+  },
+  "runtimeVersion": "Lua 5.3",
+  "status": "pass_full_scale_roundtrip_under_explicit_stubs",
+  "timerCallbacksExecuted": 0,
+  "wallSeconds": 114.143764
+}

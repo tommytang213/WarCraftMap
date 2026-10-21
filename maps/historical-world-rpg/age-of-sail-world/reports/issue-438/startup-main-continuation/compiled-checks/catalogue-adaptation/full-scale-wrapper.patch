@@ -1,0 +1,94 @@
+--- run_full_scale.py
++++ catalogue-adaptation/run_full_scale_current_catalogue.py
+@@ -1,51 +1,58 @@
+ #!/usr/bin/env python3
+-"""Rebind the retained full-scale trade runner to the current revised archive."""
++"""Run the retained full-scale case with reviewed current-catalogue counts only."""
+ import argparse
+ from pathlib import Path
+ import subprocess
+ import sys
+ import time
+ 
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+ from continuation_common import *
++from compare_completed_startup import ADAPTATION, PREPARATION, CARDINALITY, check_adaptation
+ 
+ 
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("--output", type=Path, default=ROOT / "full-scale-revised")
++    parser.add_argument("--output", type=Path, default=ROOT / "full-scale-revised-current-catalogue")
+     args = parser.parse_args()
+     no_compiler()
+     assert not args.output.exists(), "Preserve prior evidence; use a fresh full-scale run directory"
+-    frozen = check_frozen()
++    prepared, proof, frozen = check_adaptation()
++    comparison_path = ROOT / "startup-comparison/comparison-current-catalogue.json"
++    comparison = read(comparison_path)
++    assert comparison["status"] == "pass_under_explicit_models"
++    assert comparison["catalogueCardinality"] == identity(CARDINALITY)
++    assert comparison["adaptationPreparation"] == identity(PREPARATION)
++    assert comparison["adaptationReview"] == identity(ADAPTATION / "static-review.json")
+     build_path = ROOT / "revised/build-result.json"
+     build = load_build(build_path, "revised")
+     assert build["wurstInputs"]["wurst/PlayableTrade.wurst"] == REVISED_TRADE_SHA
+     args.output.mkdir(parents=True)
+     original = FROZEN / "verify-trade-full-scale-original.py"
+-    runner = original.read_text()
+-    substitutions = {
+-        "ROOT = Path(__file__).resolve().parent": "ROOT = Path(" + repr(str(FROZEN)) + ")",
+-        "SOURCE_SHA = '0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda'": "SOURCE_SHA = " + repr(REVISED_TRADE_SHA),
+-    }
+-    for before, after in substitutions.items():
+-        assert runner.count(before) == 1, before
+-        runner = runner.replace(before, after)
+-    runner_path = args.output / "verify-trade-full-scale.py"
+-    runner_path.write_text(runner)
++    runner_path = ADAPTATION / "verify-trade-full-scale-current-catalogue.py"
++    case_path = ADAPTATION / "full-scale-roundtrip-current-catalogue.lua"
++    changes = read(ADAPTATION / "preparation-transformations.json")
+     result_path = args.output / "result.json"
+     command = [sys.executable, "-B", str(runner_path), "--lua-path", build["compiledScript"],
+                "--build-receipt", str(build_path), "--library", str(LIBRARY), "--report", str(result_path)]
+-    receipt = {"format": "pr536_continuation_full_scale_binding_v1", "status": "running",
+-        "sourceRevision": REVISION, "nativeStatus": "not_run", "playerArtifactProduced": False,
++    receipt = {"format": "pr536_continuation_current_catalogue_full_scale_binding_v1", "status": "running",
++        "sourceRevision": REVISION, "schema": 17, "nativeStatus": "not_run", "playerArtifactProduced": False,
+         "compiledScript": identity(Path(build["compiledScript"])), "buildReceipt": identity(build_path),
+         "sourceSha256": REVISED_TRADE_SHA, "frozenInputs": frozen,
+         "runner": identity(Path(__file__)), "retainedRunner": identity(original), "boundRunner": identity(runner_path),
+-        "bindingChanges": [{"before": before, "after": after} for before, after in substitutions.items()],
+-        "fullScaleLuaCaseChanged": False, "nativeStubsChanged": False, "budgetsChanged": False,
++        "retainedCase": identity(FROZEN / "full-scale-roundtrip.lua"), "adaptedCase": identity(case_path),
++        "catalogueCardinality": identity(CARDINALITY), "adaptationPreparation": identity(PREPARATION),
++        "adaptationReview": identity(ADAPTATION / "static-review.json"), "startupComparison": identity(comparison_path),
++        "bindingChanges": changes["runner"]["bindings"],
++        "caseWholeTokenReplacements": changes["case"]["wholeTokenReplacements"],
++        "runnerWholeTokenReplacements": changes["runner"]["wholeTokenReplacements"],
++        "fullScaleLuaCaseChanged": True, "fullScaleCaseChangeScope": "Only whole-token 8422 to 8426 and 8421 to 8425",
++        "nativeStubsChanged": False, "budgetsChanged": False, "allOtherFullScaleAssertionsUnchanged": True,
+         "instructionBudgetPerPhase": 2_000_000_000, "productionFunctionOverrides": False,
+         "command": command}
+     began = time.monotonic()
+     try:
+-        print("Running unchanged full-scale Lua case on revised archived Lua", flush=True)
++        print("Running reviewed current-catalogue full-scale Lua case on revised archived Lua", flush=True)
+         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+         log = args.output / "execution.log"
+         log.write_text(result.stdout)
+@@ -56,10 +63,13 @@
+         assert full["inputs"]["compiledLua"] == identity(Path(build["compiledScript"]))
+         assert full["inputs"]["buildReceipt"] == identity(build_path)
+         assert full["inputs"]["productionSourceSha256"] == REVISED_TRADE_SHA
++        assert full["inputs"]["roundtripHarness"] == identity(runner_path)
++        assert full["inputs"]["roundtripCase"] == identity(case_path)
+         assert full["runtimeLibrary"]["sha256"] == LIBRARY_SHA and full["runtimeVersion"] == "Lua 5.3"
+         assert full["instructionBudgetPerPhase"] == 2_000_000_000
+         assert full["productionFunctionOverrides"] is False and full["compiledFunctionsCheckedUnchanged"] > 0
+-        check_frozen()
++        assert full["execution"]["roundtrip"]["marketCount"] == proof["marketCount"]
++        check_adaptation()
+         load_build(build_path, "revised")
+         receipt.update(status="pass_full_scale_roundtrip_under_explicit_stubs", result=identity(result_path))
+     except BaseException as exc:

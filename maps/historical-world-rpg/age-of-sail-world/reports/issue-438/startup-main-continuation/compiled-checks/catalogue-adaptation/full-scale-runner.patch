@@ -1,0 +1,34 @@
+--- frozen/verify-trade-full-scale-original.py
++++ catalogue-adaptation/verify-trade-full-scale-current-catalogue.py
+@@ -13,11 +13,11 @@
+ import sys
+ import time
+ 
+-ROOT = Path(__file__).resolve().parent
++ROOT = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen')
+ FROZEN_HARNESS_SHA = 'b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948'
+ FROZEN_STUBS_SHA = '3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630'
+ WPM_SHA = '7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd'
+-SOURCE_SHA = '0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda'
++SOURCE_SHA = '4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83'
+ BUDGET = 2_000_000_000
+ 
+ 
+@@ -60,7 +60,7 @@
+     try:
+         harness = ROOT / 'probe-lua54-initialization.py'
+         stubs = ROOT / 'late-startup-stubs.lua'
+-        case = ROOT / 'full-scale-roundtrip.lua'
++        case = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua')
+         assert identity(harness)['sha256'] == FROZEN_HARNESS_SHA, 'Frozen harness digest changed'
+         assert identity(stubs)['sha256'] == FROZEN_STUBS_SHA, 'Frozen stubs digest changed'
+         receipt = json.loads(args.build_receipt.read_text())
+@@ -153,7 +153,7 @@
+             assert phase['completed'] is True and phase['instructions'] <= BUDGET, 'Phase failed: ' + phase_name
+             assert not phase.get('budgetExhausted'), 'Instruction budget exhausted'
+         result = execution['roundtrip']
+-        assert result['marketCount'] == result['mutatedMarkets'] == 8422
++        assert result['marketCount'] == result['mutatedMarkets'] == 8426
+         assert result['storeCount'] == result['populatedStores'] == result['mutatedStores'] == 829
+         assert result['populatedLots'] == result['clearedLots'] == result['restoredLots'] == 829
+         assert result['reconstructReturned'] is True and result['exactCaptureEquality'] is True

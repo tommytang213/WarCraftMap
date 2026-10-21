@@ -1,0 +1,127 @@
+{
+  "formatVersion": 2,
+  "projectRoot": ".",
+  "sourceMap": "map/AgeOfSailWorld.w3x",
+  "sourceManifest": "map/map-source.json",
+  "wurstSource": "wurst",
+  "executionCoverage": "scenario/runtime-execution.json",
+  "scenario": {
+    "data": "scenario/world/world.json",
+    "recoverySupport": "scenario/recovery-support.json",
+    "validator": "../_shared/tooling/validate_world.py",
+    "wurstPackage": "ScenarioData",
+    "heroProgressionBuilder": "tooling/hero_progression_catalog.py",
+    "custom2d": {
+      "source": "scenario/visuals/custom-2d-assets.json",
+      "builder": "tooling/build_custom_2d.py"
+    },
+    "regionalTerrain": [
+      {
+        "id": "europe",
+        "source": "scenario/terrain/europe.json"
+      },
+      {
+        "id": "africa",
+        "source": "scenario/terrain/africa.json"
+      },
+      {
+        "id": "middle_east_india",
+        "source": "scenario/terrain/middle-east-india.json"
+      },
+      {
+        "id": "southeast_asia",
+        "source": "scenario/terrain/southeast-asia.json"
+      },
+      {
+        "id": "east_asia",
+        "source": "scenario/terrain/east-asia.json"
+      },
+      {
+        "id": "americas_caribbean",
+        "source": "scenario/terrain/americas-caribbean.json"
+      },
+      {
+        "id": "pacific",
+        "source": "scenario/terrain/pacific.json"
+      }
+    ],
+    "settlements": [
+      {
+        "source": "scenario/settlements/africa-1450.json",
+        "geography": "scenario/geography/africa.json",
+        "regionId": "africa"
+      },
+      {
+        "source": "scenario/settlements/americas-caribbean-1450.json",
+        "geography": "scenario/geography/americas_caribbean.json",
+        "regionId": "americas-caribbean"
+      },
+      {
+        "source": "scenario/settlements/east-asia-1450.json",
+        "geography": "scenario/geography/east_asia.json",
+        "regionId": "east-asia"
+      },
+      {
+        "source": "scenario/settlements/europe-1450.json",
+        "geography": "scenario/geography/europe.json",
+        "regionId": "europe"
+      },
+      {
+        "source": "scenario/settlements/middle-east-india-1450.json",
+        "geography": "scenario/geography/middle_east_india.json",
+        "regionId": "middle-east-india"
+      },
+      {
+        "source": "scenario/settlements/pacific-1450.json",
+        "geography": "scenario/geography/pacific.json",
+        "regionId": "pacific"
+      },
+      {
+        "source": "scenario/settlements/southeast-asia-1450.json",
+        "geography": "scenario/geography/southeast_asia.json",
+        "regionId": "southeast-asia"
+      }
+    ],
+    "catalogues": {
+      "inventory": "scenario/inventory/player-use-catalog.json",
+      "treasures": "scenario/treasures/age-of-sail.json",
+      "religion": "scenario/religion.json",
+      "piracy": "scenario/naval/piracy.json"
+    },
+    "initiallyKnownRegionIds": [
+      "europe"
+    ],
+    "politics": [
+      "scenario/politics/africa-1450.json",
+      "scenario/politics/americas-caribbean-1450.json",
+      "scenario/politics/east-asia-1450.json",
+      "scenario/politics/europe-1450.json",
+      "scenario/politics/middle-east-india-1450.json",
+      "scenario/politics/pacific-1450.json",
+      "scenario/politics/southeast-asia-1450.json"
+    ],
+    "questConditionBindings": "scenario/quest-condition-bindings.json",
+    "questProjectionBuilder": "tooling/campaign_quests.py",
+    "combatEffectBuilder": "tooling/combat_effect_catalog.py",
+    "voyageBuilder": "tooling/navigation_efficiency.py",
+    "navalBuilder": "tooling/naval_services_catalog.py",
+    "agricultureBuilder": "tooling/agriculture_catalog.py",
+    "industryBuilder": "tooling/industry_catalog.py"
+  },
+  "outputDirectory": "_build/release",
+  "release": {
+    "fileName": "AgeOfSailWorld",
+    "metadata": {
+      "name": "Age of Sail: The World",
+      "author": "WarCraftMap Project",
+      "scriptBackend": "lua",
+      "wc3Patch": "v3.0"
+    },
+    "bootstrapMarkers": [
+      "Age of Sail: The World - development bootstrap loaded.",
+      "WC3Compatibility: required Warcraft III",
+      "v3.0"
+    ],
+    "cacheFile": "AgeOfSailCampaign.w3v"
+  }
+}

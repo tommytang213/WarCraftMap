@@ -1,0 +1,861 @@
+{
+  "adaptationPreparation": {
+    "bytes": 21081,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-receipt.json",
+    "sha256": "75cd8e3819a8a67e9400d510ac9bec1476dfc8372ba73436c1bf31fad84a266e"
+  },
+  "adaptationReview": {
+    "bytes": 9601,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json",
+    "sha256": "b188e4d4c0b6dbad76fcc0a21fa90c8c6ea1cc8e643b2a1178b695afcd629c75"
+  },
+  "allOtherOriginalComparisonConditionsRetained": true,
+  "assertionChanges": [
+    {
+      "currentSourceExpectation": 8426,
+      "field": "runtimeCounts.markets",
+      "historical": 8422
+    }
+  ],
+  "baselineBuild": {
+    "bytes": 35171,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/baseline/build-result.json",
+    "sha256": "81da2b80deb4d40381d3e0daa49f06bfe5e2e3abb8135049d02aafaa58d07a49"
+  },
+  "baselineMeaning": "Integrated d669 counterfactual; only two empty-encode guards and the ASCII digit fast path are reverted",
+  "cachePayloadBytesTotal": 3203778,
+  "cachePayloads": [
+    {
+      "asciiOnly": false,
+      "baselineCompressed": {
+        "bytes": 134188,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-1.txt.gz",
+        "sha256": "7df43b445e808b77797d9f01865bb1db70925f1dfe337716bc700ad3e3891585"
+      },
+      "bytes": 1067904,
+      "exactBaselineBytesEqual": true,
+      "index": 1,
+      "key": "campaign_start_1",
+      "mission": "bootstrap",
+      "nonAsciiByteCount": 58,
+      "revisedCompressed": {
+        "bytes": 134188,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-1.txt.gz",
+        "sha256": "7df43b445e808b77797d9f01865bb1db70925f1dfe337716bc700ad3e3891585"
+      },
+      "sha256": "ab74616b263e7ce450205d2ec2911b8882025e837695da49aaf19feca959e733"
+    },
+    {
+      "asciiOnly": false,
+      "baselineCompressed": {
+        "bytes": 134188,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-2.txt.gz",
+        "sha256": "2fbfe5289ee3e67458a1499c703405fd526b70f058e36e3a4a51a7cd5c126693"
+      },
+      "bytes": 1067901,
+      "exactBaselineBytesEqual": true,
+      "index": 2,
+      "key": "session_start",
+      "mission": "campaign",
+      "nonAsciiByteCount": 58,
+      "revisedCompressed": {
+        "bytes": 134188,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-2.txt.gz",
+        "sha256": "2fbfe5289ee3e67458a1499c703405fd526b70f058e36e3a4a51a7cd5c126693"
+      },
+      "sha256": "2b850f198e9f4f13a1dd4658da87c39c15003cc18067a53daf5129e6782fdc72"
+    },
+    {
+      "asciiOnly": false,
+      "baselineCompressed": {
+        "bytes": 134194,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-3.txt.gz",
+        "sha256": "80ff1810bfc82eb792b2722c32610662c051bc4c6e2feb8d1f68edb9d1ade07c"
+      },
+      "bytes": 1067903,
+      "exactBaselineBytesEqual": true,
+      "index": 3,
+      "key": "major_milestone",
+      "mission": "campaign",
+      "nonAsciiByteCount": 58,
+      "revisedCompressed": {
+        "bytes": 134194,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-3.txt.gz",
+        "sha256": "80ff1810bfc82eb792b2722c32610662c051bc4c6e2feb8d1f68edb9d1ade07c"
+      },
+      "sha256": "74444b5014fbb79d776a2a184e067bdefb42f441f10765e56b2827a9cc72950b"
+    },
+    {
+      "asciiOnly": true,
+      "baselineCompressed": {
+        "bytes": 73,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-4.txt.gz",
+        "sha256": "646dc3ac86b5bccfe5d93ea4ece20c4092a8215c3a81af3b011fa64ef61bb6d6"
+      },
+      "bytes": 70,
+      "exactBaselineBytesEqual": true,
+      "index": 4,
+      "key": "request",
+      "mission": "bootstrap",
+      "nonAsciiByteCount": 0,
+      "revisedCompressed": {
+        "bytes": 73,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-4.txt.gz",
+        "sha256": "646dc3ac86b5bccfe5d93ea4ece20c4092a8215c3a81af3b011fa64ef61bb6d6"
+      },
+      "sha256": "ddbd3d75f93d4a8e78a6e1f835a10692b8df81a120f83e7ee93479a35810eb2d"
+    }
+  ],
+  "callbackPhases": {
+    "after": {
+      "budget": 200000000,
+      "callbackCount": 37,
+      "completed": true,
+      "instructions": 14710000,
+      "throughSeconds": 1.001
+    },
+    "before": {
+      "budget": 200000000,
+      "callbackCount": 37,
+      "completed": true,
+      "instructions": 14710000,
+      "throughSeconds": 1.001
+    }
+  },
+  "catalogueCardinality": {
+    "bytes": 10405,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.json",
+    "sha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44"
+  },
+  "derivationWallSeconds": 0.377276,
+  "finalCacheRequest": "v1|1|consumed|austria|europe_central_east|europe_central_alpine|vienna",
+  "format": "pr536_current_catalogue_retained_startup_comparison_v1",
+  "frozenInputs": {
+    "frozenPathing": {
+      "bytes": 262160,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east/war3map.wpm",
+      "sha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd"
+    },
+    "full-scale-roundtrip.lua": {
+      "copy": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      },
+      "original": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      }
+    },
+    "late-startup-stubs.lua": {
+      "copy": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      },
+      "original": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      }
+    },
+    "library": {
+      "bytes": 274024,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+    },
+    "observe-startup-template.py": {
+      "copy": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup-template.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      },
+      "original": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/compiled/observer/observe-startup.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      }
+    },
+    "observe-startup.lua": {
+      "copy": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      },
+      "original": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/startup-work-reduction/observer-parse-once/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      }
+    },
+    "probe-lua54-initialization.py": {
+      "copy": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      },
+      "original": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      }
+    },
+    "verify-trade-full-scale-original.py": {
+      "copy": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/verify-trade-full-scale-original.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      },
+      "original": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/verify-trade-full-scale.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      }
+    }
+  },
+  "historicalCounts": "The previous 15,095,868 SubString and 37,931 StringHash baseline constants described a different pre-main comparison and are not gates for these schema17 inputs",
+  "inputEvidence": "Already completed original frozen and parse-once observer outputs; no model is rerun",
+  "instructionSamples": {
+    "after": 834300000,
+    "before": 875150000
+  },
+  "limitations": [
+    "Stock Lua5.3.6 with frozen explicit native stubs is not Warcraft execution.",
+    "The observer delegates production functions but is not a function-identity gate.",
+    "Argument byte volumes measure modeled traffic, not proof that Warcraft copies these bytes.",
+    "Unchanged budgets: 2B sampled startup instructions and 200M sampled callback instructions.",
+    "Callbacks end after 1.001 synthetic seconds; no rendering, assets, disk cache or real native scheduling is exercised.",
+    "Synthetic orders report success but do not move units. This cannot establish terrain or controllable-unit acceptance.",
+    "No native timing claim or wall-time speedup ratio. These are developer artifacts, not a player release candidate."
+  ],
+  "modelExecutedByThisDerivation": false,
+  "nativeArgumentVolumeScope": "Startup and modeled callbacks through 1.001 simulated seconds",
+  "nativeArgumentVolumes": {
+    "after": {
+      "StringHash": {
+        "inputBytes": 511546
+      },
+      "StringLength": {
+        "inputBytes": 305672327627
+      },
+      "SubString": {
+        "inputBytes": 6928974996622,
+        "requestedSpanBytes": 18870844
+      }
+    },
+    "before": {
+      "StringHash": {
+        "inputBytes": 511546
+      },
+      "StringLength": {
+        "inputBytes": 305675160809
+      },
+      "SubString": {
+        "inputBytes": 6928982613342,
+        "requestedSpanBytes": 19632516
+      }
+    }
+  },
+  "nativeCalls": {
+    "BlzGetUnitIntegerField": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "BlzGetUnitMaxHP": {
+      "after": 205,
+      "before": 205,
+      "difference": 0
+    },
+    "ConvertMoveType": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "ConvertPlayerColor": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "CreateForce": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "CreateGroup": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "CreateRegion": {
+      "after": 3,
+      "before": 3,
+      "difference": 0
+    },
+    "CreateTimer": {
+      "after": 6,
+      "before": 6,
+      "difference": 0
+    },
+    "CreateTrigger": {
+      "after": 7,
+      "before": 7,
+      "difference": 0
+    },
+    "CreateUnit": {
+      "after": 206,
+      "before": 206,
+      "difference": 0
+    },
+    "DefineStartLocation": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "DisplayTimedTextToPlayer": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "FirstOfGroup": {
+      "after": 199,
+      "before": 199,
+      "difference": 0
+    },
+    "GetLocalPlayer": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "GetOwningPlayer": {
+      "after": 201,
+      "before": 201,
+      "difference": 0
+    },
+    "GetPlayableMapRect": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "GetStoredString": {
+      "after": 12,
+      "before": 12,
+      "difference": 0
+    },
+    "GetUnitAbilityLevel": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "GetUnitMoveSpeed": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "GetUnitTypeId": {
+      "after": 1017,
+      "before": 1017,
+      "difference": 0
+    },
+    "GetUnitX": {
+      "after": 3,
+      "before": 3,
+      "difference": 0
+    },
+    "GetUnitY": {
+      "after": 3,
+      "before": 3,
+      "difference": 0
+    },
+    "GetWorldBounds": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "GroupClear": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "GroupEnumUnitsInRect": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "GroupRemoveUnit": {
+      "after": 198,
+      "before": 198,
+      "difference": 0
+    },
+    "HaveStoredString": {
+      "after": 17,
+      "before": 17,
+      "difference": 0
+    },
+    "InitBlizzard": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "InitGameCache": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "IsTerrainPathable": {
+      "after": 6,
+      "before": 6,
+      "difference": 0
+    },
+    "IsUnitType": {
+      "after": 5,
+      "before": 5,
+      "difference": 0
+    },
+    "IssueImmediateOrderById": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "Location": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "PanCameraToTimedForPlayer": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "Player": {
+      "after": 457,
+      "before": 457,
+      "difference": 0
+    },
+    "R2I": {
+      "after": 19960,
+      "before": 19960,
+      "difference": 0
+    },
+    "R2S": {
+      "after": 26718,
+      "before": 26718,
+      "difference": 0
+    },
+    "Rect": {
+      "after": 6,
+      "before": 6,
+      "difference": 0
+    },
+    "RegionAddRect": {
+      "after": 3,
+      "before": 3,
+      "difference": 0
+    },
+    "RemoveRect": {
+      "after": 2,
+      "before": 2,
+      "difference": 0
+    },
+    "S2I": {
+      "after": 171321,
+      "before": 171321,
+      "difference": 0
+    },
+    "S2R": {
+      "after": 17242,
+      "before": 17242,
+      "difference": 0
+    },
+    "SaveGameCache": {
+      "after": 4,
+      "before": 4,
+      "difference": 0
+    },
+    "SetDayNightModels": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetEnemyStartLocPrioCount": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetGamePlacement": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetMapDescription": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetMapName": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerColor": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerController": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerRacePreference": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerRaceSelectable": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerStartLocation": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayerTeam": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetPlayers": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetStartLocPrioCount": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetTeams": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetUnitX": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "SetUnitY": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    },
+    "StoreString": {
+      "after": 4,
+      "before": 4,
+      "difference": 0
+    },
+    "StringCase": {
+      "after": 2809,
+      "before": 2809,
+      "difference": 0
+    },
+    "StringHash": {
+      "after": 35557,
+      "before": 35557,
+      "difference": 0
+    },
+    "StringLength": {
+      "after": 1527363,
+      "before": 2042487,
+      "difference": -515124
+    },
+    "SubString": {
+      "after": 9298589,
+      "before": 10060261,
+      "difference": -761672
+    },
+    "TimerStart": {
+      "after": 6,
+      "before": 6,
+      "difference": 0
+    },
+    "TriggerAddAction": {
+      "after": 7,
+      "before": 7,
+      "difference": 0
+    },
+    "TriggerRegisterEnterRegion": {
+      "after": 3,
+      "before": 3,
+      "difference": 0
+    },
+    "TriggerRegisterPlayerChatEvent": {
+      "after": 24,
+      "before": 24,
+      "difference": 0
+    },
+    "TriggerRegisterPlayerUnitEvent": {
+      "after": 216,
+      "before": 216,
+      "difference": 0
+    },
+    "TriggerRegisterTimerEvent": {
+      "after": 1,
+      "before": 1,
+      "difference": 0
+    }
+  },
+  "nativeHangResolution": "not_established",
+  "nativeStatus": "not_run",
+  "observerVariant": {
+    "observerLuaChanged": false,
+    "productionFunctionOverridesAdded": false,
+    "sameForBothArms": true,
+    "validateSnapshotWrapperAbsentInBoth": true
+  },
+  "originalFailedComparison": {
+    "bytes": 6012,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+    "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+  },
+  "phases": {
+    "after": [
+      {
+        "completed": true,
+        "instructions": 66130000,
+        "name": "PlayableCampaignState_PlayableCampaignState_captureAuthoritativeState",
+        "nativeCalls": {
+          "GetUnitTypeId": 2,
+          "GetUnitX": 1,
+          "GetUnitY": 1,
+          "IsTerrainPathable": 2,
+          "R2I": 4976,
+          "R2S": 7870,
+          "S2I": 18,
+          "S2R": 8,
+          "StringLength": 1713,
+          "SubString": 1090097
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 284670000,
+        "name": "PlayableCampaignState_PlayableCampaignState_validateAuthoritativeState",
+        "nativeCalls": {
+          "R2I": 4982,
+          "R2S": 3106,
+          "S2I": 162942,
+          "S2R": 17192,
+          "StringHash": 21880,
+          "StringLength": 1130378,
+          "SubString": 3334963
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 97290000,
+        "name": "MilitarySettlementRuntime_MilitarySettlementRuntime_parseSnapshot",
+        "nativeCalls": {
+          "R2I": 4962,
+          "R2S": 3106,
+          "S2I": 29888,
+          "S2R": 17184,
+          "StringHash": 2382,
+          "StringLength": 119590,
+          "SubString": 768795
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156060000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringHash": 90,
+          "StringLength": 1,
+          "SubString": 1067884
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 66150000,
+        "name": "PlayableCampaignState_PlayableCampaignState_captureAuthoritativeState",
+        "nativeCalls": {
+          "GetUnitTypeId": 2,
+          "GetUnitX": 1,
+          "GetUnitY": 1,
+          "IsTerrainPathable": 2,
+          "R2I": 4976,
+          "R2S": 7870,
+          "S2I": 18,
+          "S2R": 8,
+          "StringLength": 1714,
+          "SubString": 1090311
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156050000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringLength": 1,
+          "SubString": 1067881
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156050000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringLength": 1,
+          "SubString": 1067883
+        }
+      }
+    ],
+    "before": [
+      {
+        "completed": true,
+        "instructions": 66130000,
+        "name": "PlayableCampaignState_PlayableCampaignState_captureAuthoritativeState",
+        "nativeCalls": {
+          "GetUnitTypeId": 2,
+          "GetUnitX": 1,
+          "GetUnitY": 1,
+          "IsTerrainPathable": 2,
+          "R2I": 4976,
+          "R2S": 7870,
+          "S2I": 18,
+          "S2R": 8,
+          "StringLength": 1713,
+          "SubString": 1090097
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 355930000,
+        "name": "PlayableCampaignState_PlayableCampaignState_validateAuthoritativeState",
+        "nativeCalls": {
+          "R2I": 4982,
+          "R2S": 3106,
+          "S2I": 162942,
+          "S2R": 17192,
+          "StringHash": 21880,
+          "StringLength": 1645502,
+          "SubString": 4096635
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 97290000,
+        "name": "MilitarySettlementRuntime_MilitarySettlementRuntime_parseSnapshot",
+        "nativeCalls": {
+          "R2I": 4962,
+          "R2S": 3106,
+          "S2I": 29888,
+          "S2R": 17184,
+          "StringHash": 2382,
+          "StringLength": 119590,
+          "SubString": 768795
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156060000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringHash": 90,
+          "StringLength": 1,
+          "SubString": 1067884
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 66150000,
+        "name": "PlayableCampaignState_PlayableCampaignState_captureAuthoritativeState",
+        "nativeCalls": {
+          "GetUnitTypeId": 2,
+          "GetUnitX": 1,
+          "GetUnitY": 1,
+          "IsTerrainPathable": 2,
+          "R2I": 4976,
+          "R2S": 7870,
+          "S2I": 18,
+          "S2R": 8,
+          "StringLength": 1714,
+          "SubString": 1090311
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156050000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringLength": 1,
+          "SubString": 1067881
+        }
+      },
+      {
+        "completed": true,
+        "instructions": 156050000,
+        "name": "runtimeChecksum",
+        "nativeCalls": {
+          "StringLength": 1,
+          "SubString": 1067883
+        }
+      }
+    ]
+  },
+  "retainedResults": {
+    "baseline": {
+      "frozen": {
+        "bytes": 220075,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/frozen/result.json",
+        "sha256": "762a37d36d324751485f6a5acf8a6f08832e552a11837c730e558cbdf1d06b8e"
+      },
+      "observer": {
+        "bytes": 107595,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/startup-and-first-callbacks.json",
+        "sha256": "1b30709edb84e986a3069e0743b194812306d62e727b4045b73b7f4d5705c6bd"
+      }
+    },
+    "revised": {
+      "frozen": {
+        "bytes": 220225,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/frozen/result.json",
+        "sha256": "25cd235477f6bc406b29c4e3d398d19e2a4a982dbe0d3509d2918f1b634442b5"
+      },
+      "observer": {
+        "bytes": 105613,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/startup-and-first-callbacks.json",
+        "sha256": "e35e9e69318d316446d9ef1c7c7a683bb82b8f25920daea4e6dd566496493b8e"
+      }
+    }
+  },
+  "revisedBuild": {
+    "bytes": 34614,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+    "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+  },
+  "runner": {
+    "bytes": 11078,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/compare_completed_startup.py",
+    "sha256": "55b8602c68db93f592257c3cb37fd1e5d425296b120a0786eafa279c3d2eab3c"
+  },
+  "runtimeCounts": {
+    "forces": 1553,
+    "markets": 8426,
+    "provenanceLots": 0,
+    "settlements": 827,
+    "stores": 829
+  },
+  "schema": 17,
+  "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+  "status": "pass_under_explicit_models",
+  "tradeSnapshotIdentity": {
+    "bytes": 540051,
+    "sha256": "d64eb133aa2af5099efe428d4152aa36f69824ff38e36ea89ac0dc160f96f279"
+  }
+}

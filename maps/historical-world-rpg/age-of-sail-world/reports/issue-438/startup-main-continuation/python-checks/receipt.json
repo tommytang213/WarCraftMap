@@ -1,0 +1,54 @@
+{
+  "format": "warcraftmap-pr536-python-prefix-v1",
+  "scope": "Source and Python validation prefix only; Wurst execution explicitly skipped here and independently run by root.",
+  "command": [
+    "bash",
+    "automation/run_checks.sh"
+  ],
+  "environmentOverride": {
+    "WARCRAFTMAP_WURST_CHECK": "skip",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "startedAt": "2026-10-21T13:44:19.232756+00:00",
+  "status": "completed",
+  "before": {
+    "head": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "statusPorcelain": "",
+    "gitTree": "c0a26ed3ce65539aa9b04f18597912e64126f896",
+    "sourceIdentity": {
+      "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+      "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+    },
+    "trackedFileCount": 2717,
+    "trackedContentSha256": "a5bda87fd261009682b783008bd017706bcb8e6b7674d8bdceaa94ad7d58b10e"
+  },
+  "exitCode": 0,
+  "endedAt": "2026-10-21T15:18:51.085118+00:00",
+  "durationSeconds": 5671.665596269995,
+  "after": {
+    "head": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "statusPorcelain": "",
+    "gitTree": "c0a26ed3ce65539aa9b04f18597912e64126f896",
+    "sourceIdentity": {
+      "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+      "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+    },
+    "trackedFileCount": 2717,
+    "trackedContentSha256": "a5bda87fd261009682b783008bd017706bcb8e6b7674d8bdceaa94ad7d58b10e"
+  },
+  "beforeAfterIdentical": true,
+  "logSha256": "222aef13551e715933a5cbd95ad539fe3ee4caee1560cec05cdb6267e3c75d67",
+  "logBytes": 22128,
+  "unittestSummaries": [
+    {
+      "tests": 1137,
+      "durationSeconds": 5642.209
+    },
+    {
+      "tests": 198,
+      "durationSeconds": 8.263
+    }
+  ],
+  "wurstSkippedWarningPresent": true,
+  "fullWurstGateSatisfiedByThisRun": false
+}

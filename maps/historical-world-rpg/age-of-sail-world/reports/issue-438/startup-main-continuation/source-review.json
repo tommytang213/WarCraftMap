@@ -1,0 +1,136 @@
+{
+  "format": "pr536_resume_integration_source_review_v1",
+  "reviewedAtUtc": "2026-10-21T13:36:48.034886+00:00",
+  "reviewer": "/root/startup_review",
+  "additionalIndependentReviewer": "/root/startup_review/digit_patch_review",
+  "baselineCommit": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+  "integratedMainCommit": "58d1b88d0fb4b852b639d2d82a5a24dee92ed92c",
+  "status": "pass_source_review_only",
+  "blockingFindings": [],
+  "reviewedFiles": [
+    {
+      "path": "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst",
+      "bytes": 106758,
+      "sha256": "cbedbf83ab2713725c870ae83cd143fe4d9424945b67d0d52df9116813641555"
+    },
+    {
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/MilitarySnapshotValidationTests.wurst",
+      "bytes": 9498,
+      "sha256": "ca2eda7b3e28ae2f56bdbea7ae2705b43076fa961fe1c0be9b363b003e5a7fd8"
+    },
+    {
+      "path": "maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst",
+      "bytes": 113744,
+      "sha256": "2d5b6785aefed63e2e7ec85ade915c0ca62bc8e73e95986954d6240d850222d7"
+    },
+    {
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignStartupTests.wurst",
+      "bytes": 68993,
+      "sha256": "23c85647c332b18ea9c56788e2b6b34b272a0a1e1aba7fdb665c00a3f51b0da1"
+    },
+    {
+      "path": "maps/historical-world-rpg/_shared/wurst/PlayableTrade.wurst",
+      "bytes": 56646,
+      "sha256": "4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83"
+    },
+    {
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/TradeSnapshotTests.wurst",
+      "bytes": 14347,
+      "sha256": "994c6ea3c9a8835289ad349deac54a3a2ef41aa9f7098bc7217ce9e9c9da3928"
+    }
+  ],
+  "militaryIntegration": {
+    "result": "pass",
+    "comparedWith": "main58d validation method and baseline995 owning parsed-result API",
+    "findings": [
+      "All main campaign-day conditions remain in the same order: industry, finance (lastDay and freightDay), land, pending voyage, science, hull, naval.",
+      "Each date rejection disposes the detached parser result and returns null; failed parsing already returns null with parser-owned cleanup.",
+      "The existing boolean overload wraps parseValidatedSnapshot, rejects null and disposes each successful returned owner.",
+      "Campaign validation retains one parsed military owner through read-only country checks and disposes before independent trade validation and staged publication.",
+      "Expanded fixture independently moves all eight date fields into the future, distinguishes bounded rejection from unbounded structural validity, observes exact cleanup counts and preserves the original live snapshot.",
+      "Industry fixture constructor matches the new IndustrySite signature, its empty-owner record needs no settlement projection, and borrowed authored site definitions remain usable after parsed-copy disposal.",
+      "Current military schema17 and its industry/freight migration logic from main remain intact; baseline evidence describing schema15 remains historical."
+    ]
+  },
+  "tradeDigitCorrection": {
+    "result": "pass",
+    "reviewedPatch": "trade-digit-work/trade-digit.patch",
+    "findings": [
+      "Both integrated digit files match the independently reviewed patch byte-for-byte.",
+      "Exact ASCII digit strings return their previous indices; all other slice results use the original alphabet search, including empty and multichar cases.",
+      "Input slicing, integer syntax/range guards, accumulation, public APIs, serialized fields and failure order are unchanged.",
+      "New tests use production snapshot validation and reconstruction for accepted roundtrips and nonmutating malformed/canonical failures; existing signed-boundary regressions remain."
+    ]
+  },
+  "emptyCheckpointGuard": {
+    "result": "pass",
+    "findings": [
+      "Both public checkpoint writes reject an empty codec result before entering storage; storage itself retains its valid empty-value contract.",
+      "Private checkpoint, session, milestone and acknowledgement ordering and successful bytes remain unchanged.",
+      "Fresh-start failure uses existing cleanup; pending-checkpoint failure aborts staged load and retains the request-bound private checkpoint.",
+      "Two new tests each exercise fresh failure, reconstructed pending failure and successful retry through real decoding/encoding except the explicit injected slot rejection.",
+      "Milestone failure intentionally retains a successfully written session; assertions correctly avoid claiming atomic multi-slot publication.",
+      "The fixture load counter counts the original selector request; retrying startup does not itself request another map load."
+    ]
+  },
+  "focusedWurstFamilies": [
+    {
+      "family": "MilitarySnapshotValidationTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/MilitarySnapshotValidationTests.wurst",
+      "testCount": 3,
+      "selection": "essential_direct_paths"
+    },
+    {
+      "family": "TradeSnapshotTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/TradeSnapshotTests.wurst",
+      "testCount": 10,
+      "selection": "essential_direct_paths"
+    },
+    {
+      "family": "CampaignStartupTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignStartupTests.wurst",
+      "testCount": 53,
+      "selection": "essential_direct_paths"
+    },
+    {
+      "family": "IndustryTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/IndustryTests.wurst",
+      "testCount": 7,
+      "selection": "integrated_schema17_domain_coverage"
+    },
+    {
+      "family": "ArmyFoodLogisticsTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/ArmyFoodLogisticsTests.wurst",
+      "testCount": 7,
+      "selection": "integrated_schema17_domain_coverage"
+    },
+    {
+      "family": "TradeFinanceTests",
+      "path": "maps/historical-world-rpg/age-of-sail-world/wurst/TradeFinanceTests.wurst",
+      "testCount": 10,
+      "selection": "integrated_schema17_domain_coverage"
+    }
+  ],
+  "essentialDirectPathTestCount": 66,
+  "suggestedFocusedTotalTestCount": 90,
+  "validationPerformed": {
+    "readOnlySourceAndTestReview": true,
+    "testExecution": false,
+    "compilation": false,
+    "sourceEdits": false,
+    "reportRegeneration": false
+  },
+  "requiredFollowthrough": [
+    "Execute focused families with unchanged interpreter settings and deadlines.",
+    "Complete the repository-required full unchanged Wurst gate and compile/archive checks on the integrated source; historical671 results do not cover this integration.",
+    "Run compiled digit differential and full-scale trade/payload checks with explicitly reported native models.",
+    "Regenerate expected source-report conflicts without manufacturing native acceptance or hiding remaining blockers.",
+    "Keep PR536 draft/unmerged and issue438 open until real-client Continue shows destination terrain and responsive player-controlled unit movement."
+  ],
+  "limits": [
+    "This review covers the named production integration and tests, not every inherited main change or generated report.",
+    "Review does not establish test pass counts, compilation, native-call savings or native load-time improvements.",
+    "No Warcraft client, DevBox, remote VM, GitHub mutation or player retest was used by these reviewers.",
+    "Continue freeze causality and native acceptance remain unverified."
+  ]
+}

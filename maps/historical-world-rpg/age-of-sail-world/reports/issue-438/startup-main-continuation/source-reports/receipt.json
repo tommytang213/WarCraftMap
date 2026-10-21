@@ -1,0 +1,66 @@
+{
+  "format": "pr536_continuation_source_report_refresh_v1",
+  "baselineRevision": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+  "sourceIdentity": {
+    "sourceRevision": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "nativeStatus": "not_run",
+  "startedAt": "2026-10-21T13:36:15.288187+00:00",
+  "commands": [
+    {
+      "name": "runtime",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "tooling/runtime_acceptance.py",
+        "--write",
+        "--source-revision",
+        "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "seconds": 0.187,
+      "stdoutSha256": "80ef4609202503bc2cd36265df9d0b2889fa5e88da0aab9fb851dddda5939371",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "release",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "tooling/release_blocker_audit.py",
+        "--write",
+        "--source-revision",
+        "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "seconds": 19.73,
+      "stdoutSha256": "3197c6f593227afbf2311baa3a2f2ed6f1981d7ba453d30944f4ab5d3a53628f",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "traceability",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "tooling/requirement_traceability_audit.py",
+        "--write",
+        "--check",
+        "--source-revision",
+        "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "seconds": 3.135,
+      "stdoutSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "status": "source_freshness_only_native_and_release_remain_blocked",
+  "runtimeFailures": 30,
+  "traceabilityBlockers": 7004,
+  "sourcesUnchanged": true,
+  "finishedAt": "2026-10-21T13:36:38.449146+00:00"
+}
