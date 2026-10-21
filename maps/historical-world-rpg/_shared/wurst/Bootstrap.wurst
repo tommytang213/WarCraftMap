@@ -18,6 +18,7 @@ import MilitaryOrderEvents
 import CampaignHandoff
 import CampaignSaveManager
 import CampaignRegistration
+import BankingCampaignRuntime
 import FinanceCampaignRuntime
 import NavalCampaignRuntime
 import ScienceCampaignRuntime
@@ -111,6 +112,7 @@ function initializeRegionalCampaign()
 	registerIndustryCommands(commands, campaign.state.industryRuntime)
 	registerLandArmyCommands(commands, campaign.state.landRuntime)
 	registerScienceCommands(commands, campaign.state.scienceRuntime)
+	registerBankingCommands(commands, campaign.state.bankingRuntime)
 	registerFinanceCommands(commands, campaign.state.financeRuntime)
 	registerNavalCommands(commands, campaign.state.navalRuntime)
 	initializeMilitarySettlementRuntime(commands)

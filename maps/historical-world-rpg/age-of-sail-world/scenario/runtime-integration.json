@@ -717,6 +717,14 @@
             "remittanceFeeBasisPoints",
             "canalWorks"
           ]
+        },
+        {
+          "path": "scenario/progression/central-banking.json",
+          "contains": [
+            "countingBasisPoints",
+            "reconciliationBasisPoints",
+            "upkeepBasisPoints"
+          ]
         }
       ],
       "headlessVerification": [
@@ -752,6 +760,13 @@
           "contains": [
             "test_rejects_fake_banks_missing_materials_duplicate_projects_and_free_bills",
             "test_source_design_or_incomplete_failed_stale_evidence_cannot_bind"
+          ]
+        },
+        {
+          "path": "tests/test_central_banking.py",
+          "contains": [
+            "test_real_bank_contracts_and_separate_typed_identities",
+            "test_evidence_fails_closed_without_complete_current_production_execution"
           ]
         }
       ],
@@ -815,6 +830,15 @@
             "fromStore.money -= amount + fee",
             "toStore.money += amount"
           ]
+        },
+        {
+          "path": "wurst/BankingCampaignRuntime.wurst",
+          "contains": [
+            "class CampaignBankingPort",
+            "function quote",
+            "function commit",
+            "q.principal + q.counting + q.reconciliation"
+          ]
         }
       ],
       "playerEntry": [
@@ -851,6 +875,13 @@
             "commands.register(\"finance\"",
             "function overview"
           ]
+        },
+        {
+          "path": "wurst/BankingCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"banking\"",
+            "function overview"
+          ]
         }
       ],
       "persistence": [
@@ -873,7 +904,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 16",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 17",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages"
           ]
@@ -895,6 +926,14 @@
             "finance.states[i]",
             "parsed.finance = finance.fork()",
             "finance = parsed.finance"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "banking.states[i].record()",
+            "parsed.banking = banking.fork()",
+            "banking = parsed.banking"
           ]
         }
       ],
@@ -934,6 +973,14 @@
             "registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal",
             "registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput",
             "failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority"
+          ]
+        },
+        {
+          "path": "wurst/BankingOperationsTests.wurst",
+          "contains": [
+            "bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
+            "bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
+            "bankingLongCampaignActiveAbstractUpkeepAndConservation"
           ]
         }
       ],

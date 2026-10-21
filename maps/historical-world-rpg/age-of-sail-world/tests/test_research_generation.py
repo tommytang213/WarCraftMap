@@ -113,7 +113,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance'), ('unit', 'ship_of_the_line'),
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
                 ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),
-                ('modifier', 'progression_boring_mills')}])
+                ('modifier', 'progression_boring_mills'), ('modifier', 'progression_central_banking'),
+                ('policy', 'progression_central_bank_institution')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_production_adapter_cannot_substitute_native_food_capacity(self):

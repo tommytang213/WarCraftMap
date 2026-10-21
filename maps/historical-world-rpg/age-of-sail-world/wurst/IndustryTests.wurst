@@ -209,7 +209,7 @@ class IndustryFixture
 	active.advance(400)
 	active.trade.findMarket("milan", "arms").stock.assertEquals(10030)
 	// v14 has no industry assets. Migrating cannot grant a furnace or a batch.
-	var legacy = inactive.military.snapshot().replace("v16|", "v14|")
+	var legacy = inactive.military.snapshot().replace("v17|", "v14|")
 	for i = 0 to inactive.military.industry.count - 1
 		legacy = legacy.replace("|i," + inactive.military.industry.sites[i].id + "," + inactive.military.industry.states[i].record(), "")
 	inactive.military.restore(legacy, false).assertTrue()
