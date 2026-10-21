@@ -26,7 +26,8 @@ compile_root = _assemble(config, root, root / 'generated')
 keep = {'BankingOperationsTests.wurst', 'TradeFinanceTests.wurst',
         'ResearchCostTests.wurst', 'FrameworkConformanceTests.wurst',
         'MilitaryCombatEventsTests.wurst', 'ArmyFoodLogisticsTests.wurst',
-        'CivicGovernanceTests.wurst', 'CampaignLoadTransactionTests.wurst'}
+        'CivicGovernanceTests.wurst', 'CampaignLoadTransactionTests.wurst',
+        'ScienceExplorationTests.wurst'}
 for path in (compile_root / 'wurst').glob('*.wurst'):
     if path.name == 'MilitaryCombatEventsTests.wurst':
         names = {f'legacyMilitaryIntegerVersion{i}MigratesThroughFreshCampaignCodec' for i in range(1, 8)}

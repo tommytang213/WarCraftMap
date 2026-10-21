@@ -1,5 +1,26 @@
 # Issue 525 merge integration
 
+The subsequent validation retry found a no-op version substitution in
+`scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact`:
+the merged fixture replaced `v19|` with `v19|` before expecting rejection.
+It now asserts the current save prefix and substitutes unsupported `v999|`,
+then verifies unchanged live state. The focused assembly now includes the science
+suite. All production implementation and merged banking/logistics behavior are
+preserved. Fresh retry evidence is retained separately in `validation-repair.json`
+and `validation-repair-wurst.json`; the results below describe the earlier run.
+
+This retry passed pinned typechecking and **58/58 interpreter tests**, with
+before/after hashes for 381 compiler inputs and individual production-probe
+results retained. **54 focused Python tests**, **9 framework conformance tests**
+and **88 audit regression tests** passed. The initial Python command also had one
+framework module import error; rerunning that suite with `PYTHONPATH=tests`
+resolved it. Framework packaging fixtures use a synthetic compiler and are not
+additional pinned interpreter or native-client evidence. Framework boundary,
+traceability freshness and generated-payload inspection passed for all 17 maps
+and 794 administrative districts. All three acceptance reports were regenerated
+against the retry source identity; release blockers remain for controller-owned
+complete execution and packaged-campaign validation. No player QA is needed.
+
 The six actual conflicts are resolved and staged, preserving administration,
 banking and army-food logistics. No commit, push, GitHub mutation or player QA
 was performed. The controller owns complete repository validation.
