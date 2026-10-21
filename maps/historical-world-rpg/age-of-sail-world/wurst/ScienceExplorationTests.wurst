@@ -267,7 +267,7 @@ class ScienceFixture
 	active.military.restore(saved).assertTrue()
 	active.military.snapshot().assertEquals(saved)
 	active.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
-	active.military.restore(saved.replace("v17|", "v18|")).assertFalse()
+	active.military.restore(saved.replace("v18|", "v19|")).assertFalse()
 	active.military.snapshot().assertEquals(saved)
 	active.military.validateSnapshot(saved, active.day + 9).assertFalse()
 	active.advance(17)
@@ -287,7 +287,7 @@ class ScienceFixture
 	var legacy = inactive.military.snapshot()
 	for i = 0 to inactive.military.science.count - 1
 		legacy = legacy.replace("|j," + inactive.military.science.sites[i].id + "," + inactive.military.science.states[i].record(), "")
-	legacy = legacy.replace("v17|", "v11|")
+	legacy = legacy.replace("v18|", "v11|")
 	inactive.military.restore(legacy).assertTrue()
 	for i = 0 to inactive.military.science.count - 1
 		inactive.military.science.states[i].equipmentOwner.assertEquals("")

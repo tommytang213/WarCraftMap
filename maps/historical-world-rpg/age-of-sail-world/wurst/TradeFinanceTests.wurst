@@ -293,7 +293,7 @@ function financeReceipt(string name)
 	active.trade.findStore("warehouse:yangzhou").capacity.assertEquals(24200)
 	// Legacy schemas have no funded canal projects or retroactive improvements.
 	let state = inactive.military.finance.states[0]
-	let legacy = inactive.military.snapshot().replace("v17|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
+	let legacy = inactive.military.snapshot().replace("v18|", "v13|").replace("|q,yangzhou_canal_quay," + state.owner + ",90," + I2S(state.lastDay) + ",1", "")
 	inactive.military.restore(legacy).assertTrue()
 	inactive.runtime.refresh()
 	inactive.military.finance.states[0].completed.assertFalse()
@@ -426,7 +426,7 @@ function financeReceipt(string name)
 	let canalRecord = "|q,yangzhou_canal_quay,player,30," + I2S(f.day + 30) + ",0"
 	let yardRecord = "|y,london," + yard.record()
 	let saved = f.military.snapshot()
-	saved.startsWith("v17|").assertTrue()
+	saved.startsWith("v18|").assertTrue()
 	saved.contains(canalRecord).assertTrue()
 	saved.contains(yardRecord).assertTrue()
 	saved.contains(industryRecord).assertTrue()
@@ -442,13 +442,13 @@ function financeReceipt(string name)
 	f.military.validateSnapshot(saved, f.day + 29).assertFalse()
 	f.military.snapshot().assertEquals(saved)
 	// Main v14 has naval/land state and no finance domain.
-	f.military.restore(saved.replace("v17|", "v14|").replace(canalRecord, ""), false).assertTrue()
+	f.military.restore(saved.replace("v18|", "v14|").replace(canalRecord, ""), false).assertTrue()
 	f.military.finance.states[0].owner.assertEquals("")
 	f.military.finance.states[0].work.assertEquals(0)
 	f.military.naval.states[f.military.naval.index("london")].work.assertEquals(10)
 	f.military.land.arsenals[0].work.assertEquals(12345)
 	// Finance v14 has canal/land state and no naval domain.
-	var finance14 = saved.replace("v17|", "v14|")
+	var finance14 = saved.replace("v18|", "v14|")
 	f.military.restore(saved, false).assertTrue()
 	for i = 0 to f.military.naval.count - 1
 		finance14 = finance14.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")
@@ -461,7 +461,7 @@ function financeReceipt(string name)
 	f.military.snapshot().assertEquals(saved)
 
 	// Industry v15 preserves paid manufacturing and migrates finance unfunded.
-	let industry15 = saved.replace("v17|", "v15|").replace(canalRecord, "")
+	let industry15 = saved.replace("v18|", "v15|").replace(canalRecord, "")
 	f.military.restore(industry15, false).assertTrue()
 	f.military.industry.states[0].work.assertEquals(123456)
 	f.military.finance.states[0].owner.assertEquals("")
@@ -469,7 +469,7 @@ function financeReceipt(string name)
 	f.military.naval.states[f.military.naval.index("london")].work.assertEquals(10)
 	f.military.restore(industry15.replace(industryRecord, ""), false).assertFalse()
 	// Main v15 preserves paid canal works and migrates industry unfunded.
-	let finance15 = saved.replace("v17|", "v15|").replace(industryRecord, "").replace(furnaceRecord, "")
+	let finance15 = saved.replace("v18|", "v15|").replace(industryRecord, "").replace(furnaceRecord, "")
 	f.military.restore(finance15, false).assertTrue()
 	f.military.finance.states[0].work.assertEquals(30)
 	f.military.industry.states[0].equipmentOwner.assertEquals("")
@@ -482,18 +482,18 @@ function financeReceipt(string name)
 	// Industry v16 has complete industry/finance but no freight counters.
 	let freightRecord = "|z,yangzhou_canal_quay,0,0"
 	saved.contains(freightRecord).assertTrue()
-	let industry16 = saved.replace("v17|", "v16|").replace(freightRecord, "")
+	let industry16 = saved.replace("v18|", "v16|").replace(freightRecord, "")
 	f.military.restore(industry16, false).assertTrue()
 	f.military.industry.states[0].work.assertEquals(123456)
 	f.military.finance.states[0].work.assertEquals(30)
 	f.military.finance.states[0].freightUsed.assertEquals(0)
 	// Logistics v16 has complete finance/freight but no industry ledger.
-	let logistics16 = saved.replace("v17|", "v16|").replace(industryRecord, "").replace(furnaceRecord, "")
+	let logistics16 = saved.replace("v18|", "v16|").replace(industryRecord, "").replace(furnaceRecord, "")
 	f.military.restore(logistics16, false).assertTrue()
 	f.military.finance.states[0].work.assertEquals(30)
 	f.military.industry.states[0].equipmentOwner.assertEquals("")
 	f.military.industry.states[0].work.assertEquals(0)
-	// Partial legacy ledgers and every missing combined-v17 domain still reject.
+	// Partial legacy ledgers and every missing combined-v18 domain still reject.
 	f.military.restore(logistics16.replace(canalRecord, ""), false).assertFalse()
 	f.military.restore(saved.replace(freightRecord, ""), false).assertFalse()
 	f.military.restore(industry16.replace(industryRecord, ""), false).assertFalse()

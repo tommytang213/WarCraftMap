@@ -1,0 +1,135 @@
+package BankingOperations
+
+import CivicGovernance
+import ResearchEntitlements
+
+public class BankingEffect extends CivicEffect
+	int firstDay
+	construct(string kind, string contentId, string metric, int basisPoints, int firstDay)
+		super(kind, contentId, metric, basisPoints)
+		this.firstDay = firstDay
+
+public class BankingResearchEffects extends CivicResearchEffects
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	function rateAt(string owner, string metric, int day) returns int
+		let layer = get(owner)
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i] castTo BankingEffect
+				if d.metric == metric and day >= d.firstDay and layer.has(d.kind, d.contentId)
+					result += d.basisPoints
+		return result
+
+public function bankingCost(int cost, int reduction) returns int
+	return cost - civicScale(cost, IMinBJ(9999, IMaxBJ(0, reduction)))
+
+public class BankingSite
+	string id
+	int annualTax
+	construct(string id, int annualTax)
+		this.id = id
+		this.annualTax = annualTax
+
+/** No handles or entitlements in policy authority. Serial also guards quotes
+ * against replay, including repeal/re-enactment and reload. */
+public class BankingState
+	boolean restored = false
+	string owner = ""
+	int ready = 0
+	int upkeepThrough = 0
+	int lastDay = 0
+	int serial = 0
+	function clear()
+		owner = ""
+		ready = 0
+		upkeepThrough = 0
+	function record() returns string
+		return owner + "," + I2S(ready) + "," + I2S(upkeepThrough) + "," + I2S(lastDay) + "," + I2S(serial)
+
+public interface BankingPort
+	function eligible(string owner, string id) returns boolean
+	function pay(string owner, string id, int amount) returns boolean
+
+public class BankingLedger
+	BankingSite array[64] sites
+	BankingState array[64] states
+	int count = 0
+	string prerequisite = ""
+	int transitionDays = 0
+	int enactmentBasisPoints = 0
+	int upkeepBasisPoints = 0
+	int countingBasisPoints = 0
+	int reconciliationBasisPoints = 0
+	function register(BankingSite site)
+		sites[count] = site
+		states[count] = new BankingState()
+		count++
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if sites[i].id == id
+				return i
+		return -1
+	function fork() returns BankingLedger
+		let copy = new BankingLedger()
+		copy.prerequisite = prerequisite
+		copy.transitionDays = transitionDays
+		copy.enactmentBasisPoints = enactmentBasisPoints
+		copy.upkeepBasisPoints = upkeepBasisPoints
+		copy.countingBasisPoints = countingBasisPoints
+		copy.reconciliationBasisPoints = reconciliationBasisPoints
+		for i = 0 to count - 1
+			copy.register(sites[i])
+		return copy
+	function controlChanged(string id)
+		let i = index(id)
+		if i >= 0
+			states[i].clear()
+			if states[i].serial < 2147483647
+				states[i].serial++
+	function available(string owner, int day, BankingResearchEffects effects) returns boolean
+		return effects.rateAt(owner, "treasury_reconciliation_cost_reduction", day) > 0
+	function operating(int i, string owner, int day, BankingResearchEffects effects, BankingPort port) returns boolean
+		let s = states[i]
+		return s.owner == owner and owner != "" and s.ready <= day and s.upkeepThrough > day and available(owner, day, effects) and port.eligible(owner, sites[i].id)
+	function advance(int day, BankingResearchEffects effects, BankingPort port)
+		for i = 0 to count - 1
+			let s = states[i]
+			if day > s.lastDay
+				s.lastDay = day
+				if s.owner != ""
+					if not available(s.owner, day, effects) or not port.eligible(s.owner, sites[i].id)
+						s.clear()
+					else
+						while s.owner != "" and s.upkeepThrough <= day
+							if s.upkeepThrough > 2147483282 or not port.pay(s.owner, sites[i].id, civicBill(sites[i].annualTax, upkeepBasisPoints))
+								s.clear()
+							else
+								s.upkeepThrough += 365
+	function policy(string owner, string id, boolean repeal, int day, BankingResearchEffects effects, BankingPort port) returns string
+		let i = index(id)
+		if i < 0 or not port.eligible(owner, id)
+			return "Requires a controlled lawful administered bank, accessible market and bookkeeping."
+		let s = states[i]
+		if day < s.lastDay or s.serial == 2147483647
+			return "Policy clock or transaction history is invalid."
+		if repeal
+			if s.owner != owner
+				return "No policy belongs to this controller."
+			s.clear()
+		else
+			if s.owner != "" or not available(owner, day, effects) or day > 2147483282 - transitionDays
+				return "Requires the adopted institution policy and an inactive bank."
+			let cost = civicBill(sites[i].annualTax, enactmentBasisPoints) + civicBill(sites[i].annualTax, upkeepBasisPoints)
+			if not port.pay(owner, id, cost)
+				return "Treasury cannot pay enactment and first annual upkeep."
+			s.owner = owner
+			s.ready = day + transitionDays
+			s.upkeepThrough = s.ready + 365
+		s.serial++
+		s.lastDay = day
+		return ""
+	ondestroy
+		for i = 0 to count - 1
+			destroy states[i]
