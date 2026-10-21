@@ -361,6 +361,26 @@
     "administrative_advance": {
       "path": "wurst/CivicGovernance.wurst",
       "signature": "function advance(int day, CivicResearchEffects research, CivicEconomyPort economy)"
+    },
+    "banking_registration": {
+      "path": "wurst/BankingCampaignRuntime.wurst",
+      "signature": "public function registerBankingCommands(CommandRegistry commands, BankingCampaignRuntime runtime) returns string"
+    },
+    "banking_policy": {
+      "path": "wurst/BankingOperations.wurst",
+      "signature": "function policy(string owner, string id, boolean repeal, int day, BankingResearchEffects effects, BankingPort port) returns string"
+    },
+    "banking_quote": {
+      "path": "wurst/BankingCampaignRuntime.wurst",
+      "signature": "function quote(string owner, string id, int principal) returns BankingQuote"
+    },
+    "banking_commit": {
+      "path": "wurst/BankingCampaignRuntime.wurst",
+      "signature": "function commit(string actor, BankingQuote q) returns string"
+    },
+    "banking_advance": {
+      "path": "wurst/BankingOperations.wurst",
+      "signature": "function advance(int day, BankingResearchEffects effects, BankingPort port)"
     }
   },
   "systems": {
@@ -544,6 +564,13 @@
       "dispatch",
       "administrative_action",
       "administrative_advance"
+    ],
+    "central_banking": [
+      "banking_registration",
+      "banking_policy",
+      "banking_quote",
+      "banking_commit",
+      "banking_advance"
     ]
   }
 }

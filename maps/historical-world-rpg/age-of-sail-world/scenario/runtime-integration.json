@@ -775,6 +775,14 @@
             "archive_tax_collection_efficiency",
             "municipal_tax_collection_efficiency"
           ]
+        },
+        {
+          "path": "scenario/progression/central-banking.json",
+          "contains": [
+            "countingBasisPoints",
+            "reconciliationBasisPoints",
+            "upkeepBasisPoints"
+          ]
         }
       ],
       "headlessVerification": [
@@ -823,6 +831,13 @@
           "path": "tests/test_administrative_contracts.py",
           "contains": [
             "test_exact_typed_effects_and_catalogue_adoption_requirements"
+          ]
+        },
+        {
+          "path": "tests/test_central_banking.py",
+          "contains": [
+            "test_real_bank_contracts_and_separate_typed_identities",
+            "test_evidence_fails_closed_without_complete_current_production_execution"
           ]
         }
       ],
@@ -903,6 +918,15 @@
             "archive_tax_collection_efficiency",
             "municipal_tax_collection_efficiency"
           ]
+        },
+        {
+          "path": "wurst/BankingCampaignRuntime.wurst",
+          "contains": [
+            "class CampaignBankingPort",
+            "function quote",
+            "function commit",
+            "q.principal + q.counting + q.reconciliation"
+          ]
         }
       ],
       "playerEntry": [
@@ -946,6 +970,13 @@
             "municipal-repeal",
             "registerCivicCommands"
           ]
+        },
+        {
+          "path": "wurst/BankingCampaignRuntime.wurst",
+          "contains": [
+            "commands.register(\"banking\"",
+            "function overview"
+          ]
         }
       ],
       "persistence": [
@@ -968,9 +999,12 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 18",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 19",
             "progress.creditBasisPoints",
-            "parsed.legacyVoyages"
+            "parsed.legacyVoyages",
+            "banking.states[i].record()",
+            "parsed.banking = banking.fork()",
+            "banking = parsed.banking"
           ]
         },
         {
@@ -1052,6 +1086,14 @@
           "contains": [
             "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
             "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
+          ]
+        },
+        {
+          "path": "wurst/BankingOperationsTests.wurst",
+          "contains": [
+            "bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
+            "bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
+            "bankingLongCampaignActiveAbstractUpkeepAndConservation"
           ]
         }
       ],

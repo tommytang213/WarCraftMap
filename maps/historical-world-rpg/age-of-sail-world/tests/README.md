@@ -421,3 +421,13 @@ validation remains the controller's responsibility.
 The combined v16 format requires both industry and finance records. Either
 pre-integration v15 layout migrates its paid work while absent domains initialize
 unfunded; partial or duplicate ledgers reject atomically.
+
+`BankingOperationsTests.wurst` executes the distinct Central Bank institution
+policy and Central Banking technology through generated research, registered
+policy actions and actual treasury lodgements. It compares neither/either/both,
+paid transition and renewal, exact bill rounding, treasury/warehouse conservation,
+unauthorized actors, missing services/bookkeeping, stale/replayed quotes (including
+after load), capture, v16/v17-to-v18 migration, failed-load rollback and 25 years of
+active/abstract operation. The fixture configures no exchange/remittance consumer.
+`test_central_banking.py` checks the scenario contract, retained independent
+historical research/adoption data and fail-closed release evidence binding.

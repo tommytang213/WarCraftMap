@@ -1,5 +1,8 @@
 # Issue #525 development evidence
 
+See [merge integration verification](INTEGRATION.md) for the fresh combined-codec
+validation and v19 migration. The evidence below predates integration.
+
 Chancery Archives now improves conserved local tax collection through qualified
 current administration. Chartered Municipal Government retains the catalogue's
 Archives and 11% urbanization requirements, then exposes a separately paid local

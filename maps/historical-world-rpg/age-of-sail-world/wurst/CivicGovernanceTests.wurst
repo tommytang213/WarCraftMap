@@ -257,7 +257,7 @@ class CivicFixture
 	f.military.transferSettlement("district", "player")
 	f.military.civic.states[0].policyOwner.assertEquals("")
 	// v1-v10 contain no civic ledger; migration never grants completed projects.
-	let cut = saved.indexOf("|b,")
+	let cut = saved.indexOf("|u,")
 	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
 	f.military.restore(legacy, false).assertTrue()
 	f.military.civic.states[0].surveyed.assertFalse()
@@ -350,10 +350,10 @@ class CivicFixture
 	ship.navigation.elapsedDays.assertEquals(3)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(3)
 	let saved = f.military.snapshot()
-	saved.startsWith("v18|").assertTrue()
+	saved.startsWith("v19|").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
-	let cut = saved.indexOf("|b,")
+	let cut = saved.indexOf("|u,")
 	// Truncated current saves cannot silently discard paid civic projects.
 	f.military.restore(SubString(saved, 0, cut), false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
@@ -502,12 +502,12 @@ class CivicFixture
 	active.military.restore(saved, false).assertTrue()
 	active.military.snapshot().assertEquals(saved)
 	active.campaign.countries.treasury[0].assertEquals(money)
-	let record = "|b,district,player," + I2S(active.day + 90) + "," + I2S(active.day + 90 + 365) + ",20"
+	let record = "|u,district,player," + I2S(active.day + 90) + "," + I2S(active.day + 90 + 365) + ",20"
 	active.military.restore(saved.replace(record, ""), false).assertFalse()
 	active.military.restore(saved + record, false).assertFalse()
-	active.military.restore(saved.replace(record, "|b,district,foreign,1,1,20"), false).assertFalse()
+	active.military.restore(saved.replace(record, "|u,district,foreign,1,1,20"), false).assertFalse()
 	active.military.snapshot().assertEquals(saved)
-	let legacy = saved.replace("v18|", "v17|").replace(record, "")
+	let legacy = saved.replace("v19|", "v17|").replace(record, "")
 	active.military.restore(legacy, false).assertTrue()
 	active.military.civic.states[0].municipalOwner.assertEquals("")
 	active.military.civic.states[0].urbanization.assertEquals(20)

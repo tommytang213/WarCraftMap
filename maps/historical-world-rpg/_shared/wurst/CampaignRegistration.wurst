@@ -7,6 +7,8 @@ import Agriculture
 import CampaignAgriculture
 import CivicGovernance
 import TradeFinance
+import BankingCampaignRuntime
+import BankingOperations
 import FinanceCampaignRuntime
 import ScienceCampaignRuntime
 import ScienceExploration
@@ -189,6 +191,11 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	rpg.technologies.effects = scienceResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.scienceRuntime = new ScienceCampaignRuntime(campaign.state, trade, scienceResearch)
+	let bankingResearch = new BankingResearchEffects(rpg.technologies.effects)
+	configureGeneratedBanking(military.banking, bankingResearch)
+	rpg.technologies.effects = bankingResearch
+	rpg.technologies.reconstructAll()
+	campaign.state.bankingRuntime = new BankingCampaignRuntime(campaign.state, trade, bankingResearch)
 	let financeResearch = new FinanceResearchEffects(rpg.technologies.effects)
 	configureGeneratedFinance(military.finance, financeResearch)
 	rpg.technologies.effects = financeResearch

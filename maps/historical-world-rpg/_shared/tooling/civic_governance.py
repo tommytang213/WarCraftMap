@@ -8,6 +8,18 @@ METRICS = {'civic_reform_diffusion': 'policy', 'epidemic_losses_avoided': 'abili
            'land_tax_collection_efficiency': 'modifier'}
 
 
+def annual_tax_capacity(cfg, row):
+    roles = set(row.get("roles", []))
+    capacity = cfg['normalAnnualCapacityUnits']
+    for eligible, key in [('capital' in roles, 'capitalCapacityPermille'),
+                          (bool(row.get('port')), 'portCapacityPermille'),
+                          (bool(roles & set(cfg['civicRoles']) - {'capital'}), 'tradeCenterCapacityPermille')]:
+        if eligible:
+            capacity = capacity * cfg[key] // 1000
+    annual_tax = capacity * cfg['taxSharePermille'] // 1000
+    return annual_tax
+
+
 def configuration(project, world, settlements, authored, trade_records):
     path = project / 'scenario/progression/civic-governance.json'
     header = '\npublic function configureGeneratedCivic(CivicLedger ledger, CivicResearchEffects research, int day)\n'
@@ -61,13 +73,7 @@ def configuration(project, world, settlements, authored, trade_records):
         if not row:
             continue
         roles = set(row.get('roles', []))
-        capacity = cfg['normalAnnualCapacityUnits']
-        for eligible, key in [('capital' in roles, 'capitalCapacityPermille'),
-                              (bool(row.get('port')), 'portCapacityPermille'),
-                              (bool(roles & set(cfg['civicRoles']) - {'capital'}), 'tradeCenterCapacityPermille')]:
-            if eligible:
-                capacity = capacity * cfg[key] // 1000
-        annual_tax = capacity * cfg['taxSharePermille'] // 1000
+        annual_tax = annual_tax_capacity(cfg, row)
         # The compiled trade catalogue is authoritative for existing commodities.
         available = [g for g in cfg['medicalGoodPreference'] if any(
             f'runtime.registerMarketProfile({q(ident)},{q(g)},' in line for line in trade_records)]

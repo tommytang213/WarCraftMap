@@ -545,8 +545,9 @@ payment/labor/output probes from the comparative production test before removing
 these identities. Definition generation, Python simulations and a merged PR alone
 cannot close them. The #438 native launch blocker remains separately owned.
 
-The integrated military snapshot v17 requires complete industry, finance and
-canal freight ledgers. Independent v15 layouts migrate their existing paid work;
+The integrated military snapshot v18 requires complete industry, finance,
+canal freight and banking ledgers. Independent v17 banking or logistics saves
+retain their existing ledger and initialize the absent domain empty. Independent v15 layouts migrate their existing paid work;
 industry v16 saves initialize absent freight counters empty, and logistics v16
 saves initialize absent industry unfunded. Partially present ledgers still reject.
 V14 finance saves may also lack naval state; missing domains never grant completed
@@ -603,13 +604,19 @@ municipal enactment costs 101 and upkeep 51. Unavailable liquidity further limit
 all three. Appointment, research and charter activation preserve all legal and
 political control identities.
 
-Military snapshot **v18** adds a required `b` record per configured civic district
+Military snapshot **v19** adds a required `u` record per configured civic district
 for municipal owner, transition, prepaid-through date and current urbanization.
 The existing `g` civic records and conflict membership `m` records retain their
-meaning. V1–v17 saves initialize absent charters inactive and urbanization from
+meaning. V1–v18 saves initialize absent charters inactive and urbanization from
 the scenario; existing paid surveys, policies and other domains survive. Partial,
 duplicate, foreign-owner, malformed and future-dated current ledgers reject in
 staged parsing. Campaign rollback restores the entire ledger with treasury,
 markets and research. The two release findings only close with fresh same-source
 pinned production execution, including comparative outcomes and late rollback;
 controller integration must regenerate all three audits on the new main revision.
+
+The integrated v19 codec preserves main’s banking `b` and freight `z` records.
+Independent v18 municipal saves used six-field `b` records; migration recognizes
+their arity and preserves those charters while initializing absent banking inactive.
+V18 banking saves retain bank policies and initialize absent charters inactive.
+V19 requires both complete ledgers; malformed or partial legacy ledgers reject.

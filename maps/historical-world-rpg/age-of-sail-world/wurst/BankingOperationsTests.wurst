@@ -1,0 +1,425 @@
+package BankingOperationsTests
+
+import BankingOperations
+import BankingCampaignRuntime
+import CivicGovernance
+import CampaignTimeline
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ManagementScreenPauseController
+import ManagementCommandTests
+import ScenarioData
+import TradeFinance
+
+class BankingResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	string output = ""
+	override function controllerId(player sender) returns string
+		if sender != Player(0)
+			return "unauthorized"
+		return owner
+	override function year() returns int
+		return 1800
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player sender, string message)
+		output = message
+
+class BankingFixture
+	int day = 657072
+	BankingResources resources = new BankingResources()
+	BankingResearchEffects effects = new BankingResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	BankingCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	construct(boolean ai, boolean active)
+		if ai
+			resources.owner = "ai"
+		configureGeneratedRpg(rpg)
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureGeneratedBanking(military.banking, effects)
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity(resources.owner, 100000)
+		military.registerSettlement(new SettlementRuntimeState("london", resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
+		military.appoint("london", new AdministratorState("clerk", "Clerk", "Administrator", resources.owner, "europe_west", "london", 50, 50, 40, 1))
+		trade.registerMarket(new RuntimeMarket("london", "timber", 10000, 1000000, 100, 100))
+		trade.registerStore(new TradeStore("warehouse:london", 24000, 1000000))
+		runtime = new BankingCampaignRuntime(campaign, trade, effects)
+		campaign.bankingRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerBankingCommands(commands, runtime).assertEquals("")
+		if active
+			military.activateRegion("europe_west")
+		else
+			military.activateRegion("africa")
+		// Existing saves may contain independent prerequisite completions. The
+		// two target nodes themselves are always acquired through registration.
+		let owner = resources.owner
+		rpg.restoreState(rpg.captureState() + "|u," + owner + ",double_entry_bookkeeping|u," + owner + ",auction_markets|u," + owner + ",standing_army_system|u," + owner + ",merchant_correspondence").assertTrue()
+	function research(boolean institution)
+		var id = "central_banking"
+		var command = "/research "
+		if institution
+			id = "central_bank_institution"
+			command = "/institution "
+		let cost = rpg.technologies.cost(id, 1800, 0, 0)
+		let money = resources.balance
+		commands.dispatch(Player(0), command + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+		resources.balance.assertEquals(money - cost)
+		rpg.technologies.bindingStatus(rpg.technologies.get(id).unlocks[0]).assertEquals(RESEARCH_BOUND)
+	function act(string text)
+		commands.dispatch(Player(0), "/banking " + text).assertTrue()
+		resources.output.assertEquals("Banking action completed.")
+	function state() returns BankingState
+		return military.banking.states[military.banking.index("london")]
+	function store() returns TradeStore
+		return trade.findStore("warehouse:london")
+	function operating()
+		act("policy london")
+		clock.advanceTo(day + 90).assertTrue()
+	function fee(int counting, int reconciliation)
+		let q = runtime.quote(resources.owner, "london", 10000)
+		(q != null).assertTrue()
+		q.counting.assertEquals(counting)
+		q.reconciliation.assertEquals(reconciliation)
+		destroy q
+
+function bankingReceipt(string name)
+	print("TRACEABILITY {\"requirement\":\"ROAD-0045.01\",\"case\":\"" + name + "\",\"entryPoint\":\"production-central-banking\",\"scope\":\"registered-research-adoption-policy-treasury-lodgement\",\"observed\":[\"registration\",\"adapter\",\"validation\",\"mutation\",\"persistence\",\"transition\",\"outcome\"]}")
+
+@test function bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits()
+	let base = new BankingFixture(false, true)
+	let tech = new BankingFixture(true, false)
+	let institution = new BankingFixture(false, false)
+	let both = new BankingFixture(true, true)
+	base.fee(100, 100)
+	tech.research(false)
+	tech.rpg.technologies.isUnlocked("ai", "central_bank_institution").assertFalse()
+	tech.runtime.policy("ai", "london", false).startsWith("Requires the adopted").assertTrue()
+	tech.fee(100, 100)
+	institution.research(true)
+	institution.rpg.technologies.isUnlocked("player", "central_banking").assertFalse()
+	institution.state().owner.assertEquals("")
+	institution.fee(100, 100)
+	institution.operating()
+	institution.fee(100, 95)
+	both.research(true)
+	let annual = both.military.banking.sites[both.military.banking.index("london")].annualTax
+	both.act("policy london")
+	both.campaign.countries.treasury[0].assertEquals(100000 - civicBill(annual, 100) - civicBill(annual, 50))
+	both.fee(100, 100)
+	both.clock.advanceTo(both.day + 89).assertTrue()
+	both.fee(100, 100)
+	both.clock.advanceTo(both.day + 90).assertTrue()
+	let oldResearchQuote = both.runtime.quote("ai", "london", 10000)
+	both.research(false)
+	both.runtime.commit("ai", oldResearchQuote).startsWith("Banking quote is stale").assertTrue()
+	both.fee(94, 95)
+	let before = both.store().money + both.campaign.countries.treasury[0]
+	let treasury = both.campaign.countries.treasury[0]
+	both.act("lodge london 10000")
+	both.store().money.assertEquals(989811)
+	both.campaign.countries.treasury[0].assertEquals(treasury + 10000)
+	(both.store().money + both.campaign.countries.treasury[0]).assertEquals(before - 189)
+	base.act("lodge london 10000")
+	base.store().money.assertEquals(989800)
+	tech.act("lodge london 10000")
+	tech.store().money.assertEquals(989800)
+	institution.act("lodge london 10000")
+	institution.store().money.assertEquals(989805)
+	both.trade.progress.standing.assertEquals(0)
+	both.commands.dispatch(Player(0), "/banking inspect london").assertTrue()
+	both.resources.output.contains("annual upkeep").assertTrue()
+	both.resources.output.contains("600 bp").assertTrue()
+	bankingReceipt("distinct-benefits")
+
+@test function bankingRejectsMissingInfrastructureFundsUnauthorizedStaleAndReplayQuotes()
+	let f = new BankingFixture(false, true)
+	f.research(true)
+	f.research(false)
+	f.operating()
+	let money = f.store().money
+	let treasury = f.campaign.countries.treasury[0]
+	let q = f.runtime.quote("player", "london", 10001)
+	q.counting.assertEquals(95)
+	q.reconciliation.assertEquals(96)
+	f.runtime.commit("other", q).startsWith("Invalid").assertTrue()
+	f.store().money.assertEquals(money)
+	f.commands.dispatch(Player(1), "/banking lodge london 10000").assertTrue()
+	f.store().money.assertEquals(money)
+	f.military.banking.prerequisite = "missing"
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	f.military.banking.prerequisite = "double_entry_bookkeeping"
+	f.store().id = "missing_warehouse"
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	f.trade.stores[0].id = "warehouse:london"
+	(f.runtime.quote("player", "invented", 100) == null).assertTrue()
+	(f.runtime.quote("player", "london", 0) == null).assertTrue()
+	(f.runtime.quote("player", "london", 2147483647) == null).assertTrue()
+	f.store().money = 1
+	(f.runtime.quote("player", "london", 1) == null).assertTrue()
+	f.store().money = money
+	f.campaign.countries.treasury[0] = 2147483647
+	(f.runtime.quote("player", "london", 1) == null).assertTrue()
+	f.campaign.countries.treasury[0] = treasury
+	f.trade.markets[0].blockaded = true
+	f.runtime.commit("player", q).startsWith("Banking conditions").assertTrue()
+	f.trade.markets[0].blockaded = false
+	let city = f.military.settlements[0]
+	city.underAttack = true
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	city.underAttack = false
+	city.legalOwnerId = "other"
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	city.legalOwnerId = "player"
+	f.military.administrators[0].controllerId = "other"
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	f.military.administrators[0].controllerId = "player"
+	f.campaign.loading = true
+	(f.runtime.quote("player", "london", 100) == null).assertTrue()
+	f.campaign.loading = false
+	f.store().money--
+	f.runtime.commit("player", q).startsWith("Banking quote is stale").assertTrue()
+	f.store().money++
+	f.runtime.commit("player", q).assertEquals("")
+	f.runtime.commit("player", q).startsWith("Banking quote is stale").assertTrue()
+	f.store().money.assertEquals(money - 10001 - 191)
+	let tiny = f.runtime.quote("player", "london", 1)
+	tiny.counting.assertEquals(1)
+	tiny.reconciliation.assertEquals(1)
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.runtime.commit("player", tiny).startsWith("Banking quote is stale").assertTrue()
+	f.campaign.countries.treasury[0] = 0
+	f.act("repeal london")
+	f.runtime.policy("player", "london", false).startsWith("Treasury cannot").assertTrue()
+	f.state().owner.assertEquals("")
+	bankingCost(2147483647, 600).assertEquals(2018634629)
+	bankingReceipt("authority-rounding-revalidation")
+
+@test function bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority()
+	let f = new BankingFixture(false, true)
+	f.research(true)
+	f.research(false)
+	f.operating()
+	let replay = f.runtime.quote("player", "london", 10000)
+	f.act("lodge london 10000")
+	let saved = f.military.snapshot()
+	let record = "|b,london," + f.state().record()
+	saved.startsWith("v19|").assertTrue()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.runtime.commit("player", replay).startsWith("Banking quote is stale").assertTrue()
+	f.military.restore(saved + record).assertFalse()
+	f.military.restore(saved.replace(record, "")).assertFalse()
+	f.military.restore(saved.replace(record, "|b,london,player,1,2,3,0")).assertFalse()
+	f.military.restore(saved.replace(record, "|b,london,other," + I2S(f.state().ready) + "," + I2S(f.state().upkeepThrough) + "," + I2S(f.state().lastDay) + ",2")).assertFalse()
+	f.military.validateSnapshot(saved, f.clock.currentDay - 1).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	let q = f.runtime.quote("player", "london", 10000)
+	f.military.transferSettlement("london", "other")
+	f.state().owner.assertEquals("")
+	f.runtime.commit("player", q).startsWith("Banking conditions").assertTrue()
+	f.effects.rateAt("other", "treasury_counting_cost_reduction", f.clock.currentDay).assertEquals(0)
+	f.military.restore(saved).assertTrue()
+	var legacy = saved.replace("v19|", "v16|")
+	for i = 0 to f.military.banking.count - 1
+		legacy = legacy.replace("|b," + f.military.banking.sites[i].id + "," + f.military.banking.states[i].record(), "")
+	f.military.restore(legacy).assertTrue()
+	f.state().owner.assertEquals("")
+	f.state().serial.assertEquals(0)
+	f.fee(100, 100)
+	// Force a late failure after real banking state and balances have changed.
+	let load = new LoadFixture()
+	let trade = load.extension.trade
+	trade.registerStore(new TradeStore("warehouse:port", 1000, 10000))
+	load.military.banking.register(new BankingSite("port", 10000))
+	load.military.banking.prerequisite = "printing"
+	load.military.banking.transitionDays = 2
+	load.military.banking.enactmentBasisPoints = 100
+	load.military.banking.upkeepBasisPoints = 50
+	load.military.banking.countingBasisPoints = 100
+	load.military.banking.reconciliationBasisPoints = 100
+	load.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	let effects = new BankingResearchEffects(load.rpg.technologies.effects)
+	effects.register(new BankingEffect("policy", "fixture_policy", "treasury_reconciliation_cost_reduction", 500, 0))
+	let node = new RuntimeTechnology("fixture_bank", "Bank", 1450, 1)
+	node.kind = "institution"
+	node.addUnlock(node.id, "policy", "fixture_policy")
+	load.rpg.technologies.register(node).assertTrue()
+	load.rpg.technologies.effects = effects
+	load.rpg.restoreState(load.rpg.captureState() + "|u,england,printing|u,england,fixture_bank").assertTrue()
+	load.rpg.reconcile("england")
+	let runtime = new BankingCampaignRuntime(load.campaign.state, trade, effects)
+	load.campaign.state.bankingRuntime = runtime
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "banking").assertTrue()
+	runtime.policy("england", "port", false).assertEquals("")
+	load.clock.advanceTo(load.clock.currentDay + 2).assertTrue()
+	runtime.lodge("england", "port", 1000).assertEquals("")
+	let before = load.campaign.state.captureAuthoritativeState()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.campaign.state.captureAuthoritativeState().assertEquals(before)
+	load.extension.fail = false
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	load.military.banking.states[0].owner.assertEquals("")
+	load.military.banking.states[0].serial.assertEquals(0)
+	trade.findStore("warehouse:port").money.assertEquals(10000)
+	load.campaign.countries.treasury[0].assertEquals(1000)
+	bankingReceipt("capture-migration-rollback")
+
+@test function bankingAndFreightIndependentV17SavesMigrateWithoutGrantingAbsentState()
+	let f = new BankingFixture(false, true)
+	f.research(true)
+	f.operating()
+	let canal = new CanalWork("canal", "london", "", "timber", 0, 1, 1, 1, 1, 1, 1, 1)
+	canal.freightCapacity = 100
+	f.military.finance.register(canal)
+	let state = f.military.finance.states[0]
+	state.completed = true
+	state.work = canal.constructionDays
+	state.owner = "player"
+	state.lastDay = f.clock.currentDay
+	state.freightDay = f.clock.currentDay
+	state.freightUsed = 17
+	let saved = f.military.snapshot()
+	let freight = "|z,canal," + I2S(state.freightDay) + ",17"
+	let banking17 = saved.replace("v19|", "v17|").replace(freight, "")
+	f.military.restore(banking17).assertTrue()
+	f.state().owner.assertEquals("player")
+	f.military.finance.states[0].completed.assertTrue()
+	f.military.finance.states[0].freightUsed.assertEquals(0)
+	f.military.restore(saved).assertTrue()
+	var logistics17 = saved.replace("v19|", "v17|")
+	for i = 0 to f.military.banking.count - 1
+		logistics17 = logistics17.replace("|b," + f.military.banking.sites[i].id + "," + f.military.banking.states[i].record(), "")
+	f.military.restore(logistics17).assertTrue()
+	f.state().owner.assertEquals("")
+	f.state().serial.assertEquals(0)
+	f.military.finance.states[0].freightUsed.assertEquals(17)
+	f.military.restore(saved).assertTrue()
+	f.military.restore(saved.replace(freight, "")).assertFalse()
+	f.military.restore(banking17.replace("|b,london," + f.state().record(), "")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+
+@test function bankingLongCampaignActiveAbstractUpkeepAndConservation()
+	let active = new BankingFixture(false, true)
+	let unloaded = new BankingFixture(true, false)
+	active.research(true)
+	active.research(false)
+	unloaded.research(true)
+	unloaded.research(false)
+	active.operating()
+	unloaded.operating()
+	let initial = active.store().money + active.campaign.countries.treasury[0]
+	let annual = civicBill(active.military.banking.sites[active.military.banking.index("london")].annualTax, 50)
+	for year = 1 to 25
+		active.clock.advanceTo(active.day + 90 + year * 365).assertTrue()
+		unloaded.clock.advanceTo(unloaded.day + 90 + year * 365).assertTrue()
+		active.act("lodge london 10000")
+		unloaded.act("lodge london 10000")
+		active.runtime.advance(active.clock.currentDay)
+		active.campaign.countries.treasury[0].assertEquals(unloaded.campaign.countries.treasury[0])
+		active.store().money.assertEquals(unloaded.store().money)
+		(active.store().money + active.campaign.countries.treasury[0]).assertEquals(initial - year * (189 + annual))
+	let saved = active.military.snapshot()
+	active.military.restore(saved).assertTrue()
+	active.military.activateRegion("africa")
+	active.campaign.countries.treasury[0] = 0
+	active.clock.advanceTo(active.state().upkeepThrough).assertTrue()
+	active.state().owner.assertEquals("")
+	active.campaign.countries.treasury[0] = 10000
+	active.runtime.advance(active.clock.currentDay)
+	active.state().owner.assertEquals("")
+	active.fee(100, 100)
+	bankingReceipt("long-campaign")
+
+@test function bankingResearchProvenanceAndEraReconstructionNeverGrantsPolicy()
+	let f = new BankingFixture(false, false)
+	f.research(false)
+	f.research(true)
+	let duplicate = new RuntimeTechnology("duplicate_banking", "Independent source", 1450, 1)
+	duplicate.addUnlock(duplicate.id, "modifier", "progression_central_banking")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.rpg.restoreState(f.rpg.captureState() + "|u,player,duplicate_banking").assertTrue()
+	let saved = f.rpg.captureState()
+	for repeat = 1 to 3
+		f.rpg.restoreState(saved).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.effects.rateAt("player", "treasury_counting_cost_reduction", f.day).assertEquals(600)
+		f.effects.rateAt("other", "treasury_counting_cost_reduction", f.day).assertEquals(0)
+		f.state().owner.assertEquals("")
+		f.fee(100, 100)
+	f.rpg.restoreState(saved + "|u,player,missing").assertFalse()
+	f.effects.rateAt("player", "treasury_counting_cost_reduction", f.day).assertEquals(600)
+	for i = 0 to f.effects.definitionCount - 1
+		let d = f.effects.definitions[i] castTo BankingEffect
+		f.effects.rateAt("player", d.metric, d.firstDay - 1).assertEquals(0)
+		f.effects.rateAt("player", d.metric, d.firstDay).assertEquals(d.basisPoints)
+	f.effects.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	f.effects.rateAt("player", "treasury_counting_cost_reduction", f.day).assertEquals(0)
+	f.rpg.technologies.reconstructAll()
+	f.effects.rateAt("player", "treasury_counting_cost_reduction", f.day).assertEquals(600)
+	f.state().owner.assertEquals("")
+	bankingReceipt("provenance-era")
+
+@test function municipalAndBankingV19RecordsRoundTripAndBothV18LayoutsMigrateAtomically()
+	let f = new BankingFixture(false, true)
+	f.research(true)
+	f.operating()
+	f.military.civic.register(new CivicDistrict("london", "province", 10000, true, f.day, 20, f.day, 365, 4, "cloth", 4, 1000), f.clock.currentDay)
+	f.military.civic.configureAdministration("london", 20)
+	let municipal = f.military.civic.states[0]
+	municipal.municipalOwner = "player"
+	municipal.municipalReady = f.clock.currentDay
+	municipal.municipalThrough = f.clock.currentDay + 365
+	let saved = f.military.snapshot()
+	let charter = "|u,london,player," + I2S(municipal.municipalReady) + "," + I2S(municipal.municipalThrough) + ",20"
+	let bank = "|b,london," + f.state().record()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.state().owner.assertEquals("player")
+	f.military.civic.states[0].municipalOwner.assertEquals("player")
+	// Missing, duplicate and wrongly typed current records reject atomically.
+	f.military.restore(saved.replace(charter, "")).assertFalse()
+	f.military.restore(saved.replace(bank, "")).assertFalse()
+	f.military.restore(saved + charter).assertFalse()
+	f.military.restore(saved.replace(charter, charter.replace("|u,", "|b,"))).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Main's v18 bank record has seven fields and no municipal record.
+	let banking18 = saved.replace("v19|", "v18|").replace(charter, "")
+	f.military.restore(banking18).assertTrue()
+	f.state().owner.assertEquals("player")
+	f.military.civic.states[0].municipalOwner.assertEquals("")
+	f.military.civic.states[0].urbanization.assertEquals(20)
+	f.military.restore(saved).assertTrue()
+	// The independent municipal v18 branch used six-field b records.
+	var municipal18 = saved.replace("v19|", "v18|").replace(charter, charter.replace("|u,", "|b,"))
+	for i = 0 to f.military.banking.count - 1
+		municipal18 = municipal18.replace("|b," + f.military.banking.sites[i].id + "," + f.military.banking.states[i].record(), "")
+	f.military.restore(municipal18).assertTrue()
+	f.state().owner.assertEquals("")
+	f.state().serial.assertEquals(0)
+	f.military.civic.states[0].municipalOwner.assertEquals("player")
+	f.military.civic.states[0].municipalThrough.assertEquals(f.clock.currentDay + 365)
+	f.military.restore(saved).assertTrue()
+	f.military.restore(municipal18 + "|b,london,player,1,2,3,0").assertFalse()
+	f.military.snapshot().assertEquals(saved)
