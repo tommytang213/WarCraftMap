@@ -921,7 +921,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     if naval_builder:
         bound_research |= {('unit', e['contentId']) for e in naval_payload['catalog'].get('recruitment', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
-                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency'}}
+                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency', 'remote_survey_dispatch_time_reduction'}}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
@@ -1065,6 +1065,15 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
             'new VoyageContract(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line]
         if source.count(expected) != 1 or calls(source) != calls(expected):
             raise _fail("voyage bindings", "executable catalogue differs from scenario")
+
+    if not selector:
+        from dispatch_contract import verify_registration as verify_dispatch
+        try:
+            verify_dispatch(config.project, json.loads(config.scenario_file.read_text()),
+                            (generated / GENERATED_WURST).read_text(),
+                            json.loads((generated / GENERATED_DATA).read_text()).get('civicGovernance', {}))
+        except ValueError as error:
+            raise _fail('dispatch bindings', str(error)) from error
 
 def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,

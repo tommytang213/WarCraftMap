@@ -118,8 +118,17 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('policy', 'progression_central_bank_institution'), ('policy', 'commercial_courts'),
                 ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
+                ('modifier', 'progression_ciphered_dispatches'),
                 ('policy', 'progression_chartered_municipalities')}])
         self.assertNotIn('effectMagnitude', self.source)
+
+    def test_dispatch_registration_keeps_scenario_network_and_bounded_consumer(self):
+        from dispatch_contract import verify_registration
+        verify_registration(PROJECT, self.world, self.source, self.runtime['civicGovernance'])
+        self.assertIn('ledger.addDispatchLink("lisbon", "goa")', self.source)
+        self.assertIn('"remote_survey_dispatch_time_reduction", 1000)', self.source)
+        self.assertFalse(any(row['nodeId'] == 'ciphered_dispatches'
+                             for row in self.runtime['researchIntegrationBlockers']))
 
     def test_logistics_depots_use_materialized_service_positions_and_land_connectivity(self):
         import re

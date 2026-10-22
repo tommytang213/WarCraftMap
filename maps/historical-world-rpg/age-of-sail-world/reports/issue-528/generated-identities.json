@@ -1,0 +1,138 @@
+{
+  "civicEffects": [
+    {
+      "activation": "policy_choice",
+      "bonusBasisPoints": 500,
+      "designStatus": "approved_unimplemented",
+      "family": "civic",
+      "metric": "civic_reform_diffusion",
+      "nodeId": "abolitionist_public_sphere",
+      "recipient": "controlled_civic_centers",
+      "rules": "Only applies where reform discussion and lawful civic institutions exist; no automatic emancipation, no blanket global diplomacy modifier",
+      "unlock": {
+        "contentId": "progression_abolitionist_public_sphere",
+        "kind": "policy"
+      }
+    },
+    {
+      "activation": "active_settlement_action",
+      "bonusBasisPoints": 2500,
+      "designStatus": "approved_unimplemented",
+      "family": "health",
+      "metric": "epidemic_losses_avoided",
+      "nodeId": "anatomy_and_medicine",
+      "recipient": "controlled_settlement_during_outbreak",
+      "rules": "90-day quarantine/medical response; reduces disease losses only; local trade throughput -10%; consumes existing medical resources and treasury; cooldown 90 days",
+      "unlock": {
+        "contentId": "epidemic_control",
+        "kind": "ability"
+      }
+    },
+    {
+      "activation": "survey_province",
+      "bonusBasisPoints": 500,
+      "designStatus": "approved_unimplemented",
+      "family": "administration",
+      "metric": "land_tax_collection_efficiency",
+      "nodeId": "cadastral_survey",
+      "recipient": "controlled_surveyed_provinces",
+      "rules": "Must complete paid local survey before benefit, no instant census of unknown territory; collected revenue still limited by taxable economic capacity",
+      "unlock": {
+        "contentId": "progression_cadastral_survey",
+        "kind": "modifier"
+      }
+    },
+    {
+      "bonusBasisPoints": 500,
+      "metric": "archive_tax_collection_efficiency",
+      "nodeId": "chancery_archives",
+      "unlock": {
+        "contentId": "progression_chancery_archives",
+        "kind": "modifier"
+      }
+    },
+    {
+      "bonusBasisPoints": 400,
+      "metric": "municipal_tax_collection_efficiency",
+      "nodeId": "chartered_municipalities",
+      "unlock": {
+        "contentId": "progression_chartered_municipalities",
+        "kind": "policy"
+      }
+    },
+    {
+      "bonusBasisPoints": 1000,
+      "metric": "remote_survey_dispatch_time_reduction",
+      "nodeId": "ciphered_dispatches",
+      "unlock": {
+        "contentId": "progression_ciphered_dispatches",
+        "kind": "modifier"
+      }
+    }
+  ],
+  "dispatchContract": {
+    "costs": "Original 1% survey bill and normal research curve unchanged; dispatch completion additionally costs ceil(annualTax * 25 / 10000), minimum one minor currency unit.",
+    "effect": {
+      "bonusBasisPoints": 1000,
+      "metric": "remote_survey_dispatch_time_reduction",
+      "nodeId": "ciphered_dispatches",
+      "unlock": {
+        "contentId": "progression_ciphered_dispatches",
+        "kind": "modifier"
+      }
+    },
+    "nodeId": "ciphered_dispatches",
+    "operatingBasisPoints": 25,
+    "operation": "Paid cadastral survey order and authoritative return; early completion requires current remote office, lawful endpoint control, stocked unblocked markets, both research entitlements and a separately payable dispatch bill.",
+    "relayLinks": [
+      {
+        "originId": "lisbon",
+        "recipientId": "goa"
+      },
+      {
+        "originId": "goa",
+        "recipientId": "lisbon"
+      },
+      {
+        "originId": "constantinople",
+        "recipientId": "cairo"
+      },
+      {
+        "originId": "cairo",
+        "recipientId": "constantinople"
+      },
+      {
+        "originId": "goa",
+        "recipientId": "malacca"
+      },
+      {
+        "originId": "malacca",
+        "recipientId": "goa"
+      }
+    ],
+    "relayNodeId": "courier_relays",
+    "relayUnlock": {
+      "contentId": "progression_courier_relays",
+      "kind": "modifier"
+    },
+    "saveReconstruction": "No new saved state: baseline surveyReady remains the paid normal deadline; surveyed records the single completion. Resolve current eligibility and pay once at early completion. Definitions and named research sources reconstruct from scenario data.",
+    "schemaVersion": 1
+  },
+  "generatedHashes": {
+    "ScenarioData.wurst": "412978554804372d4d344db1adc53019eaa4b3288f45ce1d4258948ee187ca2a",
+    "provenance.json": "98963cd288889b2577eb9e4017d7066e1b5054177e26f078420f4790af95bf1e",
+    "scenario-runtime.json": "f4e4ba5911e14b66a54d373e082f27f8b8b888782de804055bb6c4164e207e8b"
+  },
+  "scope": "Generated release assembly identity inspection; shipping archive inspection belongs to controller validation.",
+  "sourceIdentity": {
+    "sourceRevision": "70953dbb565c1f2ba9bc809e53231fcd009f0d3d",
+    "sourceTreeSha256": "3fef5b868cfb95d26591cd3ebf9d0df6ea5a776ed862e36cbf224590cfe3d8f0"
+  },
+  "unlocks": [
+    {
+      "contentId": "progression_ciphered_dispatches",
+      "kind": "modifier",
+      "nodeId": "ciphered_dispatches"
+    }
+  ]
+}
