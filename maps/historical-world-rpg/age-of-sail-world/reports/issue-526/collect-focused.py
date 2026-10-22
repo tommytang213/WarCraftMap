@@ -16,10 +16,11 @@ raw = Path(sys.argv[1]).read_bytes()
 expected = json.loads((assembly / 'expected.json').read_text())
 tests, errors = parse_results(raw.decode(), expected)
 assert not errors, errors
-assert len(tests) == 61 and all(r['status'] == 'pass' for r in tests)
+assert len(tests) == len(expected) and all(r['status'] == 'pass' for r in tests)
+count = len(tests)
 identity = source_identity(project, source_revision(project))
 result = {'format': 'focused_wurst_execution_not_release_evidence',
-          'scope': '61 selected real interpreter cases. Full repository validation and shipping archive inspection remain controller work.',
+          'scope': f'{count} selected real interpreter cases. Full repository validation and shipping archive inspection remain controller work.',
           'sourceIdentity': identity,
           'compiler': {'image': 'frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a',
                        'jarSha256': '1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145',
@@ -41,4 +42,4 @@ inspection = {'scope': 'Generated release assembly identity inspection; shipping
               'generatedHashes': {name: hashlib.sha256((assembly / 'generated' / name).read_bytes()).hexdigest()
                                   for name in ('ScenarioData.wurst', 'scenario-runtime.json', 'provenance.json')}}
 (root / 'generated-identities.json').write_text(json.dumps(inspection, indent=2, sort_keys=True) + '\n')
-print('61/61 real focused Wurst tests passed; both exact generated identities inspected.')
+print(f'{count}/{count} real focused Wurst tests passed; both exact generated identities inspected.')

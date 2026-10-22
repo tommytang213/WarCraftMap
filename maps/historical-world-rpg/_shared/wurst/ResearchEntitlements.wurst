@@ -129,3 +129,7 @@ public class UnboundResearchEffects implements TechnologyEffectPort
 /** Local earned practice adoption, used by the existing research cost model. */
 public interface ResearchAdoptionPort
 	function adoption(string controllerId, string nodeId) returns int
+
+/** Current local adoption conditions; completion still checks every prerequisite. */
+public interface ResearchEligibilityPort
+	function eligibleResearch(string controllerId, string nodeId) returns boolean

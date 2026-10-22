@@ -920,6 +920,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
     if naval_builder:
         bound_research |= {('unit', e['contentId']) for e in naval_payload['catalog'].get('recruitment', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
+                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency'}}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration

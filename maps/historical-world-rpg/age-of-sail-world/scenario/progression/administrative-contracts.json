@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "archiveNode": "chancery_archives",
+  "municipalNode": "chartered_municipalities",
+  "rules": {
+    "archiveUpkeepBasisPoints": 25,
+    "minimumAdministration": 40
+  },
+  "urbanization": {
+    "urbanRoles": [
+      "capital",
+      "trade_center",
+      "trade_hub",
+      "caravan_center"
+    ],
+    "urbanPercent": 20,
+    "otherPercent": 5
+  },
+  "effects": [
+    {
+      "nodeId": "chancery_archives",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_chancery_archives"
+      },
+      "metric": "archive_tax_collection_efficiency",
+      "bonusBasisPoints": 500
+    },
+    {
+      "nodeId": "chartered_municipalities",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "progression_chartered_municipalities"
+      },
+      "metric": "municipal_tax_collection_efficiency",
+      "bonusBasisPoints": 400
+    }
+  ],
+  "catalogSource": "scenario/progression/catalog.json"
+}

@@ -338,6 +338,30 @@
       "path": "wurst/IndustryCampaignRuntime.wurst",
       "signature": "override function produce(IndustrySite d, int amount)"
     },
+    "administrative_adoption": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function eligibleResearch(string controllerId, string nodeId) returns boolean"
+    },
+    "administrative_skill": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function administration(string id) returns int"
+    },
+    "administrative_pay": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function pay(string controllerId, string id, int money, string good, int units) returns boolean"
+    },
+    "administrative_collect": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function collect(string controllerId, string id, int maximum) returns int"
+    },
+    "administrative_action": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function action(string controllerId, string id, string action, int day, CivicResearchEffects research, CivicEconomyPort economy) returns string"
+    },
+    "administrative_advance": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function advance(int day, CivicResearchEffects research, CivicEconomyPort economy)"
+    },
     "banking_registration": {
       "path": "wurst/BankingCampaignRuntime.wurst",
       "signature": "public function registerBankingCommands(CommandRegistry commands, BankingCampaignRuntime runtime) returns string"
@@ -554,6 +578,16 @@
       "industry_pay",
       "industry_labor",
       "industry_output"
+    ],
+    "administrative_contracts": [
+      "administrative_adoption",
+      "administrative_skill",
+      "administrative_pay",
+      "administrative_collect",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance"
     ],
     "central_banking": [
       "banking_registration",

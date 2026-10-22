@@ -260,6 +260,13 @@ class CharteredFixture
 	f.dock()
 	f.action("build", " armed_indiaman")
 	f.clock.advanceTo(f.day + 100).assertTrue()
+	// Integrate paid municipal authority with courts and a pending hull.
+	f.military.civic.register(new CivicDistrict("london", "province", 10000, true, f.day, 20, f.day, 365, 4, "cloth", 4, 1000), f.clock.currentDay)
+	f.military.civic.configureAdministration("london", 20)
+	let municipal = f.military.civic.states[0]
+	municipal.municipalOwner = "player"
+	municipal.municipalReady = f.clock.currentDay
+	municipal.municipalThrough = f.clock.currentDay + 365
 	let saved = f.military.snapshot()
 	f.military.restore(saved).assertTrue()
 	f.military.snapshot().assertEquals(saved)
@@ -267,7 +274,27 @@ class CharteredFixture
 	f.military.restore(saved.replace("|o,london,", "|o,unknown,")).assertFalse()
 	f.military.validateSnapshot(saved, f.day + 99).assertFalse()
 	f.military.snapshot().assertEquals(saved)
-	var legacy = saved.replace("v19|", "v18|")
+	let charter = "|u,london,player," + I2S(f.clock.currentDay) + "," + I2S(f.clock.currentDay + 365) + ",20"
+	let court = "|o,london," + f.military.courts.states[0].record()
+	f.military.restore(saved.replace(court, "")).assertFalse()
+	f.military.restore(saved.replace(charter, "")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Main v19 preserves municipalities and construction; absent courts migrate inactive.
+	var main19 = saved.replace("v20|", "v19|")
+	for i = 0 to f.military.courts.count - 1
+		main19 = main19.replace("|o," + f.military.courts.sites[i].id + "," + f.military.courts.states[i].record(), "")
+	f.military.restore(main19).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("")
+	f.military.civic.states[0].municipalOwner.assertEquals("player")
+	f.military.naval.states[0].job.assertEquals("build")
+	f.military.restore(saved).assertTrue()
+	// The independent courts v19 branch lacked municipal u records.
+	f.military.restore(saved.replace("v20|", "v19|").replace(charter, "")).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("player")
+	f.military.civic.states[0].municipalOwner.assertEquals("")
+	f.military.naval.states[0].job.assertEquals("build")
+	f.military.restore(saved).assertTrue()
+	var legacy = saved.replace("v20|", "v18|")
 	for i = 0 to f.military.courts.count - 1
 		legacy = legacy.replace("|o," + f.military.courts.sites[i].id + "," + f.military.courts.states[i].record(), "")
 	f.military.restore(legacy).assertTrue()

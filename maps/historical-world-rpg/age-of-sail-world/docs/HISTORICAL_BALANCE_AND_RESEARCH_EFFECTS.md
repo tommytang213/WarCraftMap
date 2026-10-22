@@ -552,3 +552,71 @@ industry v16 saves initialize absent freight counters empty, and logistics v16
 saves initialize absent industry unfunded. Partially present ledgers still reject.
 V14 finance saves may also lack naval state; missing domains never grant completed
 infrastructure or free production.
+
+## Chancery Archives and municipal government (#525)
+
+`scenario/progression/administrative-contracts.json` owns these routine delegated
+balance rules. Archives operate first: completed Chancery Archives research
+passively adds `floor(500 * current administrator skill / 100)` basis points to
+local tax collection efficiency. A serving administrator needs skill at least 40,
+positive capacity and this exact settlement's jurisdiction. At the annual tax
+boundary the archive operation costs `ceil(normal annual tax * 25 / 10000)`,
+minimum one minor currency unit; no enactment or construction bill is added.
+Unfunded archives contribute zero for that collection. Research never supplies
+an administrator, records, money or sovereignty.
+
+Chartered Municipal Government retains the catalogue's Archives prerequisite and
+11% minimum urbanization. Its registered research action now additionally needs
+at least one currently lawful, qualified local jurisdiction meeting that threshold.
+Adoption exposes `/civic municipal DISTRICT`; it enacts nothing automatically.
+The elected local policy costs 1% of normal annual tax, rounded up, requires a
+90-day transition, and pays 0.5% annual upkeep in advance. It adds 400 basis points
+to that district's collection efficiency while qualified, urbanized and funded.
+`/civic municipal-repeal DISTRICT` ends it without a refund. Repeated enactment
+rejects while pending or active; repeal and re-enactment restart the paid
+transition and grant no loyalty, receipts or permanent modifier.
+
+The district's initial urbanization is scenario accounting data: 20% for authored
+capital, trade center, trade hub or caravan center roles, and 5% elsewhere. These
+are conservative gameplay shares of the named local tax district, not claims
+about national historical population. The current value persists independently of
+buildings and can support later development systems. There is no urbanization
+increase from research, appointment or enactment. The authoritative catalogue
+continues to supply the adoption threshold; the compiler rejects a lost Archives
+prerequisite. Abstract communities use the same roles, jurisdiction and ledger.
+
+`/civic inspect DISTRICT` shows local urbanization, skill qualification, operation
+bills, enactment costs, transition, upkeep and collection rates. Lawful operation
+requires matching current controller and legal owner, no hostile occupation or
+attack, and a serving administrator of that controller. Replacement uses the new
+holder's skill immediately; absence of a Warcraft representation has no effect.
+Capture cancels municipal authority without a refund or entitlement transfer;
+urbanization survives. Recapture requires a new paid choice. Loss of qualification
+or funding suspends benefit; no missed output is replayed on recovery.
+
+Archive and municipal rates add once by typed content identity to the independent
+survey collection contribution from #512, with one final integer rounding and a
+cap at normal taxable capacity. Existing market liquidity supplies every receipt;
+no generic gold grant exists. For annual capacity 10,001 and ordinary collection
+9,000 basis points, the control collects 9,000, skill-50 archives collect 9,225
+and archives plus a funded charter collect 9,585. Archive operation costs 26;
+municipal enactment costs 101 and upkeep 51. Unavailable liquidity further limits
+all three. Appointment, research and charter activation preserve all legal and
+political control identities.
+
+Military snapshot **v19** adds a required `u` record per configured civic district
+for municipal owner, transition, prepaid-through date and current urbanization.
+The existing `g` civic records and conflict membership `m` records retain their
+meaning. V1–v18 saves initialize absent charters inactive and urbanization from
+the scenario; existing paid surveys, policies and other domains survive. Partial,
+duplicate, foreign-owner, malformed and future-dated current ledgers reject in
+staged parsing. Campaign rollback restores the entire ledger with treasury,
+markets and research. The two release findings only close with fresh same-source
+pinned production execution, including comparative outcomes and late rollback;
+controller integration must regenerate all three audits on the new main revision.
+
+The integrated v19 codec preserves main’s banking `b` and freight `z` records.
+Independent v18 municipal saves used six-field `b` records; migration recognizes
+their arity and preserves those charters while initializing absent banking inactive.
+V18 banking saves retain bank policies and initialize absent charters inactive.
+V19 requires both complete ledgers; malformed or partial legacy ledgers reject.

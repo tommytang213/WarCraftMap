@@ -57,9 +57,11 @@ finished dock and existing hulls, and requires the new controller's own permissi
 for later builds. Completed hull maintenance follows the roster after capture.
 Active and abstract simulation use the same ledgers and calendar advance.
 
-Military snapshots advance from v18 to **v19**, adding mandatory `o` records per
+Military snapshots advance to **v20**, adding mandatory `o` records per
 configured court: site, policy owner, ready day, paid-through day, last day and
-serial. Versions 1–18 without court records migrate inactive without importing
+serial. Main v19 saves retain municipal `u` records; independent courts v19
+saves retain their court ledger and migrate missing municipalities inactive.
+Versions 1–19 without court records migrate inactive without importing
 live policy or charging money. Partially present ledgers reject. Parsing is
 detached and validates canonical fields, controllers, complete site coverage and
 candidate clock before replacement; existing campaign checkpoints include courts,

@@ -1,6 +1,6 @@
 """Prepare a focused assembly, never a full-suite release evidence claim.
 
-Usage: python3 reports/issue-526/prepare-focused.py PATH_TO_WURST_STDLIB
+Usage: python3 reports/issue-526/prepare-focused.py PATH_TO_WURST_STDLIB [--integration-repair]
 Run from the Age of Sail project. The library argument is cached source only;
 no predecessor execution report or compiled artifact is consumed.
 """
@@ -25,7 +25,12 @@ verify_generated(config, root / 'generated')
 compile_root = _assemble(config, root, root / 'generated')
 keep = {'CharteredCompaniesTests.wurst', 'NavalServicesTests.wurst', 'BankingOperationsTests.wurst', 'TradeFinanceTests.wurst', 'PlayableTradeTests.wurst', 'MixedCargoTests.wurst',
         'ResearchCostTests.wurst', 'FrameworkConformanceTests.wurst'}
+repair = '--integration-repair' in sys.argv[2:]
+if repair:
+    keep |= {'CivicGovernanceTests.wurst', 'ScienceExplorationTests.wurst', 'CampaignLoadTransactionTests.wurst'}
 for path in (compile_root / 'wurst').glob('*.wurst'):
+    if repair and path.name == 'CampaignLoadTransactionTests.wurst':
+        path.write_text(select_tests(path.read_text(), {'lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically'}))
     if path.name not in keep:
         path.write_text(select_tests(path.read_text(), set()))
 instrument_tree(compile_root, load_contract(project))
