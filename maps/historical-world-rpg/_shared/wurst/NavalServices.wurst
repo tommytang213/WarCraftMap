@@ -13,6 +13,9 @@ public function navalBool(boolean value) returns string
 public class NavalResearchEffects extends CivicResearchEffects
 	construct(TechnologyEffectPort upstream)
 		super(upstream)
+	function entitled(string owner, string contentId) returns boolean
+		let layer = get(owner)
+		return layer != null and layer.has("unit", contentId)
 	function earned(string owner, string metric) returns boolean
 		let layer = get(owner)
 		if layer != null
@@ -67,6 +70,8 @@ public class NavalProfile
 		this.carronadeMount = carronadeMount
 
 public class NavalYard
+	string entitlement = ""
+	boolean boardRequired = true
 	string id
 	string mapId
 	real x
@@ -121,6 +126,19 @@ public class NavalLedger
 	NavalYard array[64] yards
 	NavalYardState array[64] states
 	int count = 0
+	string defaultEntitlement = ""
+	NavalYard array[64] blueprints
+	int blueprintCount = 0
+	function addBlueprint(NavalYard blueprint)
+		blueprints[blueprintCount] = blueprint
+		blueprintCount++
+	function blueprint(string id, NavalYard yard) returns NavalYard
+		if id == ""
+			return yard
+		for i = 0 to blueprintCount - 1
+			if blueprints[i].profileId == id
+				return blueprints[i]
+		return null
 	NavalProfile profiles = null
 	// Scenario-owned calibration. No named technology, country or hull here.
 	string woodGood = ""
@@ -154,6 +172,8 @@ public class NavalLedger
 	int weatherDays = 0
 	real closeRange = 0.
 	function register(NavalYard yard)
+		if yard.entitlement == ""
+			yard.entitlement = defaultEntitlement
 		yards[count] = yard
 		states[count] = new NavalYardState()
 		count++
@@ -181,7 +201,7 @@ public class NavalLedger
 		return -1
 	function busy(string id) returns boolean
 		for i = 0 to count - 1
-			if states[i].job != "" and states[i].target == id
+			if states[i].job != "" and states[i].job != "build" and states[i].target == id
 				return true
 		return false
 	function controlChanged(string id)
@@ -189,12 +209,15 @@ public class NavalLedger
 			if yards[i].id == id
 				states[i].boardOwner = ""
 				states[i].stop()
-			else if states[i].target == id
+			else if states[i].job != "build" and states[i].target == id
 				states[i].stop()
 	/** Definitions are borrowed by detached parsers; only mutable states owned. */
 	function fork() returns NavalLedger
 		let copy = new NavalLedger()
+		copy.defaultEntitlement = defaultEntitlement
 		copy.profiles = profiles
+		for i = 0 to blueprintCount - 1
+			copy.addBlueprint(blueprints[i])
 		copy.woodGood = woodGood
 		copy.ironGood = ironGood
 		copy.supplyGood = supplyGood

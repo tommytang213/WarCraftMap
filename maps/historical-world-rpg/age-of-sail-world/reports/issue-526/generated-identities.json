@@ -1,0 +1,119 @@
+{
+  "courts": {
+    "bankPrerequisite": "double_entry_bookkeeping",
+    "designSource": "scenario/progression/commercial-courts-effects.json",
+    "effects": [
+      {
+        "bonusBasisPoints": 500,
+        "metric": "commercial_transaction_fee_reduction",
+        "nodeId": "chartered_companies",
+        "unlock": {
+          "contentId": "commercial_courts",
+          "kind": "policy"
+        }
+      }
+    ],
+    "rules": {
+      "countingBasisPoints": 100,
+      "enactmentBasisPoints": 100,
+      "reconciliationBasisPoints": 100,
+      "transitionDays": 90,
+      "upkeepBasisPoints": 50
+    },
+    "schemaVersion": 1,
+    "siteIds": [
+      "london",
+      "venice",
+      "lisbon",
+      "cairo"
+    ],
+    "sites": [
+      {
+        "annualTax": 3341,
+        "id": "london"
+      },
+      {
+        "annualTax": 3341,
+        "id": "venice"
+      },
+      {
+        "annualTax": 3341,
+        "id": "lisbon"
+      },
+      {
+        "annualTax": 2673,
+        "id": "cairo"
+      }
+    ],
+    "taxSource": "scenario/progression/civic-governance.json"
+  },
+  "generatedHashes": {
+    "ScenarioData.wurst": "1717049026ec612e4a39366ff4d4e655000cea1dc829818980c6beac077561e0",
+    "provenance.json": "6a7523509665774dd44ed37e6ec3330bc3ff08b5d89f9fbd7760a92384605784",
+    "scenario-runtime.json": "8c496ca9f03999f33f8eee80c8c6716504932bea9b9704c916e64ac82b769a47"
+  },
+  "merchantRoster": [
+    {
+      "abilityIds": [
+        "cargo_capacity",
+        "trade_convoy",
+        "long_range_cruise"
+      ],
+      "armorIds": [
+        "timber_hull"
+      ],
+      "availability": {
+        "earlyAccessTechnologyIds": [
+          "galleon_design"
+        ],
+        "earlyAccessYear": 1570,
+        "historicalEndYear": 1820,
+        "historicalStartYear": 1600
+      },
+      "category": "merchant",
+      "cost": 850,
+      "countryId": null,
+      "formationIds": [],
+      "id": "armed_indiaman",
+      "institutionIds": [
+        "public_credit"
+      ],
+      "militaryTraditionIds": [
+        "sailing_naval_practice"
+      ],
+      "movementClassId": "ocean_sail",
+      "name": "Armed Indiaman",
+      "replacementIds": [],
+      "runtimeTemplateId": "small_ship_runtime",
+      "shipId": "indiaman_hull",
+      "strategicStrength": 500,
+      "supply": 55,
+      "technologyIds": [
+        "joint_stock_enterprise",
+        "galleon_design"
+      ],
+      "upgradeToIds": [],
+      "upkeep": 42,
+      "weaponIds": [
+        "heavy_broadside"
+      ]
+    }
+  ],
+  "scope": "Generated release assembly identity inspection; shipping archive inspection belongs to controller validation.",
+  "sourceIdentity": {
+    "sourceRevision": "e2fc68f20c7a628e5e5272ab85080f695daf2ca8",
+    "sourceTreeSha256": "273e4e54f4f70305d98033c2ed93a9d3ed8db4d8d2ba856c6c745adecdf3b2e7"
+  },
+  "unlocks": [
+    {
+      "contentId": "armed_indiaman",
+      "kind": "unit",
+      "nodeId": "chartered_companies"
+    },
+    {
+      "contentId": "commercial_courts",
+      "kind": "policy",
+      "nodeId": "chartered_companies"
+    }
+  ]
+}

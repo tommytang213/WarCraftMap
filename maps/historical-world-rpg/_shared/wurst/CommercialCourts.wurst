@@ -1,0 +1,87 @@
+package CommercialCourts
+
+import BankingOperations
+import BankingCampaignRuntime
+import CivicGovernance
+import initlater PlayableCampaignRuntime
+import initlater PlayableTrade
+import CommandRouter
+
+/** Lawful formal warehouse transactions only. Transfer of goods or principal
+ * never receives a bonus; the positive processing bill is a money sink. */
+public class CommercialCourtsRuntime
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	BankingResearchEffects effects
+	CourtsPort policyPort
+	CampaignBankingPort port
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, BankingResearchEffects effects)
+		this.campaign = campaign
+		this.trade = trade
+		this.effects = effects
+		port = new CampaignBankingPort(campaign, trade)
+		policyPort = new CourtsPort(this)
+	function ledger() returns BankingLedger
+		return campaign.militarySettlements.courts
+	function eligible(string owner, string id) returns boolean
+		let l = ledger()
+		let store = trade.findStore("warehouse:" + id)
+		return not campaign.loading and not campaign.startupLocked and not campaign.transitionOpen and owner != "" and l.index(id) >= 0 and port.economy.controller(id) == owner and port.economy.lawful(id) and port.economy.accessible(id) and campaign.rpg.technologies.isUnlocked(owner, l.prerequisite) and store != null and store.warehouseService and store.accessKind == "warehouse" and store.accessId == id
+	function advance(int day)
+		// The port delegates its eligibility to the courts ledger below.
+		ledger().advance(day, effects, policyPort)
+	function policy(string owner, string id, boolean repeal) returns string
+		if not campaign.isSaveSafe()
+			return "Courts unavailable during restoration or transfer."
+		return ledger().policy(owner, id, repeal, campaign.clock.currentDay, effects, policyPort)
+	function qualifies(string owner, RuntimeMarket market, TradeStore store) returns boolean
+		return trade.findMarket(market.id, market.goodName) == market and eligible(owner, market.id) and market.discovered and not market.blockaded and not market.occupiedByHostile and store == trade.findStore("warehouse:" + market.id) and store.warehouseService and store.accessKind == "warehouse" and store.accessId == market.id
+	function fee(string owner, RuntimeMarket market, TradeStore store, int principal) returns int
+		if principal <= 0 or not qualifies(owner, market, store)
+			return 0
+		let l = ledger()
+		let base = civicBill(principal, l.countingBasisPoints)
+		if l.operating(l.index(market.id), owner, campaign.clock.currentDay, effects, policyPort)
+			return bankingCost(base, effects.rateAt(owner, l.availabilityMetric, campaign.clock.currentDay))
+		return base
+	function overview(string owner, string id) returns string
+		let l = ledger()
+		let i = l.index(id)
+		if i < 0
+			return "Courts: choose an authored commercial bank/market with warehouse service."
+		let s = l.states[i]
+		return "Commercial courts at " + id + ": explicit policy; enactment " + I2S(civicBill(l.sites[i].annualTax, l.enactmentBasisPoints)) + "; annual upkeep " + I2S(civicBill(l.sites[i].annualTax, l.upkeepBasisPoints)) + " treasury minor units prepaid. Transition " + I2S(l.transitionDays) + " days. Ready " + I2S(s.ready) + "; funded through " + I2S(s.upkeepThrough) + ". Requires the earned policy entitlement, bookkeeping, lawful administration and accessible commerce. Formal local warehouse purchases/sales pay a separate " + I2S(l.countingBasisPoints) + " bp processing bill, rounded up. Operating courts reduce that bill " + I2S(effects.rateAt(owner, l.availabilityMetric, campaign.clock.currentDay)) + " bp, savings rounded down, minimum bill 1. No bonus to goods, principal, transfers or ineligible commerce. Capture, entitlement loss or unfunded renewal ends policy without refund. /courts <inspect|policy|repeal> MARKET."
+
+class CourtsPort implements BankingPort
+	CommercialCourtsRuntime runtime
+	construct(CommercialCourtsRuntime runtime)
+		this.runtime = runtime
+	override function eligible(string owner, string id) returns boolean
+		return runtime.eligible(owner, id)
+	override function pay(string owner, string id, int amount) returns boolean
+		return runtime.port.pay(owner, id, amount)
+
+class CourtsCommand implements CommandHandler
+	CommercialCourtsRuntime runtime
+	CommandOutput output
+	construct(CommercialCourtsRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		if sender != Player(0) or countArguments(arguments) != 2
+			output.show(sender, "Use /courts <inspect|policy|repeal> MARKET.")
+			return
+		let cut = arguments.indexOf(" ")
+		let action = SubString(arguments, 0, cut)
+		let id = SubString(arguments, cut + 1, StringLength(arguments))
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		if action == "inspect"
+			output.show(sender, runtime.overview(owner, id))
+		else if action == "policy" or action == "repeal"
+			var result = runtime.policy(owner, id, action == "repeal")
+			if result == ""
+				result = "Courts action completed."
+			output.show(sender, result)
+
+public function registerCourtsCommands(CommandRegistry commands, CommercialCourtsRuntime runtime) returns string
+	return commands.register("courts", "", "courts <inspect|policy|repeal> MARKET", "Manage paid commercial courts.", "Inspect enactment, transition, annual upkeep and the bounded processing bill reduction for lawful warehouse commerce.", 2, 2, COMMAND_RELEASE, new CourtsCommand(runtime, commands.output))
