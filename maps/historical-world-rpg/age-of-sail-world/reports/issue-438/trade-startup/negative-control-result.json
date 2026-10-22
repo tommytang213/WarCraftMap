@@ -1,0 +1,14 @@
+{
+  "format": "compiled_lua_gate_negative_control_v1",
+  "status": "pass_expected_failure",
+  "nativeStatus": "not_run",
+  "invocation": "python -B negative-control.py --lua-path /workspace/scratch/243ebc79fa0a/validation-536/startup-fix/europe/war3map.lua --library /workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so --report /workspace/scratch/243ebc79fa0a/validation-536/startup-audit/full-scale-lua53-negative-control.json",
+  "actualProcessExitCode": 1,
+  "expectedProcessExitCode": 1,
+  "observedFailure": "__SCALE_INSTRUCTION_BUDGET_EXHAUSTED:startup",
+  "configuredInstructionBudget": 10000,
+  "observedSampledInstructions": 20000,
+  "productionFunctionOverrides": false,
+  "controlChange": "Only the harness BUDGET configuration is set to 10000 by the retained negative-control.py wrapper; archived Lua, production functions and frozen native stubs are unchanged.",
+  "rawReportSha256": "be7eda860b253a2fd1d665c23b0868e6c80b41fbf3326130ef353a3e90102ead"
+}

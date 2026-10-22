@@ -1,5 +1,94 @@
 # Issue #438: persistent Begin Campaign crash
 
+## Current continuation: destination startup, 2026-10-21
+
+**Latest native observation, 2026-10-20 at 16:52 UTC: the `a1b4396` trade-startup candidate
+was unresponsive after Continue.** The supplied image shows the Windows
+"Warcraft III is not responding" dialog. No destination terrain or responsive
+player-controlled unit was observed. Duration, eventual recovery, client build
+and destination Lua initialization are unknown; this does not establish a
+permanent deadlock. The association with the delivered candidate and the lack
+of an installed-file hash are recorded in
+[`trade-startup-native-observation.json`](trade-startup-native-observation.json).
+Do not request another run of these unchanged bytes. The staging guard rejects
+their campaign hash alongside the earlier failed candidates.
+
+### Latest source correction: capture scans and military validation
+
+The latest source change reads capture metadata before editing the expanded
+save and reuses one validated detached military snapshot for country checks.
+The actual compiled Europe startup now performs 10,056,374 `SubString` calls,
+down from 15,095,868 at published baseline `264b34c`: 5,039,494 fewer calls.
+The four saved payloads remain byte-identical, and all 37 modeled initial
+callbacks complete. The full unchanged Wurst gate passes 671/671 tests,
+including four new regressions for capture order, date bounds, authority
+ownership and rejection cleanup. The combined map passes compilation and
+independent archive checks with the pinned compiler and dependency inputs.
+
+These results establish reduced compiled startup work under the explicit
+native model, not resolution of the observed Warcraft stall. The prior native
+failure remains the latest client result. No complete player campaign or
+player retest is produced by this source-only work. Source identity, retained
+failed attempts, compiled comparisons, exact saved payloads and the executable
+evidence verifier are in
+[`startup-work-reduction/README.md`](startup-work-reduction/README.md).
+
+### Earlier source correction: cache writes and separator scans
+
+The preceding source correction checks the actual `StoreString` result, exact
+in-memory cache readback and rollback outcomes before acknowledging a saved
+checkpoint. A controlled native failure against the actual delivered Lua
+reproduced a false success; the same control against the revised, archived
+Europe Lua is rejected. This is a demonstrated persistence correction, not an
+established explanation for the native freeze.
+
+Campaign save processing now reuses separator positions across field edits
+and memoizes each exact character slice's actual native `StringHash` result.
+The frozen startup probe reduces `StringHash` calls from 3,240,256 to 37,931
+and `SubString` calls from 20,484,826 to 15,095,868. The remaining synchronous
+work is substantial. Stock Lua timing and explicit native stubs do not
+establish Warcraft's load time or a repaired transition. The full campaign
+schema remains 10 and the separate PlayableTrade snapshot format remains 5.
+
+The isolated Europe map retains baseline build metadata and is a developer
+artifact only. No new full campaign or player retest is requested from these
+results. Source provenance, focused/full test scopes, compiled comparisons,
+the failed setup attempts and remaining native unknowns are retained in
+[`native-boundary-repair/README.md`](native-boundary-repair/README.md).
+
+### Earlier trade-startup correction
+
+The owner confirmed that the `54911ca` root-basename campaign still reaches
+Victory / Continue and then remains black. The exact observation and its
+missing client/hash details are retained in
+[`root-basename-native-observation.json`](root-basename-native-observation.json).
+The earlier archive/CI passes do not override that native failure.
+
+Investigation of the actual compiled destination found a separate, measurable
+startup defect: validating 8,422 saved market rows scans all 8,422 registered
+markets and reparses row fields inside each scan. The new `PlayableTrade`
+snapshot cursor and temporary exact-identity index remove that quadratic work
+while retaining the existing save schema, serialized capture and validation
+semantics. Actual recompiled Lua completes startup under both documented local
+Lua runtimes, but the subsequent native observation above did not reach
+destination gameplay. The optimization is not a sufficient demonstrated repair.
+
+The source-bound comparison, executable scale regression and explicit native
+model limits are retained in [`trade-startup/README.md`](trade-startup/README.md).
+[`trade-startup-validation.json`](trade-startup-validation.json) records the
+interpreter test scopes, including the preserved first 83/84 run whose new
+full-size roundtrip exceeded the unchanged 20-second test deadline. The revised
+seven semantic tests pass; full-scale claims belong to the separate compiled
+Lua regression, not to a resized interpreter fixture.
+
+Keep PR #536 draft and #438 open until a new source-bound campaign displays
+destination terrain and a player-controlled unit responds to movement. The
+sections below preserve the earlier crash investigation; their proposed next
+experiments and "no startup repair" descriptions are historical, not the current
+startup corrections.
+
+## Historical crash investigation
+
 **Diagnosis: `diagnosis_unconfirmed`. Real-client launch: FAILED. Do not close
 #438 as repaired.** This change implements investigation evidence, versioned
 diagnostic identity and an opt-in local WGC adapter. It makes no gameplay,

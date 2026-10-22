@@ -88,8 +88,12 @@ jobs:
           artifact = root / 'age-of-sail-launch-smoke'
           receipt = artifact / 'launch-smoke.json'
           metadata = json.loads(receipt.read_text())
+          manifest = json.loads(Path('maps/historical-world-rpg/age-of-sail-world/physical-maps.json').read_text())
+          bootstrap = [row['packagePath'] for row in manifest['physicalMaps'] if row.get('bootstrap')]
+          if len(bootstrap) != 1:
+              raise SystemExit('expected exactly one campaign bootstrap map')
           prepare(artifact / metadata['installedCampaignPath'], metadata['campaignSha256'],
-                  reader, artifact / 'Standalone', 'Maps/AgeOfSailWorld.w3x', receipt)
+                  reader, artifact / 'Standalone', bootstrap[0], receipt)
           print('Independent map hashes verified; native_runner_unavailable; map/campaign native NOT RUN')
           PY
 

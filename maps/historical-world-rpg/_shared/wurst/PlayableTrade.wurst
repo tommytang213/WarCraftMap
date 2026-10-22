@@ -331,27 +331,34 @@ public function buyCargo(player viewer,string transactionId,RuntimeMarket market
 public function sellCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,int difficultyPermille,PlayableTradeController controller,TradePresentation presentation)
 	presentation.showTradeResult(viewer,controller.sell(transactionId,market,store,quantity,difficultyPermille))
 
-function tradeField(string document,int wanted) returns string
-	var start=0
-	var field=0
-	for i=0 to StringLength(document)
-		if i==StringLength(document) or SubString(document,i,i+1)==":"
-			if field==wanted
-				return SubString(document,start,i)
-			field++
-			start=i+1
-	return ""
-
-function compactField(string document,int wanted) returns string
-	var start=0
-	var field=0
-	for i=0 to StringLength(document)
-		if i==StringLength(document) or SubString(document,i,i+1)==","
-			if field==wanted
-				return SubString(document,start,i)
-			field++
-			start=i+1
-	return ""
+/** Reuse one cursor for each snapshot section. Retain empty fields and count
+ * excess fields, so parsing once does not relax the legacy/current contracts. */
+class TradeSnapshotFields
+	string array[24] values
+	int count=0
+	function append(string value)
+		if count<24
+			values[count]=value
+		count++
+	function read(string document,int start,string separator,string endRecord) returns int
+		count=0
+		let length=StringLength(document)
+		var fieldStart=start
+		var finish=start
+		while finish<length
+			let character=SubString(document,finish,finish+1)
+			if character==endRecord
+				break
+			if character==separator
+				append(SubString(document,fieldStart,finish))
+				fieldStart=finish+1
+			finish++
+		append(SubString(document,fieldStart,finish))
+		return finish+1
+	function field(int index) returns string
+		if index<0 or index>=count or index>=24
+			return ""
+		return values[index]
 
 /** Store IDs use a kind:id form. Keep that colon out of the legacy
  * colon-delimited campaign extension document. Authored IDs are restricted to
@@ -374,6 +381,33 @@ function tradeFieldCount(string document,string separator) returns int
 			count++
 	return count
 
+// Decimal digits are the common case in every market/store record. Avoid a
+// native substring search of the fixed alphabet for each already-sliced digit.
+// Keep the old search for other slice results, including an empty string: its
+// exact behavior remains authoritative for unusual native string handling.
+function tradeDecimalDigit(string character) returns int
+	if character=="0"
+		return 0
+	if character=="1"
+		return 1
+	if character=="2"
+		return 2
+	if character=="3"
+		return 3
+	if character=="4"
+		return 4
+	if character=="5"
+		return 5
+	if character=="6"
+		return 6
+	if character=="7"
+		return 7
+	if character=="8"
+		return 8
+	if character=="9"
+		return 9
+	return "0123456789".indexOf(character)
+
 function tradeInteger(string value) returns boolean
 	// Check the range before S2I: both command input and saves are untrusted,
 	// and the pinned interpreter throws on integers outside the Warcraft range.
@@ -390,7 +424,7 @@ function tradeInteger(string value) returns boolean
 		return false
 	var total=0
 	for i=start to StringLength(value)-1
-		let digit="0123456789".indexOf(SubString(value,i,i+1))
+		let digit=tradeDecimalDigit(SubString(value,i,i+1))
 		if digit<0 or total < -214748364 or (total == -214748364 and digit>lastDigit)
 			return false
 		total=total*10-digit
@@ -401,13 +435,69 @@ function tradePayload(string document) returns string
 		return SubString(document,3,StringLength(document))
 	return document
 
-/** A validation-only ledger, discarded on both success and rejection. */
-class TradeSnapshotCargo
+/** Derived only for this load attempt: catalogue identities are mutable, so
+ * retaining an index on the live runtime could make a later load use stale IDs.
+ * Hashes select a collision chain, never an identity. Newest-first chains keep
+ * validation's existing last-match behavior; application visits every match. */
+class TradeSnapshotCatalog
+	PlayableTradeRuntime runtime
+	hashtable index=InitHashtable()
+	int array[16384] previousMarket
+	int array[1024] previousStore
+	string array[1024] safeStoreIds
+	construct(PlayableTradeRuntime runtime)
+		this.runtime=runtime
+		for i=0 to runtime.marketCount-1
+			let value=runtime.markets[i]
+			let hash=StringHash(value.id+","+value.goodName)
+			previousMarket[i]=LoadInteger(index,0,hash)-1
+			SaveInteger(index,0,hash,i+1)
+		for i=0 to runtime.storeCount-1
+			let id=tradeSafeId(runtime.stores[i].id)
+			safeStoreIds[i]=id
+			let hash=StringHash(id)
+			previousStore[i]=LoadInteger(index,1,hash)-1
+			SaveInteger(index,1,hash,i+1)
+	function matchingMarket(int start,string id,string good) returns int
+		var i=start
+		while i>=0
+			if runtime.markets[i].id==id and runtime.markets[i].goodName==good
+				return i
+			i=previousMarket[i]
+		return -1
+	function marketIndex(string id,string good) returns int
+		return matchingMarket(LoadInteger(index,0,StringHash(id+","+good))-1,id,good)
+	function nextMarket(int previous,string id,string good) returns int
+		return matchingMarket(previousMarket[previous],id,good)
+	function matchingStore(int start,string id) returns int
+		var i=start
+		while i>=0
+			if safeStoreIds[i]==id
+				return i
+			i=previousStore[i]
+		return -1
+	function storeIndex(string id) returns int
+		return matchingStore(LoadInteger(index,1,StringHash(id))-1,id)
+	function nextStore(int previous,string id) returns int
+		return matchingStore(previousStore[previous],id)
+	ondestroy
+		FlushParentHashtable(index)
+
+/** Temporary parsed fields, lookup indexes and validation-only cargo. Always
+ * discarded on success or rejection; validating never changes live balances. */
+class TradeSnapshot
+	TradeSnapshotFields document=new TradeSnapshotFields()
+	TradeSnapshotFields row=new TradeSnapshotFields()
+	TradeSnapshotCatalog catalog
 	CargoBalances array[1025] balances
 	int storeCount
-	construct(int storeCount)
-		this.storeCount=storeCount
+	construct(PlayableTradeRuntime runtime)
+		storeCount=runtime.storeCount
+		catalog=new TradeSnapshotCatalog(runtime)
 	ondestroy
+		destroy document
+		destroy row
+		destroy catalog
 		for i=0 to storeCount-1
 			if balances[i]!=null
 				destroy balances[i]
@@ -631,158 +721,153 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 	/** Accept the original summary plus the additive market/store encodings.
 	 * Parse every record and reference before any stock, resource or view changes. */
 	override function validate(string saved) returns boolean
-		let cargo=new TradeSnapshotCargo(storeCount)
-		let valid=validateSnapshot(saved,cargo)
-		destroy cargo
+		let snapshot=new TradeSnapshot(this)
+		let valid=validateSnapshot(saved,snapshot)
+		destroy snapshot
 		return valid
-	function validateSnapshot(string saved,TradeSnapshotCargo cargo) returns boolean
+	function validateSnapshot(string saved,TradeSnapshot snapshot) returns boolean
 		let mixed=(saved.startsWith("v4:") or saved.startsWith("v5:"))
-		let document=tradePayload(saved)
-		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:")))
-		if document==""
+		let extended=saved.startsWith("v3:") or mixed
+		let payload=tradePayload(saved)
+		let current=saved.startsWith("v2:") or extended
+		if payload==""
 			return not current
-		let fields=tradeFieldCount(document,":")
-		if (saved.startsWith("v5:") and (fields!=24 or tradeField(document,23)=="" or not AgricultureSnapshot.validate(agriculture,tradeField(document,23)))) or (current and not saved.startsWith("v5:") and fields!=23) or (not current and fields!=16 and fields!=17 and fields!=19 and fields!=20) or tradeField(document,0)==""
+		let document=snapshot.document
+		document.read(payload,0,":","")
+		let fields=document.count
+		if (saved.startsWith("v5:") and (fields!=24 or document.field(23)=="" or not AgricultureSnapshot.validate(agriculture,document.field(23)))) or (current and not saved.startsWith("v5:") and fields!=23) or (not current and fields!=16 and fields!=17 and fields!=19 and fields!=20) or document.field(0)==""
 			return false
 		for i=1 to 14
 			if i!=10
-				let value=tradeField(document,i)
+				let value=document.field(i)
 				if not tradeInteger(value) or (i!=12 and S2I(value)<0)
 					return false
-		if S2I(tradeField(document,3))<1 or S2I(tradeField(document,4))<1 or S2I(tradeField(document,14))<1
+		if S2I(document.field(3))<1 or S2I(document.field(4))<1 or S2I(document.field(14))<1
 			return false
-		let history=tradeField(document,15)
+		let history=document.field(15)
 		if history!="" and (tradeFieldCount(history,",")>4096 or history.startsWith(",") or history.endsWith(",") or history.indexOf(",,")>=0)
 			return false
+		let catalog=snapshot.catalog
+		let row=snapshot.row
 		boolean array[16384] seenMarkets
-		let states=tradeField(document,16)
+		let states=document.field(16)
 		if states.endsWith("~")
 			return false
 		var start=0
 		while start<StringLength(states)
-			var finish=SubString(states,start,StringLength(states)).indexOf("~")
-			if finish<0
-				finish=StringLength(states)-start
-			let row=SubString(states,start,start+finish)
-			let columns=tradeFieldCount(row,",")
-			if ((saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:"))) and columns!=15) or (not saved.startsWith("v3:") and not (saved.startsWith("v4:") or saved.startsWith("v5:")) and columns!=11 and columns!=14)
+			start=row.read(states,start,",","~")
+			let columns=row.count
+			if (extended and columns!=15) or (not extended and columns!=11 and columns!=14)
 				return false
-			var found=-1
-			for i=0 to marketCount-1
-				if markets[i].id==compactField(row,0) and markets[i].goodName==compactField(row,1)
-					found=i
+			let found=catalog.marketIndex(row.field(0),row.field(1))
 			if found<0 or seenMarkets[found]
 				return false
 			seenMarkets[found]=true
-			if columns==15 and compactField(row,14)!="0" and compactField(row,14)!="1"
+			if columns==15 and row.field(14)!="0" and row.field(14)!="1"
 				return false
 			for i=2 to columns-1
-				let value=compactField(row,i)
+				let value=row.field(i)
 				if not tradeInteger(value) or (i!=6 and i!=7 and i!=8 and S2I(value)<0)
 					return false
-			if S2I(compactField(row,4))<1 or S2I(compactField(row,5))<1 or S2I(compactField(row,9))>1 or S2I(compactField(row,10))>1
+			if S2I(row.field(4))<1 or S2I(row.field(5))<1 or S2I(row.field(9))>1 or S2I(row.field(10))>1
 				return false
-			start+=finish+1
-		let savedHold=tradeField(document,17)
+		let savedHold=document.field(17)
 		if savedHold!=""
-			var found=tradeSafeId(hold.id)==savedHold
-			for i=0 to storeCount-1
-				found=found or tradeSafeId(stores[i].id)==savedHold
-			if not found or not tradeInteger(tradeField(document,18)) or S2I(tradeField(document,18))<S2I(tradeField(document,6))
+			let found=tradeSafeId(hold.id)==savedHold or catalog.storeIndex(savedHold)>=0
+			if not found or not tradeInteger(document.field(18)) or S2I(document.field(18))<S2I(document.field(6))
 				return false
 		boolean array[1024] seenStores
-		let summaryQuantity=S2I(tradeField(document,6))
-		cargo.balances[1024]=new CargoBalances()
+		let summaryQuantity=S2I(document.field(6))
+		snapshot.balances[1024]=new CargoBalances()
 		if mixed
-			if not readCargoContents(cargo.balances[1024],tradeField(document,21),summaryQuantity,S2I(tradeField(document,18)),null)
+			if not readCargoContents(snapshot.balances[1024],document.field(21),summaryQuantity,S2I(document.field(18)),null)
 				return false
 		else
-			cargo.balances[1024].set(tradeField(document,21),summaryQuantity)
-		let storesState=tradeField(document,19)
+			snapshot.balances[1024].set(document.field(21),summaryQuantity)
+		let storesState=document.field(19)
 		if storesState.endsWith("~")
 			return false
 		start=0
 		while start<StringLength(storesState)
-			var finish=SubString(storesState,start,StringLength(storesState)).indexOf("~")
-			if finish<0
-				finish=StringLength(storesState)-start
-			let row=SubString(storesState,start,start+finish)
-			if tradeFieldCount(row,",")!=5
+			start=row.read(storesState,start,",","~")
+			if row.count!=5
 				return false
-			var found=-1
-			for i=0 to storeCount-1
-				if tradeSafeId(stores[i].id)==compactField(row,0)
-					found=i
+			let found=catalog.storeIndex(row.field(0))
 			if found<0 or seenStores[found]
 				return false
 			seenStores[found]=true
 			for i=1 to 3
-				if not tradeInteger(compactField(row,i)) or S2I(compactField(row,i))<0
+				if not tradeInteger(row.field(i)) or S2I(row.field(i))<0
 					return false
-			if S2I(compactField(row,1))>S2I(compactField(row,3))
+			if S2I(row.field(1))>S2I(row.field(3))
 				return false
-			cargo.balances[found]=new CargoBalances()
+			snapshot.balances[found]=new CargoBalances()
 			if mixed
-				if not readCargoContents(cargo.balances[found],compactField(row,4),S2I(compactField(row,1)),S2I(compactField(row,3)),stores[found])
+				if not readCargoContents(snapshot.balances[found],row.field(4),S2I(row.field(1)),S2I(row.field(3)),stores[found])
 					return false
 			else
-				cargo.balances[found].set(compactField(row,4),S2I(compactField(row,1)))
-			if current and compactField(row,0)==savedHold
-				if S2I(compactField(row,1))!=summaryQuantity or compactField(row,4)!=tradeField(document,21) or compactField(row,2)!=tradeField(document,7) or compactField(row,3)!=tradeField(document,18)
+				snapshot.balances[found].set(row.field(4),S2I(row.field(1)))
+			if current and row.field(0)==savedHold
+				if S2I(row.field(1))!=summaryQuantity or row.field(4)!=document.field(21) or row.field(2)!=document.field(7) or row.field(3)!=document.field(18)
 					return false
-			start+=finish+1
 		if current
 			if savedHold==""
 				return false
-			for i=0 to storeCount-1
-				if mixed and tradeSafeId(stores[i].id)==savedHold and not seenStores[i]
-					return false
-			let lotState=tradeField(document,22)
+			if mixed
+				var i=catalog.storeIndex(savedHold)
+				while i>=0
+					if not seenStores[i]
+						return false
+					i=catalog.nextStore(i,savedHold)
+			let lotState=document.field(22)
 			if lotState!="" and (tradeFieldCount(lotState,"~")>CARGO_LOT_LIMIT or lotState.endsWith("~"))
 				return false
 			start=0
 			while start<StringLength(lotState)
-				var finish=SubString(lotState,start,StringLength(lotState)).indexOf("~")
-				if finish<0
-					finish=StringLength(lotState)-start
-				let row=SubString(lotState,start,start+finish)
-				if tradeFieldCount(row,",")!=5 or compactField(row,1)=="" or compactField(row,4)==""
+				start=row.read(lotState,start,",","~")
+				if row.count!=5 or row.field(1)=="" or row.field(4)==""
 					return false
-				if not tradeInteger(compactField(row,2)) or not tradeInteger(compactField(row,3)) or S2I(compactField(row,2))<1 or S2I(compactField(row,3))<0
+				if not tradeInteger(row.field(2)) or not tradeInteger(row.field(3)) or S2I(row.field(2))<1 or S2I(row.field(3))<0
 					return false
-				var found=-1
-				if compactField(row,0)==savedHold
+				var found=catalog.storeIndex(row.field(0))
+				var i=found
+				while i>=0
+					if not seenStores[i]
+						return false
+					i=catalog.nextStore(i,row.field(0))
+				if found<0 and row.field(0)==savedHold
 					found=1024
-				for i=0 to storeCount-1
-					if tradeSafeId(stores[i].id)==compactField(row,0)
-						if not seenStores[i]
-							return false
-						found=i
-				if found<0 or cargo.balances[found]==null
+				if found<0 or snapshot.balances[found]==null
 					return false
-				let good=compactField(row,1)
-				let available=cargo.balances[found].quantity(good)
-				let taken=S2I(compactField(row,2))
+				let good=row.field(1)
+				let available=snapshot.balances[found].quantity(good)
+				let taken=S2I(row.field(2))
 				if taken>available
 					return false
 				// Subtract per commodity, rejecting over-attribution without overflow.
-				cargo.balances[found].set(good,available-taken)
-				var originKnown=marketCount==0 and compactField(row,4)==tradeField(document,0) and compactField(row,1)==tradeField(document,20)
-				for i=0 to marketCount-1
-					originKnown=originKnown or (markets[i].id==compactField(row,4) and markets[i].goodName==compactField(row,1))
+				snapshot.balances[found].set(good,available-taken)
+				let originKnown=(marketCount==0 and row.field(4)==document.field(0) and good==document.field(20)) or catalog.marketIndex(row.field(4),good)>=0
 				if not originKnown
 					return false
-				start+=finish+1
 		return true
 	override function reconstruct(string document) returns boolean
 		if not validate(document)
 			return false
 		return applyState(document)
 	function applyState(string saved) returns boolean
-		let document=tradePayload(saved)
+		let snapshot=new TradeSnapshot(this)
+		let applied=applySnapshot(saved,snapshot)
+		destroy snapshot
+		return applied
+	function applySnapshot(string saved,TradeSnapshot snapshot) returns boolean
+		let payload=tradePayload(saved)
+		let document=snapshot.document
+		document.read(payload,0,":","")
+		let catalog=snapshot.catalog
+		let row=snapshot.row
 		var agricultureState=""
 		if saved.startsWith("v5:")
-			agricultureState=tradeField(document,23)
+			agricultureState=document.field(23)
 		var day=agriculture.currentDay
 		var year=agriculture.year
 		if access!=null
@@ -792,9 +877,9 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		let current=(saved.startsWith("v2:") or saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:")))
 		marketSelected=false
 		storeSelected=false
-		if document==""
+		if payload==""
 			return true
-		let restoredSettlement=tradeField(document,0)
+		let restoredSettlement=document.field(0)
 		if restoredSettlement==""
 			return false
 		// Missing legacy records initialize from immutable generated definitions,
@@ -810,14 +895,14 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		// current view may point at a different market/store after reconstruction.
 		var foundMarket=false
 		for i=0 to marketCount-1
-			if markets[i].id==restoredSettlement and (not current or markets[i].goodName==tradeField(document,20))
+			if markets[i].id==restoredSettlement and (not current or markets[i].goodName==document.field(20))
 				market=markets[i]
 				foundMarket=true
 		// Legacy summary-only saves and settlements without a configured market
 		// use an isolated fallback, never rename an unrelated live market.
 		if not foundMarket
-			market=new RuntimeMarket(restoredSettlement,tradeField(document,20),0,0,1,1)
-		let savedHoldId=tradeField(document,17)
+			market=new RuntimeMarket(restoredSettlement,document.field(20),0,0,1,1)
+		let savedHoldId=document.field(17)
 		// Older generated saves did not register the default personal hold.
 		// An absent record must not introduce its new-campaign starting money.
 		// Saved records below overwrite this zero baseline, including v2 holds.
@@ -828,9 +913,9 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				stores[i].contents.clear()
 				stores[i].money=0
 		if savedHoldId!=""
-			for i=0 to storeCount-1
-				if tradeSafeId(stores[i].id)==savedHoldId
-					hold=stores[i]
+			let found=catalog.storeIndex(savedHoldId)
+			if found>=0
+				hold=stores[found]
 		else if hasPersonalStore
 			// Summary-only generated saves used the starting settlement's store,
 			// falling back to the first generated store. Registering the personal
@@ -847,27 +932,27 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 				hold=legacyHold
 		settlementId=restoredSettlement
 		market.id=restoredSettlement
-		market.stock=S2I(tradeField(document,1))
-		market.money=S2I(tradeField(document,2))
-		market.buyUnitPrice=S2I(tradeField(document,3))
-		market.sellUnitPrice=S2I(tradeField(document,4))
-		market.previousUnitPrice=S2I(tradeField(document,5))
+		market.stock=S2I(document.field(1))
+		market.money=S2I(document.field(2))
+		market.buyUnitPrice=S2I(document.field(3))
+		market.sellUnitPrice=S2I(document.field(4))
+		market.previousUnitPrice=S2I(document.field(5))
 		hold.contents.clear()
 		if (saved.startsWith("v4:") or saved.startsWith("v5:"))
-			readCargoContents(hold.contents,tradeField(document,21),S2I(tradeField(document,6)),S2I(tradeField(document,18)),null)
+			readCargoContents(hold.contents,document.field(21),S2I(document.field(6)),S2I(document.field(18)),null)
 		else
-			hold.contents.set(tradeField(document,21),S2I(tradeField(document,6)))
-		hold.money=S2I(tradeField(document,7))
-		controller.legacyUnattributedCost=S2I(tradeField(document,8))
-		controller.legacyUnattributedQuantity=S2I(tradeField(document,9))
-		controller.legacyUnattributedOrigin=tradeField(document,10)
+			hold.contents.set(document.field(21),S2I(document.field(6)))
+		hold.money=S2I(document.field(7))
+		controller.legacyUnattributedCost=S2I(document.field(8))
+		controller.legacyUnattributedQuantity=S2I(document.field(9))
+		controller.legacyUnattributedOrigin=document.field(10)
 		controller.provenance.clear()
-		progress.standing=S2I(tradeField(document,11))
-		progress.realizedProfit=S2I(tradeField(document,12))
-		progress.completedRouteCount=S2I(tradeField(document,13))
-		nextTransaction=S2I(tradeField(document,14))
+		progress.standing=S2I(document.field(11))
+		progress.realizedProfit=S2I(document.field(12))
+		progress.completedRouteCount=S2I(document.field(13))
+		nextTransaction=S2I(document.field(14))
 		controller.processedCount=0
-		let history=tradeField(document,15)
+		let history=document.field(15)
 		var start=0
 		for i=0 to StringLength(history)
 			if i==StringLength(history) or SubString(history,i,i+1)==","
@@ -875,64 +960,60 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 					controller.processed[controller.processedCount]=SubString(history,start,i)
 					controller.processedCount++
 				start=i+1
-		let states=tradeField(document,16)
+		let states=document.field(16)
 		var recordStart=0
-		for i=0 to StringLength(states)
-			if i==StringLength(states) or SubString(states,i,i+1)=="~"
-				let record=SubString(states,recordStart,i)
-				for j=0 to marketCount-1
-					if markets[j].id==compactField(record,0) and markets[j].goodName==compactField(record,1)
-						markets[j].stock=S2I(compactField(record,2))
-						markets[j].money=S2I(compactField(record,3))
-						markets[j].buyUnitPrice=S2I(compactField(record,4))
-						markets[j].sellUnitPrice=S2I(compactField(record,5))
-						markets[j].shortagePermille=S2I(compactField(record,6))
-						markets[j].eventPermille=S2I(compactField(record,7))
-						markets[j].technologyPermille=S2I(compactField(record,8))
-						markets[j].blockaded=compactField(record,9)=="1"
-						markets[j].occupiedByHostile=compactField(record,10)=="1"
-						if saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:"))
-							markets[j].discovered=compactField(record,14)=="1"
-						// Fields 11-13 were added after the first live-trade save
-						// format. Empty values retain generated defaults.
-						if compactField(record,11)!=""
-							markets[j].productionPermille=S2I(compactField(record,11))
-						if compactField(record,12)!=""
-							markets[j].consumptionPermille=S2I(compactField(record,12))
-						if compactField(record,13)!=""
-							markets[j].previousUnitPrice=S2I(compactField(record,13))
-				recordStart=i+1
+		while recordStart<=StringLength(states)
+			recordStart=row.read(states,recordStart,",","~")
+			var j=catalog.marketIndex(row.field(0),row.field(1))
+			while j>=0
+				markets[j].stock=S2I(row.field(2))
+				markets[j].money=S2I(row.field(3))
+				markets[j].buyUnitPrice=S2I(row.field(4))
+				markets[j].sellUnitPrice=S2I(row.field(5))
+				markets[j].shortagePermille=S2I(row.field(6))
+				markets[j].eventPermille=S2I(row.field(7))
+				markets[j].technologyPermille=S2I(row.field(8))
+				markets[j].blockaded=row.field(9)=="1"
+				markets[j].occupiedByHostile=row.field(10)=="1"
+				if saved.startsWith("v3:") or (saved.startsWith("v4:") or saved.startsWith("v5:"))
+					markets[j].discovered=row.field(14)=="1"
+				// Fields 11-13 were added after the first live-trade save
+				// format. Empty values retain generated defaults.
+				if row.field(11)!=""
+					markets[j].productionPermille=S2I(row.field(11))
+				if row.field(12)!=""
+					markets[j].consumptionPermille=S2I(row.field(12))
+				if row.field(13)!=""
+					markets[j].previousUnitPrice=S2I(row.field(13))
+				j=catalog.nextMarket(j,row.field(0),row.field(1))
 		if savedHoldId!=""
-			hold.capacity=S2I(tradeField(document,18))
-		let savedStores=tradeField(document,19)
+			hold.capacity=S2I(document.field(18))
+		let savedStores=document.field(19)
 		recordStart=0
-		for i=0 to StringLength(savedStores)
-			if i==StringLength(savedStores) or SubString(savedStores,i,i+1)=="~"
-				let record=SubString(savedStores,recordStart,i)
-				for j=0 to storeCount-1
-					if tradeSafeId(stores[j].id)==compactField(record,0)
-						stores[j].money=S2I(compactField(record,2))
-						stores[j].capacity=S2I(compactField(record,3))
-						stores[j].contents.clear()
-						if (saved.startsWith("v4:") or saved.startsWith("v5:"))
-							readCargoContents(stores[j].contents,compactField(record,4),S2I(compactField(record,1)),stores[j].capacity,null)
-						else
-							stores[j].contents.set(compactField(record,4),S2I(compactField(record,1)))
-				recordStart=i+1
+		while recordStart<=StringLength(savedStores)
+			recordStart=row.read(savedStores,recordStart,",","~")
+			var j=catalog.storeIndex(row.field(0))
+			while j>=0
+				stores[j].money=S2I(row.field(2))
+				stores[j].capacity=S2I(row.field(3))
+				stores[j].contents.clear()
+				if (saved.startsWith("v4:") or saved.startsWith("v5:"))
+					readCargoContents(stores[j].contents,row.field(4),S2I(row.field(1)),stores[j].capacity,null)
+				else
+					stores[j].contents.set(row.field(4),S2I(row.field(1)))
+				j=catalog.nextStore(j,row.field(0))
 		// Only v2 carries attributable acquisitions. Never infer legacy lots
 		// from balances, the selected hold or the last aggregate origin.
-		let savedLots=tradeField(document,22)
+		let savedLots=document.field(22)
 		recordStart=0
-		for i=0 to StringLength(savedLots)
-			if i==StringLength(savedLots) or SubString(savedLots,i,i+1)=="~"
-				let record=SubString(savedLots,recordStart,i)
-				if record!=""
-					var storeId=hold.id
-					for j=0 to storeCount-1
-						if tradeSafeId(stores[j].id)==compactField(record,0)
-							storeId=stores[j].id
-					controller.provenance.add(storeId,compactField(record,1),S2I(compactField(record,2)),S2I(compactField(record,3)),compactField(record,4))
-				recordStart=i+1
+		while recordStart<=StringLength(savedLots)
+			recordStart=row.read(savedLots,recordStart,",","~")
+			if row.count>1 or row.field(0)!=""
+				var storeId=hold.id
+				let found=catalog.storeIndex(row.field(0))
+				if found>=0
+					storeId=stores[found].id
+				controller.provenance.add(storeId,row.field(1),S2I(row.field(2)),S2I(row.field(3)),row.field(4))
 		return true
 	function transactionId(string side) returns string
 		let result="runtime-"+side+"-"+nextTransaction.toString()

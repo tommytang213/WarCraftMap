@@ -1,0 +1,1240 @@
+#!/usr/bin/env python3
+"""Deterministic, scenario-configured Warcraft folder-map build pipeline."""
+from __future__ import annotations
+import base64, binascii, calendar, hashlib, json, re, shutil, struct, subprocess, sys, zipfile
+from datetime import date
+from decimal import Decimal
+from dataclasses import dataclass
+from pathlib import Path
+from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
+from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
+from hero_starting_profiles import starting_definitions, rank_text, recovery_days, growth_cadence
+from quest_codegen import validate_graphs, emit_quests
+
+class PackagingError(RuntimeError): pass
+GENERATOR_VERSION = 33
+GENERATED_WURST, GENERATED_DATA, PROVENANCE = "ScenarioData.wurst", "scenario-runtime.json", "provenance.json"
+
+@dataclass(frozen=True)
+class BuildConfig:
+    project: Path; config_path: Path; source_map: Path; manifest: Path; wurst_source: Path
+    scenario_file: Path; scenario_validator: Path; output: Path; output_stem: str
+    package_name: str; metadata: dict[str, str]; bootstrap_markers: tuple[str, ...]
+    regional_terrain: tuple[tuple[str, Path], ...]
+    custom_2d_source: Path | None; custom_2d_builder: Path | None
+
+def _inside(root: Path, value: object, label: str, boundary: Path | None = None) -> Path:
+    if not isinstance(value, str) or not value or Path(value).is_absolute():
+        raise PackagingError(f"configuration: {label} must be a non-empty relative path")
+    path = (root / value).resolve()
+    try: path.relative_to((boundary or root).resolve())
+    except ValueError as error: raise PackagingError(f"configuration: {label} escapes the project directory") from error
+    return path
+
+def load_config(config_path: Path) -> BuildConfig:
+    config_path = config_path.resolve()
+    try: raw = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error: raise PackagingError(f"configuration: cannot read {config_path}: {error}") from error
+    if raw.get("formatVersion") != 2: raise PackagingError("configuration: formatVersion must be 2")
+    project = _inside(config_path.parent, raw.get("projectRoot", "."), "projectRoot")
+    release, scenario = raw.get("release"), raw.get("scenario")
+    if not isinstance(release, dict) or not isinstance(scenario, dict): raise PackagingError("configuration: release and scenario metadata are required")
+    stem, package_name = release.get("fileName"), scenario.get("wurstPackage")
+    if not isinstance(stem, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", stem): raise PackagingError("configuration: release.fileName is unsafe")
+    if not isinstance(package_name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", package_name): raise PackagingError("configuration: scenario.wurstPackage is invalid")
+    markers, metadata = release.get("bootstrapMarkers"), release.get("metadata")
+    if not isinstance(markers, list) or not markers or not all(isinstance(x, str) and x for x in markers): raise PackagingError("configuration: release.bootstrapMarkers must be a non-empty string list")
+    if not isinstance(metadata, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()): raise PackagingError("configuration: release.metadata must contain strings")
+    terrain = scenario.get("regionalTerrain", [])
+    if not isinstance(terrain, list) or any(not isinstance(item, dict) for item in terrain): raise PackagingError("configuration: scenario.regionalTerrain must be an array")
+    terrain_entries = []
+    for item in terrain:
+        terrain_id = item.get("id")
+        if not isinstance(terrain_id, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", terrain_id): raise PackagingError("configuration: regional terrain id is invalid")
+        terrain_entries.append((terrain_id, _inside(project, item.get("source"), f"regionalTerrain {terrain_id}.source")))
+    if len({item[0] for item in terrain_entries}) != len(terrain_entries): raise PackagingError("configuration: regional terrain ids must be unique")
+    custom = scenario.get("custom2d")
+    if custom is not None and (not isinstance(custom, dict) or set(custom) != {"source", "builder"}):
+        raise PackagingError("configuration: scenario.custom2d must contain source and builder")
+    custom_source = _inside(project, custom["source"], "scenario.custom2d.source") if custom else None
+    custom_builder = _inside(project, custom["builder"], "scenario.custom2d.builder") if custom else None
+    return BuildConfig(project, config_path, _inside(project, raw.get("sourceMap"), "sourceMap"), _inside(project, raw.get("sourceManifest"), "sourceManifest"), _inside(project, raw.get("wurstSource"), "wurstSource"), _inside(project, scenario.get("data"), "scenario.data"), _inside(project, scenario.get("validator"), "scenario.validator", project.parent), _inside(project, raw.get("outputDirectory", "_build/release"), "outputDirectory") / f"{stem}.w3x", stem, package_name, metadata, tuple(markers), tuple(terrain_entries), custom_source, custom_builder)
+
+def _fail(stage: str, message: object) -> PackagingError: return PackagingError(f"{stage} stage failed: {message}")
+def _sha(path: Path) -> str: return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def _load_settlement_runtime_data(config: BuildConfig, world: dict) -> list[dict]:
+    """Every world settlement owns authority, independently of its projection.
+
+    Regional catalogues refine physical placement. Integration profiles also
+    cover communities without a permanent regional placement record.
+    """
+    world_by_id = {row["id"]: row for row in world.get("settlements", [])}
+    integration_path = config.project / "scenario/integration/release-scale-settlements.json"
+    integration = json.loads(integration_path.read_text(encoding="utf-8")) if integration_path.is_file() else {"settlements": []}
+    integration_by_id = {row["settlementId"]: row for row in integration.get("settlements", [])}
+    authored_by_id = {}
+    for path, geography_path, region in settlement_sources(config.project):
+        source = json.loads(path.read_text(encoding="utf-8"))
+        geography = json.loads(geography_path.read_text(encoding="utf-8"))
+        instances = {row["id"]: row for row in geography.get("instances", [])}
+        for authored in source.get("settlements", []):
+            if authored["id"] in authored_by_id or authored["id"] not in world_by_id:
+                raise PackagingError(f"generation: duplicate or unknown settlement {authored['id']}")
+            authored_by_id[authored["id"]] = (authored, instances, region)
+    result = []
+    for ident, authoritative in sorted(world_by_id.items()):
+        profile = integration_by_id.get(ident, {})
+        authored, instances, region = authored_by_id.get(ident, ({}, {}, profile.get("regionId", "")))
+        if not authored and not profile:
+            raise PackagingError(f"generation: settlement {ident} lacks an authority profile")
+        position = authored.get("position") or authored.get("localPosition")
+        if isinstance(position, dict): position = [position["x"], position["y"]]
+        if position is None and authored:
+            transform = instances.get(authored["regionalInstanceId"], {}).get("transform", {})
+            origin, scale = transform.get("sourceOrigin"), transform.get("scale")
+            source_position, offset = authored.get("sourcePosition"), transform.get("offset", [0, 0])
+            if not source_position or not origin or not scale:
+                raise PackagingError(f"generation: settlement {ident} has no resolvable position")
+            position = [(source_position[i] - origin[i]) * scale[i] + offset[i] for i in range(2)]
+        # Missing physical coordinates are resolved from the same compressed
+        # interaction placement used by services, never invented world truth.
+        defense = authored.get("defenseClass", authoritative.get("kind", "town"))
+        strength = {"capital": 40, "fortified": 32, "fort": 32, "port": 24}.get(defense, 20)
+        capturable = profile.get("captureModel", "city_core" if authoritative.get("capturable", True) else "non_capturable") == "city_core"
+        kinds = profile.get("physicalRepresentationKinds", ["city_core"] if capturable else ["community_marker"])
+        result.append({"id": ident, "controllerId": authoritative["controllerPolityId"],
+            "legalOwnerId": authoritative["legalOwnerPolityId"],
+            "regionId": authored.get("physicalMapId", authoritative["regionalInstanceId"]),
+            "x": round(float(position[0]) * 128.0, 3) if position else None,
+            "y": round(float(position[1]) * 128.0, 3) if position else None,
+            "capturable": capturable, "projectMilitary": capturable and "city_core" in kinds,
+            "governanceExceptionId": profile.get("governanceExceptionId") or "",
+            "presentationModelId": profile.get("gameplayRoles", {}).get("physicalMap", {}).get("modelId", authored.get("physicalMapId", "")),
+            "physicalRepresentationKinds": kinds,
+            "strength": strength, "reserves": strength * 2, "manpower": strength * 4, "supply": strength * 3,
+            "economyProfile": profile.get("economy", {}),
+            "official": profile.get("official", {"characterId": "official_" + ident, "displayName": "Local Council"})})
+    return result
+
+def _load_country_interaction_runtime_data(config: BuildConfig, world: dict) -> dict:
+    """Join the campaign authorities used by the headless polity systems.
+
+    This is deliberately a join, not a second set of gameplay defaults.  Money
+    and stock come from economy stores, wars from regional politics, and the
+    shape/capacity of government rewards from current territory and research.
+    """
+    polity_ids = {row["id"] for row in world.get("polities", [])}
+    settlements = {row["id"]: row["controllerPolityId"] for row in world.get("settlements", [])}
+    economy_path = config.project / "scenario/economy/economy.json"
+    economy = json.loads(economy_path.read_text(encoding="utf-8")) if economy_path.is_file() else {"catalog": {"stores": []}, "state": {"storeBalances": []}}
+    store_owners = {}
+    for store in economy.get("catalog", {}).get("stores", []):
+        owner = store.get("owner", {})
+        if owner.get("kind") == "settlement" and owner.get("id") in settlements:
+            store_owners[store["id"]] = settlements[owner["id"]]
+    treasury = {polity_id: 0 for polity_id in polity_ids}
+    stock = {polity_id: 0 for polity_id in polity_ids}
+    for balance in economy.get("state", {}).get("storeBalances", []):
+        polity_id = store_owners.get(balance.get("storeId"))
+        if polity_id:
+            treasury[polity_id] += sum(int(row.get("amountMinor", 0)) for row in balance.get("currencies", []))
+            stock[polity_id] += sum(int(row.get("quantityUnits", 0)) for row in balance.get("goods", []))
+    holdings = world.get("territorialHoldings", [])
+    territory_count = {polity_id: 0 for polity_id in polity_ids}
+    for holding in holdings:
+        owner = holding.get("legalOwner", {})
+        if owner.get("kind") == "polity" and owner.get("id") in territory_count:
+            territory_count[owner["id"]] += 1
+    research = {row["polityId"]: row for row in world.get("polityResearchStates", [])}
+    conflicts = []
+    conflict_by_id = {}
+    politics_paths = [content_path(config.project, path) for path in configuration(config.project)["scenario"].get("politics", [])]
+    for path in politics_paths:
+        source = json.loads(path.read_text(encoding="utf-8"))
+        for conflict in source.get("activeConflicts", []):
+            attackers = list(conflict.get("attackerPolityIds", []))
+            defenders = list(conflict.get("defenderPolityIds", []))
+            parties = attackers + defenders
+            if (not attackers or not defenders or len(parties) != len(set(parties))
+                    or not all(party in polity_ids for party in parties) or len(parties) > 64):
+                raise _fail("generation", f"invalid conflict membership: {conflict['id']}")
+            row = {"id": conflict["id"], "attackerPolityIds": attackers, "defenderPolityIds": defenders}
+            previous = conflict_by_id.get(row["id"])
+            if previous and previous != row:
+                raise _fail("generation", f"conflicting definitions for conflict: {row['id']}")
+            if not previous:
+                conflicts.append(row)
+                conflict_by_id[row["id"]] = row
+    if len(conflicts) > 256:
+        raise _fail("generation", "conflict runtime capacity exceeded")
+    polities = []
+    for polity in world.get("polities", []):
+        polity_id = polity["id"]
+        state = research.get(polity_id, {})
+        # This contract is derived exclusively from live authorities.  It gives
+        # every government a service reward whose cost scales with its actual
+        # liquid economy, while institutional governments can also commission
+        # offices.  Values are materialised so Warcraft and headless runs share
+        # deterministic inputs rather than UI-only zeroes.
+        rewards = [{"id": "service_stipend", "kind": "money", "threshold": 20,
+                    "reputation": 0, "treasuryCost": max(1, min(240, treasury[polity_id] // 20)),
+                    "foreignService": True}]
+        if state.get("establishedInstitutionIds") or polity.get("sovereignTier") not in (None, "none"):
+            rewards.append({"id": "government_commission", "kind": "office", "threshold": 60,
+                            "reputation": 10, "treasuryCost": max(0, min(120, treasury[polity_id] // 50)),
+                            "foreignService": False})
+        polities.append({"id": polity_id, "treasury": treasury[polity_id], "stock": stock[polity_id],
+                         "territoryCount": territory_count[polity_id], "rewards": rewards,
+                         "technologies": state.get("completedTechnologyIds", []),
+                         "institutions": state.get("establishedInstitutionIds", [])})
+    if polity_ids and not any(row["rewards"] for row in polities):
+        raise PackagingError("generation: authoritative country rewards produced zero runtime profiles")
+    return {"polities": polities, "conflicts": conflicts,
+            "sources": [economy_path, *politics_paths]}
+
+def validate_inputs(config: BuildConfig, grill: str | None = None) -> str:
+    required = {"source map folder": config.source_map, "source manifest": config.manifest, "Wurst source folder": config.wurst_source, "scenario data": config.scenario_file, "scenario validator": config.scenario_validator, "wurst.build": config.project / "wurst.build"}
+    missing = [f"{label} ({path})" for label, path in required.items() if not path.exists()]
+    missing.extend(f"regional terrain {terrain_id} ({path})" for terrain_id, path in config.regional_terrain if not path.is_file())
+    if config.custom_2d_source and not config.custom_2d_source.is_file(): missing.append(f"custom 2D source ({config.custom_2d_source})")
+    if config.custom_2d_builder and not config.custom_2d_builder.is_file(): missing.append(f"custom 2D builder ({config.custom_2d_builder})")
+    if missing: raise _fail("inputs", "missing " + ", ".join(missing))
+    build_text = (config.project / "wurst.build").read_text(encoding="utf-8")
+    for setting in ("scriptMode: LUA", "wc3Patch: v3.0", f"fileName: {config.output_stem}"):
+        if setting not in build_text: raise _fail("inputs", f"wurst.build must contain {setting!r}")
+    try: manifest_metadata = json.loads(config.manifest.read_text(encoding="utf-8")).get("metadata")
+    except (OSError, json.JSONDecodeError) as error: raise _fail("inputs", f"invalid source manifest: {error}") from error
+    if manifest_metadata != config.metadata: raise _fail("inputs", "release metadata differs from the authoritative source manifest")
+    executable = grill or shutil.which("grill")
+    if not executable: raise _fail("inputs", "required tool 'grill' was not found on PATH")
+    return str(Path(executable).resolve())
+
+def validate_scenario(config: BuildConfig) -> None:
+    result = subprocess.run([sys.executable, str(config.scenario_validator), str(config.scenario_file)], cwd=config.project, text=True, capture_output=True)
+    if result.returncode: raise _fail("scenario validation", (result.stderr or result.stdout).strip() or f"validator exited {result.returncode}")
+
+def _character_recruitment_windows(world: dict) -> dict[str, tuple[date, date]]:
+    """Validate full authored dates before emitting any recruitment definitions."""
+    windows = {}
+    characters = world.get("characters", [])
+    if not isinstance(characters, list):
+        raise _fail("generation", "characters must be an array")
+    for row in characters:
+        ident = row.get("id") if isinstance(row, dict) else None
+        if (not isinstance(ident, str) or len(ident) > 64
+                or not re.fullmatch(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*", ident)):
+            raise _fail("generation", "character requires a valid stable ID")
+        if ident in windows:
+            raise _fail("generation", f"duplicate character ID: {ident}")
+        window = row.get("availabilityWindow")
+        if not isinstance(window, dict):
+            raise _fail("generation", f"character {ident}: availabilityWindow is required")
+        dates = []
+        for field in ("startDate", "endDate"):
+            value = window.get(field)
+            try:
+                if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+                    raise ValueError("expected YYYY-MM-DD")
+                dates.append(date.fromisoformat(value))
+            except ValueError as error:
+                raise _fail("generation", f"character {ident}: invalid availabilityWindow.{field}: {value!r}") from error
+        if dates[0] > dates[1]:
+            raise _fail("generation", f"character {ident}: reversed availabilityWindow")
+        windows[ident] = (dates[0], dates[1])
+    return windows
+
+def research_decimal(value: object, minimum: str, context: str) -> str:
+    """Exact, bounded plain-decimal definition for ResearchCost.wurst; never round."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+        raise _fail("generation", f"{context}: expected a number")
+    number = Decimal(str(value))
+    if not number.is_finite() or number < Decimal(minimum):
+        raise _fail("generation", f"{context}: invalid research coefficient")
+    digits = list(number.as_tuple().digits)
+    exponent = number.as_tuple().exponent
+    while len(digits) > 1 and digits[-1] == 0:
+        digits.pop()
+        exponent += 1
+    if number == 0:
+        return "0"
+    if len(digits) > 28 or not -28 <= exponent <= 28:
+        raise _fail("generation", f"{context}: research decimal is not representable")
+    text = format(number, "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def research_time_cost(cost: dict, node_id: str) -> tuple[int, str, str, str]:
+    year = cost.get("preferredYear")
+    if isinstance(year, bool) or not isinstance(year, int) or not -2147483648 <= year <= 2147483647:
+        raise _fail("generation", f"{node_id}.preferredYear: not a signed integer year")
+    return (year, *(research_decimal(cost.get(field), minimum, f"{node_id}.{field}")
+                    for field, minimum in (("baseCost", "0.000001"),
+                                           ("aheadOfTimeCostMultiplier", "1"),
+                                           ("additionalMultiplierPerYearAhead", "0"))))
+
+
+def generate(config: BuildConfig, generated: Path) -> None:
+    try: world = json.loads(config.scenario_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error: raise _fail("generation", error) from error
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+    from technology_institutions import research_unlock_definitions, research_integration_blockers, ResearchError
+    try: unlock_definitions = research_unlock_definitions(world)
+    except ResearchError as error: raise _fail("research definitions", error) from error
+    recruitment_windows = _character_recruitment_windows(world)
+    from hero_allocations import allocation_definitions, allocation_wurst
+    progression_sources = [Path(__file__).with_name(name) for name in
+                           ("hero_starting_profiles.py", "hero_allocations.py")]
+    progression_catalog = None
+    builder = configuration(config.project)["scenario"].get("heroProgressionBuilder")
+    try:
+        if builder:
+            builder_path = content_path(config.project, builder)
+            composed = subprocess.run([sys.executable, str(builder_path), "--runtime-catalog"],
+                                      cwd=config.project, text=True, capture_output=True, check=True)
+            payload = json.loads(composed.stdout)
+            progression_catalog = payload["catalog"]
+            progression_sources += [builder_path, *(content_path(config.project, p) for p in payload["sources"])]
+        hero_starts = starting_definitions(world, progression_catalog)
+        hero_recovery_days = recovery_days(progression_catalog)
+        hero_growth = growth_cadence(progression_catalog)
+        hero_allocations = allocation_definitions(progression_catalog, hero_starts)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
+        raise _fail("hero starting profiles", error) from error
+    quest_sources = [Path(__file__).with_name("quest_codegen.py")]
+    try:
+        quest_config = configuration(config.project)["scenario"]
+        quest_builder = quest_config.get("questProjectionBuilder")
+        if quest_builder:
+            quest_builder_path = content_path(config.project, quest_builder)
+            projected = subprocess.run([sys.executable, str(quest_builder_path), "--runtime-catalog"],
+                                      cwd=config.project, text=True, capture_output=True, check=True)
+            payload = json.loads(projected.stdout)
+            if world.get("quests", []) != payload["quests"]:
+                raise ValueError("authored quest projection mismatch: stages, objectives or prerequisites omitted/changed")
+            quest_sources += [quest_builder_path, *(content_path(config.project, p) for p in payload["sources"])]
+        binding_path = quest_config.get("questConditionBindings")
+        bindings = {}
+        if binding_path:
+            path = content_path(config.project, binding_path)
+            bindings = json.loads(path.read_text())
+            quest_sources.append(path)
+        quest_bindings, quest_blockers = validate_graphs(world.get("quests", []), bindings)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
+        raise _fail("quest generation", error) from error
+    generated.mkdir(parents=True, exist_ok=True)
+    if config.custom_2d_builder:
+        result=subprocess.run([sys.executable,str(config.custom_2d_builder),"--output",str(generated/"custom-2d"),"--check"],cwd=config.project,text=True,capture_output=True)
+        if result.returncode: raise _fail("custom 2D generation", (result.stderr or result.stdout).strip())
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from generate_regional_terrain import canonical_bytes, generate as generate_terrain
+    terrain_outputs = {}
+    terrain_authorities = []
+    for terrain_id, terrain_path in config.regional_terrain:
+        try:
+            terrain_source = json.loads(terrain_path.read_text(encoding="utf-8"))
+            authority = None
+            if terrain_source.get("authority"):
+                authority_path = _inside(config.project, terrain_source["authority"], f"regionalTerrain {terrain_id}.authority")
+                authority = json.loads(authority_path.read_text(encoding="utf-8")); terrain_authorities.append(authority_path)
+            terrain = generate_terrain(terrain_source, world["regionalGeography"], authority)
+        except (OSError, json.JSONDecodeError, KeyError, ValueError) as error:
+            raise _fail("terrain generation", f"{terrain_id}: {error}") from error
+        output_name = f"terrain-{terrain_id}.json"
+        (generated / output_name).write_bytes(canonical_bytes(terrain))
+        terrain_outputs[terrain_id] = output_name
+    domains = ("polities", "provinces", "settlements", "strategicUnits", "characters", "technologies", "institutions")
+    settlement_runtime = _load_settlement_runtime_data(config, world)
+    country_runtime = _load_country_interaction_runtime_data(config, world)
+    runtime = {"schemaVersion": world["schemaVersion"], "sourceSha256": _sha(config.scenario_file), "timeline": world["timeline"], "events": world.get("events", []), "regionalGeography": world["regionalGeography"], "ids": {domain: [entry["id"] for entry in world.get(domain, [])] for domain in domains}, "polityDefinitions": world.get("polities", []), "provinceDefinitions": world.get("provinces", []), "provinceHoldings": [holding for holding in world.get("territorialHoldings", []) if holding.get("territory", {}).get("kind") == "province"], "militaryRuntimeTemplates": world.get("militaryRuntimeTemplates", []), "strategicUnits": world.get("strategicUnits", []), "armies": world.get("armies", []), "fleets": world.get("fleets", []), "defenseLayouts": world.get("defenseLayouts", []), "settlementRuntimeStates": settlement_runtime, "countryInteractionState": {key: value for key, value in country_runtime.items() if key != "sources"}}
+    runtime["characterRecruitmentWindows"] = {
+        ident: {"startDate": start.isoformat(), "endDate": end.isoformat()}
+        for ident, (start, end) in recruitment_windows.items()
+    }
+    runtime["heroStartingDefinitions"] = hero_starts
+    runtime["heroRecoveryDays"] = hero_recovery_days
+    runtime["heroGrowthCadence"] = hero_growth
+    runtime["heroAllocationDefinitions"] = hero_allocations
+    # These catalogues are optional for reusable scenarios, but when present
+    # they are compiled into both the runtime payload and Warcraft bootstrap.
+    # Source JSON remains authoritative; no release catalogue is duplicated in
+    # hand-written Wurst.
+    paths = catalogue_paths(config.project)
+    catalogues = {}
+    for catalogue_id, catalogue_path in paths.items():
+        if catalogue_path.is_file():
+            try: catalogues[catalogue_id] = json.loads(catalogue_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error: raise _fail("generation", f"{catalogue_id}: {error}") from error
+            runtime[catalogue_id] = catalogues[catalogue_id]
+    if "inventory" in catalogues:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+        from player_items import validate_catalog, validate_equipment_research, equipment_set_definitions, PlayerItemError
+        goods = json.loads((config.project / "scenario/economy/global-goods.json").read_text())
+        try:
+            validate_catalog(catalogues["inventory"], bulk_good_ids={row["id"] for row in goods["goods"]})
+            validate_equipment_research(catalogues["inventory"],
+                {row["id"] for row in world.get("technologies", ())},
+                {row["id"] for row in world.get("institutions", ())})
+        except PlayerItemError as error:
+            raise _fail("generation", str(error)) from error
+        runtime["equipmentSetDefinitions"] = equipment_set_definitions(catalogues["inventory"])
+    if config.custom_2d_source:
+        custom=json.loads((generated/"custom-2d/custom-2d-imports.json").read_text(encoding="utf-8"))
+        runtime["custom2dAssets"]={use:row["importPath"] for row in custom["assets"] for use in row["uses"]}
+    (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    recovery = []  # Live representations register through their ordinary adapters.
+    timeline = world["timeline"]
+    timeline_lines = ["\npublic function configureCampaignTimeline() returns CampaignClock",
+        f'\tlet clock = new CampaignClock({date.fromisoformat(timeline["startDate"]).toordinal()}, {date.fromisoformat(timeline["endDate"]).toordinal()}, {date.fromisoformat(timeline["initialDate"]).toordinal()}, 1.)']
+    for era in timeline.get("eras", []):
+        timeline_lines.append(f'\tclock.addEra("{era["id"]}", {date.fromisoformat(era["startDate"]).toordinal()}, {date.fromisoformat(era["endDate"]).toordinal()})')
+    occurrences=[]
+    for schedule in timeline.get("schedules", []):
+        current=date.fromisoformat(schedule["firstDate"]); number=1; rule=schedule.get("recurrence")
+        while True:
+            occurrences.append((current, schedule["priority"], schedule["id"], number, schedule["eventId"]))
+            if not rule or number >= rule.get("maxOccurrences", 2**31-1): break
+            if rule["unit"] == "days":
+                from datetime import timedelta
+                following=current+timedelta(days=rule["interval"])
+            else:
+                months=rule["interval"]*(1 if rule["unit"] == "months" else 12)
+                year,month0=divmod(current.year*12+current.month-1+months,12); month=month0+1
+                following=date(year,month,min(current.day,calendar.monthrange(year,month)[1]))
+            if following > date.fromisoformat(rule["untilDate"]): break
+            current=following; number+=1
+    for day,_,schedule,number,event in sorted(occurrences):
+        timeline_lines.append(f'\tclock.addOccurrence("{schedule}", "{event}", {day.toordinal()}, {number})')
+    timeline_lines.append("\treturn clock")
+    def ws(value):
+        return str(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
+    rpg = ["\npublic function configureGeneratedRpg(WarcraftRpgRuntime runtime)",
+           f"\truntime.heroes.recoveryDays = {hero_recovery_days}"]
+    rpg += allocation_wurst(hero_allocations, ws)
+    for index, row in enumerate(world.get("characters", ())):
+        loyalty = row.get("loyalty", {})
+        start, end = recruitment_windows[row["id"]]
+        rpg += [f'\tlet hero{index}=new RpgHero("{ws(row["id"])}","{ws(row.get("displayName", row["id"]))}",\'Hpal\')',
+                f'\thero{index}.availabilityStartDay={start.toordinal()}',
+                f'\thero{index}.availabilityEndDay={end.toordinal()}',
+                f'\thero{index}.loyalty={int(loyalty.get("score", 50))}',
+                f'\thero{index}.professionId="{ws((row.get("professionIds") or [""])[0])}"',
+                f'\thero{index}.personalQuestId="{ws((row.get("personalQuestIds") or [""])[0])}"',
+                f'\thero{index}.regionId="{ws(row.get("regionId", ""))}"',
+                f'\thero{index}.recruited={str(bool(row.get("recruited"))).lower()}']
+        profile = hero_starts["profiles"][row["id"]]
+        for field, value in hero_growth.items():
+            rpg.append(f'\thero{index}.{field}={value}')
+        for field in ("skillIds", "masteryIds", "personalTreeIds"):
+            rpg.append(f'\thero{index}.{field}="~{"~".join(hero_starts[field])}~"')
+        rpg += [f'\thero{index}.startingProfile=new HeroStartingProfile({profile["level"]},"{rank_text(profile["skills"])}","{rank_text(profile["masteries"])}","{profile["personalTreeId"]}")',
+                f'\truntime.heroes.register(hero{index})']
+    # Parse authored decimal tokens directly, avoiding a binary-float round trip.
+    exact_world = json.loads(config.scenario_file.read_text(encoding="utf-8"), parse_float=Decimal)
+    research_rows = [("technology", row) for row in exact_world.get("technologies", ())] + [("institution", row) for row in exact_world.get("institutions", ())]
+    for index, (research_kind, row) in enumerate(research_rows):
+        cost = row.get("timeCost", {})
+        year, base, ahead, annual = research_time_cost(cost, row["id"])
+        rpg += [f'\tlet technology{index}=new RuntimeTechnology("{ws(row["id"])}","{ws(row.get("name", row["id"]))}",{year},"{base}","{ahead}","{annual}")',
+                f'\ttechnology{index}.kind="{research_kind}"']
+        for prerequisite_id in row["prerequisiteIds"]:
+            rpg.append(f'\ttechnology{index}.addPrerequisite("{ws(prerequisite_id)}")')
+        rpg.append(f'\ttechnology{index}.expectedUnlockCount={len(row["unlocks"])}')
+        for unlock in row["unlocks"]:
+            rpg.append(f'\ttechnology{index}.addUnlock("{ws(row["id"])}","{ws(unlock["kind"])}","{ws(unlock["contentId"])}")')
+        rpg.append(f'\truntime.technologies.register(technology{index})')
+    rpg += emit_quests(world.get("quests", []), quest_bindings, ws)
+    inventory = catalogues.get("inventory", {})
+    from equipment_items import item_definitions_wurst
+    rpg += item_definitions_wurst(inventory)
+    if "equipmentSetDefinitions" in runtime:
+        from equipment_sets import equipment_sets_wurst
+        rpg += equipment_sets_wurst(runtime["equipmentSetDefinitions"], ws)
+    rpg += ["\tconfigureGeneratedTreasures(runtime.treasures)", "\tconfigureGeneratedInteractions(runtime.interactions)", "\truntime.treasures.locations = runtime.interactions.catalog"]
+    origin_configuration = "public function configureGeneratedOrigins(OriginCatalog controller)\n\tskip\n"
+    arrival_configuration = "public function configureGeneratedArrivals(PlayableCampaignState state)\n\tskip\n"
+    from party_locations import campaign_navigation, configuration as party_navigation_configuration
+    runtime['partyNavigation'] = {}
+    runtime['recoveryNavigation'] = {}
+    from recovery_navigation import campaign_navigation as recovery_navigation, configuration as recovery_configuration
+    from physical_interactions import interaction_configuration, interaction_locations
+    locations = []
+    physical_manifest = config.project / "physical-maps.json"
+    if physical_manifest.is_file():
+        from package_wurst_campaign import campaign_arrival_configuration, campaign_boundary_navigation, campaign_origin_configuration, campaign_origin_records, position_campaign_origins, load_campaign_config
+        campaign = load_campaign_config(physical_manifest)
+        origins = campaign_origin_records(world, campaign.maps)
+        arrivals = position_campaign_origins(config.project, generated, world, campaign.maps, origins)
+        runtime["newCampaignOrigins"] = origins
+        runtime["physicalMapArrivals"] = arrivals
+        origin_configuration = campaign_origin_configuration(origins, campaign.maps)
+        runtime['boundaryNavigation'] = campaign_boundary_navigation(campaign, generated)
+        arrival_configuration = campaign_arrival_configuration(campaign, runtime['boundaryNavigation'])
+        runtime['partyNavigation'] = campaign_navigation(campaign, generated)
+        runtime['recoveryNavigation'] = recovery_navigation(campaign, generated)
+        arrival_configuration += party_navigation_configuration(runtime['partyNavigation'])
+        arrival_configuration = arrival_configuration.replace(
+            'state.boundaryConfigurationComplete = true',
+            'state.boundaryConfigurationComplete = true\n\tconfigureGeneratedPartyNavigation(state)')
+        locations = interaction_locations(config.project, generated, world, campaign.maps,
+                                          catalogues.get("treasures", {}), [path for _, path in config.regional_terrain])
+    from treasure_resolution import definitions as treasure_definitions, configuration as treasure_configuration
+    runtime['treasureResolutionCatalog'] = treasure_definitions(catalogues.get('treasures', {}), locations)
+    rpg.append("\n" + treasure_configuration(runtime['treasureResolutionCatalog']))
+    runtime['interactionLocations'] = locations
+    from map_knowledge import knowledge_catalog
+    runtime['mapKnowledgeCatalog'] = knowledge_catalog(config.project)
+    points = {row["id"]: row for row in locations if row["kind"] == "settlement"}
+    for row in settlement_runtime:
+        if row["x"] is None:
+            if row["id"] not in points:
+                raise PackagingError(f"generation: settlement {row['id']} lacks a local interaction anchor")
+            row["regionId"] = points[row["id"]]["mapId"]
+            row["x"], row["y"] = points[row["id"]]["world"]
+    templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
+    military_lines = ["\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
+    for row in settlement_runtime:
+        policy = f'{str(row["projectMilitary"]).lower()}, {str(row["capturable"]).lower()}, "{ws(row["governanceExceptionId"])}"'
+        start = len(military_lines)
+        military_lines += [f'\tif runtime.settlementIndex("{ws(row["id"])}") < 0', '\t\tif not migrate', '\t\t\treturn false']
+        military_lines.append(f'\t\truntime.registerSettlement(new SettlementRuntimeState("{ws(row["id"])}", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", \'htow\', \'hfoo\', {row["strength"]}, {row["reserves"]}, {row["manpower"]}, {row["supply"]}, {row["x"]}, {row["y"]}).withLegalOwner("{ws(row["legalOwnerId"])}").withPolicy({policy}))')
+        if row["projectMilitary"]:
+            military_lines.append(f'\t\truntime.registerForce(new RuntimeForce("defense:{ws(row["id"])}:primary", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "siege", FORCE_DEFENSE, \'hgtw\', {row["strength"]}, {row["supply"]}, {row["x"] + 192.}, {row["y"]}))')
+        official = row["official"]
+        military_lines.append(f'\t\truntime.appoint("{ws(row["id"])}", new AdministratorState("{ws(official["characterId"])}", "{ws(official["displayName"])}", "Acting Administrator", "{ws(row["controllerId"])}", "{ws(row["regionId"])}", "{ws(row["id"])}", 50, 50, 40, 1))')
+        military_lines += [f'\tif runtime.administratorIndex("{ws(row["id"])}") < 0', '\t\treturn false']
+        military_lines.append(f'\truntime.configureSettlementPolicy("{ws(row["id"])}", {policy})')
+        military_lines[start:] = [f'\tif onlyId == "" or onlyId == "{ws(row["id"])}"'] + ['\t' + line for line in military_lines[start:]]
+    military_lines += ['\treturn true', '', 'class GeneratedSettlementDefinitions implements SettlementDefinitions',
+        '\toverride function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean',
+        '\t\treturn configureGeneratedSettlementAuthority(runtime, "", migrate)',
+        '', 'public function configureMilitarySettlementScenario(MilitarySettlementRuntime runtime)',
+        '\truntime.definitions = new GeneratedSettlementDefinitions()',
+        '\truntime.definitions.reconcile(runtime, true)']
+    traditions_path = config.project / "scenario/military-traditions.json"
+    tradition_data = {"unitAssignments": []}
+    combat_sources = []
+    combat_payload = None
+    combat_builder = configuration(config.project)["scenario"].get("combatEffectBuilder")
+    if combat_builder:
+        builder_path = content_path(config.project, combat_builder)
+        try:
+            result = subprocess.run([sys.executable, str(builder_path)], cwd=config.project,
+                                    text=True, capture_output=True, check=True)
+            combat_payload = json.loads(result.stdout)
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            raise _fail("combat bindings (release blocker)", error) from error
+        combat_sources = [content_path(config.project, p) for p in combat_payload["sources"]]
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/combat_effects.py")
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/unit_roster.py")
+        runtime["combatEffectBindings"] = combat_payload["catalog"]
+        runtime["combatProfiles"] = combat_payload["profiles"]
+    voyage_payload = None
+    voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
+    if voyage_builder:
+        try:
+            result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],
+                                    cwd=config.project, text=True, capture_output=True, check=True)
+            voyage_payload = json.loads(result.stdout)
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            raise _fail("voyage contract", error) from error
+        # A ship station must be a real naval cell in the packaged physical
+        # raster. No fallback settlement or arbitrary same-map land position.
+        for ship in voyage_payload["catalog"]["ships"]:
+            grid = runtime["recoveryNavigation"][ship["mapId"]][1]
+            px, py = ship["stationPosition"]
+            x, y = int((px - grid["minX"]) // 128), int((py - grid["minY"]) // 128)
+            component = 0
+            if 0 <= x < grid["width"] and 0 <= y < grid["height"]:
+                for end_text, label_text in re.findall(r"(\d+):(\d+),", grid["rows"][y]):
+                    end, label = int(end_text), int(label_text)
+                    if x < end:
+                        component = label
+                        break
+            if component <= 0:
+                raise _fail("voyage station", "station is not a legal naval position")
+        runtime["voyageNavigation"] = voyage_payload["catalog"]
+        combat_sources += [content_path(config.project, p) for p in voyage_payload["sources"]]
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/voyage_navigation.py")
+        combat_sources.append(Path(__file__).resolve().parents[1] / "engine/navigation.py")
+    if traditions_path.is_file():
+        from validate_military_traditions import validate as validate_traditions
+        validate_traditions(traditions_path, config.scenario_file)
+        tradition_data = json.loads(traditions_path.read_text(encoding="utf-8"))
+        runtime["militaryTraditions"] = tradition_data
+        runtime["militaryTraditionIntegrationBlockers"] = [
+            {"categoryId": tradition["categoryId"], "kind": kind, "id": ident,
+             "reason": "No gameplay-effect consumer; exact typed resolution only"}
+            for tradition in tradition_data["traditions"]
+            for kind, ident in (
+                [("attribute", row["attributeId"]) for row in tradition["coefficients"]] +
+                [("effect", row["effect"]["effectId"]) for row in tradition["milestones"]])
+        ]
+        if combat_payload:
+            bound_attributes = {row["id"] for row in combat_payload["catalog"]["attributes"] if row["stat"]}
+            bound_effects = {row["id"] for row in combat_payload["catalog"]["effects"]}
+            runtime["militaryTraditionIntegrationBlockers"] = [
+                row for row in runtime["militaryTraditionIntegrationBlockers"]
+                if row["id"] not in (bound_attributes if row["kind"] == "attribute" else bound_effects)]
+            runtime["militaryTraditionIntegrationBlockers"] += [
+                {"kind": "weapon", "id": row["id"], "categoryId": row["categoryId"],
+                 "reason": "No authored roster/weapon identity; effects fail closed"}
+                for row in tradition_data["unitAssignments"]]
+        military_lines += ['\truntime.traditionDefinitions = new GeneratedMilitaryTraditions()',
+                           '\truntime.traditionDefinitions.reconcile(runtime, true)']
+        tradition_lines = []
+        for tradition in tradition_data["traditions"]:
+            tradition_lines += [f'\nfunction traditionDefinition_{tradition["id"]}() returns TraditionDefinition',
+                                f'\tlet definition = new TraditionDefinition("{ws(tradition["id"])}")']
+            for coefficient in tradition["coefficients"]:
+                tradition_lines.append(f'\tdefinition.coefficient("{ws(coefficient["attributeId"])}", "{coefficient["numerator"]}", "{coefficient["denominator"]}")')
+            for milestone in sorted(tradition["milestones"], key=lambda row: (row["threshold"], row["id"])):
+                effect = milestone["effect"]
+                tradition_lines.append(f'\tdefinition.milestone("{ws(milestone["id"])}", "{milestone["threshold"]}", "{ws(effect["effectId"])}", "{effect["mode"]}", "{ws(effect["replacesEffectId"] or "")}")')
+            tradition_lines.append('\treturn definition')
+        tradition_lines += ['\npublic function configureGeneratedMilitaryTraditions(MilitarySettlementRuntime runtime, boolean migrate) returns boolean']
+        tradition_lines += ['\tif runtime.traditionDefinitions == null',
+                            '\t\truntime.traditionDefinitions = new GeneratedMilitaryTraditions()']
+        if combat_payload:
+            tradition_lines += ['\tif runtime.combatBindings == null',
+                                '\t\truntime.combatBindings = createGeneratedCombatBindings()']
+        for source in tradition_data["experienceSources"]:
+            tradition_lines.append(f'\truntime.registerContribution("{ws(source["id"])}", {source["weightNumerator"]}, {source["weightDenominator"]})')
+        for controller in tradition_data.get("eligibleControllerIds", []):
+            for tradition in tradition_data.get("traditions", []):
+                tradition_lines += [f'\tif not runtime.reconcileTradition("{ws(controller)}", "{ws(tradition["categoryId"])}", "{tradition["startingExperience"]}", traditionDefinition_{tradition["id"]}(), migrate)', '\t\treturn false']
+        track_count = len(tradition_data["eligibleControllerIds"]) * len(tradition_data["traditions"])
+        tradition_lines += [f'\treturn runtime.traditionCount == {track_count}',
+                            '', 'class GeneratedMilitaryTraditions implements MilitaryTraditionDefinitions',
+                            '\toverride function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean',
+                            '\t\treturn configureGeneratedMilitaryTraditions(runtime, migrate)']
+    assignments = {row["id"]: row for row in tradition_data["unitAssignments"]}
+    for row in world.get("strategicUnits", []):
+        template = templates[row["runtimeInstantiation"]["runtimeTemplateId"]]
+        kind = "FORCE_FLEET" if row["kind"] == "ship" else "FORCE_ARMY"
+        category = assignments.get(row["id"], {}).get("categoryId", "")
+        type_id = template["warcraftUnitTypeId"]
+        supply = row.get("operationalState", {}).get("supply", 0)
+        location = next((item for item in settlement_runtime if item["id"] == row["currentLocationId"]), settlement_runtime[0])
+        voyage_ship = next((ship for ship in voyage_payload["catalog"]["ships"] if ship["forceId"] == row["id"]), None) if voyage_payload else None
+        if voyage_ship:
+            location = dict(regionId=voyage_ship["mapId"], x=voyage_ship["stationPosition"][0], y=voyage_ship["stationPosition"][1])
+        military_lines.append(f'\truntime.registerForce(new RuntimeForce("{row["id"]}", "{row["controllerPolityId"]}", "{location["regionId"]}", "{category}", {kind}, \'{type_id}\', {row["representedStrength"]}, {supply}, {location["x"]}, {location["y"]}))')
+    if voyage_payload:
+        military_lines += ['\truntime.voyages = createGeneratedVoyageContract()']
+    if len(military_lines) == 1:
+        military_lines.append("\tskip")
+    if traditions_path.is_file():
+        military_lines += tradition_lines
+        if combat_payload:
+            military_lines += [combat_payload["wurst"]]
+    if voyage_payload:
+        military_lines += [voyage_payload["wurst"]]
+    countries = ["\npublic function configureGeneratedCountryInteractions(PlayableCountryInteractionRuntime runtime)"]
+    for row in country_runtime["polities"]:
+        countries.append(f'\truntime.registerPolityResources("{ws(row["id"])}", {row["treasury"]}, {row["stock"]})')
+        for reward in row["rewards"]:
+            countries.append(f'\truntime.registerRewardProfile(new GovernmentRewardProfile("{ws(row["id"])}", "{ws(reward["id"])}", "{ws(reward["kind"])}", {reward["threshold"]}, {reward["reputation"]}, {reward["treasuryCost"]}, {str(reward["foreignService"]).lower()}))')
+    conflict_lines = ["\npublic function configureGeneratedConflicts(MilitarySettlementRuntime runtime)"]
+    for conflict in country_runtime["conflicts"]:
+        for side, key in ((1, "attackerPolityIds"), (2, "defenderPolityIds")):
+            for party in conflict[key]:
+                conflict_lines.append(f'\truntime.registerConflictMember("{ws(conflict["id"])}", "{ws(party)}", {side})')
+    conflict_lines.append("\truntime.rememberConflictDefaults()")
+    military_lines.insert(1, "\tconfigureGeneratedConflicts(runtime)")
+    if len(countries) == 1:
+        countries.append("\tskip")
+    religion_lines = ["\npublic function configureGeneratedReligion(ReligionRuntime runtime)"]
+    religion = catalogues.get("religion", {})
+    for index, row in enumerate(religion.get("faiths", [])):
+        curve = row["influenceCurve"]
+        religion_lines.append(f'\tlet faith{index}=new RuntimeFaith("{ws(row["id"])}","{ws(row["name"])}",{int(curve["personalHalfSaturation"])},{int(curve["influenceHalfSaturation"])})')
+        for benefit in row.get("benefits", []):
+            religion_lines.append(f'\tfaith{index}.addBenefit(new ReligionBenefit("{ws(benefit["attributeId"])}",{int(benefit["capBasisPoints"])},"{ws(benefit["description"])}"))')
+        religion_lines.append(f'\truntime.registerFaith(faith{index})')
+    initial = religion.get("initialState", {})
+    character = next(iter(initial.get("characters", [])), {})
+    religion_lines.append(f'\truntime.characterId="{ws(character.get("characterId", "player"))}"')
+    religion_lines.append(f'\truntime.setCharacterFaith("{ws(character.get("primaryFaithId") or "")}",{int(character.get("personalInvestment", 0))})')
+    for row in religion.get("conversionRules", []):
+        religion_lines.append(f'\truntime.registerConversion(new ReligionConversionRule("{ws(row.get("fromFaithId") or "")}","{ws(row["toFaithId"])}",{int(row["costUnits"])},{int(row["cooldownTicks"])},{int(row.get("newInvestment", 0))},"{ws(row["reputationConsequences"])}"))')
+    policies = {row["id"]: row for row in religion.get("policies", [])}
+    for faith in religion.get("faiths", []):
+        fid = faith["id"]
+        population = sum(int(region["populationUnits"]) * next((int(x["shareBasisPoints"]) for x in region["composition"] if x["faithId"] == fid), 0) // 10000 for region in initial.get("regions", []))
+        institutions = sum(int(x["influenceUnits"]) for x in initial.get("institutions", []) if x["faithId"] == fid and x["active"])
+        government = sum(int(policies[x["policyId"]]["supportedInfluenceBasisPoints"]) for x in initial.get("polities", []) if fid in x["supportedFaithIds"])
+        base = next((x for x in initial.get("influence", []) if x["faithId"] == fid), {})
+        religion_lines.append(f'\truntime.setInfluence("{ws(fid)}",{population},{institutions},{government},{int(base.get("prestigeUnits", 0))},{int(base.get("eventUnits", 0))})')
+    if len(religion_lines) == 1:
+        religion_lines.append("\tskip")
+    piracy_data = catalogues.get("piracy", {"rules": {}, "havens": []})
+    piracy_rules = piracy_data.get("rules", {})
+    piracy = ["\npublic function configureGeneratedPiracy(PiracyRuntime runtime)"]
+    for row in piracy_data.get("havens", ()):
+        piracy.append(f'\truntime.registerHaven("{ws(row["id"])}",{int(row.get("minimumNotoriety", 0))},"{ws(",".join(row.get("serviceIds", [])))}")')
+    for row in piracy_data.get("governmentForms", ()):
+        piracy.append(f'\truntime.registerGovernmentForm("{ws(row["id"])}","{ws(row.get("rulerTitle", ""))}")')
+    if len(piracy) == 1:
+        piracy.append("\tskip")
+    piracy_factory = f'''\npublic function createGeneratedPiracyRuntime() returns PiracyRuntime
+\treturn new PiracyRuntime(new PiracyRules({int(piracy_rules.get("repeatTargetCooldownTicks", 30))},{int(piracy_rules.get("foundingNotoriety", 20))},{int(piracy_rules.get("foundingWealthMinor", 5000))},{int(piracy_rules.get("foundingPrizes", 3))},{int(piracy_rules.get("bountyPerNotorietyMinor", 100))}))'''
+    # Keep generated functions deliberately small.  A single function containing
+    # every settlement/good pair is large enough to exhaust Grill's compiler heap
+    # on the full world catalogue even though the resulting JASS is valid.
+    trade_records = []
+    trade_stores = []
+    agriculture_builder = configuration(config.project)["scenario"].get("agricultureBuilder")
+    agriculture_payload = None
+    if agriculture_builder:
+        agriculture_payload = json.loads(subprocess.check_output([sys.executable, str(_inside(config.project, agriculture_builder, "scenario.agricultureBuilder"))], cwd=config.project, text=True))
+        trade_records.append("\tconfigureGeneratedAgriculture(runtime)")
+    goods_path = config.project / "scenario/economy/global-goods.json"
+    authored_sources = {}
+    for path, _geography, region in settlement_sources(config.project):
+        for row in json.loads(path.read_text(encoding="utf-8")).get("settlements", []):
+            authored_sources[row["id"]] = (region, row)
+    if goods_path.is_file():
+        # Keep the existing personal hold instead of implicitly granting the
+        # first generated warehouse. Bindings are definitions, not save grants.
+        trade_records.append('\truntime.registerPersonalStore()')
+        trade_stores.append(dict(id='player_ship_hold', kind='personal', authorityId='player', warehouseService=False))
+        goods_catalog = json.loads(goods_path.read_text(encoding="utf-8"))
+        trade_defaults = json.loads((config.project / "scenario/economy/playable-trade.json").read_text(encoding="utf-8"))["marketDefaults"]
+        goods = {row["id"]: row for row in goods_catalog.get("goods", [])}
+        for settlement in settlement_runtime:
+            region, row = authored_sources.get(settlement["id"], ("", {}))
+            profile = settlement["economyProfile"]
+            economy_identity = row.get("economy", {})
+            production = economy_identity.get("production", row.get("productionRefs", profile.get("productionGoodIds", [])))
+            imports = economy_identity.get("imports", row.get("importRefs", profile.get("importGoodIds", [])))
+            shortages = economy_identity.get("shortages", row.get("shortageRefs", profile.get("shortageGoodIds", [])))
+            defaults = goods_catalog.get("regionalDefaults", {}).get(region, {})
+            basket = list(dict.fromkeys(production + imports + shortages + defaults.get("stapleGoodIds", profile.get("availableGoodIds", []))))
+            roles, services = set(row.get("roles", [])), set(row.get("services", profile.get("serviceHookIds", [])))
+            if roles & {"trade_center", "trade_hub", "caravan_center"} or "warehouse" in services:
+                basket += [x for x in defaults.get("tradeGoodIds", []) if x not in basket]
+            basket = basket[:int(goods_catalog.get("performanceBudgets", {}).get("maximumGoodsPerSettlement", 12))]
+            for good_id in basket:
+                good = goods[good_id]
+                stock = 320 if good_id in production else 180 if good_id in imports else 24 if good_id in shortages else 90
+                if row.get("port") and good_id in imports: stock = stock * 13 // 10
+                liquidity = max(1000, sum(max(1, int(goods[x]["basePriceMinor"])) * stock for x in basket if x in goods))
+                trade_records.append(
+                    f'\truntime.registerMarketProfile("{ws(settlement["id"])}","{ws(good_id)}",'
+                    f'{stock},{liquidity},{int(good["basePriceMinor"])},{1250 if good_id in production else 1000},'
+                    f'{1250 if good_id in shortages else 1000},{350 if good_id in shortages else 0},'
+                    f'{int(good["quantityUnitsPerDisplayUnit"])},{int(good.get("priceElasticityPermille", 1000))},'
+                    f'{int(trade_defaults["spreadPermille"])},{int(trade_defaults["priceFloorPermille"])},'
+                    f'{int(trade_defaults["priceCeilingPermille"])})')
+            if agriculture_payload and agriculture_payload["rules"]["stapleGoodId"] in basket:
+                rules = agriculture_payload["rules"]
+                staple = rules["stapleGoodId"]
+                local_stock = 320 if staple in production else 180 if staple in imports else 24 if staple in shortages else 90
+                if row.get("port") and staple in imports:
+                    local_stock = local_stock * 13 // 10
+                arable = staple in production
+                seed = max(1, local_stock * rules["seedFractionBp"] // 10000) if arable else 0
+                gross = seed * rules["yieldBp"] // 10000 * int(goods[staple]["basePriceMinor"])
+                # Non-farming grain markets still have taxable storage/trade activity.
+                normal_tax = max(1, (gross if arable else local_stock * int(goods[staple]["basePriceMinor"])) * rules["normalTaxOnGrossBp"] // 10000)
+                network = arable and set(rules["networkServices"]) <= services
+                transition = row.get("polityId", settlement["controllerId"]) in rules["tenureTransitionPolityIds"]
+                province_id = row.get("provinceId", next((x["provinceId"] for x in world.get("settlements", []) if x["id"] == settlement["id"]), ""))
+                trade_records.append(f'\truntime.agriculture.addSite(new AgricultureSite("{ws(settlement["id"])}","{ws(province_id)}",{normal_tax},{local_stock * rules["storageStockMultiplier"]},{seed},{rules["yieldBp"]},{rules["spoilageBp"]},{max(1, normal_tax * rules["laborOnTaxBp"] // 10000)},{str(arable).lower()},{str(network).lower()},{str(transition).lower()}))')
+            capacity = (24000 if "warehouse" in services else 120 if row.get("port") else 60) if row else int(profile["storageCapacityUnits"])
+            service = "warehouse" in services
+            trade_stores.append(dict(id=f'warehouse:{settlement["id"]}', kind='warehouse', authorityId=settlement['id'], warehouseService=service))
+            trade_records.append(f'\truntime.registerStore(new TradeStore("warehouse:{ws(settlement["id"])}",{capacity},1000).withAccess("warehouse","{ws(settlement["id"])}",{str(service).lower()}))')
+        # Resolve vessel ownership and live location from the military authority
+        # at commit. Citizenship and a typed vessel ID do not confer ownership.
+        for unit in world.get("strategicUnits", []):
+            if unit.get("kind") == "ship":
+                capacity = max(1, int(unit.get("representedStrength", 10)) * 20)
+                trade_stores.append(dict(id=f'cargo:{unit["id"]}', kind='ship', authorityId=unit['id'], warehouseService=False))
+                trade_records.append(f'\truntime.registerStore(new TradeStore("cargo:{ws(unit["id"])}",{capacity},0).withAccess("ship","{ws(unit["id"])}",false))')
+    if agriculture_payload:
+        runtime["agriculture"] = {key: agriculture_payload[key] for key in ("rules", "effects")}
+    runtime["tradeStoreDefinitions"] = trade_stores
+    runtime["tradeMarketCount"] = sum(1 for line in trade_records if "runtime.registerMarketProfile(" in line)
+    if runtime["tradeMarketCount"] > 16384 or len(trade_stores) > 1024:
+        raise PackagingError("generation: trade authority capacity exceeded")
+    if len(settlement_runtime) > 1024:
+        raise PackagingError("generation: settlement authority capacity exceeded")
+    if settlement_runtime and runtime["tradeMarketCount"] == 0:
+        raise PackagingError("generation: playable settlements would receive no authoritative trade markets")
+    trade_lines = ["\npublic function configureGeneratedAgriculture(PlayableTradeRuntime runtime)", *(agriculture_payload["wurst"] if agriculture_payload else ["\tskip"])]
+    chunk_size = 160
+    for start in range(0, len(trade_records), chunk_size):
+        name = f"configureGeneratedTrade{start // chunk_size}"
+        trade_lines += [f"\nfunction {name}(PlayableTradeRuntime runtime)", *trade_records[start:start + chunk_size]]
+    trade_lines.append("\npublic function configureGeneratedTrade(PlayableTradeRuntime runtime)")
+    if trade_records:
+        trade_lines += [f"\tconfigureGeneratedTrade{i}(runtime)" for i in range((len(trade_records) + chunk_size - 1) // chunk_size)]
+    else:
+        trade_lines.append("\tskip")
+    from civic_governance import configuration as civic_configuration
+    civic_wurst, civic_catalog, civic_sources = civic_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
+    runtime['civicGovernance'] = civic_catalog
+    from science_exploration import configuration as science_configuration
+    science_wurst, science_catalog, science_sources = science_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
+    runtime['scienceExploration'] = science_catalog
+    from trade_finance import configuration as finance_configuration
+    finance_wurst, finance_catalog, finance_sources = finance_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
+    runtime['tradeFinance'] = finance_catalog
+    from army_food_logistics import configuration as logistics_configuration, supply_anchor
+    logistics_wurst, logistics_catalog, logistics_sources = logistics_configuration(config.project, world, settlement_runtime, authored_sources, trade_records, finance_catalog)
+    runtime['armyFoodLogistics'] = logistics_catalog
+    if logistics_catalog:
+        if not runtime['partyNavigation'] or len(runtime['partyNavigation']) > 64:
+            raise PackagingError('logistics: physical land supply navigation is unavailable')
+        logistics_catalog['depots'] = []
+        logistics_catalog['unreachableDepotIds'] = []
+        for index, sid in enumerate(logistics_catalog['foodSiteIds']):
+            if sid not in points:
+                raise PackagingError(f'logistics: food depot {sid} lacks physical service placement')
+            anchor = points[sid]
+            approach = supply_anchor(anchor, runtime['partyNavigation'][anchor['mapId']], logistics_catalog['food']['approachRadius'])
+            if approach is None:
+                logistics_catalog['unreachableDepotIds'].append(sid)
+                continue
+            px, py = approach
+            logistics_catalog['depots'].append(dict(id=sid, mapId=anchor['mapId'], x=px, y=py, servicePosition=anchor['world']))
+            logistics_wurst += f'\tledger.foodDepots[{index}] = new FoodDepot({json.dumps(sid)}, {json.dumps(anchor["mapId"])}, {float(px)}, {float(py)})\n'
+        logistics_wurst += '\tconfigureGeneratedLogisticsNavigation(ledger)\n'
+        logistics_wurst += '\nPartyNavigation array[64] generatedLogisticsNavigation\n'
+        logistics_wurst += '\nfunction configureGeneratedLogisticsNavigation(FinanceLedger ledger)\n'
+        for index, map_id in enumerate(runtime['partyNavigation']):
+            logistics_wurst += f'\tif generatedLogisticsNavigation[{index}] == null\n\t\tgeneratedLogisticsNavigation[{index}] = generatedPartyNavigation{index}()\n'
+            logistics_wurst += f'\tledger.foodMaps[{index}] = generatedLogisticsNavigation[{index}]\n'
+        logistics_wurst += f"\tledger.foodMapCount = {len(runtime['partyNavigation'])}\n"
+    finance_wurst += '\tconfigureGeneratedLogistics(ledger, effects)\n' + logistics_wurst
+    finance_sources += logistics_sources
+    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport TreasureResolution\nimport MilitarySettlementRuntime\nimport MilitaryTraditionLayer\nimport CombatEffects\nimport VoyageNavigation\nimport ExactRational\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\nimport Agriculture\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
+    naval_sources = []
+    naval_wurst = '\npublic function configureGeneratedNaval(NavalLedger ledger, NavalResearchEffects effects)\n\tskip\n'
+    naval_builder = configuration(config.project)["scenario"].get("navalBuilder")
+    if naval_builder:
+        naval_payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, naval_builder))], cwd=config.project, text=True))
+        naval_wurst = naval_payload['wurst']
+        naval_sources = [content_path(config.project, p) for p in naval_payload['sources']]
+        runtime['navalServices'] = naval_payload['catalog']
+        for yard in runtime['navalServices']['yards']:
+            for good in naval_payload['catalog']['materialGoodIds']:
+                if not any(f'runtime.registerMarketProfile("{yard["settlementId"]}","{good}",' in line for line in trade_records):
+                    raise PackagingError('naval: yard lacks real material/supply stock')
+        # Every eligible authored port can fund its own yard; station placement
+        # uses actual naval pathing, never a settlement's possibly land-only point.
+        declared = {y['settlementId'] for y in runtime['navalServices']['yards']}
+        extra_yards = []
+        for settlement in settlement_runtime:
+            ident = settlement['id']
+            authored = authored_sources.get(ident, ('', {}))[1]
+            if ident in declared or not authored.get('port') or not set(naval_payload['catalog']['yardServices']) <= set(authored.get('services', [])):
+                continue
+            if any(not any(f'runtime.registerMarketProfile("{ident}","{good}",' in line for line in trade_records) for good in naval_payload['catalog']['materialGoodIds']):
+                continue
+            grid = runtime['recoveryNavigation'].get(settlement['regionId'], [None, None])[1]
+            if grid is None:
+                continue
+            candidates = []
+            for y, row in enumerate(grid['rows']):
+                start = 0
+                for end_text, label_text in re.findall(r"(\d+):(\d+),", row):
+                    end, label = int(end_text), int(label_text)
+                    if label > 0:
+                        for x in range(start, end):
+                            px, py = grid['minX'] + (x + .5) * 128, grid['minY'] + (y + .5) * 128
+                            distance = (px - settlement['x']) ** 2 + (py - settlement['y']) ** 2
+                            if distance <= naval_payload['catalog']['maximumHarborDistance'] ** 2:
+                                candidates.append((distance, px, py))
+                    start = end
+            if candidates:
+                _, px, py = min(candidates)
+                extra_yards.append(dict(settlementId=ident, mapId=settlement['regionId'], stationPosition=[px, py]))
+        if len(declared) + len(extra_yards) > 64:
+            raise PackagingError('naval: eligible yard count exceeds persistent ledger capacity')
+        if extra_yards:
+            naval_wurst += '\tlet blueprint = ledger.yards[0]\n'
+        for yard in extra_yards:
+            ident, map_id = json.dumps(yard['settlementId']), json.dumps(yard['mapId'])
+            px, py = yard['stationPosition']
+            naval_wurst += f'\tledger.register(new NavalYard({ident}, {map_id}, {px}, {py}, blueprint.prerequisite, blueprint.researchRequirements, blueprint.profileId, blueprint.unitTypeId, blueprint.firstDay, blueprint.lastDay, blueprint.price, blueprint.upkeep, blueprint.supply, blueprint.crew, blueprint.strength))\n'
+        runtime['navalServices']['additionalYards'] = extra_yards
+    land_sources = []
+    land_wurst = '\npublic function configureGeneratedLandArmy(LandArmyLedger ledger, LandResearchEffects research, int day)\n\tskip\n'
+    land_builder = config.project / 'tooling/land_army_catalog.py'
+    if land_builder.is_file():
+        result = subprocess.run([sys.executable, str(land_builder)], cwd=config.project,
+                                text=True, capture_output=True, check=True)
+        land_payload = json.loads(result.stdout)
+        runtime['landArmy'] = land_payload['catalog']
+        land_wurst = land_payload['wurst']
+        land_sources = [content_path(config.project, name) for name in land_payload['sources']]
+    industry_sources = []
+    industry_wurst = '\npublic function configureGeneratedIndustry(IndustryLedger ledger, IndustryResearchEffects effects)\n\tskip\n\npublic function configureGeneratedIndustryMarkets(PlayableTradeRuntime runtime)\n\tskip\n'
+    industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
+    if industry_builder:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
+        runtime['industry'] = payload['catalog']
+        industry_wurst = payload['wurst']
+        industry_sources = [content_path(config.project, name) for name in payload['sources']]
+        runtime['tradeMarketCount'] += sum(
+            not any(f'runtime.registerMarketProfile("{ident}","{good}",' in line for line in trade_records)
+            for ident, good in payload['catalog']['markets'])
+        if runtime['tradeMarketCount'] > 16384:
+            raise PackagingError('industry: trade authority capacity exceeded')
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst
+    wurst = wurst.replace('import UnstuckRecovery\n', 'import Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
+    wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
+    wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
+    runtime['questDefinitions'] = world.get('quests', [])
+    runtime['questConditionBindings'] = quest_bindings
+    runtime['questIntegrationBlockers'] = quest_blockers
+    runtime['researchUnlockDefinitions'] = unlock_definitions
+    bound_research = {(row['entitlement']['kind'], row['entitlement']['contentId'])
+                      for row in combat_payload['catalog']['researchEffects']} if combat_payload else set()
+    if voyage_payload:
+        entitlement = voyage_payload['catalog']['entitlement']
+        bound_research.add((entitlement['kind'], entitlement['contentId']))
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
+    if naval_builder:
+        bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
+    if industry_builder:
+        bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
+    runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
+    wurst += interaction_configuration(locations)
+    wurst += arrival_configuration
+    wurst += recovery_configuration(runtime['recoveryNavigation'])
+    (generated / GENERATED_DATA).write_text(json.dumps(runtime, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    (generated / GENERATED_WURST).write_text(wurst, encoding="utf-8")
+    input_paths = (
+        config.config_path,
+        config.manifest,
+        config.scenario_file,
+        config.scenario_validator,
+        config.project / "wurst.build",
+        *(path for path in (config.project / "wurst_run.args",) if path.is_file()),
+        Path(__file__).resolve(),
+        Path(__file__).resolve().with_name("generate_regional_terrain.py"),
+        *(path for _, path in config.regional_terrain),
+        *terrain_authorities,
+        *((config.custom_2d_source, config.custom_2d_builder) if config.custom_2d_source else ()),
+        *(path for path in paths.values() if path.is_file()),
+        *progression_sources,
+        *quest_sources,
+        *combat_sources,
+        *civic_sources,
+        *land_sources,
+        *industry_sources,
+        *science_sources,
+        *finance_sources,
+        *naval_sources,
+        *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
+        *(config.project / path for path in (agriculture_payload["sources"] if agriculture_payload else [])),
+        *(path for path in country_runtime["sources"] if path.is_file()),
+        *(path for source, geography, _region in settlement_sources(config.project) for path in (source, geography)),
+        *(config.project / "scenario/geography").glob("*.json"),
+        *(path for path in (
+            config.project / "scenario/integration/release-scale-settlements.json",
+            config.project / "scenario/military-traditions.json",
+            config.project / "physical-maps.json",
+            Path(__file__).with_name("package_wurst_campaign.py"),
+            Path(__file__).with_name("materialize_physical_map.py"),
+            Path(__file__).with_name("physical_interactions.py"),
+            Path(__file__).with_name("boundary_arrival.py"),
+            Path(__file__).with_name("party_locations.py"),
+            Path(__file__).with_name("recovery_navigation.py"),
+            config.project / "scenario/maps/physical-boundaries.json",
+            config.project / configuration(config.project)["scenario"].get("mapPresentation", "scenario/maps/world-map.json"),
+        ) if path.is_file()),
+        *(config.project.parent / '_shared/wurst').glob('*.wurst'),
+        *(config.project.parent / '_shared/wurst-bootstrap').glob('*.wurst'),
+        Path(__file__).with_name("equipment_sets.py"),
+        Path(__file__).with_name("equipment_items.py"),
+        Path(__file__).with_name("treasure_resolution.py"),
+        Path(__file__).resolve().parents[1] / "engine/treasures.py",
+        Path(__file__).resolve().parents[1] / "engine/player_items.py",
+        Path(__file__).resolve().parents[1] / "engine/inventory.py",
+        Path(__file__).resolve().parents[1] / "engine/technology_institutions.py",
+        Path(__file__).with_name("scenario_inputs.py"),
+        Path(__file__).with_name("scenario_settings.py"),
+        Path(__file__).with_name("map_knowledge.py"),
+    )
+    inputs = {}
+    for path in input_paths:
+        try:
+            key = str(path.relative_to(config.project.parent))
+        except ValueError:
+            # Unit tests load this shared module before copying a fixture project.
+            # The reserved key also avoids encoding machine-specific absolute paths.
+            prefix = "@engine" if path.parent.name == "engine" else "@generator"
+            key = f"{prefix}/{path.name}"
+        inputs[key] = _sha(path)
+    outputs = {name: _sha(generated / name) for name in (GENERATED_WURST, GENERATED_DATA, *terrain_outputs.values())}
+    if config.custom_2d_source:
+        for path in sorted((generated/"custom-2d").rglob("*")):
+            if path.is_file(): outputs[path.relative_to(generated).as_posix()]=_sha(path)
+    provenance = {"formatVersion": 1, "generatorVersion": GENERATOR_VERSION, "inputs": inputs, "outputs": outputs}
+    (generated / PROVENANCE).write_text(json.dumps(provenance, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+
+def verify_generated(config: BuildConfig, generated: Path) -> None:
+    try: provenance = json.loads((generated / PROVENANCE).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error: raise _fail("provenance", f"missing or invalid {PROVENANCE}: {error}") from error
+    if provenance.get("generatorVersion") != GENERATOR_VERSION: raise _fail("provenance", "generated data uses a different generator version")
+    for relative, expected in provenance.get("inputs", {}).items():
+        if relative.startswith("@generator/"):
+            path = Path(__file__).resolve().with_name(relative.removeprefix("@generator/"))
+        elif relative.startswith("@engine/"):
+            path = Path(__file__).resolve().parents[1] / "engine" / relative.removeprefix("@engine/")
+        else:
+            path = config.project.parent / relative
+        if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: input changed: {relative}")
+    for name, expected in provenance.get("outputs", {}).items():
+        path = generated / name
+        if not path.is_file() or _sha(path) != expected: raise _fail("provenance", f"stale generated data: output changed: {name}")
+    # The authored selector intentionally has no world registration graph.
+    # Every regional map and the unlocalized execution assembly must retain it.
+    manifest = config.project / "physical-maps.json"
+    selector = manifest.is_file() and any(
+        row.get("bootstrap") and row["id"] == provenance.get("physicalMap")
+        for row in json.loads(manifest.read_text())["physicalMaps"])
+    traditions = config.project / "scenario/military-traditions.json"
+    if traditions.is_file() and not selector:
+        from validate_military_traditions import verify_generated_definitions
+        verify_generated_definitions((generated / GENERATED_WURST).read_text(),
+                                     json.loads(traditions.read_text()))
+    combat_builder = configuration(config.project)["scenario"].get("combatEffectBuilder")
+    if combat_builder and not selector:
+        result = subprocess.run([sys.executable, str(content_path(config.project, combat_builder))],
+                                cwd=config.project, text=True, capture_output=True, check=True)
+        expected = json.loads(result.stdout)["wurst"]
+        if (generated / GENERATED_WURST).read_text().count(expected) != 1:
+            raise _fail("combat bindings", "executable catalogue differs from scenario (release blocker)")
+        from combat_effects import verify_executable_bindings
+        verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
+
+    industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
+    if industry_builder and not selector:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
+        if ((generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('industry') != payload['catalog']):
+            raise _fail('industry bindings', 'executable catalogue differs from scenario (release blocker)')
+
+    land_builder = config.project / 'tooling/land_army_catalog.py'
+    if land_builder.is_file() and not selector:
+        result = subprocess.run([sys.executable, str(land_builder)], cwd=config.project,
+                                text=True, capture_output=True, check=True)
+        payload = json.loads(result.stdout)
+        if ((generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('landArmy') != payload['catalog']):
+            raise _fail('land army bindings', 'executable catalogue differs from scenario (release blocker)')
+
+    voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
+    if voyage_builder and not selector:
+        result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],
+                                cwd=config.project, text=True, capture_output=True, check=True)
+        payload = json.loads(result.stdout)
+        expected = payload["wurst"]
+        if json.loads((generated / GENERATED_DATA).read_text()).get("voyageNavigation") != payload["catalog"]:
+            raise _fail("voyage bindings", "runtime payload differs from scenario")
+        source = (generated / GENERATED_WURST).read_text()
+        calls = lambda text: [line for line in text.splitlines() if
+            'new VoyageContract(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line]
+        if source.count(expected) != 1 or calls(source) != calls(expected):
+            raise _fail("voyage bindings", "executable catalogue differs from scenario")
+
+def _run(stage: str, command: list[str], cwd: Path) -> None:
+    result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,
+                            env=toolchain_environment())
+    if result.returncode: raise _fail(stage, f"command exited {result.returncode}: {' '.join(command)}\n{(result.stdout + result.stderr).strip()}")
+
+def _materialize_authored_minimap(map_root: Path) -> bytes | None:
+    """Decode a versioned BLP1 JPEG map preview without an image-library dependency.
+
+    The authored .base64 text is source-controlled; only the decoded BLP is
+    handed to the Warcraft map compiler. This is opt-in for source maps.
+    """
+    encoded_path = map_root / "war3mapMap.blp.base64"
+    if not encoded_path.is_file():
+        return None
+    output = map_root / "war3mapMap.blp"
+    if output.exists():
+        raise _fail("assembly", "both authored BLP and encoded minimap are present")
+    try:
+        encoded = encoded_path.read_text(encoding="ascii").strip()
+        if len(encoded) > 256_000:
+            raise ValueError("encoded minimap exceeds supported size")
+        image = base64.b64decode(encoded, validate=True)
+        if len(image) < 160:
+            raise ValueError("BLP1 header truncated")
+        magic, compression, flags, width, height, kind, subtype = struct.unpack_from("<4s6I", image)
+        offsets = struct.unpack_from("<16I", image, 28)
+        sizes = struct.unpack_from("<16I", image, 92)
+        jpeg_header_size = struct.unpack_from("<I", image, 156)[0]
+        if ((magic, compression, flags, width, height, kind, subtype)
+                != (b"BLP1", 0, 0, 256, 256, 5, 0)):
+            raise ValueError("expected BLP1 JPEG 256x256 minimap")
+        if (not 0 < jpeg_header_size <= 16_384 or
+                offsets[0] < 160 + jpeg_header_size or
+                sizes[0] == 0 or offsets[0] + sizes[0] != len(image) or
+                any(offsets[1:]) or any(sizes[1:]) or
+                image[160:162] != bytes.fromhex("ffd8") or
+                image[-2:] != bytes.fromhex("ffd9")):
+            raise ValueError("malformed BLP1 JPEG mip/header layout")
+    except (OSError, UnicodeError, ValueError, binascii.Error, struct.error) as error:
+        raise _fail("assembly", f"invalid authored minimap: {error}") from error
+    output.write_bytes(image)
+    encoded_path.unlink()
+    return image
+
+def _assemble(config: BuildConfig, root: Path, generated: Path, terrain_ids: tuple[str, ...] | None = None, *, include_tests: bool = True) -> Path:
+    compile_root = root / "compile"
+    shutil.copytree(config.source_map, compile_root / "map" / config.source_map.name)
+    _materialize_authored_minimap(compile_root / "map" / config.source_map.name)
+    shutil.copytree(config.wurst_source, compile_root / "wurst",
+                    ignore=None if include_tests else shutil.ignore_patterns("*Tests.wurst"))
+    for source in (config.project.parent / '_shared/wurst').glob('*.wurst'):
+        target = compile_root / 'wurst' / source.name
+        if target.exists() and target.read_bytes() != source.read_bytes():
+            raise PackagingError(f"assembly: scenario forks shared package {source.name}")
+        shutil.copy2(source, target)
+    from scenario_settings import write_settings
+    write_settings(config.project, compile_root / "wurst")
+    if include_tests:
+        for source in (config.project.parent / "_shared/wurst-tests").glob("*.wurst"):
+            if source.name != "FrameworkConformanceTests.wurst" or (config.project / "conformance.json").is_file():
+                shutil.copy2(source, compile_root / "wurst" / source.name)
+    if include_tests and (config.project / "conformance.json").is_file():
+        from framework_conformance import assemble_contract
+        assemble_contract(config.project, compile_root / "wurst")
+    shutil.copy2(config.project / "wurst.build", compile_root / "wurst.build")
+    if (config.project / "wurst_run.args").is_file():
+        shutil.copy2(config.project / "wurst_run.args", compile_root / "wurst_run.args")
+    shutil.copy2(generated / GENERATED_WURST, compile_root / "wurst" / GENERATED_WURST)
+    runtime_dir = compile_root / "map" / config.source_map.name / "runtime"; runtime_dir.mkdir()
+    shutil.copy2(generated / GENERATED_DATA, runtime_dir / GENERATED_DATA); shutil.copy2(generated / PROVENANCE, runtime_dir / PROVENANCE)
+    selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
+    for terrain_id, _source in config.regional_terrain:
+        if terrain_id not in selected:
+            continue
+        shutil.copy2(generated / f"terrain-{terrain_id}.json", runtime_dir / f"terrain-{terrain_id}.json")
+    if config.custom_2d_source:
+        custom=generated/"custom-2d"
+        shutil.copy2(custom/"custom-2d-imports.json",runtime_dir/"custom-2d-imports.json")
+        for path in sorted((custom/"imports").rglob("*")):
+            if path.is_file():
+                target=compile_root/"map"/config.source_map.name/path.relative_to(custom/"imports")
+                target.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(path,target)
+    return compile_root
+
+def _find_archive(root: Path) -> Path:
+    files = [p for p in root.rglob("*.w3x") if p.is_file()]
+    if not files: raise _fail("map assembly", "Wurst produced no .w3x archive")
+    return max(files, key=lambda p: p.stat().st_mtime_ns)
+
+def _inspect(config: BuildConfig, archive: Path, compile_root: Path, terrain_ids: tuple[str, ...] | None = None) -> None:
+    data = archive.read_bytes()
+    if len(data) < 4 or data[:4] not in (b"MPQ\x1a", b"HM3W", b"PK\x03\x04"): raise _fail("archive inspection", f"unrecognized Warcraft archive: {archive}")
+    lua = ""
+    packaged_source_sha = None
+    if zipfile.is_zipfile(archive):
+        with zipfile.ZipFile(archive) as zipped:
+            selected = set(terrain_ids) if terrain_ids is not None else {terrain_id for terrain_id, _ in config.regional_terrain}
+            names = set(zipped.namelist()); expected = {"war3map.w3i", "war3map.w3e", "war3map.wpm", "war3map.lua", f"runtime/{GENERATED_DATA}", f"runtime/{PROVENANCE}", *(f"runtime/terrain-{terrain_id}.json" for terrain_id in selected)}
+            if config.custom_2d_source:
+                expected.add("runtime/custom-2d-imports.json")
+                custom=json.loads(zipped.read("runtime/custom-2d-imports.json"))
+                expected.update(row["importPath"].replace("\\","/") for row in custom["assets"])
+            if expected - names: raise _fail("archive inspection", "missing entries: " + ", ".join(sorted(expected - names)))
+            if any(name.startswith(("tests/", "fixtures/", "scenario/", "wurst/")) for name in names): raise _fail("archive inspection", "development-only source or fixtures were packaged")
+            lua = zipped.read("war3map.lua").decode("utf-8", errors="replace")
+            try:
+                packaged_source_sha = json.loads(zipped.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
+            except (KeyError, json.JSONDecodeError, UnicodeDecodeError) as error:
+                raise _fail("archive inspection", f"invalid generated runtime provenance: {error}") from error
+    else:
+        # The archive is authoritative. A successful intermediate Lua file
+        # cannot establish what the client will actually load.
+        from warcraft_campaign import MpqReader
+        try:
+            reader = MpqReader(archive)
+            lua = reader.read("war3map.lua").decode("utf-8")
+            packaged_source_sha = json.loads(reader.read(f"runtime/{GENERATED_DATA}"))["sourceSha256"]
+        except (KeyError, ValueError, UnicodeError) as error:
+            raise _fail("archive inspection", f"invalid packaged Lua/runtime: {error}") from error
+    minimap_path = compile_root / "map" / config.source_map.name / "war3mapMap.blp"
+    if minimap_path.is_file():
+        try:
+            if zipfile.is_zipfile(archive):
+                with zipfile.ZipFile(archive) as packed:
+                    packaged_minimap = packed.read("war3mapMap.blp")
+            else:
+                from warcraft_campaign import MpqReader
+                packaged_minimap = MpqReader(archive).read("war3mapMap.blp")
+        except (KeyError, OSError, ValueError) as error:
+            raise _fail("archive inspection", f"authored minimap missing from compiled map: {error}") from error
+        if packaged_minimap != minimap_path.read_bytes():
+            raise _fail("archive inspection", "compiled minimap differs from authored source")
+    if not lua: raise _fail("archive inspection", "generated Lua runtime code is missing")
+    from warcraft_lua_startup import startup_failures
+    startup = startup_failures(lua)
+    if startup: raise _fail("archive inspection", "; ".join(startup))
+    absent = [marker for marker in config.bootstrap_markers if marker not in lua]
+    if absent: raise _fail("archive inspection", "Lua is missing marker(s): " + ", ".join(absent))
+    # ScenarioData used to retain a megabyte-scale JSON string solely because
+    # this source digest happened to occur inside it.  The runtime payload is
+    # now an archive resource, so validate its authoritative-source identity at
+    # that boundary instead of requiring an otherwise-unused Lua literal.
+    if packaged_source_sha is not None and packaged_source_sha != _sha(config.scenario_file):
+        raise _fail("archive inspection", "generated runtime source digest does not match the authoritative scenario")
+
+def clean(config: BuildConfig) -> None:
+    root = config.project / "_build"
+    if root.exists(): shutil.rmtree(root)
+
+def run_execution_tests(config: BuildConfig, executable: str, revision: str | None = None) -> dict:
+    """Run the full unlocalized suite once, including generated scenario records."""
+    root = config.project / "_build/wurst-tests"
+    if root.exists(): shutil.rmtree(root)
+    generated = root / "generated"
+    generate(config, generated); verify_generated(config, generated)
+    compile_root = _assemble(config, root, generated)
+    _run("Wurst test dependency installation", [executable, "install"], compile_root)
+    try:
+        return execute_tests(compile_root, executable, root, source_revision(config.project, revision), project=config.project)
+    except WurstExecutionError as error:
+        raise _fail("Wurst execution", error) from error
+
+def build(config_path: Path, grill: str | None = None, clean_first: bool = True) -> Path:
+    config = load_config(config_path); executable = validate_inputs(config, grill)
+    if clean_first: clean(config)
+    from integration_evidence import source_identity
+    revision = source_revision(config.project)
+    identity = source_identity(config.project, revision)
+    validate_scenario(config); root = config.project / "_build"; generated = root / "generated"
+    generate(config, generated); verify_generated(config, generated); compile_root = _assemble(config, root, generated)
+    (compile_root / "map" / config.source_map.name / "runtime/build-identity.json").write_text(
+        json.dumps(identity, sort_keys=True) + "\n")
+    _run("Wurst dependency installation", [executable, "install"], compile_root)
+    _run("Wurst compilation", [executable, "typecheck"], compile_root)
+    try:
+        execute_tests(compile_root, executable, root / "wurst-tests", revision, project=config.project)
+    except WurstExecutionError as error:
+        raise _fail("Wurst execution", error) from error
+    _run("map assembly", [executable, "build", str(Path("map") / config.source_map.name)], compile_root)
+    archive = _find_archive(compile_root / "_build"); _inspect(config, archive, compile_root)
+    if source_identity(config.project, revision) != identity:
+        raise _fail("provenance", "authoritative sources changed during map build")
+    config.output.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(archive, config.output)
+    print(f"release archive: {config.output}"); return config.output
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if len(argv) not in (1, 2) or (len(argv) == 2 and argv[0] != "clean"): print("usage: package_wurst_map.py [clean] CONFIG", file=sys.stderr); return 2
+    try:
+        config_path = Path(argv[-1]); clean(load_config(config_path)) if len(argv) == 2 else build(config_path)
+    except (PackagingError, OSError) as error: print(f"packaging failed: {error}", file=sys.stderr); return 1
+    return 0
+if __name__ == "__main__": raise SystemExit(main())

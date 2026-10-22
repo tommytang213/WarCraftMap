@@ -1,0 +1,98 @@
+--- frozen/full-scale-roundtrip.lua
++++ catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua
+@@ -75,8 +75,8 @@
+     local services = assert(PlayableCampaignRuntime_campaignServices)
+     local state = assert(PlayableCampaignServices_state_storage[services])
+     local runtime = assert(PlayableCampaignState_extension_storage[state])
+-    assert(PlayableTradeRuntime_marketCount_storage[runtime] == 8422,
+-           'The full-scale gate requires exactly 8422 actual markets')
++    assert(PlayableTradeRuntime_marketCount_storage[runtime] == 8426,
++           'The full-scale gate requires exactly 8426 actual markets')
+     assert(PlayableTradeRuntime_storeCount_storage[runtime] == 829,
+            'The full-scale gate requires exactly 829 actual stores')
+     return services, state, runtime
+@@ -142,12 +142,12 @@
+         local controller = PlayableTradeRuntime_controller_storage[runtime]
+         local provenance = PlayableTradeController_provenance_storage[controller]
+         local originalMarkets, originalStores, allowedGoods, origins = {}, {}, {}, {}
+-        local report = {marketCount = 8422, storeCount = 829, populatedStores = 0,
++        local report = {marketCount = 8426, storeCount = 829, populatedStores = 0,
+                         populatedLots = 0, totalCargoUnits = 0, selection = {}}
+         __scale.roundtrip = report
+         step(row, 'populate_actual_catalogue', function()
+             CargoProvenance_CargoProvenance_clear(provenance, stack)
+-            for i = 0, 8421 do
++            for i = 0, 8425 do
+                 local market = assert(markets[i])
+                 originalMarkets[i] = market
+                 RuntimeMarket_stock_storage[market] = i + 100
+@@ -161,8 +161,8 @@
+                 local quantity = math.min(2, TradeStore_capacity_storage[store])
+                 assert(quantity >= 1, 'Actual store has no cargo capacity: ' .. TradeStore_id_storage[store])
+                 local chosen
+-                for offset = 0, 8421 do
+-                    local market = markets[(i * 10 + offset) % 8422]
++                for offset = 0, 8425 do
++                    local market = markets[(i * 10 + offset) % 8426]
+                     local good = RuntimeMarket_goodName_storage[market]
+                     if TradeStore_TradeStore_accepts(store, good, stack) then
+                         chosen = market
+@@ -188,7 +188,7 @@
+             report.distinctGoods, report.distinctOrigins = 0, 0
+             for _ in pairs(allowedGoods) do report.distinctGoods = report.distinctGoods + 1 end
+             for _ in pairs(origins) do report.distinctOrigins = report.distinctOrigins + 1 end
+-            local last = markets[8421]
++            local last = markets[8425]
+             assert(PlayableTradeRuntime_PlayableTradeRuntime_selectMarket(runtime,
+                 RuntimeMarket_id_storage[last], RuntimeMarket_goodName_storage[last], stack))
+             PlayableTradeRuntime_hold_storage[runtime] = stores[828]
+@@ -206,7 +206,7 @@
+             report.savedBytes = #__scale_saved
+         end)
+         step(row, 'mutate_and_reverse_both_catalogues', function()
+-            for i = 0, 8421 do
++            for i = 0, 8425 do
+                 RuntimeMarket_stock_storage[markets[i]] = 0
+                 RuntimeMarket_money_storage[markets[i]] = 0
+                 RuntimeMarket_previousUnitPrice_storage[markets[i]] = 1
+@@ -221,22 +221,22 @@
+             assert(PlayableTradeRuntime_PlayableTradeRuntime_selectMarket(runtime,
+                 RuntimeMarket_id_storage[markets[0]], RuntimeMarket_goodName_storage[markets[0]], stack))
+             PlayableTradeRuntime_hold_storage[runtime] = stores[0]
+-            assert(PlayableTradeRuntime_market_storage[runtime] ~= originalMarkets[8421])
++            assert(PlayableTradeRuntime_market_storage[runtime] ~= originalMarkets[8425])
+             assert(PlayableTradeRuntime_hold_storage[runtime] ~= originalStores[828])
+-            reverse(markets, 8422)
++            reverse(markets, 8426)
+             reverse(stores, 829)
+-            assert(markets[0] == originalMarkets[8421] and stores[0] == originalStores[828])
++            assert(markets[0] == originalMarkets[8425] and stores[0] == originalStores[828])
+             __scale_mutated = PlayableTradeRuntime_PlayableTradeRuntime_capture(runtime, stack)
+             assert(__scale_mutated ~= __scale_saved, 'Mutation did not change the serialized state')
+-            report.mutatedMarkets, report.mutatedStores, report.clearedLots = 8422, 829, 829
++            report.mutatedMarkets, report.mutatedStores, report.clearedLots = 8426, 829, 829
+             report.catalogueOrderChanged, report.selectionChanged = true, true
+         end)
+         step(row, 'reconstruct_through_actual_compiled_functions', function()
+             report.reconstructReturned = PlayableTradeRuntime_PlayableTradeRuntime_reconstruct(runtime, __scale_saved, stack)
+             assert(report.reconstructReturned == true, 'Actual reconstruct returned false')
+-            assert(markets[0] == originalMarkets[8421] and stores[0] == originalStores[828],
++            assert(markets[0] == originalMarkets[8425] and stores[0] == originalStores[828],
+                    'Reconstruct unexpectedly reordered catalogue arrays')
+-            assert(PlayableTradeRuntime_market_storage[runtime] == originalMarkets[8421],
++            assert(PlayableTradeRuntime_market_storage[runtime] == originalMarkets[8425],
+                    'Selected market identity was not restored')
+             assert(PlayableTradeRuntime_hold_storage[runtime] == originalStores[828],
+                    'Selected hold identity was not restored')
+@@ -248,9 +248,9 @@
+             report.transientSelectionFlagsCleared = true
+         end)
+         step(row, 'restore_original_order_and_compare_every_saved_byte', function()
+-            reverse(markets, 8422)
++            reverse(markets, 8426)
+             reverse(stores, 829)
+-            for i = 0, 8421 do assert(markets[i] == originalMarkets[i]) end
++            for i = 0, 8425 do assert(markets[i] == originalMarkets[i]) end
+             for i = 0, 828 do assert(stores[i] == originalStores[i]) end
+             __scale_restored = PlayableTradeRuntime_PlayableTradeRuntime_capture(runtime, stack)
+             assert(__scale_restored == __scale_saved, 'Whole populated capture differs after restore')

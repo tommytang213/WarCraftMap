@@ -1,0 +1,282 @@
+{
+  "format": "startup_compiled_lua_comparison_v1",
+  "generatedAt": "2026-10-20T14:56:11.834252+00:00",
+  "status": "pass_exact_source_fix_local_lua53_and_lua54_startup",
+  "nativeStatus": "not_run",
+  "nativeReportedFailureResolved": "not_established",
+  "scope": "Exact compiled destination script, fresh Austria pending request, explicit typed native stubs, through config/main return and activation/timer registration.",
+  "baselineRevision": "54911cabe2a993b22f3a5d05b549df5dc3995c9c",
+  "baselineCompiledLuaSha256": "91bd25f29ae4bd89347bb426d3557ce8144bd77f1bbaeaad635f74ccb99e2ac7",
+  "fixedCompiledLuaSha256": "a4fc97bb27b36466bc62bad74605128258c6847c4f46791efe2df184c3f85a45",
+  "fixedCompiledLuaBytes": 16097583,
+  "fixedArchiveSha256": "2bed44087117f296ad461a9572752743911662fdbacdbb823733e7d55abcd9d7",
+  "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "onlyChangedWurstInput": [
+    {
+      "file": "PlayableTrade.wurst",
+      "before": "d3ece1f1cacc7c56d6f41d65e41b927991c50d565f8dceb32d2c232dcef1cd5b",
+      "after": "0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda"
+    }
+  ],
+  "compilerInputsUnchangedDuringBuild": true,
+  "buildReport": "/workspace/scratch/243ebc79fa0a/validation-536/startup-fix/europe/build-result.json",
+  "mapMetadataIdentityLimitation": "Retained baseline map metadata in disposable developer probe; not a distributable or release artifact.",
+  "frozenHarnessSha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948",
+  "frozenNativeStubsSha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630",
+  "instructionBudget": 2000000000,
+  "inputRequest": "v1|1|pending|austria|europe_central_east|europe_central_alpine|vienna",
+  "runtimeCounts": {
+    "stores": 829,
+    "forces": 1553,
+    "settlements": 827,
+    "markets": 8422,
+    "provenanceLots": 0
+  },
+  "allFourCapturedTradeSnapshotsByteIdentical": true,
+  "capturedTradeSnapshotBytes": 539822,
+  "capturedTradeSnapshotSha256": "051f77b5a63830900008c4abe9b5ea9a6da9c1b5f058dd5ad2cee0664368eb8d",
+  "timerCallbacksExecuted": 0,
+  "comparison": [
+    {
+      "runtimeVersion": "Lua 5.4",
+      "runtimeLibrary": "liblua5.4.so.0",
+      "before": {
+        "classification": "instruction_budget_exhausted_in_trade_market_scan",
+        "instructions": 2000010000,
+        "wallSeconds": 20.5759,
+        "cutoff": {
+          "rowOrdinal": 299,
+          "marketCatalogueLoopIndex": 3009,
+          "statesOffset": 17861,
+          "record": [
+            "aotearoa_runanga",
+            "barkcloth"
+          ]
+        },
+        "tradeValidation": {
+          "completed": false,
+          "instructions": 1449360000,
+          "cpuSeconds": 11.774312,
+          "startInstruction": 550650000
+        }
+      },
+      "after": {
+        "classification": "main_completed_under_explicit_stubs",
+        "instructions": 1099290000,
+        "wallSeconds": 17.8532,
+        "startup": {
+          "completed": true,
+          "instructions": 1067420000,
+          "cpuSeconds": 15.40077,
+          "returnValue": true,
+          "startInstruction": 19590000
+        },
+        "tradeValidation": {
+          "completed": true,
+          "instructions": 116070000,
+          "cpuSeconds": 0.977862,
+          "returnValue": true,
+          "startInstruction": 552380000
+        },
+        "authorityValidation": {
+          "completed": true,
+          "instructions": 398740000,
+          "cpuSeconds": 3.697979,
+          "returnValue": true,
+          "startInstruction": 296600000
+        },
+        "campaignStarted": true,
+        "campaignRegistered": true,
+        "finalCacheRequest": "v1|1|consumed|austria|europe_central_east|europe_central_alpine|vienna",
+        "syntheticUnitCount": 206,
+        "timerRegistrations": [
+          {
+            "repeated": false,
+            "destroyed": false,
+            "seconds": 100000.0,
+            "hasCallback": false
+          },
+          {
+            "repeated": true,
+            "destroyed": false,
+            "seconds": 0.03,
+            "hasCallback": true,
+            "callbackDefinedLine": 121735
+          },
+          {
+            "repeated": false,
+            "destroyed": false,
+            "seconds": 1.0,
+            "hasCallback": true,
+            "callbackDefinedLine": 23843
+          },
+          {
+            "repeated": true,
+            "destroyed": false,
+            "seconds": 1.0,
+            "hasCallback": true,
+            "callbackDefinedLine": 8959
+          },
+          {
+            "repeated": false,
+            "destroyed": false,
+            "seconds": 300.0,
+            "hasCallback": true,
+            "callbackDefinedLine": 5273
+          },
+          {
+            "repeated": true,
+            "destroyed": false,
+            "seconds": 1.0,
+            "hasCallback": true,
+            "callbackDefinedLine": 117758
+          }
+        ],
+        "messages": [
+          "Age of Sail: The World - development bootstrap loaded."
+        ]
+      }
+    },
+    {
+      "runtimeVersion": "Lua 5.3",
+      "runtimeLibrary": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "before": {
+        "classification": "instruction_budget_exhausted_in_trade_market_scan",
+        "instructions": 2000010000,
+        "wallSeconds": 21.8745,
+        "cutoff": {
+          "rowOrdinal": 290,
+          "marketCatalogueLoopIndex": 6308,
+          "statesOffset": 17339,
+          "record": [
+            "aomori",
+            "rice"
+          ]
+        },
+        "tradeValidation": {
+          "completed": false,
+          "instructions": 1442490000,
+          "cpuSeconds": 12.764639,
+          "startInstruction": 557520000
+        }
+      },
+      "after": {
+        "classification": "main_completed_under_explicit_stubs",
+        "instructions": 1110460000,
+        "wallSeconds": 17.0863,
+        "startup": {
+          "completed": true,
+          "instructions": 1079440000,
+          "cpuSeconds": 15.1439,
+          "returnValue": true,
+          "startInstruction": 19080000
+        },
+        "tradeValidation": {
+          "completed": true,
+          "instructions": 118130000,
+          "cpuSeconds": 1.323217,
+          "returnValue": true,
+          "startInstruction": 559220000
+        },
+        "authorityValidation": {
+          "completed": true,
+          "instructions": 404280000,
+          "cpuSeconds": 4.351206,
+          "returnValue": true,
+          "startInstruction": 300510000
+        },
+        "campaignStarted": true,
+        "campaignRegistered": true,
+        "finalCacheRequest": "v1|1|consumed|austria|europe_central_east|europe_central_alpine|vienna",
+        "syntheticUnitCount": 206,
+        "timerRegistrations": [
+          {
+            "seconds": 100000.0,
+            "destroyed": false,
+            "repeated": false,
+            "hasCallback": false
+          },
+          {
+            "seconds": 0.03,
+            "destroyed": false,
+            "repeated": true,
+            "hasCallback": true,
+            "callbackDefinedLine": 121735
+          },
+          {
+            "seconds": 1.0,
+            "destroyed": false,
+            "repeated": false,
+            "hasCallback": true,
+            "callbackDefinedLine": 23843
+          },
+          {
+            "seconds": 1.0,
+            "destroyed": false,
+            "repeated": true,
+            "hasCallback": true,
+            "callbackDefinedLine": 8959
+          },
+          {
+            "seconds": 300.0,
+            "destroyed": false,
+            "repeated": false,
+            "hasCallback": true,
+            "callbackDefinedLine": 5273
+          },
+          {
+            "seconds": 1.0,
+            "destroyed": false,
+            "repeated": true,
+            "hasCallback": true,
+            "callbackDefinedLine": 117758
+          }
+        ],
+        "messages": [
+          "Age of Sail: The World - development bootstrap loaded."
+        ]
+      }
+    }
+  ],
+  "fullReports": {
+    "lua54Before": {
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east-lua54-baseline-final-harness-probe.json",
+      "sha256": "7e496c864164f7562bfa056fa2635459e80d6d03dc5bd81243380e5cd32c9681"
+    },
+    "lua54After": {
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east-lua54-exact-source-fix-probe.json",
+      "sha256": "62ad4927a2f17d2c516be575c0769da6e22be08dc65585c54e1530a78e731f2f"
+    },
+    "lua53Before": {
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east-lua53-baseline-stock536-probe.json",
+      "sha256": "8241778307424c0b96160570a55544f0ad9a31d9495a20f389fc8392a17d2ce6"
+    },
+    "lua53After": {
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east-lua53-exact-source-fix-probe.json",
+      "sha256": "3a1be742fd30ffdc1abb0b0462f9d96ef199ea80a9541908e174cd0a16e9ef6c"
+    }
+  },
+  "luaRuntimeEvidence": {
+    "exactWarcraftBuild": "3.0.0.24268",
+    "embeddedLuaVersion": "unverified_exact_binary",
+    "primaryAuthorGuideRecommendedRuntime": "Lua 5.3",
+    "primaryAuthorGuideUrl": "https://www.hiveworkshop.com/threads/a-comprehensive-guide-to-mapping-in-lua.341880/",
+    "primaryAuthorGuideLastEdited": "2026-09-22",
+    "stockLua53Version": "5.3.6",
+    "stockLua53SourceSha256": "fc5fd69bb8736323f026672b1b7235da613d7177e72558893a0bdcd320466d60",
+    "stockLua53LibrarySha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a",
+    "stockLua53Verification": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/runtime-verification.json"
+  },
+  "limitations": [
+    "This is local stock Lua execution with explicit typed native stubs; native Warcraft is not run.",
+    "Timer and trigger callbacks are registered but not executed; engine assets, native handles, rendering, transitions and disk game-cache behavior are not exercised.",
+    "InitBlizzard is a no-op. Player-slot constants are explicitly 24. StringHash is a collision-free consistent-ID stub, not the Warcraft algorithm.",
+    "Synthetic units default to life 1000, mana 500, hero level 1, move speed 300, foot movement, no inventory and no structure flag; all issued orders succeed without moving engine units.",
+    "The synthetic playable-rect return uses retained camera bounds; the observed compiled call discards it. Terrain pathing uses only retained base WPM and ignores engine object footprints/collision/nudging.",
+    "SaveGameCache succeeds in memory; disk persistence, limits, failure and latency are not modeled.",
+    "The sampled instruction budget includes instrumentation/native-stub work. It is a probe safety limit and not a claimed Warcraft/JASS limit.",
+    "Local wall/CPU times are not native Warcraft load timings; baseline total startup did not finish, so no full-startup speedup ratio is claimed.",
+    "Exact embedded Lua patch version was not established. Stock 5.3.6 coverage supplements 5.4 and current primary-author guidance, not an assertion of binary equivalence.",
+    "The focused destination build retains baseline metadata and is a disposable developer artifact, not a distributable campaign or native-verified fix."
+  ]
+}

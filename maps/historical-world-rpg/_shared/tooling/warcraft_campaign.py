@@ -236,9 +236,16 @@ def _cstring(value: str) -> bytes:
     return value.encode("utf-8") + b"\0"
 
 
-def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]], chapters: list[tuple[str, str]] | None = None) -> bytes:
-    """Create Warcraft III 3.0 war3campaign.w3f v3 metadata."""
+def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]], chapters: list[tuple[str, str]] | None = None, *, visible_chapters: set[str] | None = None) -> bytes:
+    """Create Warcraft III 3.0 war3campaign.w3f v3 metadata.
+
+    Register every chapter target even when it should be initially hidden in
+    the campaign menu. Chapter visibility is independent of MPQ membership.
+    None retains the historical behavior where every chapter is visible.
+    """
     chapters = maps if chapters is None else chapters
+    if visible_chapters is not None and not visible_chapters.issubset({path for _, path in chapters}):
+        raise ValueError("visible campaign chapter has no registered destination")
     out = bytearray(struct.pack("<III", 3, 1, 7000))
     out += _cstring(name) + _cstring("Normal") + _cstring("WarcraftMap contributors") + _cstring(description)
     # Fixed difficulty + expansion maps.  All packaged chapters are W3X.
@@ -249,7 +256,8 @@ def campaign_metadata(name: str, description: str, maps: list[tuple[str, str]], 
     out += struct.pack("<fffffi", 0.0, 0.0, 0.0, 0.0, 0.0, 0)
     out += struct.pack("<ii", 0, len(chapters))
     for title, path in chapters:
-        out += struct.pack("<i", 1) + _cstring(title) + _cstring(title) + _cstring(path)
+        visible = visible_chapters is None or path in visible_chapters
+        out += struct.pack("<i", int(visible)) + _cstring(title) + _cstring(title) + _cstring(path)
     out += struct.pack("<i", len(maps))
     for _, path in maps:
         out += _cstring("") + _cstring(path)

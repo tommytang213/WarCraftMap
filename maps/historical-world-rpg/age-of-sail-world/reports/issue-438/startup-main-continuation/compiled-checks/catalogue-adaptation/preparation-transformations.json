@@ -1,0 +1,50 @@
+{
+  "case": {
+    "adapted": {
+      "bytes": 14746,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua",
+      "sha256": "d369236d79ec1a8cabc77e8ae17bc91e164503f353d371b6b78e349948b27a47"
+    },
+    "original": {
+      "bytes": 14746,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/full-scale-roundtrip.lua",
+      "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+    },
+    "wholeTokenReplacements": {
+      "8421_to_8425": 9,
+      "8422_to_8426": 7
+    }
+  },
+  "execution": false,
+  "nativeStatus": "not_run",
+  "runner": {
+    "adapted": {
+      "bytes": 11138,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/verify-trade-full-scale-current-catalogue.py",
+      "sha256": "5d7efcbb173d632cbf4bd16b1c029f5647762c212afd203f366c98cc2c1a5386"
+    },
+    "bindings": [
+      {
+        "after": "ROOT = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen')",
+        "before": "ROOT = Path(__file__).resolve().parent"
+      },
+      {
+        "after": "SOURCE_SHA = '4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83'",
+        "before": "SOURCE_SHA = '0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda'"
+      },
+      {
+        "after": "case = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua')",
+        "before": "case = ROOT / 'full-scale-roundtrip.lua'"
+      }
+    ],
+    "original": {
+      "bytes": 10965,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/verify-trade-full-scale-original.py",
+      "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+    },
+    "wholeTokenReplacements": {
+      "8421_to_8425": 0,
+      "8422_to_8426": 1
+    }
+  }
+}

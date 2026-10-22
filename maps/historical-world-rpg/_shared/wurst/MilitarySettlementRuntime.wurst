@@ -219,11 +219,14 @@ public class TraditionContribution
 			return "0"
 		return exactNaturalScaleFloor(I2S(amount), numerator, denominator)
 
+/** Borrowed, stateless authored definitions. Reconciliation must be
+ * deterministic and mutate only the supplied runtime, never live projections. */
 public interface MilitaryTraditionDefinitions
 	function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
 
 /** Scenario definitions reconcile presentation and seed missing legacy authority.
- * Implementations must never reset an existing mutable record. */
+ * Providers are borrowed and stateless: mutate only the supplied runtime,
+ * never live projections, and never reset an existing mutable record. */
 public interface SettlementDefinitions
 	function reconcile(MilitarySettlementRuntime runtime, boolean migrate) returns boolean
 
@@ -2092,47 +2095,54 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	function validateSnapshot(string candidate) returns boolean
 		return validateSnapshot(candidate, -1)
 	function validateSnapshot(string candidate, int campaignDay) returns boolean
-		let parsed = parseSnapshot(candidate)
+		let parsed = parseValidatedSnapshot(candidate, campaignDay)
 		if parsed == null
 			return false
+		parsed.dispose()
+		return true
+	/** Caller owns the returned detached authority and must dispose it. Reuse
+	 * it for read-only cross-domain checks without reparsing the same snapshot. */
+	function parseValidatedSnapshot(string candidate, int campaignDay) returns MilitarySettlementRuntime
+		let parsed = parseSnapshot(candidate)
+		if parsed == null
+			return null
 		for i = 0 to parsed.civic.count - 1
 			if campaignDay >= 0 and parsed.civic.states[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.industry.count - 1
 			if campaignDay >= 0 and parsed.industry.states[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.banking.count - 1
 			if campaignDay >= 0 and parsed.banking.states[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.finance.count - 1
 			if campaignDay >= 0 and (parsed.finance.states[i].lastDay > campaignDay or parsed.finance.states[i].freightDay > campaignDay)
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.land.count - 1
 			if campaignDay >= 0 and parsed.land.arsenals[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.forceCount - 1
 			if campaignDay >= 0 and parsed.forces[i].navigation.pending() and parsed.forces[i].navigation.lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.science.count - 1
 			if campaignDay >= 0 and parsed.science.states[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.forceCount - 1
 			if campaignDay >= 0 and parsed.forces[i].hull.lastDay > campaignDay
 				parsed.dispose()
-				return false
+				return null
 		for i = 0 to parsed.naval.count - 1
 			if campaignDay >= 0 and parsed.naval.states[i].lastDay > campaignDay
 				parsed.dispose()
-				return false
-		parsed.dispose()
-		return true
+				return null
+		return parsed
 	function restore(string candidate) returns boolean
 		return restore(candidate, true)
 	/** Rollback restores authority separately from the retained native objects. */

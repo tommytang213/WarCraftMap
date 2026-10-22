@@ -1,0 +1,60 @@
+{
+  "containerExecuted": false,
+  "dependency": {
+    "clean": true,
+    "fileCount": 255,
+    "inputSetSha256": "e17855aa22bf6019cdbf405e0ddab4ba7b0a42f3f6eaaaf9ab08f8c4aab7d27e",
+    "matchesPriorFullSuiteManifest": true,
+    "revision": "cce79096e71dcb066cf94785bc5cb48ef66c26db"
+  },
+  "extractionModeRepair": "tarfile data filter stripped owner-only executable modes, including jspawnhelper. Restored safe file modes from the verified image layers; no file contents modified. First failed compiler invocations executed no tests.",
+  "files": {
+    "compiler": {
+      "bytes": 24747968,
+      "path": "/workspace/scratch/243ebc79fa0a/pinned-wurst/rootfs/home/wurstuser/.wurst/wurst-compiler/wurstscript.jar",
+      "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
+    },
+    "grill": {
+      "bytes": 11477433,
+      "path": "/workspace/scratch/243ebc79fa0a/pinned-wurst/rootfs/home/wurstuser/.wurst/grill-cli/grill.jar",
+      "sha256": "1c5a2e8822464cc414a0d415913284a99d613adfa8cd8bda61e02784296f0159"
+    },
+    "java": {
+      "bytes": 16184,
+      "path": "/workspace/scratch/243ebc79fa0a/pinned-wurst/rootfs/home/wurstuser/.wurst/wurst-runtime/bin/java",
+      "sha256": "c281d38c43ff94525c786d392cc7cd2b8f6c6e6da513d5748affec4f7d3c8f0c"
+    },
+    "launcher": {
+      "bytes": 378,
+      "path": "/workspace/scratch/243ebc79fa0a/pinned-wurst/grill",
+      "sha256": "ab2a0a45adaa1812dda7ecd62bcdf6c83419854e93720d32f56b723b270c1d79"
+    },
+    "luaLibrary": {
+      "bytes": 274024,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+    }
+  },
+  "format": "warcraftmap_restored_pinned_verification_environment_v1",
+  "initialFailureEvidence": [
+    "europe-baseline-setup-failure/build-result.json",
+    "launcher-typecheck-probe3.log"
+  ],
+  "launcherScope": "Task-specific Java user.home property and PATH to extracted runtime, no system configuration or HOME environment change",
+  "manifestSha256": "ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "nativeStatus": "not_run",
+  "recordedAt": "2026-10-21T05:02:21.394638+00:00",
+  "restoredLayers": [
+    {
+      "digest": "sha256:4df09a61d5953f002dd1942efaedd17305ecd1c603860c9c63cdfed41d4ca2d3",
+      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+      "size": 72995785
+    },
+    {
+      "digest": "sha256:0f6ec1563199ae581f5ea0dedfbba8d3e30266bf3526cd13f4870c596f69af32",
+      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+      "size": 72994909
+    }
+  ],
+  "scope": "Exact extracted pinned compiler/runtime and dependency bytes on chat workspace host"
+}

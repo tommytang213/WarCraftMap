@@ -1,0 +1,99 @@
+{
+  "baselineCompiledLua": {
+    "bytes": 16097583,
+    "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-candidate/extracted/europe_central_east/war3map.lua",
+    "sha256": "a4fc97bb27b36466bc62bad74605128258c6847c4f46791efe2df184c3f85a45"
+  },
+  "evidence": [
+    {
+      "bytes": 7958,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-write-audit.md",
+      "sha256": "a6582e69c530cca2a1cbc86cbd6fbe645309783a91085763a7e429884bff66b6"
+    },
+    {
+      "bytes": 6001,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-write-fault-probe.py",
+      "sha256": "6c0047c4b9cbd626c695f04fe31b6f1a44d6e309df4eb6ac5f12d940e78d865e"
+    },
+    {
+      "bytes": 3455,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-write-fault-probe.lua",
+      "sha256": "8f17e4c91bc699b28eacbad91dd721a0d079c0cff357bdb12ce38e07eabb64a8"
+    },
+    {
+      "bytes": 2177,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/legacy-false-success-result.json",
+      "sha256": "7230ce58aa585933fa19829e9bf8f9f3d9fac31215eed76a1c35b9257005c7d9"
+    },
+    {
+      "bytes": 4525,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/run-cache-tests.py",
+      "sha256": "83d72674bf9e9039b3a0cb1199b016aedf7ebbf4c6d7053e1a3ea03be4c4d0c6"
+    },
+    {
+      "bytes": 21272,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests-attempt2/results.json",
+      "sha256": "dd918f0fff1f120f511da67cf12f61b91f6c83897115d6bd86a08e1c697c5844"
+    },
+    {
+      "bytes": 60882,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests-attempt2/execution.log",
+      "sha256": "1cd6b097f6186b6a5f37e69f15b4a4f2bc886b3480389833a0861015c3aac185"
+    },
+    {
+      "bytes": 30338,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests-attempt2/focused-context.json",
+      "sha256": "4d78e510a05f6c384d89a9b3d4636541dc853a32f008bb446f479ca8aece4f0d"
+    },
+    {
+      "bytes": 18757,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests/results.json",
+      "sha256": "4631004012a5f4ee97aecbab815bf813a4e34d19f8ab8defdd2a3409c64fdf25"
+    },
+    {
+      "bytes": 130569,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests/execution.log",
+      "sha256": "4608426e8b08dcc19f9a12a961dd620abc03f8da167d349e2845c33174e15efc"
+    },
+    {
+      "bytes": 29846,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests/focused-context.json",
+      "sha256": "de839a48fadda9857bca1709374304037d3aef3764e34333d19566077fa98c2c"
+    },
+    {
+      "bytes": 4135,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-focused-tests/run-cache-tests.py",
+      "sha256": "5492e534e6f5c2c9cf3663b7cadb574f017e1c2f924c26aa5cd026cf3386afc2"
+    }
+  ],
+  "format": "game_cache_write_source_fix_review_v1",
+  "limitations": [
+    "The demonstrated false-success defect is not established as the cause of the observed unresponsive Warcraft window.",
+    "The compiled negative control uses exact archived Lua with explicit fault stubs; config/main/startup were not called.",
+    "The passing Wurst regressions inherit the production transaction and override its five native boundary methods.",
+    "Readback verifies the native in-memory API and does not establish disk durability or reopen behavior.",
+    "A failed rollback remains an explicitly reported failure; no successful restoration or native acceptance is inferred."
+  ],
+  "nativeStatus": "not_run",
+  "nativeTransitionAcceptance": "not_established",
+  "newCompiledCampaignBuilt": false,
+  "observedCandidateCampaignSha256": "9ea9a0e554fe70f6c85ca99c12718bb867d83658cad36635b39bc20dfd3ea742",
+  "observedCandidateSourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+  "payloadChunkingIntroduced": false,
+  "saveSchemaChanged": false,
+  "sourceInputs": {
+    "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/_shared/wurst/CampaignSaveManager.wurst": "48e6f7dc416bf03e8f6895d4569bbd0222ea68d2f2ca4bac33c9c221654fe6ce",
+    "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/_shared/wurst/WC3Compatibility.wurst": "18e48350fe412e847b3877534e695179177fad18f243cdf707b282412c8a75a1",
+    "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/wurst/WarcraftCampaignSaveStorageTests.wurst": "9a06d9b4240f8938e14d150582c8a0b1af3ab169b08a9b7eb0ed59fe73743884"
+  },
+  "status": "focused_source_regressions_pass",
+  "tests": {
+    "deadlineChanged": false,
+    "dependencyInputsUnchanged": true,
+    "existingTests": 3,
+    "newTests": 12,
+    "passed": 15,
+    "releaseGateChanged": false,
+    "total": 15
+  }
+}

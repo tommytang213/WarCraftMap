@@ -1,0 +1,391 @@
+{
+  "adaptedFiles": {
+    "README.md": {
+      "bytes": 4317,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/README.md",
+      "sha256": "3fd503b2a34e953478ed0fafc1e791d6eb520e9e99da03835fc4777d4e133bed"
+    },
+    "compare_completed_startup.py": {
+      "bytes": 11078,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/compare_completed_startup.py",
+      "sha256": "55b8602c68db93f592257c3cb37fd1e5d425296b120a0786eafa279c3d2eab3c"
+    },
+    "full-scale-roundtrip-current-catalogue.lua": {
+      "bytes": 14746,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua",
+      "sha256": "d369236d79ec1a8cabc77e8ae17bc91e164503f353d371b6b78e349948b27a47"
+    },
+    "preparation-transformations.json": {
+      "bytes": 2047,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-transformations.json",
+      "sha256": "343fea260fc53eaf41ccb85ba4366079d160bd69bf8b1af401f0de85c61d31cd"
+    },
+    "run_full_scale_current_catalogue.py": {
+      "bytes": 5329,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/run_full_scale_current_catalogue.py",
+      "sha256": "f5a427c36b020bb9831251f76088ed1a08cdfbdb2600b75f53882262a0d2c157"
+    },
+    "verify-trade-full-scale-current-catalogue.py": {
+      "bytes": 11138,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/verify-trade-full-scale-current-catalogue.py",
+      "sha256": "5d7efcbb173d632cbf4bd16b1c029f5647762c212afd203f366c98cc2c1a5386"
+    }
+  },
+  "assertionChange": {
+    "lastMarketIndex": {
+      "after": 8425,
+      "before": 8421
+    },
+    "lastStoreIndex": 828,
+    "marketCount": {
+      "after": 8426,
+      "before": 8422
+    },
+    "storeCount": 829
+  },
+  "bindingChanges": [
+    {
+      "after": "ROOT = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen')",
+      "before": "ROOT = Path(__file__).resolve().parent"
+    },
+    {
+      "after": "SOURCE_SHA = '4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83'",
+      "before": "SOURCE_SHA = '0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda'"
+    },
+    {
+      "after": "case = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua')",
+      "before": "case = ROOT / 'full-scale-roundtrip.lua'"
+    }
+  ],
+  "caseWholeTokenReplacements": {
+    "8421_to_8425": 9,
+    "8422_to_8426": 7
+  },
+  "catalogueCardinality": {
+    "bytes": 10405,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.json",
+    "sha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44"
+  },
+  "format": "pr536_current_catalogue_adaptation_preparation_v1",
+  "frozenInputs": {
+    "frozenPathing": {
+      "bytes": 262160,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east/war3map.wpm",
+      "sha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd"
+    },
+    "full-scale-roundtrip.lua": {
+      "copy": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      },
+      "original": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      }
+    },
+    "late-startup-stubs.lua": {
+      "copy": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      },
+      "original": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      }
+    },
+    "library": {
+      "bytes": 274024,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+    },
+    "observe-startup-template.py": {
+      "copy": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup-template.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      },
+      "original": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/compiled/observer/observe-startup.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      }
+    },
+    "observe-startup.lua": {
+      "copy": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      },
+      "original": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/startup-work-reduction/observer-parse-once/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      }
+    },
+    "probe-lua54-initialization.py": {
+      "copy": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      },
+      "original": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      }
+    },
+    "verify-trade-full-scale-original.py": {
+      "copy": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/verify-trade-full-scale-original.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      },
+      "original": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/verify-trade-full-scale.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      }
+    }
+  },
+  "limits": [
+    "Original failed comparison and all original inputs remain immutable.",
+    "The count expectation comes from pinned authored/generated source, not observed counts.",
+    "No native model/budget or production function changes.",
+    "Native Warcraft terrain and controllable-unit acceptance remain unverified."
+  ],
+  "nativeStatus": "not_run",
+  "originalFailedComparison": {
+    "bytes": 6012,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+    "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+  },
+  "outputPlan": {
+    "derivedComparison": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison-current-catalogue.json",
+    "fullScaleDirectory": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue",
+    "review": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json"
+  },
+  "patches": {
+    "full-scale-case.patch": {
+      "bytes": 6384,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-case.patch",
+      "sha256": "6e7eefd6a4aaa1b4621877d8cfb3161a020a0f4b471aaa193c63381eb4127d3d"
+    },
+    "full-scale-runner.patch": {
+      "bytes": 2053,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-runner.patch",
+      "sha256": "3cf98f9e57fb0169a76f15523fabc955c2b80ff866cf5a6964f8a8ca2df177ee"
+    },
+    "full-scale-wrapper.patch": {
+      "bytes": 6050,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-wrapper.patch",
+      "sha256": "c80e79675e0cf6b945764364d617734fbe7c06631e39ec8d165920c67d075687"
+    },
+    "startup-comparison.patch": {
+      "bytes": 14151,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/startup-comparison.patch",
+      "sha256": "50323beaac03c4ad20f5e6567891a9ae865a2ba9051af3a0ae6ae39eea5613c3"
+    }
+  },
+  "preparedAtUtc": "2026-10-21T14:35:52.768769+00:00",
+  "retainedInputs": {
+    "README.md": {
+      "bytes": 8592,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/README.md",
+      "sha256": "9c7455e3ad3c8fac0c9acade9248a777a47cc2593a65011a610807656f9c331b"
+    },
+    "baseline/build-result.json": {
+      "bytes": 35171,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/baseline/build-result.json",
+      "sha256": "81da2b80deb4d40381d3e0daa49f06bfe5e2e3abb8135049d02aafaa58d07a49"
+    },
+    "catalogue-cardinality.py": {
+      "bytes": 7319,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.py",
+      "sha256": "d7a1c2d2e7f4da94b9499529e3d68ffa26cb6ff3221895dd698792ffe682d659"
+    },
+    "compare_startup.py": {
+      "bytes": 10362,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/compare_startup.py",
+      "sha256": "a56a96c61434f35c5b2feb1e07ff1faa0ae3f9640dbd7d2793a806e80cd65080"
+    },
+    "compile_europe.py": {
+      "bytes": 13377,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/compile_europe.py",
+      "sha256": "ae5d91947bb71f8a0dbff630279e79bfb124dc8e5d6afe351019f1f532fb048c"
+    },
+    "continuation_common.py": {
+      "bytes": 8487,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/continuation_common.py",
+      "sha256": "a493466066768e2711d05224b011cd0aa6b9803402082c00fcfc3771ccb17110"
+    },
+    "driver-20261021T141701Z/05-startup-comparison.log": {
+      "bytes": 1066,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/05-startup-comparison.log",
+      "sha256": "350faab4ff4f1404a0ead1a6abf76d7a705dd64da3c60ab12f63409aae66d138"
+    },
+    "preparation-manifest.json": {
+      "bytes": 6857,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/preparation-manifest.json",
+      "sha256": "f852f3a2118a95c9fd8f0e8caa76b2a78ce8c1944e49c41a41ed53e15d4308b6"
+    },
+    "revised/build-result.json": {
+      "bytes": 34614,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+      "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+    },
+    "run_full_scale.py": {
+      "bytes": 4159,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/run_full_scale.py",
+      "sha256": "923bcd5d6fe7fb7526661c5eb4444904e2ac4185fba2b303beeab6ea5a41fbb9"
+    },
+    "startup-comparison/baseline/frozen/europe_central_east-baseline-trade-snapshot.txt": {
+      "bytes": 540051,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/frozen/europe_central_east-baseline-trade-snapshot.txt",
+      "sha256": "d64eb133aa2af5099efe428d4152aa36f69824ff38e36ea89ac0dc160f96f279"
+    },
+    "startup-comparison/baseline/frozen/late-startup-stubs.lua": {
+      "bytes": 13205,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/frozen/late-startup-stubs.lua",
+      "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+    },
+    "startup-comparison/baseline/frozen/probe-lua54-initialization.py": {
+      "bytes": 17193,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/frozen/probe-lua54-initialization.py",
+      "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+    },
+    "startup-comparison/baseline/frozen/result.json": {
+      "bytes": 220075,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/frozen/result.json",
+      "sha256": "762a37d36d324751485f6a5acf8a6f08832e552a11837c730e558cbdf1d06b8e"
+    },
+    "startup-comparison/baseline/observer/cache-write-1.txt.gz": {
+      "bytes": 134188,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-1.txt.gz",
+      "sha256": "7df43b445e808b77797d9f01865bb1db70925f1dfe337716bc700ad3e3891585"
+    },
+    "startup-comparison/baseline/observer/cache-write-2.txt.gz": {
+      "bytes": 134188,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-2.txt.gz",
+      "sha256": "2fbfe5289ee3e67458a1499c703405fd526b70f058e36e3a4a51a7cd5c126693"
+    },
+    "startup-comparison/baseline/observer/cache-write-3.txt.gz": {
+      "bytes": 134194,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-3.txt.gz",
+      "sha256": "80ff1810bfc82eb792b2722c32610662c051bc4c6e2feb8d1f68edb9d1ade07c"
+    },
+    "startup-comparison/baseline/observer/cache-write-4.txt.gz": {
+      "bytes": 73,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/cache-write-4.txt.gz",
+      "sha256": "646dc3ac86b5bccfe5d93ea4ece20c4092a8215c3a81af3b011fa64ef61bb6d6"
+    },
+    "startup-comparison/baseline/observer/observe-startup.lua": {
+      "bytes": 10926,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/observe-startup.lua",
+      "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+    },
+    "startup-comparison/baseline/observer/observe-startup.py": {
+      "bytes": 5799,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/observe-startup.py",
+      "sha256": "03a0a74bccf2f4aa6e1b75ea8d6df546a4a303ba5e3ddea1ed0bd033defc0f2b"
+    },
+    "startup-comparison/baseline/observer/startup-and-first-callbacks.json": {
+      "bytes": 107595,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/baseline/observer/startup-and-first-callbacks.json",
+      "sha256": "1b30709edb84e986a3069e0743b194812306d62e727b4045b73b7f4d5705c6bd"
+    },
+    "startup-comparison/comparison.json": {
+      "bytes": 6012,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+      "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+    },
+    "startup-comparison/revised/frozen/europe_central_east-revised-trade-snapshot.txt": {
+      "bytes": 540051,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/frozen/europe_central_east-revised-trade-snapshot.txt",
+      "sha256": "d64eb133aa2af5099efe428d4152aa36f69824ff38e36ea89ac0dc160f96f279"
+    },
+    "startup-comparison/revised/frozen/late-startup-stubs.lua": {
+      "bytes": 13205,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/frozen/late-startup-stubs.lua",
+      "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+    },
+    "startup-comparison/revised/frozen/probe-lua54-initialization.py": {
+      "bytes": 17193,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/frozen/probe-lua54-initialization.py",
+      "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+    },
+    "startup-comparison/revised/frozen/result.json": {
+      "bytes": 220225,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/frozen/result.json",
+      "sha256": "25cd235477f6bc406b29c4e3d398d19e2a4a982dbe0d3509d2918f1b634442b5"
+    },
+    "startup-comparison/revised/observer/cache-write-1.txt.gz": {
+      "bytes": 134188,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-1.txt.gz",
+      "sha256": "7df43b445e808b77797d9f01865bb1db70925f1dfe337716bc700ad3e3891585"
+    },
+    "startup-comparison/revised/observer/cache-write-2.txt.gz": {
+      "bytes": 134188,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-2.txt.gz",
+      "sha256": "2fbfe5289ee3e67458a1499c703405fd526b70f058e36e3a4a51a7cd5c126693"
+    },
+    "startup-comparison/revised/observer/cache-write-3.txt.gz": {
+      "bytes": 134194,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-3.txt.gz",
+      "sha256": "80ff1810bfc82eb792b2722c32610662c051bc4c6e2feb8d1f68edb9d1ade07c"
+    },
+    "startup-comparison/revised/observer/cache-write-4.txt.gz": {
+      "bytes": 73,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/cache-write-4.txt.gz",
+      "sha256": "646dc3ac86b5bccfe5d93ea4ece20c4092a8215c3a81af3b011fa64ef61bb6d6"
+    },
+    "startup-comparison/revised/observer/observe-startup.lua": {
+      "bytes": 10926,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/observe-startup.lua",
+      "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+    },
+    "startup-comparison/revised/observer/observe-startup.py": {
+      "bytes": 5795,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/observe-startup.py",
+      "sha256": "a46b6494c3fbd2c1b582527b270d0ed336970e16b99c5e7539cf1dd493e1e282"
+    },
+    "startup-comparison/revised/observer/startup-and-first-callbacks.json": {
+      "bytes": 105613,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/revised/observer/startup-and-first-callbacks.json",
+      "sha256": "e35e9e69318d316446d9ef1c7c7a683bb82b8f25920daea4e6dd566496493b8e"
+    },
+    "static-review.json": {
+      "bytes": 13340,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/static-review.json",
+      "sha256": "92342231aebb1ac033e904a19846ac78b4caa3f8e3b187b457205e2495bfee5c"
+    },
+    "trade_integer_differential.py": {
+      "bytes": 11518,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/trade_integer_differential.py",
+      "sha256": "0c86ff816de89e518a4ceb952f070de1f9db2db9890d41d4a3c3455f217be708"
+    }
+  },
+  "runnerWholeTokenReplacements": {
+    "8421_to_8425": 0,
+    "8422_to_8426": 1
+  },
+  "schema": 17,
+  "sourceIdentity": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "status": "prepared_for_review_not_executed",
+  "validationPerformed": {
+    "compilerExecution": false,
+    "derivedComparisonExecution": false,
+    "fullScaleExecution": false,
+    "literalCaseAndRunnerTransformEquality": true,
+    "modelExecution": false,
+    "pythonAstParse": true,
+    "sourceAndFrozenUnchanged": true,
+    "startupReexecution": false
+  }
+}

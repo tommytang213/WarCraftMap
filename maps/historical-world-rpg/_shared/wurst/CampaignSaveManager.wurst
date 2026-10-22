@@ -272,24 +272,57 @@ public class WarcraftCampaignSaveStorage implements CampaignSaveStorage
 	override function read(string slotId) returns string
 		return compatGetStoredString(cache, mission, slotId)
 
+	// Keep the native boundaries separate so fault regressions exercise this
+	// transaction itself without requiring interpreter implementations of them.
+	function storeString(string slotId, string payload) returns boolean
+		return compatStoreString(cache, mission, slotId, payload)
+	function flushString(string slotId)
+		compatFlushStoredString(cache, mission, slotId)
+	function saveCache() returns boolean
+		return compatSaveGameCache(cache)
+	function slotMatches(string slotId, boolean existed, string payload) returns boolean
+		if contains(slotId) != existed
+			return false
+		return not existed or read(slotId) == payload
+
+	function rollbackSlot(string slotId, boolean existed, string previous, string reason) returns boolean
+		var restored = slotMatches(slotId, existed, previous)
+		if not restored
+			if existed
+				restored = storeString(slotId, previous) and slotMatches(slotId, true, previous)
+			else
+				flushString(slotId)
+				restored = slotMatches(slotId, false, "")
+		if not restored
+			// Never persist a buffer that failed to restore the previous slot.
+			lastDiagnostic = reason + "; previous slot rollback failed"
+			return false
+		if not saveCache()
+			lastDiagnostic = reason + "; rollback commit failed"
+			return false
+		if not slotMatches(slotId, existed, previous)
+			lastDiagnostic = reason + "; rollback readback mismatch"
+			return false
+		lastDiagnostic = reason + "; previous slot restored"
+		return false
+
 	override function writeTransactional(string slotId, string payload) returns boolean
 		let existed = contains(slotId)
 		var previous = ""
 		if existed
 			previous = read(slotId)
-		compatStoreString(cache, mission, slotId, payload)
-		if compatSaveGameCache(cache)
-			lastDiagnostic = ""
-			return true
-		if existed
-			compatStoreString(cache, mission, slotId, previous)
-		else
-			compatFlushStoredString(cache, mission, slotId)
-		if compatSaveGameCache(cache)
-			lastDiagnostic = "game cache commit failed; previous slot restored"
-		else
-			lastDiagnostic = "game cache commit and rollback both failed"
-		return false
+		if not storeString(slotId, payload)
+			return rollbackSlot(slotId, existed, previous, "game cache string store failed")
+		if not slotMatches(slotId, true, payload)
+			return rollbackSlot(slotId, existed, previous, "game cache string readback mismatch")
+		if not saveCache()
+			return rollbackSlot(slotId, existed, previous, "game cache commit failed")
+		// This verifies the in-memory native API after SaveGameCache, not disk
+		// durability or a successful reopen in a later Warcraft process.
+		if not slotMatches(slotId, true, payload)
+			return rollbackSlot(slotId, existed, previous, "game cache commit readback mismatch")
+		lastDiagnostic = ""
+		return true
 
 	override function diagnostic() returns string
 		return lastDiagnostic

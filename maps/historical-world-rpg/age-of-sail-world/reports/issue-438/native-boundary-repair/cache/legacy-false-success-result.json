@@ -1,0 +1,55 @@
+{
+  "execution": {
+    "configCalled": false,
+    "diagnostic": "",
+    "mainCalled": false,
+    "nativeCalls": {
+      "FlushStoredString": 0,
+      "GetStoredString": 0,
+      "HaveStoredString": 1,
+      "SaveGameCache": 1,
+      "StoreString": 1
+    },
+    "nativeStatus": "not_run",
+    "productionFunctionsUnchanged": true,
+    "returned": true,
+    "sampledInstructions": 25000,
+    "stored": false
+  },
+  "expectedBehavior": "legacy-false-success",
+  "format": "compiled_game_cache_false_success_probe_v1",
+  "inputs": {
+    "case": {
+      "bytes": 3455,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-write-fault-probe.lua",
+      "sha256": "8f17e4c91bc699b28eacbad91dd721a0d079c0cff357bdb12ce38e07eabb64a8"
+    },
+    "compiledLua": {
+      "bytes": 16097583,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-candidate/extracted/europe_central_east/war3map.lua",
+      "sha256": "a4fc97bb27b36466bc62bad74605128258c6847c4f46791efe2df184c3f85a45"
+    },
+    "runner": {
+      "bytes": 6001,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/native-boundary-audit/cache-write-fault-probe.py",
+      "sha256": "6c0047c4b9cbd626c695f04fe31b6f1a44d6e309df4eb6ac5f12d940e78d865e"
+    },
+    "runtimeLibrary": {
+      "bytes": 274024,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+    }
+  },
+  "instructionBudget": 100000,
+  "limitations": [
+    "Stock Lua with explicit success/failure native stubs; not native Warcraft execution.",
+    "Only compiled storage code and global bootstrap execute; config/main/campaign startup are not called.",
+    "This establishes a cache transaction result defect, not the cause of the observed unresponsive window.",
+    "Cache readback observes the in-memory API; it does not establish disk durability or reopen behavior."
+  ],
+  "nativeStatus": "not_run",
+  "productionFunctionOverrides": false,
+  "runtimeVersion": "Lua 5.3",
+  "status": "reproduced_legacy_false_success_under_explicit_stubs",
+  "wallSeconds": 0.222442
+}

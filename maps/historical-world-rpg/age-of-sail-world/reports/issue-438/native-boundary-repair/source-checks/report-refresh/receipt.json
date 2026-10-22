@@ -1,0 +1,63 @@
+{
+  "format": "source_report_refresh_v1",
+  "scope": "source-only report freshness; no native or release acceptance",
+  "baselineRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+  "worktreeDirty": true,
+  "sourceIdentity": {
+    "sourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+    "sourceTreeSha256": "2f55ec1dc084ab27c1a4fde2897728035ea49f086c8fbdd3e1d1cb3aeca22d8b"
+  },
+  "commands": [
+    {
+      "name": "runtime",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/tooling/runtime_acceptance.py",
+        "--write",
+        "--source-revision",
+        "a1b43969eb57de4127b005956823d6b876a86068"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "elapsedSeconds": 0.186,
+      "stdout": "{\"failures\": 30, \"status\": \"fail\"}",
+      "stderr": ""
+    },
+    {
+      "name": "release",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/tooling/release_blocker_audit.py",
+        "--write",
+        "--source-revision",
+        "a1b43969eb57de4127b005956823d6b876a86068"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "elapsedSeconds": 18.676,
+      "stdout": "{\"status\": \"fail\", \"unresolvedCampaignBlockers\": 238}",
+      "stderr": ""
+    },
+    {
+      "name": "traceability",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py",
+        "--write",
+        "--check",
+        "--source-revision",
+        "a1b43969eb57de4127b005956823d6b876a86068"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 2.314,
+      "stdout": "Traceability: 643 obligations; 7004 publication blockers",
+      "stderr": ""
+    }
+  ],
+  "status": "pass_freshness_with_acceptance_still_blocked",
+  "runtimeFailures": 30,
+  "releaseBlockers": 238,
+  "traceabilityBlockers": 7004,
+  "sourcesUnchanged": true
+}
