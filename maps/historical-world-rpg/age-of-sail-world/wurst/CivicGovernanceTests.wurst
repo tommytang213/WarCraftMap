@@ -74,8 +74,11 @@ class CivicFixture
 		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		let definitions = new CivicLedger()
 		configureGeneratedCivic(definitions, research, day)
+		military.civic.municipalNode = definitions.municipalNode
+		military.civic.municipalMinimumUrbanization = definitions.municipalMinimumUrbanization
 		destroy definitions
 		military.civic.register(new CivicDistrict("district", "province", 10001, true, day, 20, day, 365, 4, "cloth", 4, 1000), day)
+		military.civic.configureAdministration("district", 20)
 		military.registerSettlement(new SettlementRuntimeState("district", "player", "europe", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
 		military.appoint("district", new AdministratorState("clerk", "Clerk", "Administrator", "player", "europe", "district", 50, 50, 40, 1))
 		campaign.setMilitarySettlementRuntime(military)
@@ -254,7 +257,7 @@ class CivicFixture
 	f.military.transferSettlement("district", "player")
 	f.military.civic.states[0].policyOwner.assertEquals("")
 	// v1-v10 contain no civic ledger; migration never grants completed projects.
-	let cut = saved.indexOf("|g,")
+	let cut = saved.indexOf("|u,")
 	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
 	f.military.restore(legacy, false).assertTrue()
 	f.military.civic.states[0].surveyed.assertFalse()
@@ -347,10 +350,10 @@ class CivicFixture
 	ship.navigation.elapsedDays.assertEquals(3)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(3)
 	let saved = f.military.snapshot()
-	saved.startsWith("v18|").assertTrue()
+	saved.startsWith("v19|").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
-	let cut = saved.indexOf("|g,")
+	let cut = saved.indexOf("|u,")
 	// Truncated current saves cannot silently discard paid civic projects.
 	f.military.restore(SubString(saved, 0, cut), false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
@@ -367,3 +370,183 @@ class CivicFixture
 	f.advance(10)
 	f.military.forces[f.military.forceIndex("english_patrol_ship")].navigation.pending().assertFalse()
 	f.military.civic.states[0].diseaseAvoided.assertEquals(10)
+
+// Archives must earn a real economic result before any municipal enactment.
+@test function administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences()
+	let base = new CivicFixture()
+	let archives = new CivicFixture()
+	let municipal = new CivicFixture()
+	archives.unlock("professional_bureaucracy")
+	archives.unlock("chancery_archives")
+	municipal.unlock("professional_bureaucracy")
+	municipal.unlock("chancery_archives")
+	municipal.unlock("chartered_municipalities")
+	municipal.military.civic.states[0].municipalOwner.assertEquals("")
+	let control = municipal.military.settlements[0].controllerId
+	let legal = municipal.military.settlements[0].legalOwnerId
+	let loyalty = municipal.military.administrators[0].loyalty
+	municipal.action("municipal")
+	municipal.military.civic.states[0].municipalReady.assertEquals(municipal.day + 90)
+	let taxDay = 365 - (base.day mod 365)
+	base.advance(taxDay)
+	archives.advance(taxDay)
+	municipal.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9000)
+	archives.military.civic.states[0].taxesCollected.assertEquals(9225)
+	municipal.military.civic.states[0].taxesCollected.assertEquals(9585)
+	archives.campaign.countries.treasury[0].assertEquals(10000 - 26 + 9225)
+	municipal.campaign.countries.treasury[0].assertEquals(10000 - 101 - 51 - 26 + 9585)
+	municipal.trade.findMarket("district", "cloth").money.assertEquals(100000 - 9585)
+	municipal.military.administrators[0].loyalty.assertEquals(loyalty)
+	municipal.military.settlements[0].controllerId.assertEquals(control)
+	municipal.military.settlements[0].legalOwnerId.assertEquals(legal)
+	let before = municipal.military.snapshot()
+	let money = municipal.campaign.countries.treasury[0]
+	municipal.commands.dispatch(Player(0), "/civic municipal district").assertTrue()
+	municipal.resources.output.contains("cannot stack").assertTrue()
+	municipal.military.snapshot().assertEquals(before)
+	municipal.campaign.countries.treasury[0].assertEquals(money)
+	municipal.rpg.reconcile("player")
+	municipal.research.rate("player", "archive_tax_collection_efficiency").assertEquals(500)
+	municipal.advance(taxDay)
+	municipal.military.snapshot().assertEquals(before)
+
+@test function administrativePrerequisitesUrbanizationResourcesAndForeignJurisdictionRejectWithoutMutation()
+	let f = new CivicFixture()
+	let initial = f.military.snapshot()
+	let rpg = f.rpg.captureState()
+	f.commands.dispatch(Player(0), "/research chartered_municipalities").assertTrue()
+	f.rpg.captureState().assertEquals(rpg)
+	f.resources.balance.assertEquals(100000)
+	f.commands.dispatch(Player(0), "/civic municipal district").assertTrue()
+	f.military.snapshot().assertEquals(initial)
+	f.unlock("professional_bureaucracy")
+	f.unlock("chancery_archives")
+	f.military.civic.states[0].urbanization = 10
+	let research = f.rpg.captureState()
+	let balance = f.resources.balance
+	f.commands.dispatch(Player(0), "/research chartered_municipalities").assertTrue()
+	f.rpg.captureState().assertEquals(research)
+	f.resources.balance.assertEquals(balance)
+	f.military.civic.states[0].urbanization = 11
+	f.resources.balance = 0
+	f.commands.dispatch(Player(0), "/research chartered_municipalities").assertTrue()
+	f.rpg.captureState().assertEquals(research)
+	f.resources.balance = balance
+	f.military.administrators[0].jurisdiction = "foreign"
+	f.commands.dispatch(Player(0), "/research chartered_municipalities").assertTrue()
+	f.rpg.captureState().assertEquals(research)
+	f.military.administrators[0].jurisdiction = "district"
+	f.unlock("chartered_municipalities")
+	f.campaign.countries.treasury[0] = 100
+	let before = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic municipal district").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.campaign.countries.treasury[0].assertEquals(100)
+	f.campaign.countries.treasury[0] = 10000
+	f.runtime.act("ai", "municipal", "district").contains("lawfully controlled").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.military.civic.states[0].urbanization = 10
+	let low = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic municipal district").assertTrue()
+	f.military.snapshot().assertEquals(low)
+
+@test function administrativeOfficeReplacementOperatingConditionsAndSurveySourcesCompose()
+	let f = new CivicFixture()
+	f.unlock("professional_bureaucracy")
+	f.unlock("chancery_archives")
+	f.unlock("chartered_municipalities")
+	f.action("municipal")
+	// Existing #512 survey is an independent named contribution.
+	f.unlock("cadastral_survey")
+	f.action("survey")
+	f.military.appoint("district", new AdministratorState("expert", "Expert", "Administrator", "player", "absent_region", "district", 50, 100, 40, 1)).assertEquals("Administrator appointed.")
+	let taxDay = 365 - (f.day mod 365)
+	f.advance(taxDay)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001) // capped taxable capacity
+	// A replacement's current skill changes the next result; no permanent bonus.
+	f.military.appoint("district", new AdministratorState("novice", "Novice", "Administrator", "player", "europe", "district", 50, 10, 40, 1)).assertEquals("Administrator appointed.")
+	f.advance(taxDay + 365)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450)
+	f.military.administrators[0].administration = 100
+	f.military.administrators[0].jurisdiction = "foreign"
+	f.advance(taxDay + 730)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450 * 2)
+	f.military.settlements[0].underAttack = true
+	f.advance(taxDay + 1095)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450 * 2)
+
+@test function administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback()
+	let active = new CivicFixture()
+	let inactive = new CivicFixture()
+	active.unlock("professional_bureaucracy")
+	active.unlock("chancery_archives")
+	active.unlock("chartered_municipalities")
+	inactive.unlock("professional_bureaucracy")
+	inactive.unlock("chancery_archives")
+	inactive.unlock("chartered_municipalities")
+	active.action("municipal")
+	inactive.action("municipal")
+	active.military.activeRegionId = "europe"
+	inactive.military.activeRegionId = "unloaded"
+	// Lost Warcraft representations do not own project or treasury state.
+	inactive.military.settlements[0].projectMilitary = false
+	let taxDay = 365 - (active.day mod 365)
+	for elapsed = 1 to taxDay
+		active.advance(elapsed)
+	inactive.advance(taxDay)
+	active.military.civic.states[0].taxesCollected.assertEquals(inactive.military.civic.states[0].taxesCollected)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[0])
+	let saved = active.military.snapshot()
+	let money = active.campaign.countries.treasury[0]
+	active.military.restore(saved, false).assertTrue()
+	active.military.snapshot().assertEquals(saved)
+	active.campaign.countries.treasury[0].assertEquals(money)
+	let record = "|u,district,player," + I2S(active.day + 90) + "," + I2S(active.day + 90 + 365) + ",20"
+	active.military.restore(saved.replace(record, ""), false).assertFalse()
+	active.military.restore(saved + record, false).assertFalse()
+	active.military.restore(saved.replace(record, "|u,district,foreign,1,1,20"), false).assertFalse()
+	active.military.snapshot().assertEquals(saved)
+	let legacy = saved.replace("v19|", "v17|").replace(record, "")
+	active.military.restore(legacy, false).assertTrue()
+	active.military.civic.states[0].municipalOwner.assertEquals("")
+	active.military.civic.states[0].urbanization.assertEquals(20)
+	active.military.civic.states[0].taxesCollected.assertEquals(9585)
+	active.campaign.countries.treasury[0].assertEquals(money)
+	active.military.restore(saved, false).assertTrue()
+	active.military.transferSettlement("district", "ai")
+	active.military.civic.states[0].municipalOwner.assertEquals("")
+	active.research.rate("ai", "archive_tax_collection_efficiency").assertEquals(0)
+	active.military.transferSettlement("district", "player")
+	active.military.civic.states[0].municipalOwner.assertEquals("")
+
+@test function administrativeUpkeepLossDuplicatesAndReenactmentNeverCreatePermanentBenefits()
+	let f = new CivicFixture()
+	f.unlock("professional_bureaucracy")
+	f.unlock("chancery_archives")
+	f.unlock("chartered_municipalities")
+	let loyalty = f.military.administrators[0].loyalty
+	// A second provenance for the same identity still contributes once.
+	let duplicate = new RuntimeTechnology("archive_peer", "Archive peer", 1450, 1)
+	duplicate.addUnlock("archive_peer", "modifier", "progression_chancery_archives")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("archive_peer")
+	f.research.rate("player", "archive_tax_collection_efficiency").assertEquals(500)
+	for repeat = 1 to 3
+		f.action("municipal")
+		f.action("municipal-repeal")
+	f.campaign.countries.treasury[0].assertEquals(10000 - 303)
+	f.military.administrators[0].loyalty.assertEquals(loyalty)
+	f.military.civic.states[0].taxesCollected.assertEquals(0)
+	f.action("municipal")
+	f.campaign.countries.treasury[0] = 0
+	let taxDay = 365 - (f.day mod 365)
+	f.advance(taxDay)
+	// No funded charter or archives: only ordinary collection is possible.
+	f.military.civic.states[0].taxesCollected.assertEquals(9000)
+	f.campaign.countries.treasury[0].assertEquals(9000)
+	f.military.civic.states[0].municipalThrough.assertEquals(f.day + 90)
+	f.military.civic.states[0].urbanization = 10
+	f.advance(taxDay + 365)
+	// Archives can resume after funding; municipality still fails current eligibility.
+	f.military.civic.states[0].taxesCollected.assertEquals(9000 + 9225)

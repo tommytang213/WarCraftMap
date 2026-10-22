@@ -488,6 +488,13 @@
           "contains": [
             "Administration"
           ]
+        },
+        {
+          "path": "scenario/progression/administrative-contracts.json",
+          "contains": [
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
         }
       ],
       "headlessVerification": [
@@ -496,6 +503,12 @@
           "contains": [
             "administrator"
           ]
+        },
+        {
+          "path": "tests/test_administrative_contracts.py",
+          "contains": [
+            "test_exact_typed_effects_and_catalogue_adoption_requirements"
+          ]
         }
       ],
       "runtime": [
@@ -503,6 +516,14 @@
           "path": "wurst/Bootstrap.wurst",
           "contains": [
             "initializeMilitarySettlementRuntime"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernance.wurst",
+          "contains": [
+            "function municipalEligible",
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
           ]
         }
       ],
@@ -513,6 +534,13 @@
             "administration",
             "appoint"
           ]
+        },
+        {
+          "path": "wurst/CivicCampaignRuntime.wurst",
+          "contains": [
+            "municipal-repeal",
+            "registerCivicCommands"
+          ]
         }
       ],
       "persistence": [
@@ -522,6 +550,14 @@
             "snapshot",
             "restore"
           ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "s.municipalOwner",
+            "state.municipalRestored",
+            "civic = parsed.civic"
+          ]
         }
       ],
       "runtimeVerification": [
@@ -529,6 +565,13 @@
           "path": "wurst/MilitarySettlementRuntimeTests.wurst",
           "contains": [
             "snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernanceTests.wurst",
+          "contains": [
+            "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+            "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
           ]
         }
       ],
@@ -719,19 +762,26 @@
           ]
         },
         {
-          "path": "scenario/progression/central-banking.json",
-          "contains": [
-            "countingBasisPoints",
-            "reconciliationBasisPoints",
-            "upkeepBasisPoints"
-          ]
-        },
-        {
           "path": "scenario/progression/army-food-logistics.json",
           "contains": [
             "shipmentUnits",
             "wasteUnits",
             "canalRoutes"
+          ]
+        },
+        {
+          "path": "scenario/progression/administrative-contracts.json",
+          "contains": [
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
+        },
+        {
+          "path": "scenario/progression/central-banking.json",
+          "contains": [
+            "countingBasisPoints",
+            "reconciliationBasisPoints",
+            "upkeepBasisPoints"
           ]
         }
       ],
@@ -771,17 +821,23 @@
           ]
         },
         {
-          "path": "tests/test_central_banking.py",
-          "contains": [
-            "test_real_bank_contracts_and_separate_typed_identities",
-            "test_evidence_fails_closed_without_complete_current_production_execution"
-          ]
-        },
-        {
           "path": "tests/test_army_food_logistics.py",
           "contains": [
             "test_scenario_owned_quantities_capacity_and_bonus_sensitivity",
             "test_design_or_missing_failed_stale_execution_cannot_clear_findings"
+          ]
+        },
+        {
+          "path": "tests/test_administrative_contracts.py",
+          "contains": [
+            "test_exact_typed_effects_and_catalogue_adoption_requirements"
+          ]
+        },
+        {
+          "path": "tests/test_central_banking.py",
+          "contains": [
+            "test_real_bank_contracts_and_separate_typed_identities",
+            "test_evidence_fails_closed_without_complete_current_production_execution"
           ]
         }
       ],
@@ -847,21 +903,29 @@
           ]
         },
         {
-          "path": "wurst/BankingCampaignRuntime.wurst",
-          "contains": [
-            "class CampaignBankingPort",
-            "function quote",
-            "function commit",
-            "q.principal + q.counting + q.reconciliation"
-          ]
-        },
-        {
           "path": "wurst/ArmyFoodLogistics.wurst",
           "contains": [
             "registerLogisticsCommands",
             "grain_supply_spoilage_reduction",
             "canal_freight_throughput",
             "connected(depot, target)"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernance.wurst",
+          "contains": [
+            "function municipalEligible",
+            "archive_tax_collection_efficiency",
+            "municipal_tax_collection_efficiency"
+          ]
+        },
+        {
+          "path": "wurst/BankingCampaignRuntime.wurst",
+          "contains": [
+            "class CampaignBankingPort",
+            "function quote",
+            "function commit",
+            "q.principal + q.counting + q.reconciliation"
           ]
         }
       ],
@@ -901,6 +965,13 @@
           ]
         },
         {
+          "path": "wurst/CivicCampaignRuntime.wurst",
+          "contains": [
+            "municipal-repeal",
+            "registerCivicCommands"
+          ]
+        },
+        {
           "path": "wurst/BankingCampaignRuntime.wurst",
           "contains": [
             "commands.register(\"banking\"",
@@ -928,9 +999,12 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 18",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 19",
             "progress.creditBasisPoints",
-            "parsed.legacyVoyages"
+            "parsed.legacyVoyages",
+            "banking.states[i].record()",
+            "parsed.banking = banking.fork()",
+            "banking = parsed.banking"
           ]
         },
         {
@@ -955,9 +1029,9 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "banking.states[i].record()",
-            "parsed.banking = banking.fork()",
-            "banking = parsed.banking"
+            "s.municipalOwner",
+            "state.municipalRestored",
+            "civic = parsed.civic"
           ]
         }
       ],
@@ -1000,19 +1074,26 @@
           ]
         },
         {
-          "path": "wurst/BankingOperationsTests.wurst",
-          "contains": [
-            "bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
-            "bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
-            "bankingLongCampaignActiveAbstractUpkeepAndConservation"
-          ]
-        },
-        {
           "path": "wurst/ArmyFoodLogisticsTests.wurst",
           "contains": [
             "registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage",
             "registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction",
             "failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch"
+          ]
+        },
+        {
+          "path": "wurst/CivicGovernanceTests.wurst",
+          "contains": [
+            "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+            "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
+          ]
+        },
+        {
+          "path": "wurst/BankingOperationsTests.wurst",
+          "contains": [
+            "bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
+            "bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
+            "bankingLongCampaignActiveAbstractUpkeepAndConservation"
           ]
         }
       ],

@@ -90,7 +90,7 @@ and rejects stale quotes, unauthorized actors or replays before mutating either
 balance. Research changes, repeal, capture, day changes and competing balance
 writes are revalidated. Each committed operation advances the durable serial.
 
-Military/settlement snapshots advance to **v18**, adding one mandatory
+Military/settlement snapshots use **v19**, retaining one mandatory
 `b` record per configured bank: bank ID, policy controller, ready day, prepaid
 through day, last resolved day and transaction serial. Supported versions 1–17
 with no banking ledger migrate to inactive policies and zero serials without copying live state,
@@ -102,7 +102,10 @@ warehouse balances and research reconstruction, so a late rejected load restores
 the complete prior state. Independent v17 banking saves retain policy state and
 initialize absent freight counters empty; independent v17 logistics saves retain
 freight counters and initialize absent banking policies inactive. Partially
-present ledgers reject. V18 requires both complete ledgers. Other campaign/RPG
+present ledgers reject. V19 also requires complete municipal `u` records.
+V18 banking saves migrate without activating municipal policies; independent
+v18 municipal saves retain their six-field `b` records through arity-based
+migration, initializing absent bank policies inactive. Other campaign/RPG
 envelopes are unchanged.
 
 `BankingOperationsTests.wurst` exercises registered research and institution

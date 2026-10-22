@@ -1,0 +1,1021 @@
+{
+  "audits": {
+    "release-blocker-audit.json": {
+      "sha256": "d4efcbc3413b08d4a7724c0045c42706ab9b798049ab620ebb7bd97107af2bf9",
+      "sourceRevision": "ba2a9e76eeccd228ac37203774a3651db49ddef9",
+      "sourceTreeSha256": "223b7b1784f53b352926852c50b06f8d7730fe2000191f4e7203a3d78e41cee3",
+      "status": "fail"
+    },
+    "runtime-acceptance.json": {
+      "sha256": "9492f970153d4978e66e747d62c78bb8e71fa8e23687282d7d36d8faff217d91",
+      "sourceRevision": "ba2a9e76eeccd228ac37203774a3651db49ddef9",
+      "sourceTreeSha256": "223b7b1784f53b352926852c50b06f8d7730fe2000191f4e7203a3d78e41cee3",
+      "status": "fail"
+    },
+    "traceability/requirements.json": {
+      "sha256": "28338377902152a5212c8fc78c85dbb39cff2a32c8df2dcfaa5674a6296165b9",
+      "sourceRevision": "ba2a9e76eeccd228ac37203774a3651db49ddef9",
+      "sourceTreeSha256": "223b7b1784f53b352926852c50b06f8d7730fe2000191f4e7203a3d78e41cee3",
+      "status": "fail"
+    }
+  },
+  "checks": [
+    {
+      "log": "integration-wurst.log.gz",
+      "sha256": "02d5b5e7619d536014de2e2e9b7d1b43c08b7f0a7d7e8e95bc097eedd2147d62",
+      "status": "pass"
+    },
+    {
+      "log": "integration-research.log.gz",
+      "sha256": "0087fbfa7492bb84006ff95aed44c80800453a14d32449da3c91b370b76f4eea",
+      "status": "pass"
+    },
+    {
+      "log": "integration-runtime.log.gz",
+      "sha256": "c3e45b17f0bd40cc2060eba02f308f52332db710f4599e62b038aa171c0c1eea",
+      "status": "pass"
+    },
+    {
+      "log": "integration-traceability.log.gz",
+      "sha256": "a7893ba0d5ab31b5117cfd4184f3bb6583ed96cccfcc75a115a4b79687210596",
+      "status": "pass"
+    },
+    {
+      "log": "integration-release.log.gz",
+      "sha256": "e88787856b00854bcae1089d1a7b5fcfc6ebe370d655aa8b0d471ae1a663c98d",
+      "status": "pass"
+    },
+    {
+      "log": "integration-boundary.log.gz",
+      "sha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+      "status": "pass"
+    },
+    {
+      "log": "integration-traceability-freshness.log.gz",
+      "sha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c",
+      "status": "pass"
+    },
+    {
+      "log": "integration-framework.log.gz",
+      "sha256": "2bd1a5dac795eed4687756d277483b53840810bfacfd02864cffcc3ae9bcd216",
+      "status": "pass"
+    }
+  ],
+  "compiler": {
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
+  },
+  "focusedPython": {
+    "status": "pass",
+    "suites": [
+      "administration",
+      "economy",
+      "release_save_compatibility",
+      "civic_governance",
+      "administrative_contracts",
+      "progression_catalog",
+      "central_banking"
+    ],
+    "tests": 45
+  },
+  "format": "warcraftmap_focused_integration_validation_v1",
+  "frameworkPythonTests": 9,
+  "fullSuite": false,
+  "inputHashesUnchanged": true,
+  "issues": [],
+  "productionProbes": {
+    "wurst/ArmyFoodLogisticsTests.wurst:failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch": [
+      "administrative_pay",
+      "appoint",
+      "finance_advance",
+      "finance_canal",
+      "load",
+      "logistics_food",
+      "logistics_freight",
+      "piracy_registration",
+      "recruit",
+      "save",
+      "tradition_reconcile",
+      "voyage_resolve"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:logisticsCaptureTravelSaveMigrationAndRollbackKeepDailyCapacity": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "logistics_food",
+      "logistics_freight",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:logisticsLongCampaignConservesGrainAndCannotBankOrReplayCapacity": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "logistics_food",
+      "logistics_freight",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:logisticsNamedLayersRepairDeduplicateAndAddCompatibleRatesOnce": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_registration",
+      "logistics_food",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:logisticsRejectsMissingEraControllerGearResourcesInfrastructureAndDisconnectedRoutes": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "logistics_food",
+      "logistics_freight",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_registration",
+      "logistics_food",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions"
+    ],
+    "wurst/ArmyFoodLogisticsTests.wurst:registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "logistics_freight",
+      "logistics_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingAndFreightIndependentV17SavesMigrateWithoutGrantingAbsentState": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_policy",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_commit",
+      "banking_policy",
+      "banking_quote",
+      "banking_registration",
+      "dispatch",
+      "load",
+      "piracy_registration",
+      "recruit",
+      "research",
+      "rpg_registration",
+      "save",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingLongCampaignActiveAbstractUpkeepAndConservation": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_commit",
+      "banking_policy",
+      "banking_quote",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_commit",
+      "banking_policy",
+      "banking_quote",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingRejectsMissingInfrastructureFundsUnauthorizedStaleAndReplayQuotes": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_commit",
+      "banking_policy",
+      "banking_quote",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/BankingOperationsTests.wurst:bankingResearchProvenanceAndEraReconstructionNeverGrantsPolicy": [
+      "appoint",
+      "banking_advance",
+      "banking_quote",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/BankingOperationsTests.wurst:municipalAndBankingV19RecordsRoundTripAndBothV18LayoutsMigrateAtomically": [
+      "administrative_pay",
+      "appoint",
+      "banking_advance",
+      "banking_policy",
+      "banking_registration",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically": [
+      "load",
+      "piracy_registration",
+      "recruit",
+      "save",
+      "tradition_reconcile"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeOfficeReplacementOperatingConditionsAndSurveySourcesCompose": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativePrerequisitesUrbanizationResourcesAndForeignJurisdictionRejectWithoutMutation": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeUpkeepLossDuplicatesAndReenactmentNeverCreatePermanentBenefits": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:combinedCivicAndVoyageDayReplayAndSnapshotMigrationPreserveBothDomains": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve",
+      "voyage_start"
+    ],
+    "wurst/FrameworkConformanceTests.wurst:productionCampaignContentContract": [
+      "administrative_advance",
+      "appoint",
+      "banking_advance",
+      "capture",
+      "domains",
+      "finance_advance",
+      "handoff",
+      "industry_advance",
+      "load",
+      "naval_advance",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "science_advance",
+      "startup",
+      "tradition_reconcile",
+      "travel",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh",
+      "voyage_resolve"
+    ],
+    "wurst/FrameworkConformanceTests.wurst:productionCampaignRegistrationCapturesFullMigrationDefaults": [
+      "appoint",
+      "domains",
+      "treasure_definitions"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion1MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion2MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion3MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion4MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion5MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion6MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion7MigratesThroughFreshCampaignCodec": [
+      "appoint",
+      "combat_death",
+      "combat_install",
+      "combat_loss",
+      "domains",
+      "handoff",
+      "load",
+      "quest_marker_refresh",
+      "recruit",
+      "save",
+      "startup",
+      "tradition_reconcile",
+      "tradition_resolve",
+      "treasure_choice",
+      "treasure_definitions",
+      "treasure_resolution",
+      "unstuck_reconstructed",
+      "unstuck_refresh"
+    ],
+    "wurst/ResearchCostTests.wurst:generatedHistoricalCostIncludesAuthoredCoefficients": [
+      "treasure_definitions"
+    ],
+    "wurst/TradeFinanceTests.wurst:canalActiveInactiveTravelCaptureSaveMigrationAndFailedLoadRemainDeterministic": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/TradeFinanceTests.wurst:combinedFinanceNavalAndLandSavesMigrateBothVersion14LayoutsAtomically": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/TradeFinanceTests.wurst:failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority": [
+      "administrative_pay",
+      "appoint",
+      "finance_advance",
+      "finance_canal",
+      "finance_quote",
+      "load",
+      "piracy_registration",
+      "recruit",
+      "save",
+      "tradition_reconcile",
+      "voyage_resolve"
+    ],
+    "wurst/TradeFinanceTests.wurst:financeLongCampaignConservesWealthAndMissedLaborNeverReplaysFreeWork": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_quote",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/TradeFinanceTests.wurst:financeMissingTechEraControlRecipientAccessFundsStockAndGearNeverBypassAuthority": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_quote",
+      "finance_registration",
+      "finance_remit",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/TradeFinanceTests.wurst:financeResearchNamedLayersDeduplicateRepairAndStackDistinctSourcesOnce": [
+      "appoint",
+      "dispatch",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/TradeFinanceTests.wurst:registeredAuctionAndBrokerageResearchReduceExistingSettlementCostsPrecisely": [
+      "appoint",
+      "dispatch",
+      "finance_quote",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions"
+    ],
+    "wurst/TradeFinanceTests.wurst:registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal": [
+      "appoint",
+      "dispatch",
+      "finance_registration",
+      "finance_remit",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions"
+    ],
+    "wurst/TradeFinanceTests.wurst:registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput": [
+      "administrative_pay",
+      "appoint",
+      "dispatch",
+      "finance_advance",
+      "finance_canal",
+      "finance_registration",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/TradeFinanceTests.wurst:registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence": [
+      "appoint",
+      "dispatch",
+      "finance_quote",
+      "trade_command",
+      "trade_registration"
+    ]
+  },
+  "releaseAuditTests": 10,
+  "researchGenerationTests": 10,
+  "runtimeAcceptanceTests": 25,
+  "scope": "Fresh focused execution of the merged sources. Full repository validation and closure audits on integrated main belong to the controller. Prior issue-524 execution artifacts are not used as evidence.",
+  "sourceIdentity": {
+    "sourceRevision": "ba2a9e76eeccd228ac37203774a3651db49ddef9",
+    "sourceTreeSha256": "223b7b1784f53b352926852c50b06f8d7730fe2000191f4e7203a3d78e41cee3"
+  },
+  "tests": [
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:registeredBakeriesDeliverRealGrainAndReduceOnlySpoilage",
+      "line": 61,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:registeredCanalLogisticsMoves110Versus100RealFreightAfterPaidConstruction",
+      "line": 81,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:logisticsRejectsMissingEraControllerGearResourcesInfrastructureAndDisconnectedRoutes",
+      "line": 98,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:logisticsNamedLayersRepairDeduplicateAndAddCompatibleRatesOnce",
+      "line": 167,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:logisticsCaptureTravelSaveMigrationAndRollbackKeepDailyCapacity",
+      "line": 205,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:failedCampaignLoadRollsBackFoodFreightTreasuryAndResearch",
+      "line": 263,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ArmyFoodLogisticsTests.wurst:logisticsLongCampaignConservesGrainAndCannotBankOrReplayCapacity",
+      "line": 332,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
+      "line": 109,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingRejectsMissingInfrastructureFundsUnauthorizedStaleAndReplayQuotes",
+      "line": 155,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
+      "line": 218,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingAndFreightIndependentV17SavesMigrateWithoutGrantingAbsentState",
+      "line": 289,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingLongCampaignActiveAbstractUpkeepAndConservation",
+      "line": 323,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:bankingResearchProvenanceAndEraReconstructionNeverGrantsPolicy",
+      "line": 355,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/BankingOperationsTests.wurst:municipalAndBankingV19RecordsRoundTripAndBothV18LayoutsMigrateAtomically",
+      "line": 384,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically",
+      "line": 1150,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicCatalogueLookupAndStagedForkPreserveExactDistrictIdentities",
+      "line": 17,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills",
+      "line": 115,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically",
+      "line": 158,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity",
+      "line": 197,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay",
+      "line": 233,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload",
+      "line": 269,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic",
+      "line": 287,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion",
+      "line": 311,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:combinedCivicAndVoyageDayReplayAndSnapshotMigrationPreserveBothDomains",
+      "line": 338,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+      "line": 375,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativePrerequisitesUrbanizationResourcesAndForeignJurisdictionRejectWithoutMutation",
+      "line": 414,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeOfficeReplacementOperatingConditionsAndSurveySourcesCompose",
+      "line": 454,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback",
+      "line": 479,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeUpkeepLossDuplicatesAndReenactmentNeverCreatePermanentBenefits",
+      "line": 523,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/FrameworkConformanceTests.wurst:productionCampaignRegistrationCapturesFullMigrationDefaults",
+      "line": 204,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/FrameworkConformanceTests.wurst:productionCampaignContentContract",
+      "line": 217,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion1MigratesThroughFreshCampaignCodec",
+      "line": 1048,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion2MigratesThroughFreshCampaignCodec",
+      "line": 1051,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion3MigratesThroughFreshCampaignCodec",
+      "line": 1054,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion4MigratesThroughFreshCampaignCodec",
+      "line": 1057,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion5MigratesThroughFreshCampaignCodec",
+      "line": 1060,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion6MigratesThroughFreshCampaignCodec",
+      "line": 1063,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion7MigratesThroughFreshCampaignCodec",
+      "line": 1066,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchCostTests.wurst:historicalResearchMatchesIndependentDecimalFixtures",
+      "line": 13,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchCostTests.wurst:historicalResearchRejectsMalformedAndUnrepresentableDefinitions",
+      "line": 36,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/ResearchCostTests.wurst:generatedHistoricalCostIncludesAuthoredCoefficients",
+      "line": 55,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:registeredAuctionAndBrokerageResearchReduceExistingSettlementCostsPrecisely",
+      "line": 98,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal",
+      "line": 135,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:registeredCanalFinancePaysMaterialsPrincipalReducedFeeAndDailyLaborBeforeDurableOutput",
+      "line": 157,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:financeMissingTechEraControlRecipientAccessFundsStockAndGearNeverBypassAuthority",
+      "line": 179,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:financeResearchNamedLayersDeduplicateRepairAndStackDistinctSourcesOnce",
+      "line": 234,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:canalActiveInactiveTravelCaptureSaveMigrationAndFailedLoadRemainDeterministic",
+      "line": 264,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:failedCampaignLoadRollsBackPaidCanalWorkWithOtherAuthority",
+      "line": 307,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence",
+      "line": 338,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:financeLongCampaignConservesWealthAndMissedLaborNeverReplaysFreeWork",
+      "line": 368,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/TradeFinanceTests.wurst:combinedFinanceNavalAndLandSavesMigrateBothVersion14LayoutsAtomically",
+      "line": 399,
+      "status": "pass"
+    }
+  ],
+  "traceabilityTests": 53
+}
