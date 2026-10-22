@@ -57,3 +57,12 @@ any compiler write. Validation used the pinned cached image, UID/GID 1001 and
 network disabled. `collect-focused.py TRANSCRIPT` verifies all expected results,
 current input hashes and generated registration. No commit, push, GitHub mutation,
 global installation, writable container mount or player QA was performed.
+
+Integration repair regenerated and staged the three conflicting audit JSON files
+from the combined dispatch and Chemical Classification sources. No source conflict
+or implementation change was needed. The focused assembly was regenerated and all
+30 pinned Wurst tests passed again, including full assembled-source typechecking
+and generated registration inspection. `integration-validation.json` records this
+combined source identity, the additional Python integration checks, and refreshed
+audit hashes. The earlier `validation.json` describes the original pre-integration
+run; the focused Wurst and generated-identity files now describe the combined tree.

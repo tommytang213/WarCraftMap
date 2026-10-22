@@ -891,7 +891,9 @@
           "path": "wurst/ScienceExploration.wurst",
           "contains": [
             "function advance",
-            "effects.rate(owner, d.metric)",
+            "effects.workRate(d, owner, s.target)",
+            "site.observationTargets.contains",
+            "function workRate",
             "port.pay(d, owner, d.dailyMoney, d.dailyUnits, provisions)"
           ]
         },
@@ -1074,7 +1076,9 @@
           "contains": [
             "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
             "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
-            "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
+            "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters",
+            "chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl",
+            "chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource"
           ]
         },
         {
