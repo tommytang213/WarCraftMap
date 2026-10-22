@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "nodeId": "ciphered_dispatches",
+  "relayNodeId": "courier_relays",
+  "relayUnlock": {
+    "kind": "modifier",
+    "contentId": "progression_courier_relays"
+  },
+  "effect": {
+    "nodeId": "ciphered_dispatches",
+    "unlock": {
+      "kind": "modifier",
+      "contentId": "progression_ciphered_dispatches"
+    },
+    "metric": "remote_survey_dispatch_time_reduction",
+    "bonusBasisPoints": 1000
+  },
+  "operatingBasisPoints": 25,
+  "relayLinks": [
+    {
+      "originId": "lisbon",
+      "recipientId": "goa"
+    },
+    {
+      "originId": "goa",
+      "recipientId": "lisbon"
+    },
+    {
+      "originId": "constantinople",
+      "recipientId": "cairo"
+    },
+    {
+      "originId": "cairo",
+      "recipientId": "constantinople"
+    },
+    {
+      "originId": "goa",
+      "recipientId": "malacca"
+    },
+    {
+      "originId": "malacca",
+      "recipientId": "goa"
+    }
+  ],
+  "operation": "Paid cadastral survey order and authoritative return; early completion requires current remote office, lawful endpoint control, stocked unblocked markets, both research entitlements and a separately payable dispatch bill.",
+  "costs": "Original 1% survey bill and normal research curve unchanged; dispatch completion additionally costs ceil(annualTax * 25 / 10000), minimum one minor currency unit.",
+  "saveReconstruction": "No new saved state: baseline surveyReady remains the paid normal deadline; surveyed records the single completion. Resolve current eligibility and pay once at early completion. Definitions and named research sources reconstruct from scenario data."
+}

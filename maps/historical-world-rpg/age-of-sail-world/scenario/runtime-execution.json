@@ -405,6 +405,14 @@
     "construction_commit": {
       "path": "wurst/NavalCampaignRuntime.wurst",
       "signature": "function commit(string owner, NavalBuildQuote quote) returns string"
+    },
+    "dispatch_network": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function dispatchAccess(string originId, string recipientId) returns boolean"
+    },
+    "dispatch_completion": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function dispatchDays(string owner, string id, CivicResearchEffects research, CivicEconomyPort economy) returns int"
     }
   },
   "systems": {
@@ -608,6 +616,15 @@
       "construction_commit",
       "naval_pay",
       "naval_advance"
+    ],
+    "dispatch_contract": [
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "dispatch_network",
+      "dispatch_completion"
     ]
   }
 }

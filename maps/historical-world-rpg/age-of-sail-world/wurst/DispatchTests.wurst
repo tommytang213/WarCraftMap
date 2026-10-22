@@ -1,0 +1,402 @@
+package DispatchTests
+
+import CivicGovernance
+import CivicCampaignRuntime
+import CampaignTimeline
+import CampaignSaveManager
+import PlayableCampaignRuntime
+import PlayableCountryInteractions
+import PlayableTrade
+import WarcraftRpgRuntime
+import ResearchEntitlements
+import CommandRouter
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import ManagementScreenPauseController
+import ManagementCommandTests
+import CampaignLoadTransactionTests
+import ScenarioData
+
+class DispatchResources implements ResearchCommandResources, CommandOutput
+	string owner = "player"
+	int balance = 100000
+	int currentYear = 1778
+	string output = ""
+	override function controllerId(player sender) returns string
+		return owner
+	override function year() returns int
+		return currentYear
+	override function gold(player sender) returns int
+		return balance
+	override function setGold(player sender, int amount)
+		balance = amount
+	override function show(player recipient, string message)
+		output = message
+
+/** Use generated research and actual authored Lisbon/Goa relay registration;
+ * bound the economic population, retaining ordinary authority and adapters. */
+function configureDispatchLedger(MilitarySettlementRuntime military, CivicResearchEffects research, int day)
+	let generated = new CivicLedger()
+	configureGeneratedCivic(generated, research, day)
+	let ledger = military.civic
+	ledger.dispatchRelayKind = generated.dispatchRelayKind
+	ledger.dispatchRelayContent = generated.dispatchRelayContent
+	ledger.dispatchOperatingBasisPoints = generated.dispatchOperatingBasisPoints
+	for i = 0 to generated.dispatchLinkCount - 1
+		ledger.addDispatchLink(generated.dispatchLinks[i].originId, generated.dispatchLinks[i].recipientId)
+	destroy generated
+	ledger.register(new CivicDistrict("goa", "goa_province", 10001, false, 0, 0, 0, 0, 0, "cloth", 1, 1000), day)
+
+class DispatchFixture
+	int day = 649041
+	DispatchResources resources = new DispatchResources()
+	CivicResearchEffects research = new CivicResearchEffects(new UnboundResearchEffects())
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(research)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CampaignClock clock = new CampaignClock(529237, 700000, day, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	CivicCampaignRuntime runtime
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), resources)
+	string initialRpg
+	construct()
+		let generated = new WarcraftRpgRuntime(research)
+		configureGeneratedRpg(generated)
+		rpg.technologies = generated.technologies
+		rpg.researchResources = resources
+		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
+		configureDispatchLedger(military, research, day)
+		military.registerSettlement(new SettlementRuntimeState("goa", "player", "middle-east-india", 'htow', 'hfoo', 30, 20, 1000, 50, 1., 2.))
+		military.registerSettlement(new SettlementRuntimeState("lisbon", "player", "europe", 'htow', 'hfoo', 30, 20, 1000, 50, 3., 4.))
+		military.appoint("goa", new AdministratorState("clerk", "Clerk", "Administrator", "player", "europe", "goa", 50, 50, 40, 1))
+		military.appoint("lisbon", new AdministratorState("relay", "Relay Clerk", "Administrator", "player", "europe", "lisbon", 50, 50, 40, 1))
+		campaign.setMilitarySettlementRuntime(military)
+		campaign.setRpgRuntime(rpg)
+		campaign.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		campaign.countries.registerPolity("player", 10000)
+		campaign.countries.registerPolity("ai", 10000)
+		trade.registerMarket(new RuntimeMarket("goa", "cloth", 1000, 100000, 10, 10))
+		trade.registerMarket(new RuntimeMarket("lisbon", "cloth", 1000, 100000, 10, 10))
+		runtime = new CivicCampaignRuntime(campaign, trade, research)
+		campaign.civicRuntime = runtime
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		registerCivicCommands(commands, runtime).assertEquals("")
+		initialRpg = rpg.captureState()
+	function unlock(string id)
+		commands.dispatch(Player(0), "/research " + id).assertTrue()
+		resources.output.assertEquals("Action completed.")
+	function surveyResearch()
+		unlock("professional_bureaucracy")
+		unlock("cadastral_survey")
+	function allResearch()
+		surveyResearch()
+		unlock("courier_relays")
+		unlock("ciphered_dispatches")
+	function order()
+		commands.dispatch(Player(0), "/civic survey goa").assertTrue()
+		resources.output.startsWith("Civic action completed.").assertTrue()
+	function advance(int elapsed)
+		clock.advanceTo(day + elapsed).assertTrue()
+
+@test function dispatchRegisteredResearchAndSurveyBeatMatchedControlWithExactBills()
+	let f = new DispatchFixture()
+	let control = new DispatchFixture()
+	f.commands.dispatch(Player(0), "/research ciphered_dispatches").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.resources.balance.assertEquals(100000)
+	f.surveyResearch()
+	control.surveyResearch()
+	control.unlock("courier_relays")
+	f.resources.currentYear = 1450
+	f.unlock("courier_relays")
+	f.resources.balance.assertEquals(100000 - 90 - 130 - 75)
+	// The authored 1480 preferred year and 104 base cost retain ahead-of-time costs.
+	let earlyCost = f.rpg.technologies.costFor("player", "ciphered_dispatches", 1450, 0, 0)
+	(earlyCost > 104).assertTrue()
+	f.resources.balance = earlyCost - 1
+	f.commands.dispatch(Player(0), "/research ciphered_dispatches").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.resources.balance.assertEquals(earlyCost - 1)
+	f.resources.balance = 10000
+	f.unlock("ciphered_dispatches")
+	f.resources.balance.assertEquals(10000 - earlyCost)
+	f.research.rate("player", "remote_survey_dispatch_time_reduction").assertEquals(1000)
+	f.research.rate("ai", "remote_survey_dispatch_time_reduction").assertEquals(0)
+	f.order()
+	control.order()
+	f.military.civic.states[0].surveyReady.assertEquals(f.day + 90)
+	f.campaign.countries.treasury[0].assertEquals(9899)
+	f.advance(80)
+	control.advance(80)
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.advance(81)
+	control.advance(81)
+	f.military.civic.states[0].surveyed.assertTrue()
+	control.military.civic.states[0].surveyed.assertFalse()
+	f.campaign.countries.treasury[0].assertEquals(9873) // 101 survey + 26 dispatch.
+	control.campaign.countries.treasury[0].assertEquals(9899)
+	f.trade.findMarket("goa", "cloth").stock.assertEquals(1000)
+	control.advance(90)
+	control.military.civic.states[0].surveyed.assertTrue()
+	f.military.civic.states[0].municipalOwner.assertEquals("")
+	f.research.rate("player", "archive_tax_collection_efficiency").assertEquals(0)
+
+@test function dispatchMissingRelayTechnologyAccessAndRemoteJurisdictionRemoveEarlyCompletion()
+	let f = new DispatchFixture()
+	f.allResearch()
+	f.order()
+	let saved = f.military.snapshot()
+	let earned = f.rpg.captureState()
+	for missing = 0 to 13
+		f.military.restore(saved, false).assertTrue()
+		f.rpg.restoreState(earned).assertTrue()
+		f.rpg.reconcile("player")
+		f.campaign.countries.treasury[0] = 9899
+		let origin = f.trade.findMarket("lisbon", "cloth")
+		let recipient = f.trade.findMarket("goa", "cloth")
+		origin.blockaded = false
+		recipient.blockaded = false
+		origin.stock = 1000
+		f.military.civic.dispatchLinks[0].originId = "lisbon"
+		if missing <= 1
+			var completed = f.initialRpg + "|u,player,professional_bureaucracy|u,player,cadastral_survey"
+			if missing == 0
+				completed += "|u,player,courier_relays"
+			else
+				completed += "|u,player,ciphered_dispatches"
+			f.rpg.restoreState(completed).assertTrue()
+			f.rpg.reconcile("player")
+		else if missing == 2
+			origin.blockaded = true
+		else if missing == 3
+			recipient.blockaded = true
+		else if missing == 4
+			origin.stock = 0
+		else if missing == 5
+			f.military.settlements[1].controllerId = "ai"
+		else if missing == 6
+			f.military.administrators[0].jurisdiction = "other"
+		else if missing == 7
+			f.military.administrators[0].capacity = 0
+		else if missing == 8
+			f.military.administrators[0].physicalRegionId = "middle-east-india"
+		else if missing == 9
+			f.military.civic.dispatchLinks[0].originId = "unknown"
+		else if missing == 10
+			f.military.settlements[1].underAttack = true
+		else if missing == 11
+			f.military.settlements[1].legalOwnerId = "ai"
+		else if missing == 12
+			f.campaign.countries.treasury[0] = 25
+		else
+			f.military.administrators[0].controllerId = "ai"
+		let treasury = f.campaign.countries.treasury[0]
+		f.runtime.advance(f.day + 81)
+		f.military.civic.states[0].surveyed.assertFalse()
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+		f.runtime.advance(f.day + 90)
+		// Missing local office authority cancels ordinary lawful execution as well.
+		if missing != 13
+			f.military.civic.states[0].surveyed.assertTrue()
+
+@test function dispatchRejectedCommandsAndDuplicateOrdersPreserveAuthority()
+	let f = new DispatchFixture()
+	let access = new PlayableRegionAccess(f.campaign)
+	access.add("pacific", false)
+	access.add("middle-east-india", true)
+	let knowledge = access.captureKnowledge()
+	f.allResearch()
+	access.captureKnowledge().assertEquals(knowledge)
+	access.regionIsKnown(Player(0), "pacific").assertFalse()
+	access.mayCommandRegion(Player(0), "pacific").assertFalse()
+	access.mayCommandRegion(Player(1), "middle-east-india").assertFalse()
+	let before = f.campaign.captureAuthoritativeState()
+	f.commands.dispatch(Player(1), "/civic survey goa").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(before)
+	f.commands.dispatch(Player(0), "/civic survey unknown").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(before)
+	f.runtime.act("ai", "survey", "goa").contains("lawfully controlled").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(before)
+	f.campaign.countries.treasury[0] = 100
+	let poor = f.campaign.captureAuthoritativeState()
+	f.commands.dispatch(Player(0), "/civic survey goa").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(poor)
+	f.campaign.countries.treasury[0] = 10000
+	f.order()
+	let pending = f.campaign.captureAuthoritativeState()
+	f.commands.dispatch(Player(0), "/civic survey goa").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(pending)
+	// Identical entitlement provenance/content is replacement, never stacking.
+	let peer = new RuntimeTechnology("peer", "Peer", 1450, 1)
+	peer.addUnlock("peer", "modifier", "progression_ciphered_dispatches")
+	f.rpg.technologies.register(peer).assertTrue()
+	f.unlock("peer")
+	for repeat = 1 to 3
+		f.rpg.reconcile("player")
+	f.research.rate("player", "remote_survey_dispatch_time_reduction").assertEquals(1000)
+	f.advance(81)
+	let done = f.campaign.captureAuthoritativeState()
+	f.commands.dispatch(Player(0), "/civic survey goa").assertTrue()
+	f.campaign.captureAuthoritativeState().assertEquals(done)
+	f.runtime.advance(f.day + 81)
+	f.campaign.captureAuthoritativeState().assertEquals(done)
+	f.campaign.countries.treasury[0].assertEquals(9873)
+	f.military.settlements[0].controllerId.assertEquals("player")
+	f.military.settlements[0].legalOwnerId.assertEquals("player")
+
+@test function dispatchStaleAccessAndControllerTransferReevaluateAtCompletion()
+	let f = new DispatchFixture()
+	f.allResearch()
+	f.order()
+	f.advance(80)
+	f.trade.findMarket("lisbon", "cloth").blockaded = true
+	f.advance(81)
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.military.appoint("goa", new AdministratorState("replacement", "Replacement", "Governor", "player", "pacific", "goa", 50, 99, 40, 1)).assertEquals("Administrator appointed.")
+	f.trade.findMarket("lisbon", "cloth").blockaded = false
+	f.advance(82)
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.military.administrators[0].physicalRegionId = "europe"
+	f.advance(83)
+	f.military.civic.states[0].surveyed.assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(9873)
+	let capture = new DispatchFixture()
+	capture.allResearch()
+	capture.order()
+	capture.advance(80)
+	capture.military.transferSovereignty("goa", "ai")
+	capture.advance(81)
+	capture.military.civic.states[0].surveyOwner.assertEquals("")
+	capture.military.civic.states[0].surveyed.assertFalse()
+	capture.campaign.countries.treasury[1].assertEquals(10000)
+	capture.military.transferSovereignty("lisbon", "ai")
+	capture.resources.owner = "ai"
+	capture.allResearch()
+	capture.military.administrators[0].physicalRegionId = "europe"
+	capture.runtime.act("ai", "survey", "goa").assertEquals("")
+	capture.advance(162)
+	capture.military.civic.states[0].surveyed.assertTrue()
+	capture.campaign.countries.treasury[1].assertEquals(9873)
+	capture.campaign.countries.treasury[0].assertEquals(9899)
+
+@test function dispatchActiveAbstractReplaySaveReconstructionAndLegacyDeadlineAgree()
+	let active = new DispatchFixture()
+	let inactive = new DispatchFixture()
+	active.allResearch()
+	inactive.allResearch()
+	active.order()
+	inactive.order()
+	active.military.activeRegionId = "middle-east-india"
+	inactive.military.activeRegionId = "unloaded"
+	for elapsed = 1 to 80
+		active.advance(elapsed)
+	inactive.advance(80)
+	active.military.activeRegionId = "unloaded"
+	active.military.snapshot().assertEquals(inactive.military.snapshot())
+	let saved = inactive.military.snapshot()
+	let earned = inactive.rpg.captureState()
+	let fresh = new DispatchFixture()
+	fresh.campaign.countries.treasury[0] = 9899
+	for repeat = 1 to 3
+		fresh.military.restore(saved, false).assertTrue()
+		fresh.rpg.restoreState(earned).assertTrue()
+		fresh.rpg.reconcile("player")
+		fresh.military.snapshot().assertEquals(saved)
+		fresh.research.rate("player", "remote_survey_dispatch_time_reduction").assertEquals(1000)
+	// Existing pending deadlines reconstruct with live definitions, never back-pay.
+	fresh.campaign.countries.treasury[0].assertEquals(9899)
+	fresh.runtime.advance(fresh.day + 81)
+	active.military.activeRegionId = "middle-east-india"
+	active.advance(81)
+	inactive.advance(81)
+	active.military.activeRegionId = "unloaded"
+	fresh.military.snapshot().assertEquals(active.military.snapshot())
+	inactive.military.snapshot().assertEquals(active.military.snapshot())
+	fresh.campaign.countries.treasury[0].assertEquals(9873)
+	let done = fresh.military.snapshot()
+	fresh.military.restore(done, false).assertTrue()
+	fresh.runtime.advance(fresh.day + 82)
+	fresh.campaign.countries.treasury[0].assertEquals(9873)
+	fresh.military.restore(done + "|g,goa,", false).assertFalse()
+	fresh.military.civic.states[0].surveyed.assertTrue()
+	// Pre-civic saves remain unsurveyed; migration invents no paid dispatch.
+	let cut = done.indexOf("|u,")
+	let legacy = "v10" + SubString(done, done.indexOf("|"), cut)
+	fresh.military.restore(legacy, false).assertTrue()
+	fresh.military.civic.states[0].surveyed.assertFalse()
+	fresh.military.civic.states[0].surveyReady.assertEquals(0)
+	fresh.runtime.advance(fresh.day + 83)
+	fresh.campaign.countries.treasury[0].assertEquals(9873)
+
+@test function dispatchFailedCampaignLoadRollsBackPendingOrderResearchAndBills()
+	let f = new LoadFixture()
+	let resources = new DispatchResources()
+	resources.owner = "england"
+	let effects = new CivicResearchEffects(f.rpg.technologies.effects)
+	let generated = new WarcraftRpgRuntime(effects)
+	configureGeneratedRpg(generated)
+	// Retain the fixture's already-earned printing source and registered definition.
+	generated.technologies.register(f.rpg.technologies.get("printing")).assertTrue()
+	for i = 0 to f.rpg.technologies.unlockedCount - 1
+		generated.technologies.unlockedKeys[i] = f.rpg.technologies.unlockedKeys[i]
+	generated.technologies.unlockedCount = f.rpg.technologies.unlockedCount
+	generated.technologies.knownControllers = f.rpg.technologies.knownControllers
+	f.rpg.technologies = generated.technologies
+	f.rpg.researchResources = resources
+	configureDispatchLedger(f.military, effects, f.clock.currentDay)
+	f.military.registerSettlement(new SettlementRuntimeState("goa", "england", "middle-east-india", 'htow', 'hfoo', 30, 20, 1000, 50, 1., 2.))
+	f.military.registerSettlement(new SettlementRuntimeState("lisbon", "england", "europe", 'htow', 'hfoo', 30, 20, 1000, 50, 3., 4.))
+	f.military.appoint("goa", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe", "goa", 50, 50, 40, 1))
+	f.military.appoint("lisbon", new AdministratorState("relay", "Relay", "Administrator", "england", "europe", "lisbon", 50, 50, 40, 1))
+	f.extension.trade.registerMarket(new RuntimeMarket("goa", "cloth", 1000, 100000, 10, 10))
+	f.extension.trade.registerMarket(new RuntimeMarket("lisbon", "cloth", 1000, 100000, 10, 10))
+	let runtime = new CivicCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.civicRuntime = runtime
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	registerCivicCommands(f.commands, runtime).assertEquals("")
+	for i = 0 to 3
+		var node = "professional_bureaucracy"
+		if i == 1
+			node = "cadastral_survey"
+		else if i == 2
+			node = "courier_relays"
+		else if i == 3
+			node = "ciphered_dispatches"
+		f.commands.dispatch(Player(0), "/research " + node).assertTrue()
+		f.rpg.technologies.isUnlocked("england", node).assertTrue()
+	f.commands.dispatch(Player(0), "/civic survey goa").assertTrue()
+	let baseline = f.military.snapshot()
+	let authority = f.campaign.state.captureAuthoritativeState()
+	f.campaign.countries.treasury[0].assertEquals(899)
+	let earned = f.rpg.captureState()
+	let researchCount = f.rpg.technologies.unlockedCount
+	f.rpg.technologies.unlockedCount--
+	f.rpg.reconcile("england")
+	let pending = f.military.civic.states[0]
+	pending.surveyed = true
+	f.campaign.countries.treasury[0] = 873
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	f.rpg.technologies.unlockedCount = researchCount
+	f.rpg.restoreState(earned).assertTrue()
+	f.rpg.reconcile("england")
+	pending.surveyed = false
+	f.campaign.countries.treasury[0] = 899
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(baseline)
+	f.campaign.countries.treasury[0].assertEquals(899)
+	effects.rate("england", "remote_survey_dispatch_time_reduction").assertEquals(1000)
+	f.extension.fail = false
+	for repeat = 1 to 2
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.military.civic.states[0].surveyed.assertTrue()
+		f.campaign.countries.treasury[0].assertEquals(873)
+		effects.rate("england", "remote_survey_dispatch_time_reduction").assertEquals(0)
+	f.store(authority)
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.snapshot().assertEquals(baseline)
+	effects.rate("england", "remote_survey_dispatch_time_reduction").assertEquals(1000)
+	f.clock.advanceTo(f.clock.currentDay + 81).assertTrue()
+	f.military.civic.states[0].surveyed.assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(873)
