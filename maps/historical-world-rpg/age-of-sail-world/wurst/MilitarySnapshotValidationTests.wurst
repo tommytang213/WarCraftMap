@@ -5,6 +5,8 @@ import MilitarySettlementRuntimeTests
 import PrizeCombat
 import TradeFinance
 import Industry
+import BankingOperations
+import CivicGovernance
 import ScienceExploration
 import NavalServices
 import VoyageNavigation
@@ -58,6 +60,8 @@ class MilitaryValidationFixture
 		military.definitions = new ValidationDefinitions(observed)
 		military.finance.register(new CanalWork("canal", "port", "", "wood", 0, 1, 1, 1, 1, 10, 1, 1))
 		military.industry.register(new IndustrySite("foundry", "port", "refining", "", "ore", "metal", 0, 1, 1, 1, 1, 1, 10, 1, true))
+		military.banking.register(new BankingSite("bank", 100))
+		military.civic.register(new CivicDistrict("district", "province", 100, true, 1, 1, 1, 1, 1, "cloth", 1, 1), 0)
 		military.land.register("port", 10)
 		military.science.register(new ScienceSite("study", "port", "", "", "", "cloth", 0, 1, 1, 1, 1, 1, 10, 1, 0, 0, 1, 0))
 		military.naval.register(new NavalYard("port", "sea", 0., 0., "", "", "", 'hbot', 0, 100, 1, 1, 100, 1, 10))
@@ -68,7 +72,7 @@ class MilitaryValidationFixture
 		military.voyages.addRoute(route)
 		military.voyages.addShip(new VoyageShip("ship", 'hbot', "sea", 0., 0., "|circuit|"))
 		military.voyages.start(ship.navigation, route, 10, 100).assertTrue()
-		for domain = 0 to 7
+		for domain = 0 to 9
 			setDay(domain, 10)
 	function setDay(int domain, int day)
 		if domain == 0
@@ -85,8 +89,12 @@ class MilitaryValidationFixture
 			military.naval.states[0].lastDay = day
 		else if domain == 6
 			military.industry.states[0].lastDay = day
-		else
+		else if domain == 7
 			military.finance.states[0].freightDay = day
+		else if domain == 8
+			military.banking.states[0].lastDay = day
+		else
+			military.civic.states[0].lastDay = day
 	function assertDisposed(int expected)
 		observed.parsed.assertEquals(expected)
 		observed.retired.assertEquals(expected)
@@ -102,7 +110,7 @@ class MilitaryValidationFixture
 		observed.campaign = state
 		return state
 
-@test function validatedMilitarySnapshotsKeepOwnershipAndAllEightCampaignDayLimits()
+@test function validatedMilitarySnapshotsKeepOwnershipAndAllTenCampaignDayLimits()
 	let f = new MilitaryValidationFixture()
 	let saved = f.military.snapshot()
 	let parsed = f.military.parseValidatedSnapshot(saved, 10)
@@ -111,10 +119,16 @@ class MilitaryValidationFixture
 	f.observed.parsed.assertEquals(1)
 	f.observed.retired.assertEquals(0)
 	parsed.forces[0].strength = 1
+	(parsed.banking.states[0] != f.military.banking.states[0]).assertTrue()
+	(parsed.banking.sites[0] == f.military.banking.sites[0]).assertTrue()
+	parsed.banking.states[0].serial = 1
+	(parsed.civic.states[0] != f.military.civic.states[0]).assertTrue()
+	(parsed.civic.districts[0] == f.military.civic.districts[0]).assertTrue()
+	parsed.civic.states[0].urbanization = 1
 	f.military.snapshot().assertEquals(saved)
 	parsed.dispose()
 	f.assertDisposed(1)
-	for domain = 0 to 7
+	for domain = 0 to 9
 		f.setDay(domain, 11)
 		let future = f.military.snapshot()
 		(f.military.parseValidatedSnapshot(future, 10) == null).assertTrue()
@@ -131,6 +145,8 @@ class MilitaryValidationFixture
 	f.military.science.sites[0].id.assertEquals("study")
 	f.military.naval.yards[0].id.assertEquals("port")
 	f.military.industry.sites[0].id.assertEquals("foundry")
+	f.military.banking.sites[0].id.assertEquals("bank")
+	f.military.civic.districts[0].id.assertEquals("district")
 
 class ValidationTradeExtension implements CampaignRuntimeExtension
 	ValidationLifetime observed

@@ -492,7 +492,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
             row["regionId"] = points[row["id"]]["mapId"]
             row["x"], row["y"] = points[row["id"]]["world"]
     templates = {row["id"]: row for row in world.get("militaryRuntimeTemplates", [])}
-    military_lines = ["\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
+    # Keep early returns in the catalogue reconciler as real returns. Inlining
+    # it into SettlementDefinitions.reconcile expands return guards across every
+    # settlement, pushing regional Lua over the runtime payload budget.
+    military_lines = ["\n@noinline\npublic function configureGeneratedSettlementAuthority(MilitarySettlementRuntime runtime, string onlyId, boolean migrate) returns boolean"]
     for row in settlement_runtime:
         policy = f'{str(row["projectMilitary"]).lower()}, {str(row["capturable"]).lower()}, "{ws(row["governanceExceptionId"])}"'
         start = len(military_lines)
@@ -782,6 +785,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
     from trade_finance import configuration as finance_configuration
     finance_wurst, finance_catalog, finance_sources = finance_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
     runtime['tradeFinance'] = finance_catalog
+    from central_banking import configuration as banking_configuration
+    banking_wurst, banking_catalog, banking_sources = banking_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
+    runtime['centralBanking'] = banking_catalog
     from army_food_logistics import configuration as logistics_configuration, supply_anchor
     logistics_wurst, logistics_catalog, logistics_sources = logistics_configuration(config.project, world, settlement_runtime, authored_sources, trade_records, finance_catalog)
     runtime['armyFoodLogistics'] = logistics_catalog
@@ -884,8 +890,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
             for ident, good in payload['catalog']['markets'])
         if runtime['tradeMarketCount'] > 16384:
             raise PackagingError('industry: trade authority capacity exceeded')
-    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst
-    wurst = wurst.replace('import UnstuckRecovery\n', 'import Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst
+    wurst = wurst.replace('import UnstuckRecovery\n', 'import BankingOperations\nimport Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
     runtime['questDefinitions'] = world.get('quests', [])
@@ -898,11 +904,14 @@ def generate(config: BuildConfig, generated: Path) -> None:
         entitlement = voyage_payload['catalog']['entitlement']
         bound_research.add((entitlement['kind'], entitlement['contentId']))
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
     if naval_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
     if industry_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
+                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency'}}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
@@ -930,6 +939,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *industry_sources,
         *science_sources,
         *finance_sources,
+        *banking_sources,
         *naval_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
         *(config.project / path for path in (agriculture_payload["sources"] if agriculture_payload else [])),

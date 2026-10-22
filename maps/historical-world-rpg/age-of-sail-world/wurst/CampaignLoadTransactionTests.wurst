@@ -1,6 +1,7 @@
 package CampaignLoadTransactionTests
 
 import CampaignSaveManager
+import CivicGovernance
 import ScienceExploration
 import FrameworkPorts
 import CampaignTimeline
@@ -631,7 +632,7 @@ public class LoadFixture
 	f.military.atWar("england", "portugal").assertTrue()
 	f.military.settlements[0].legalOwnerId.assertEquals("free_port")
 	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
-	f.military.snapshot().startsWith("v17|").assertTrue()
+	f.military.snapshot().startsWith("v19|").assertTrue()
 	f.campaign.countries.captureState().startsWith("v2|").assertTrue()
 	let migrated = f.campaign.state.captureAuthoritativeState()
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
@@ -1145,3 +1146,25 @@ function legacyPirateFounding() returns string
 	f.military.land.arsenals[0].work.assertEquals(23400)
 	f.military.land.arsenals[0].upkeepThrough.assertEquals(370)
 	f.military.forces[f.military.forceIndex("fleet")].nextFireAt.assertEquals(12.75)
+
+@test function lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically()
+	let f = new LoadFixture()
+	f.military.civic.register(new CivicDistrict("port", "province", 10001, true, 0, 0, 0, 0, 0, "cloth", 1, 1000), f.clock.currentDay)
+	f.military.civic.configureAdministration("port", 20)
+	let state = f.military.civic.states[0]
+	state.municipalOwner = "england"
+	state.municipalReady = f.clock.currentDay + 90
+	state.municipalThrough = state.municipalReady
+	let original = f.military.snapshot()
+	state.urbanization = 30
+	f.campaign.countries.treasury[0] = 100
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	state.urbanization = 20
+	f.campaign.countries.treasury[0] = 1000
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.civic.states[0].municipalOwner.assertEquals("england")
+	f.military.civic.states[0].urbanization.assertEquals(20)
+	f.campaign.countries.treasury[0].assertEquals(1000)

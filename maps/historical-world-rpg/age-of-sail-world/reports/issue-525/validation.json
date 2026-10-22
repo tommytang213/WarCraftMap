@@ -1,0 +1,320 @@
+{
+  "broaderDevelopment": {
+    "initialFailures": 4,
+    "initialPasses": 214,
+    "resolution": "Four new fixtures omitted Professional Bureaucracy before Archives. Fixtures now research the registered prerequisite; all affected civic cases pass in pinned-civic.log.gz. Broader production sources are unchanged.",
+    "tests": 218,
+    "transcript": "broad-development.log.gz"
+  },
+  "checks": [
+    {
+      "id": "pinned-civic",
+      "sha256": "16f740d8d826be9a109e842f6d6f5a895c021acd4fa8459eba57cbfd46cb2bdb",
+      "status": "pass",
+      "transcript": "pinned-civic.log.gz"
+    },
+    {
+      "id": "pinned-framework",
+      "sha256": "47ceba97126395e7fa223fe2850102150a77cee984e04d577d2a9fa8bf4ef103",
+      "status": "pass",
+      "transcript": "pinned-framework.log.gz"
+    },
+    {
+      "id": "framework-python",
+      "sha256": "045e5cc51e05badfeaeac70cfa5d1e6f17d3d209cb108ab2269cc19d414ca3e6",
+      "status": "pass",
+      "transcript": "framework-python.log.gz"
+    },
+    {
+      "id": "release-tests",
+      "sha256": "26d2ba65a0912198964ef1630de0f35a7033c2fd3da520e53db791f047701efe",
+      "status": "pass",
+      "transcript": "release-tests.log.gz"
+    }
+  ],
+  "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "focusedPython": {
+    "status": "pass",
+    "suites": [
+      "administration",
+      "economy",
+      "release_save_compatibility",
+      "civic_governance",
+      "administrative_contracts",
+      "progression_catalog"
+    ],
+    "tests": 40
+  },
+  "format": "warcraftmap_scoped_development_validation_v1",
+  "frameworkPythonTests": 9,
+  "pinnedCivicTests": [
+    {
+      "id": "wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically",
+      "line": 1150,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicCatalogueLookupAndStagedForkPreserveExactDistrictIdentities",
+      "line": 17,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills",
+      "line": 115,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically",
+      "line": 158,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity",
+      "line": 197,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay",
+      "line": 233,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload",
+      "line": 269,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic",
+      "line": 287,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion",
+      "line": 311,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:combinedCivicAndVoyageDayReplayAndSnapshotMigrationPreserveBothDomains",
+      "line": 338,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
+      "line": 375,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativePrerequisitesUrbanizationResourcesAndForeignJurisdictionRejectWithoutMutation",
+      "line": 414,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeOfficeReplacementOperatingConditionsAndSurveySourcesCompose",
+      "line": 454,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback",
+      "line": 479,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CivicGovernanceTests.wurst:administrativeUpkeepLossDuplicatesAndReenactmentNeverCreatePermanentBenefits",
+      "line": 523,
+      "status": "pass"
+    }
+  ],
+  "pinnedFrameworkTests": 6,
+  "productionProbes": {
+    "wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresMunicipalPolicyUrbanizationAndTreasuryAtomically": [
+      "load",
+      "piracy_registration",
+      "recruit",
+      "save",
+      "tradition_reconcile"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeOfficeReplacementOperatingConditionsAndSurveySourcesCompose": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativePrerequisitesUrbanizationResourcesAndForeignJurisdictionRejectWithoutMutation": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:administrativeUpkeepLossDuplicatesAndReenactmentNeverCreatePermanentBenefits": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "wurst/CivicGovernanceTests.wurst:combinedCivicAndVoyageDayReplayAndSnapshotMigrationPreserveBothDomains": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_pay",
+      "administrative_skill",
+      "appoint",
+      "dispatch",
+      "research",
+      "rpg_registration",
+      "treasure_definitions",
+      "voyage_resolve",
+      "voyage_start"
+    ]
+  },
+  "releaseAuditPythonTests": 10,
+  "scope": "Focused development verification; complete repository evidence and post-merge audits belong to the controller.",
+  "sourceIdentity": {
+    "sourceRevision": "58d1b88d0fb4b852b639d2d82a5a24dee92ed92c",
+    "sourceTreeSha256": "f45cba1c1dc0afccb0137aaf420976232ea6cad98f0e8160047de4aec07cd4e2"
+  }
+}

@@ -1,0 +1,147 @@
+package BankingCampaignRuntime
+
+import BankingOperations
+import CivicGovernance
+import CivicCampaignRuntime
+import ExactNatural
+import initlater PlayableCampaignRuntime
+import initlater PlayableTrade
+import CommandRouter
+
+public class CampaignBankingPort implements BankingPort
+	CampaignCivicEconomy economy
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		economy = new CampaignCivicEconomy(campaign, trade)
+	override function eligible(string owner, string id) returns boolean
+		let l = economy.campaign.militarySettlements.banking
+		return owner != "" and l.index(id) >= 0 and economy.controller(id) == owner and economy.lawful(id) and economy.accessible(id) and economy.campaign.rpg.technologies.isUnlocked(owner, l.prerequisite)
+	override function pay(string owner, string id, int amount) returns boolean
+		return economy.pay(owner, id, amount, "", 0)
+
+public class BankingQuote
+	string owner
+	string site
+	int principal
+	int counting
+	int reconciliation
+	int day
+	int serial
+	int treasury
+	int warehouse
+	construct(string owner, string site, int principal)
+		this.owner = owner
+		this.site = site
+		this.principal = principal
+	function record() returns string
+		return owner + "," + site + "," + I2S(principal) + "," + I2S(counting) + "," + I2S(reconciliation) + "," + I2S(day) + "," + I2S(serial) + "," + I2S(treasury) + "," + I2S(warehouse)
+
+public class BankingCampaignRuntime
+	PlayableCampaignState campaign
+	PlayableTradeRuntime trade
+	BankingResearchEffects effects
+	CampaignBankingPort port
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade, BankingResearchEffects effects)
+		this.campaign = campaign
+		this.trade = trade
+		this.effects = effects
+		port = new CampaignBankingPort(campaign, trade)
+	function ledger() returns BankingLedger
+		return campaign.militarySettlements.banking
+	function advance(int day)
+		ledger().advance(day, effects, port)
+	function policy(string owner, string id, boolean repeal) returns string
+		if not campaign.isSaveSafe()
+			return "Banking is unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		return ledger().policy(owner, id, repeal, campaign.clock.currentDay, effects, port)
+	function quote(string owner, string id, int principal) returns BankingQuote
+		if not campaign.isSaveSafe() or principal <= 0 or not port.eligible(owner, id)
+			return null
+		advance(campaign.clock.currentDay)
+		let l = ledger()
+		let i = l.index(id)
+		let s = l.states[i]
+		let p = campaign.countries.polityIndex(owner)
+		let store = trade.findStore("warehouse:" + id)
+		if p < 0 or store == null or s.serial == 2147483647 or campaign.clock.currentDay < s.lastDay
+			return null
+		let q = new BankingQuote(owner, id, principal)
+		q.day = campaign.clock.currentDay
+		q.serial = s.serial
+		q.treasury = campaign.countries.treasury[p]
+		q.warehouse = store.money
+		q.counting = civicBill(principal, l.countingBasisPoints)
+		q.reconciliation = civicBill(principal, l.reconciliationBasisPoints)
+		if l.operating(i, owner, q.day, effects, port)
+			q.counting = bankingCost(q.counting, effects.rateAt(owner, "treasury_counting_cost_reduction", q.day))
+			q.reconciliation = bankingCost(q.reconciliation, effects.rateAt(owner, "treasury_reconciliation_cost_reduction", q.day))
+		let fees = q.counting + q.reconciliation
+		if principal > 2147483647 - fees or q.warehouse < principal + fees or q.treasury > 2147483647 - principal
+			destroy q
+			return null
+		return q
+	function commit(string actor, BankingQuote q) returns string
+		if q == null or actor != q.owner
+			return "Invalid banking quote or unauthorized controller."
+		let current = quote(actor, q.site, q.principal)
+		if current == null
+			return "Banking conditions or funds changed; request a new quote."
+		let valid = current.record() == q.record()
+		destroy current
+		if not valid
+			return "Banking quote is stale or already committed."
+		// Every check precedes both balance writes. Only principal transfers;
+		// separately priced service costs leave circulation, never create debt.
+		trade.findStore("warehouse:" + q.site).money -= q.principal + q.counting + q.reconciliation
+		campaign.countries.treasury[campaign.countries.polityIndex(actor)] += q.principal
+		let s = ledger().states[ledger().index(q.site)]
+		s.serial++
+		s.lastDay = q.day
+		return ""
+	function lodge(string owner, string id, int principal) returns string
+		let q = quote(owner, id, principal)
+		let result = commit(owner, q)
+		if q != null
+			destroy q
+		return result
+	function overview(string owner, string id) returns string
+		let l = ledger()
+		let i = l.index(id)
+		if i < 0 or not port.eligible(owner, id)
+			return "Choose a controlled lawful administered banking settlement with accessible markets and bookkeeping."
+		let s = l.states[i]
+		return "Treasury lodgement at " + id + ": move existing warehouse currency to government treasury. Counting " + I2S(l.countingBasisPoints) + " bp and reconciliation " + I2S(l.reconciliationBasisPoints) + " bp of principal, each rounded up (minimum 1 minor unit). Policy reduces only reconciliation by " + I2S(effects.rateAt(owner, "treasury_reconciliation_cost_reduction", campaign.clock.currentDay)) + " bp; technology reduces only counting by " + I2S(effects.rateAt(owner, "treasury_counting_cost_reduction", campaign.clock.currentDay)) + " bp while policy operates; savings rounded down. No exchange or remittance discount.\nPolicy enactment " + I2S(civicBill(l.sites[i].annualTax, l.enactmentBasisPoints)) + "; annual upkeep " + I2S(civicBill(l.sites[i].annualTax, l.upkeepBasisPoints)) + " treasury minor units paid in advance; transition " + I2S(l.transitionDays) + " days. Ready " + I2S(s.ready) + "; funded through " + I2S(s.upkeepThrough) + ". Capture or failed upkeep ends operation without refund. Use /banking <inspect|policy|repeal> BANK or /banking lodge BANK AMOUNT."
+
+class BankingCommand implements CommandHandler
+	BankingCampaignRuntime runtime
+	CommandOutput output
+	construct(BankingCampaignRuntime runtime, CommandOutput output)
+		this.runtime = runtime
+		this.output = output
+	override function execute(player sender, string arguments)
+		if sender != Player(0)
+			output.show(sender, "This controller cannot issue banking commands.")
+			return
+		let first = arguments.indexOf(" ")
+		if first < 1
+			return
+		let action = SubString(arguments, 0, first)
+		let rest = SubString(arguments, first + 1, StringLength(arguments))
+		let owner = runtime.campaign.rpg.researchResources.controllerId(sender)
+		var result = "Use /banking <inspect|policy|repeal> BANK or lodge BANK AMOUNT."
+		if action == "inspect" and countArguments(arguments) == 2
+			output.show(sender, runtime.overview(owner, rest))
+			return
+		if (action == "policy" or action == "repeal") and countArguments(arguments) == 2
+			result = runtime.policy(owner, rest, action == "repeal")
+		if action == "lodge" and countArguments(arguments) == 3
+			let cut = rest.indexOf(" ")
+			let text = SubString(rest, cut + 1, StringLength(rest))
+			if exactNaturalValid(text) and exactNaturalCompare(text, "2147483647") <= 0
+				result = runtime.lodge(owner, SubString(rest, 0, cut), S2I(text))
+		if result == ""
+			result = "Banking action completed."
+		output.show(sender, result)
+
+public function registerBankingCommands(CommandRegistry commands, BankingCampaignRuntime runtime) returns string
+	return commands.register("banking", "", "banking <inspect|policy|repeal|lodge> BANK [AMOUNT]", "Manage central-bank operations and lodge existing currency into treasury.", "Inspect local costs, paid transition and annual upkeep. Institution adoption only unlocks policy; counting technology requires an operating policy. Same authority for player and AI.", 2, 3, COMMAND_RELEASE, new BankingCommand(runtime, commands.output))

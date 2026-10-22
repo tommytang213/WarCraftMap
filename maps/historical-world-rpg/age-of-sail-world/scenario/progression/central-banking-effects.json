@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "authority": "Owner-delegated routine historical research design; docs/CENTRAL_BANKING.md",
+  "effects": [
+    {
+      "nodeId": "central_bank_institution",
+      "unlock": {
+        "kind": "policy",
+        "contentId": "progression_central_bank_institution"
+      },
+      "family": "trade_finance",
+      "activation": "policy_choice",
+      "recipient": "operating_controlled_central_bank",
+      "metric": "treasury_reconciliation_cost_reduction",
+      "bonusBasisPoints": 500,
+      "rules": "Adoption unlocks paid local policy only; after 90-day transition and prepaid annual upkeep, reduce only real treasury lodgement reconciliation fees by 5%; no free principal, credit or remittance benefit",
+      "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "central_banking",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_central_banking"
+      },
+      "family": "trade_finance",
+      "activation": "passive_research",
+      "recipient": "operating_controlled_central_bank",
+      "metric": "treasury_counting_cost_reduction",
+      "bonusBasisPoints": 600,
+      "rules": "Reduce only the counting fee of real treasury lodgements by 6% while the separately adopted and paid institution policy operates; no policy grant, free currency, loans, debt or exchange discount",
+      "designStatus": "approved_unimplemented"
+    }
+  ]
+}

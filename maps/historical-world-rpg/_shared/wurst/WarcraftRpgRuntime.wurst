@@ -6,6 +6,7 @@ import public EquipmentSets
 import public ResearchEntitlements
 import ResearchCost
 import CombatEffects
+import BankingOperations
 import TradeFinance
 import NavalServices
 import ScienceExploration
@@ -1054,6 +1055,7 @@ public class TechnologyRuntime
 	int unlockedCount=0
 	TechnologyEffectPort effects
 	ResearchAdoptionPort adoption=null
+	ResearchEligibilityPort eligibility=null
 	boolean malformed = false
 	// Includes old controllers until reconstruction clears their obsolete layers.
 	string knownControllers = "|"
@@ -1113,6 +1115,8 @@ public class TechnologyRuntime
 		for i=0 to technology.prerequisiteCount-1
 			if not isUnlocked(controllerId,technology.prerequisiteIds[i])
 				return false
+		if eligibility != null and not eligibility.eligibleResearch(controllerId, id)
+			return false
 		unlockedKeys[unlockedCount]=controllerId+":"+id
 		unlockedCount++
 		reconstruct(controllerId)
@@ -1984,6 +1988,13 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
 						rows += "\n    " + I2S(binding.basisPoints) + " bp " + binding.metric + "; eligible activity from campaign day " + I2S(binding.firstDay) + ". Requires actual controlled exchange/banking/canal infrastructure and funded activity. Use /finance inspect for costs, conditions and results."
 				port = finance.upstream
+			if port instanceof BankingResearchEffects
+				let banking = port castTo BankingResearchEffects
+				for k = 0 to banking.definitionCount - 1
+					let binding = banking.definitions[k] castTo BankingEffect
+					if binding.kind == entry.kind and binding.contentId == entry.contentId
+						rows += "\n    " + I2S(binding.basisPoints) + " bp " + binding.metric + "; eligible from campaign day " + I2S(binding.firstDay) + ". Requires separately enacted, funded central-bank policy. Use /banking inspect BANK for exact currency costs, transition and upkeep."
+				port = banking.upstream
 			if port instanceof ScienceResearchEffects
 				let science = port castTo ScienceResearchEffects
 				for k = 0 to science.definitionCount - 1
@@ -2003,7 +2014,7 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 				for k = 0 to civic.definitionCount - 1
 					let binding = civic.definitions[k]
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
-						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires paid local activation. Use /civic inspect DISTRICT for conditions, currency, supplies, duration and upkeep."
+						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires current qualified administration; policies require separate paid local enactment. Use /civic inspect DISTRICT for conditions, currency, supplies, duration and upkeep."
 				port = civic.upstream
 			if port instanceof CombatResearchEffects
 				let effects = port castTo CombatResearchEffects

@@ -377,7 +377,7 @@ class LandFixture
 	let scienceRecord = "|j,study," + scienceState
 	let fireRecord = "|h,musket," + clockReal(1.285)
 	let saved = f.military.snapshot()
-	saved.startsWith("v17|").assertTrue()
+	saved.startsWith("v19|").assertTrue()
 	saved.contains(fireRecord).assertTrue()
 	saved.contains(scienceRecord).assertTrue()
 	f.military.restore(saved, false).assertTrue()
