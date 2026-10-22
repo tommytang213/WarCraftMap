@@ -1,0 +1,446 @@
+package CharteredCompaniesTests
+
+import NavalServicesTests
+import NavalServices
+import NavalCampaignRuntime
+import CommercialCourts
+import BankingOperations
+import CivicGovernance
+import PlayableTrade
+import ResearchEntitlements
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ScenarioData
+
+class CharteredFixture
+	NavalFixture f
+	BankingResearchEffects effects
+	CommercialCourtsRuntime courts
+	construct(boolean active)
+		f = new NavalFixture(false, active)
+		effects = new BankingResearchEffects(f.rpg.technologies.effects)
+		configureGeneratedCourts(f.military.courts, effects)
+		f.rpg.technologies.effects = effects
+		courts = new CommercialCourtsRuntime(f.campaign, f.trade, effects)
+		f.campaign.courtsRuntime = courts
+		f.trade.controller.courts = courts
+		f.trade.controller.financeOwner = "player"
+		f.trade.registerStore(new TradeStore("warehouse:london", 30000, 1000000).withAccess("warehouse", "london", true))
+		registerCourtsCommands(f.commands, courts).assertEquals("")
+		let owner = f.resources.owner
+		f.rpg.restoreState(f.rpg.captureState() + "|u," + owner + ",joint_stock_enterprise|u," + owner + ",double_entry_bookkeeping").assertTrue()
+	function research()
+		f.unlock("chartered_companies")
+	function policy()
+		f.commands.dispatch(Player(0), "/courts policy london").assertTrue()
+		f.resources.output.assertEquals("Courts action completed.")
+	function store() returns TradeStore
+		return f.trade.findStore("warehouse:london")
+	function market() returns RuntimeMarket
+		return f.trade.findMarket("london", "timber")
+	function denyBuild()
+		let state = f.military.snapshot()
+		let money = f.campaign.countries.treasury[0]
+		let stock = market().stock
+		(f.runtime.quote("player", "london", "armed_indiaman") == null).assertTrue()
+		(f.runtime.act("player", "build", "london", "armed_indiaman") != "").assertTrue()
+		f.military.snapshot().assertEquals(state)
+		f.campaign.countries.treasury[0].assertEquals(money)
+		market().stock.assertEquals(stock)
+
+@test function charteredRegisteredResearchCourtsAndPaidIndiamanRemainIndependent()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	let count = f.military.forceCount
+	let treasury = f.campaign.countries.treasury[0]
+	c.research()
+	f.military.forceCount.assertEquals(count)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.military.courts.states[0].owner.assertEquals("")
+	c.courts.fee("player", c.market(), c.store(), 10000).assertEquals(100)
+	c.policy()
+	f.campaign.countries.treasury[0].assertEquals(treasury - 51)
+	let paid = f.campaign.countries.treasury[0]
+	(c.courts.policy("player", "london", false) != "").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(paid)
+	c.courts.fee("player", c.market(), c.store(), 10000).assertEquals(100)
+	f.dock()
+	// No naval board or Battlefleet Doctrine is needed by the merchant roster.
+	c.courts.fee("player", c.market(), c.store(), 10000).assertEquals(95)
+	let money = f.campaign.countries.treasury[0]
+	let crew = f.military.settlements[0].manpower
+	let supply = f.military.settlements[0].supply
+	let wood = c.market().stock
+	let metalUnits = f.trade.findMarket("london", "iron").stock
+	let food = f.trade.findMarket("london", "ship_provisions").stock
+	let quote = f.runtime.quote("player", "london", "armed_indiaman")
+	(quote != null).assertTrue()
+	f.runtime.commit("player", quote).assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(money - 850)
+	f.military.settlements[0].manpower.assertEquals(crew - 160)
+	f.military.settlements[0].supply.assertEquals(supply - 55)
+	c.market().stock.assertEquals(wood - 40)
+	f.trade.findMarket("london", "iron").stock.assertEquals(metalUnits - 20)
+	f.trade.findMarket("london", "ship_provisions").stock.assertEquals(food - 55)
+	f.military.forceCount.assertEquals(count)
+	let saved = f.military.snapshot()
+	(f.runtime.commit("player", quote) != "").assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.clock.advanceTo(f.day + 179).assertTrue()
+	let partial = f.military.snapshot()
+	f.military.restore(partial).assertTrue()
+	f.military.snapshot().assertEquals(partial)
+	f.clock.advanceTo(f.day + 270).assertTrue()
+	f.military.forceCount.assertEquals(count + 1)
+	let ship = f.military.forces[count]
+	ship.combatProfileId.assertEquals("armed_indiaman")
+	ship.strength.assertEquals(500)
+	ship.supply.assertEquals(55)
+	let balance = f.campaign.countries.treasury[0]
+	f.clock.advanceTo(f.day + 300).assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(balance - 140) // Includes the existing 98-cost patrol hull.
+	ship.supply.assertEquals(25)
+	// Courts can be repealed without revoking recruitment.
+	c.courts.policy("player", "london", true).assertEquals("")
+	(f.runtime.quote("player", "london", "armed_indiaman") != null).assertTrue()
+
+@test function charteredEveryRecruitmentGateAndStaleQuotesRejectAtomically()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.denyBuild()
+	c.research()
+	c.denyBuild() // no dock
+	f.dock()
+	let h = f.military.naval.blueprints[0]
+	let originalFirst = h.firstDay
+	h.firstDay = f.clock.currentDay + 1
+	c.denyBuild()
+	h.firstDay = originalFirst
+	let originalLast = h.lastDay
+	h.lastDay = f.clock.currentDay - 1
+	c.denyBuild()
+	h.lastDay = originalLast
+	// Independent roster technologies and Public Credit are checked at use.
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,joint_stock_enterprise", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.denyBuild()
+	f.rpg.restoreState(research.replace("|u,player,galleon_design", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.denyBuild()
+	f.rpg.restoreState(research.replace("|u,player,public_credit", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.denyBuild()
+	f.rpg.restoreState(research.replace("|u,player,dockyard_logistics", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.denyBuild()
+	f.rpg.restoreState(research.replace("|u,player,chartered_companies", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.denyBuild()
+	f.rpg.restoreState(research).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	let city = f.military.settlements[0]
+	city.underAttack = true
+	c.denyBuild()
+	city.underAttack = false
+	city.legalOwnerId = "other"
+	c.denyBuild()
+	city.legalOwnerId = "player"
+	f.military.administrators[0].controllerId = "other"
+	c.denyBuild()
+	f.military.administrators[0].controllerId = "player"
+	let money = f.campaign.countries.treasury[0]
+	f.campaign.countries.treasury[0] = 849
+	c.denyBuild()
+	f.campaign.countries.treasury[0] = money
+	let manpower = city.manpower
+	city.manpower = 160
+	c.denyBuild()
+	city.manpower = manpower
+	let supply = city.supply
+	city.supply = 54
+	c.denyBuild()
+	city.supply = supply
+	for i = 0 to 2
+		let m = f.trade.markets[i]
+		let stock = m.stock
+		m.stock = 0
+		c.denyBuild()
+		m.stock = stock
+		m.blockaded = true
+		c.denyBuild()
+		m.blockaded = false
+		m.occupiedByHostile = true
+		c.denyBuild()
+		m.occupiedByHostile = false
+	let serial = f.military.naval.states[0].serial
+	f.military.naval.states[0].serial = 1000000
+	c.denyBuild()
+	f.military.naval.states[0].serial = serial
+	let bindings = f.military.combatBindings
+	f.military.combatBindings = null
+	c.denyBuild()
+	f.military.combatBindings = bindings
+	let count = f.military.forceCount
+	f.military.forceCount = 4096
+	(f.runtime.quote("player", "london", "armed_indiaman") == null).assertTrue()
+	(f.runtime.act("player", "build", "london", "armed_indiaman") != "").assertTrue()
+	f.military.forceCount = count
+	let changedPrice = f.runtime.quote("player", "london", "armed_indiaman")
+	h.price++
+	(f.runtime.commit("player", changedPrice) != "").assertTrue()
+	h.price--
+	let quote = f.runtime.quote("player", "london", "armed_indiaman")
+	let before = f.military.snapshot()
+	(f.runtime.commit("enemy", quote) != "").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	c.market().stock--
+	(f.runtime.commit("player", quote) != "").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	let fresh = f.runtime.quote("player", "london", "armed_indiaman")
+	f.runtime.commit("player", fresh).assertEquals("")
+	c.denyBuild() // occupied berth
+
+@test function charteredCourtsRealTradesConservePrincipalAndRejectIneligibleActivity()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.research()
+	c.policy()
+	f.clock.advanceTo(f.day + 90).assertTrue()
+	let store = c.store()
+	let market = c.market()
+	let controller = f.trade.controller
+	market.baseUnitPrice = 1000
+	let principal = controller.amount(market, 100, true)
+	let fee = c.courts.fee("player", market, store, principal)
+	(fee < civicBill(principal, 100)).assertTrue()
+	let money = store.money + market.money
+	let stock = store.quantity("timber") + market.stock
+	controller.buy("courts-buy", market, store, 100).startsWith("Bought").assertTrue()
+	(store.money + market.money).assertEquals(money - fee)
+	(store.quantity("timber") + market.stock).assertEquals(stock)
+	let savedMoney = store.money
+	controller.buy("courts-buy", market, store, 100).assertEquals("Transaction already processed.")
+	store.money.assertEquals(savedMoney)
+	let sale = controller.amount(market, 50, false)
+	let saleFee = c.courts.fee("player", market, store, sale)
+	let saleMoney = store.money + market.money
+	controller.sell("courts-sell", market, store, 50, 1000).startsWith("Sold").assertTrue()
+	(store.money + market.money).assertEquals(saleMoney - saleFee)
+	(store.quantity("timber") + market.stock).assertEquals(stock)
+	c.courts.fee("player", market, store, 1).assertEquals(1)
+	c.courts.fee("player", market, store, 0).assertEquals(0)
+	c.courts.fee("enemy", market, store, 10000).assertEquals(0)
+	let ship = new TradeStore("cargo:ship", 1000, 100000)
+	c.courts.fee("player", market, ship, 10000).assertEquals(0)
+	let copy = new TradeStore(store.id, 1000, 100000).withAccess("warehouse", "london", true)
+	c.courts.fee("player", market, copy, 10000).assertEquals(0)
+	market.blockaded = true
+	c.courts.fee("player", market, store, 10000).assertEquals(0)
+	let before = market.stock
+	controller.buy("denied", market, store, 1).assertEquals("Market access is restricted.")
+	market.stock.assertEquals(before)
+	market.blockaded = false
+	let funds = market.money
+	market.money = 0
+	controller.sell("denied-sale", market, store, 1, 1000).assertEquals("Market funds are insufficient.")
+	market.stock.assertEquals(before)
+	market.money = funds
+	let saved = f.military.snapshot()
+	(c.courts.policy("enemy", "london", false) != "").assertTrue()
+	f.military.snapshot().assertEquals(saved)
+
+@test function charteredCaptureMigrationMalformedSavesAndIndependentPermissionsPreserveAuthority()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.research()
+	c.policy()
+	f.dock()
+	f.action("build", " armed_indiaman")
+	f.clock.advanceTo(f.day + 100).assertTrue()
+	// Integrate paid municipal authority with courts and a pending hull.
+	f.military.civic.register(new CivicDistrict("london", "province", 10000, true, f.day, 20, f.day, 365, 4, "cloth", 4, 1000), f.clock.currentDay)
+	f.military.civic.configureAdministration("london", 20)
+	let municipal = f.military.civic.states[0]
+	municipal.municipalOwner = "player"
+	municipal.municipalReady = f.clock.currentDay
+	municipal.municipalThrough = f.clock.currentDay + 365
+	let saved = f.military.snapshot()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.military.restore(saved + "|o,london,,0,0,0,0").assertFalse()
+	f.military.restore(saved.replace("|o,london,", "|o,unknown,")).assertFalse()
+	f.military.validateSnapshot(saved, f.day + 99).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	let charter = "|u,london,player," + I2S(f.clock.currentDay) + "," + I2S(f.clock.currentDay + 365) + ",20"
+	let court = "|o,london," + f.military.courts.states[0].record()
+	f.military.restore(saved.replace(court, "")).assertFalse()
+	f.military.restore(saved.replace(charter, "")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Main v19 preserves municipalities and construction; absent courts migrate inactive.
+	var main19 = saved.replace("v20|", "v19|")
+	for i = 0 to f.military.courts.count - 1
+		main19 = main19.replace("|o," + f.military.courts.sites[i].id + "," + f.military.courts.states[i].record(), "")
+	f.military.restore(main19).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("")
+	f.military.civic.states[0].municipalOwner.assertEquals("player")
+	f.military.naval.states[0].job.assertEquals("build")
+	f.military.restore(saved).assertTrue()
+	// The independent courts v19 branch lacked municipal u records.
+	f.military.restore(saved.replace("v20|", "v19|").replace(charter, "")).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("player")
+	f.military.civic.states[0].municipalOwner.assertEquals("")
+	f.military.naval.states[0].job.assertEquals("build")
+	f.military.restore(saved).assertTrue()
+	var legacy = saved.replace("v20|", "v18|")
+	for i = 0 to f.military.courts.count - 1
+		legacy = legacy.replace("|o," + f.military.courts.sites[i].id + "," + f.military.courts.states[i].record(), "")
+	f.military.restore(legacy).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("")
+	f.military.naval.states[0].job.assertEquals("build")
+	f.military.restore(saved).assertTrue()
+	f.military.transferSettlement("london", "ai")
+	f.military.courts.states[0].owner.assertEquals("")
+	f.military.naval.states[0].job.assertEquals("")
+	(f.military.naval.states[0].ready > 0).assertTrue()
+	let count = f.military.forceCount
+	f.clock.advanceTo(f.day + 400).assertTrue()
+	f.military.forceCount.assertEquals(count)
+	// Replace only one controller's layer; duplicate provenance counts once.
+	let layer = new ResearchEntitlements("player")
+	layer.add(new ResearchUnlock("first", "policy", "commercial_courts"))
+	layer.add(new ResearchUnlock("second", "policy", "commercial_courts"))
+	c.effects.replaceResearchEntitlements(layer)
+	c.effects.rateAt("player", "commercial_transaction_fee_reduction", f.day).assertEquals(500)
+	f.effects.entitled("player", "armed_indiaman").assertFalse()
+	let unitOnly = new ResearchEntitlements("ai")
+	unitOnly.add(new ResearchUnlock("first", "unit", "armed_indiaman"))
+	c.effects.replaceResearchEntitlements(unitOnly)
+	f.effects.entitled("ai", "armed_indiaman").assertTrue()
+	c.effects.rateAt("ai", "commercial_transaction_fee_reduction", f.day).assertEquals(0)
+
+@test function charteredLongCampaignActiveAbstractCostsAndConstructionMatch()
+	let a = new CharteredFixture(true)
+	let b = new CharteredFixture(false)
+	a.research()
+	b.research()
+	a.policy()
+	b.policy()
+	a.f.dock()
+	b.f.dock()
+	a.f.action("build", " armed_indiaman")
+	b.f.action("build", " armed_indiaman")
+	for i = 1 to 25
+		a.f.clock.advanceTo(a.f.day + i * 365).assertTrue()
+		b.f.clock.advanceTo(b.f.day + i * 365).assertTrue()
+		a.f.campaign.countries.treasury[0].assertEquals(b.f.campaign.countries.treasury[0])
+		a.f.military.courts.states[0].record().assertEquals(b.f.military.courts.states[0].record())
+		a.f.military.naval.states[0].record().assertEquals(b.f.military.naval.states[0].record())
+		a.f.military.forces[a.f.military.forceCount - 1].combatProfileId.assertEquals("armed_indiaman")
+		a.f.military.forces[a.f.military.forceCount - 1].hull.record().assertEquals(b.f.military.forces[b.f.military.forceCount - 1].hull.record())
+		a.f.military.forces[a.f.military.forceCount - 1].supply.assertEquals(b.f.military.forces[b.f.military.forceCount - 1].supply)
+	let funded = a.f.military.courts.states[0].upkeepThrough
+	a.f.campaign.countries.treasury[0] = 0
+	a.f.clock.advanceTo(funded).assertTrue()
+	a.f.military.courts.states[0].owner.assertEquals("")
+	a.f.campaign.countries.treasury[0] = 100000
+	a.f.clock.advanceTo(funded + 1).assertTrue()
+	a.f.military.courts.states[0].owner.assertEquals("")
+
+@test function charteredLateLoadFailureRestoresCourtConstructionAndTreasuryState()
+	let load = new LoadFixture()
+	let effects = new BankingResearchEffects(load.rpg.technologies.effects)
+	configureGeneratedCourts(load.military.courts, effects)
+	let naval = new NavalResearchEffects(effects)
+	configureGeneratedNaval(load.military.naval, naval)
+	load.military.registerSettlement(new SettlementRuntimeState("london", "england", "europe_west", 'htow', 'hfoo', 30, 20, 10000, 10000, 0., 0.))
+	load.military.appoint("london", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "london", 50, 50, 40, 1))
+	let trade = load.extension.trade
+	trade.registerMarket(new RuntimeMarket("london", "timber", 100, 1000, 10, 10))
+	trade.registerMarket(new RuntimeMarket("london", "iron", 100, 1000, 10, 10))
+	trade.registerMarket(new RuntimeMarket("london", "ship_provisions", 100, 1000, 10, 10))
+	trade.registerStore(new TradeStore("warehouse:london", 1000, 10000).withAccess("warehouse", "london", true))
+	// A tiny-calendar fixture uses its existing printing prerequisite; the real
+	// Chartered Companies graph and dates are covered by the registered tests.
+	load.military.courts.prerequisite = "printing"
+	load.military.naval.yards[0].prerequisite = "printing"
+	let policyEffect = effects.definitions[0] castTo BankingEffect
+	policyEffect.firstDay = 0
+	let node = new RuntimeTechnology("fixture_courts", "Fixture courts", 1, 1)
+	node.addUnlock(node.id, "policy", "commercial_courts")
+	load.rpg.technologies.register(node).assertTrue()
+	load.rpg.technologies.effects = naval
+	load.rpg.restoreState(load.rpg.captureState() + "|u,england,printing|u,england,fixture_courts").assertTrue()
+	load.rpg.technologies.reconstructAll()
+	let courts = new CommercialCourtsRuntime(load.campaign.state, trade, effects)
+	load.campaign.state.courtsRuntime = courts
+	let runtime = new NavalCampaignRuntime(load.campaign.state, trade, naval)
+	load.campaign.state.navalRuntime = runtime
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "chartered").assertTrue()
+	courts.policy("england", "london", false).assertEquals("")
+	runtime.act("england", "dock", "london", "").assertEquals("")
+	load.military.naval.states[0].job.assertEquals("dock")
+	let before = load.campaign.state.captureAuthoritativeState()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.campaign.state.captureAuthoritativeState().assertEquals(before)
+
+@test function charteredCourtActivationRejectsMissingPermissionInfrastructureAndOperatingFundsWithoutMutation()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	let before = f.military.snapshot()
+	let money = f.campaign.countries.treasury[0]
+	(c.courts.policy("player", "london", false) != "").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.campaign.countries.treasury[0].assertEquals(money)
+	c.research()
+	f.campaign.countries.treasury[0] = 50
+	(c.courts.policy("player", "london", false) != "").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(50)
+	f.military.snapshot().assertEquals(before)
+	f.campaign.countries.treasury[0] = money
+	c.store().warehouseService = false
+	(c.courts.policy("player", "london", false) != "").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	c.store().warehouseService = true
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,double_entry_bookkeeping", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	(c.courts.policy("player", "london", false) != "").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.rpg.restoreState(research).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.policy()
+	let paid = f.campaign.countries.treasury[0]
+	f.military.settlements[0].underAttack = true
+	c.courts.fee("player", c.market(), c.store(), 10000).assertEquals(0)
+	f.military.settlements[0].underAttack = false
+	// Losing the policy entitlement cannot transfer unit permission or refund costs.
+	let unitOnly = new ResearchEntitlements("player")
+	unitOnly.add(new ResearchUnlock("unit_source", "unit", "armed_indiaman"))
+	c.effects.replaceResearchEntitlements(unitOnly)
+	f.effects.entitled("player", "armed_indiaman").assertTrue()
+	c.courts.fee("player", c.market(), c.store(), 10000).assertEquals(100)
+	f.clock.advanceTo(f.day + 1).assertTrue()
+	f.military.courts.states[0].owner.assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(paid - 3) // Existing patrol upkeep only.
+
+@test function charteredConstructionCounterLimitStaysSaveableAndDoesNotDuplicateExistingHulls()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.research()
+	f.dock()
+	let count = f.military.forceCount
+	f.military.naval.states[0].serial = 999999
+	f.action("build", " armed_indiaman")
+	f.military.naval.states[0].serial.assertEquals(1000000)
+	f.clock.advanceTo(f.day + 270).assertTrue()
+	f.military.forceCount.assertEquals(count + 1)
+	f.military.naval.states[0].serial.assertEquals(1000000)
+	let saved = f.military.snapshot()
+	f.military.restore(saved).assertTrue()
+	f.clock.advanceTo(f.day + 271).assertTrue()
+	f.military.forceCount.assertEquals(count + 1)
+	c.denyBuild()

@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "check": "focused gameplay, roster, research, trade, save and framework Python suites",
+      "seconds": 482.671,
+      "status": "pass",
+      "tests": 85,
+      "transcript": "validation-repair-focused.log.gz",
+      "transcriptSha256": "2d18f6c4a476fd77120bcc04da15c54b4ae3c942b88ac0cf50ca5be370a0e95f"
+    },
+    {
+      "check": "runtime acceptance, release blocker and requirement traceability regression suites",
+      "seconds": 138.31,
+      "status": "pass",
+      "tests": 88,
+      "transcript": "validation-repair-audit-tests.log.gz",
+      "transcriptSha256": "fc48d498e0c267ebd78e95b52b63e8241cb0ec917f1323a80a0234f1b85f6f65"
+    },
+    {
+      "check": "pinned Wurst typecheck and real focused interpreter tests",
+      "results": "focused-results.json",
+      "status": "pass",
+      "tests": 84,
+      "transcript": "focused-wurst.log.gz"
+    },
+    {
+      "check": "framework content and implementation boundary",
+      "status": "pass",
+      "transcript": "validation-repair-boundary.log.gz"
+    }
+  ],
+  "format": "issue_526_validation_repair_v1",
+  "fullRepositoryValidation": "deferred_to_controller",
+  "generatedIdentities": [
+    "policy:commercial_courts",
+    "unit:armed_indiaman"
+  ],
+  "officialAuditsRegenerated": [
+    "reports/release-blocker-audit.json",
+    "reports/runtime-acceptance.json",
+    "reports/traceability/requirements.json"
+  ],
+  "pythonTests": 173,
+  "releaseAcceptance": "Source-only reports intentionally retain blockers pending current-source full repository execution, shipping archive inspection and post-merge audit regeneration.",
+  "repair": "Update merged runtime integration persistence evidence from military snapshot v19 to v20; regenerate all source audits without changing gameplay or migration behavior.",
+  "sourceIdentity": {
+    "sourceRevision": "d1613f96cf34445c6eb7faebaf63a6ee4ec269a8",
+    "sourceTreeSha256": "9c4286d041e913def916d05292f756dfdcfd422d550d40212377b07be680fbff"
+  },
+  "sourceStaticReadiness": "pass",
+  "syntheticCompilerNotice": "Python framework fixtures print synthetic compiler batches; only focused-results.json records real pinned Wurst execution."
+}

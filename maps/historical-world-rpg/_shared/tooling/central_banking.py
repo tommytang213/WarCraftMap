@@ -12,9 +12,10 @@ RULES = {'transitionDays', 'enactmentBasisPoints', 'upkeepBasisPoints',
          'countingBasisPoints', 'reconciliationBasisPoints'}
 
 
-def configuration(project, world, settlements, authored, trade_records):
-    path = project / 'scenario/progression/central-banking.json'
-    header = '\npublic function configureGeneratedBanking(BankingLedger ledger, BankingResearchEffects effects)\n'
+def configuration(project, world, settlements, authored, trade_records, *, policy="central-banking", metrics=None, function="configureGeneratedBanking"):
+    metrics = METRICS if metrics is None else metrics
+    path = project / f"scenario/progression/{policy}.json"
+    header = f'\npublic function {function}(BankingLedger ledger, BankingResearchEffects effects)\n'
     if not path.is_file():
         return header + '\tskip\n', {}, []
     data = json.loads(path.read_text())
@@ -26,8 +27,8 @@ def configuration(project, world, settlements, authored, trade_records):
     design = content_path(project, data['designSource'])
     tax_source = content_path(project, data['taxSource'])
     tax = json.loads(tax_source.read_text())['districts']
-    effects = [e for e in json.loads(design.read_text())['effects'] if e['metric'] in METRICS]
-    if len(effects) != 2 or {e['metric'] for e in effects} != set(METRICS):
+    effects = [e for e in json.loads(design.read_text())['effects'] if e['metric'] in metrics]
+    if len(effects) != len(metrics) or {e['metric'] for e in effects} != set(metrics):
         raise ValueError('banking: missing distinct exact contracts')
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if data['bankPrerequisite'] not in nodes:
@@ -39,7 +40,7 @@ def configuration(project, world, settlements, authored, trade_records):
     for e in effects:
         node = nodes[e['nodeId']]
         unlock = e['unlock']
-        if (unlock not in node['unlocks'] or unlock['kind'] != METRICS[e['metric']]
+        if (unlock not in node['unlocks'] or unlock['kind'] != metrics[e['metric']]
                 or type(e['bonusBasisPoints']) is not int or not 0 < e['bonusBasisPoints'] < 10000):
             raise ValueError('banking: invalid typed effect')
         first = date(node['timeCost']['preferredYear'], 1, 1).toordinal()

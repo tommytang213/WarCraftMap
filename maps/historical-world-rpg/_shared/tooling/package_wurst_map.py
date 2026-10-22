@@ -788,6 +788,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
     from central_banking import configuration as banking_configuration
     banking_wurst, banking_catalog, banking_sources = banking_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
     runtime['centralBanking'] = banking_catalog
+    courts_wurst, courts_catalog, courts_sources = banking_configuration(
+        config.project, world, settlement_runtime, authored_sources, trade_records,
+        policy='commercial-courts', metrics={'commercial_transaction_fee_reduction': 'policy'},
+        function='configureGeneratedCourts')
+    if courts_catalog:
+        courts_wurst += '\tledger.availabilityMetric = "commercial_transaction_fee_reduction"\n'
+    runtime['commercialCourts'] = courts_catalog
     from army_food_logistics import configuration as logistics_configuration, supply_anchor
     logistics_wurst, logistics_catalog, logistics_sources = logistics_configuration(config.project, world, settlement_runtime, authored_sources, trade_records, finance_catalog)
     runtime['armyFoodLogistics'] = logistics_catalog
@@ -890,7 +897,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             for ident, good in payload['catalog']['markets'])
         if runtime['tradeMarketCount'] > 16384:
             raise PackagingError('industry: trade authority capacity exceeded')
-    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst + courts_wurst
     wurst = wurst.replace('import UnstuckRecovery\n', 'import BankingOperations\nimport Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
@@ -906,10 +913,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in courts_catalog.get('effects', [])}
     if naval_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
     if industry_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
+    if naval_builder:
+        bound_research |= {('unit', e['contentId']) for e in naval_payload['catalog'].get('recruitment', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
                        if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency'}}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
@@ -940,6 +950,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *science_sources,
         *finance_sources,
         *banking_sources,
+        *courts_sources,
         *naval_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
         *(config.project / path for path in (agriculture_payload["sources"] if agriculture_payload else [])),

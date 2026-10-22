@@ -381,6 +381,30 @@
     "banking_advance": {
       "path": "wurst/BankingOperations.wurst",
       "signature": "function advance(int day, BankingResearchEffects effects, BankingPort port)"
+    },
+    "courts_registration": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "public function registerCourtsCommands(CommandRegistry commands, CommercialCourtsRuntime runtime) returns string"
+    },
+    "courts_policy": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function policy(string owner, string id, boolean repeal) returns string"
+    },
+    "courts_fee": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function fee(string owner, RuntimeMarket market, TradeStore store, int principal) returns int"
+    },
+    "courts_advance": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function advance(int day)"
+    },
+    "construction_quote": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function quote(string owner, string id, string blueprint) returns NavalBuildQuote"
+    },
+    "construction_commit": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function commit(string owner, NavalBuildQuote quote) returns string"
     }
   },
   "systems": {
@@ -571,6 +595,19 @@
       "banking_quote",
       "banking_commit",
       "banking_advance"
+    ],
+    "commercial_courts": [
+      "courts_registration",
+      "courts_policy",
+      "courts_fee",
+      "courts_advance"
+    ],
+    "merchant_construction": [
+      "naval_registration",
+      "construction_quote",
+      "construction_commit",
+      "naval_pay",
+      "naval_advance"
     ]
   }
 }
