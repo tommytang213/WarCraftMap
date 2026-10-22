@@ -44,6 +44,7 @@ def build(project=ROOT):
         raise ValueError('naval: fixed-point range exceeded')
     q = json.dumps
     lines = ['public function configureGeneratedNaval(NavalLedger ledger, NavalResearchEffects effects)']
+    lines.append('\tledger.defaultEntitlement = ' + q(next(e['unlock']['contentId'] for e in effects if e['metric'] == 'unlock_recruitment')))
     for field, good in [('woodGood','timber'),('ironGood','iron'),('supplyGood','ship_provisions')]:
         lines.append(f'\tledger.{field} = {q(good)}')
     for e in effects:
@@ -91,6 +92,35 @@ def build(project=ROOT):
             raise ValueError('naval: unsupported early-access predicate')
         args = [q(ident), q(station['mapId']), *(str(float(v)) for v in station['stationPosition']), q(yard['prerequisite']), q(requirements), q(hull['id']), "'"+roster.templates[hull['runtimeTemplateId']]['warcraftUnitTypeId']+"'", str(date(first_year,1,1).toordinal()), str(date(hull['availability']['historicalEndYear'],12,31).toordinal()), str(hull['cost']),str(hull['upkeep']),str(hull['supply']),str(roster.ships[hull['shipId']]['crewStrength']),str(hull['strategicStrength'])]
         lines.append('\tledger.register(new NavalYard(' + ', '.join(args) + '))')
+    recruitment_path = project / 'scenario/naval/recruitment.json'
+    recruitment = json.loads(recruitment_path.read_text())
+    if recruitment.get('schemaVersion') != 1 or not recruitment.get('blueprints'):
+        raise ValueError('naval: invalid recruitment contracts')
+    seen = set()
+    for binding in recruitment['blueprints']:
+        row = roster.archetypes[binding['rosterId']]
+        unlock = {'kind': 'unit', 'contentId': binding['contentId']}
+        if (row['id'] in seen or unlock not in nodes[binding['nodeId']]['unlocks']
+                or row['category'] != 'merchant' or row.get('countryId') is not None
+                or row.get('equipmentIds') or row.get('reformIds') or row.get('resourceIds')
+                or not row.get('shipId') or roster.movement_classes[row['movementClassId']]['domain'] != 'naval'
+                or not set(row['availability']['earlyAccessTechnologyIds']) <= set(row['technologyIds'])):
+            raise ValueError('naval: unsupported merchant recruitment predicates')
+        lines.append('\teffects.register(new CivicEffect("unit", ' + q(binding['contentId']) + ', "merchant_unlock_recruitment", 0))')
+        seen.add(row['id'])
+        requirements = '|' + '|'.join(row['technologyIds'] + row['institutionIds']) + '|'
+        args = [q(row['id']), '""', '0.', '0.', '""', q(requirements), q(row['id']),
+                "'" + roster.templates[row['runtimeTemplateId']]['warcraftUnitTypeId'] + "'",
+                str(date(row['availability']['earlyAccessYear'], 1, 1).toordinal()),
+                str(date(row['availability']['historicalEndYear'], 12, 31).toordinal()),
+                str(row['cost']), str(row['upkeep']), str(row['supply']),
+                str(roster.ships[row['shipId']]['crewStrength']), str(row['strategicStrength'])]
+        lines.append('\tlet recruitment = new NavalYard(' + ', '.join(args) + ')')
+        lines.append('\trecruitment.entitlement = ' + q(binding['contentId']))
+        lines.append('\trecruitment.boardRequired = false')
+        lines.append('\tledger.addBlueprint(recruitment)')
+    data['recruitment'] = recruitment['blueprints']
+    data['recruitmentBlueprints'] = [roster.archetypes[b['rosterId']] for b in recruitment['blueprints']]
     data['materialGoodIds'] = ['timber','iron','ship_provisions']
     data['yardServices'] = ['port_services','market','banking','warehouse']
     data['maximumHarborDistance'] = 1024
@@ -101,6 +131,6 @@ def build(project=ROOT):
 
 if __name__ == '__main__':
     data, source = build()
-    sources = ['scenario/naval/services.json','scenario/naval/navigation-efficiency.json','scenario/progression/gameplay-effect-design.json','tooling/naval_services_catalog.py','tooling/validate_unit_roster.py']
+    sources = ['scenario/naval/recruitment.json','scenario/naval/services.json','scenario/naval/navigation-efficiency.json','scenario/progression/gameplay-effect-design.json','tooling/naval_services_catalog.py','tooling/validate_unit_roster.py']
     sources += [str(p.relative_to(ROOT)) for p in sorted((ROOT/'scenario/rosters').glob('*.json'))]
     print(json.dumps(dict(catalog=data, wurst=source, sources=sources)))

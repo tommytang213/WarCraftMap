@@ -115,7 +115,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
                 ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),
                 ('modifier', 'progression_boring_mills'), ('modifier', 'progression_central_banking'),
-                ('policy', 'progression_central_bank_institution'),
+                ('policy', 'progression_central_bank_institution'), ('policy', 'commercial_courts'),
+                ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
                 ('policy', 'progression_chartered_municipalities')}])
         self.assertNotIn('effectMagnitude', self.source)
