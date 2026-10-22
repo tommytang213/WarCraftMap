@@ -137,6 +137,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= verified_bindings(PROJECT, execution, execution_log, revision)
     from central_banking import verified_bindings as banking_bindings
     bound |= banking_bindings(PROJECT, execution, execution_log, revision)
+    from science_exploration import verified_bindings as verified_science
+    bound |= verified_science(PROJECT, execution, execution_log, revision)
     from army_food_logistics import verified_bindings as verified_logistics
     bound |= verified_logistics(PROJECT, execution, execution_log, revision)
     return [_finding(

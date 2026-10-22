@@ -21,11 +21,12 @@ import ScenarioData
 class ScienceTestResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
 	int balance = 100000
+	int researchYear = 1778
 	string output = ""
 	override function controllerId(player sender) returns string
 		return owner
 	override function year() returns int
-		return 1778
+		return researchYear
 	override function gold(player sender) returns int
 		return balance
 	override function setGold(player sender, int amount)
@@ -316,3 +317,221 @@ class ScienceFixture
 	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
 	f.military.science.states[0].work.assertEquals(0)
 	f.military.science.states[0].equipmentOwner.assertEquals("england")
+
+// Durable prior electrical research does not depend on a Calculus consumer.
+// Both arms share exactly the same prerequisites, materials, staff and target.
+function observationSetup(ScienceFixture f, boolean earned)
+	let owner = f.resources.owner
+	f.rpg.restoreState(f.rpg.captureState() + "|u," + owner + ",electrical_experimentation|u," + owner + ",scholastic_natural_philosophy").assertTrue()
+	f.rpg.technologies.reconstructAll()
+	if earned
+		let gold = f.resources.balance
+		f.unlock("chemical_classification")
+		f.resources.balance.assertEquals(gold - f.rpg.technologies.cost("chemical_classification", 1778, 0, 0))
+	f.equip()
+	f.action("start", 2, " printed_observation_tables")
+
+@test function chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl()
+	let treatment = new ScienceFixture(false, true)
+	let control = new ScienceFixture(false, true)
+	observationSetup(treatment, true)
+	observationSetup(control, false)
+	treatment.effects.rate("player", "research_generation_efficiency").assertEquals(0)
+	let paid = treatment.campaign.countries.treasury[0]
+	treatment.advance(17)
+	control.advance(17)
+	treatment.military.science.states[2].work.assertEquals(1040)
+	control.military.science.states[2].work.assertEquals(1000)
+	treatment.campaign.countries.treasury[0].assertEquals(paid - 10)
+	treatment.campaign.countries.treasury[0].assertEquals(control.campaign.countries.treasury[0])
+	treatment.trade.markets[0].stock.assertEquals(control.trade.markets[0].stock)
+	// 87 funded days versus 90; committed completion is durable technology.
+	treatment.advance(94)
+	control.advance(94)
+	treatment.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertTrue()
+	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertFalse()
+	control.advance(97)
+	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertTrue()
+
+@test function chemicalQualifiedWorkRejectsMissingFacilitiesStaffInputsTechnologyAndUnauthorizedControl()
+	let f = new ScienceFixture(false, true)
+	f.commands.dispatch(Player(0), "/research chemical_classification").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.effects.rate("player", "repeatable_observation_efficiency").assertEquals(0)
+	let d = f.military.science.sites[2]
+	f.runtime.act("player", "start", d.id, "printed_observation_tables").startsWith("Commission").assertTrue()
+	f.runtime.act("ai", "equip", d.id, "").startsWith("Requires").assertTrue()
+	let clerk = f.military.administrators[0]
+	clerk.capacity = 0
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	clerk.capacity = 1
+	clerk.administration = 39
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	clerk.administration = 40
+	observationSetup(f, true)
+	f.trade.markets[0].stock = 0
+	let funds = f.campaign.countries.treasury[0]
+	f.advance(8)
+	f.military.science.states[2].work.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	f.trade.markets[0].stock = 1000
+	f.campaign.countries.treasury[0] = 0
+	f.advance(9)
+	f.military.science.states[2].work.assertEquals(0)
+	f.trade.markets[0].stock.assertEquals(1000)
+	f.campaign.countries.treasury[0] = funds
+	f.advance(10)
+	f.military.science.states[2].work.assertEquals(104)
+	f.trade.markets[0].blockaded = true
+	f.advance(11)
+	f.military.science.states[2].owner.assertEquals("")
+	f.military.science.states[2].work.assertEquals(0)
+	f.trade.markets[0].blockaded = false
+	f.rpg.technologies.register(new RuntimeTechnology("ordinary_work", "Ordinary work", 1450, 100)).assertTrue()
+	f.action("start", 2, " ordinary_work")
+	f.advance(12)
+	f.military.science.states[2].work.assertEquals(100)
+	f.military.settlements[0].controllerId = "ai"
+	f.runtime.act("player", "start", d.id, "printed_observation_tables").startsWith("Requires").assertTrue()
+
+@test function chemicalNamedSourceCompositionRoundingRepeatGrantsAndAheadOfTimeAccess()
+	let f = new ScienceFixture(false, false)
+	observationSetup(f, true)
+	let d = f.military.science.sites[2]
+	f.effects.workRate(d, "player", "printed_observation_tables").assertEquals(400)
+	f.effects.workRate(d, "player", "flintlock_drill").assertEquals(0)
+	f.effects.workRate(f.military.science.sites[0], "player", "printed_observation_tables").assertEquals(0)
+	f.allResearch()
+	f.effects.workRate(d, "player", "printed_observation_tables").assertEquals(900)
+	f.effects.workRate(d, "player", "flintlock_drill").assertEquals(500)
+	let duplicate = new RuntimeTechnology("duplicate_classification", "Duplicate classification", 1450, 1)
+	duplicate.addUnlock("duplicate_classification", "modifier", "progression_chemical_classification")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("duplicate_classification")
+	let balance = f.resources.balance
+	f.commands.dispatch(Player(0), "/research chemical_classification").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.resources.balance.assertEquals(balance)
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "printed_observation_tables").assertEquals(900)
+	// Exercise fractional boundaries in the actual production work commit.
+	d.dailyWork = 1
+	f.advance(18) // 11 * 1.09 = 11.99
+	f.military.science.states[2].work.assertEquals(11)
+	f.military.science.states[2].remainder.assertEquals(9900)
+	f.advance(19)
+	f.military.science.states[2].work.assertEquals(13)
+	f.military.science.states[2].remainder.assertEquals(800)
+	let gold = f.resources.balance
+	let cost = f.rpg.technologies.cost("geological_survey", 1778, 0, 0)
+	(cost > 382).assertTrue()
+	f.commands.dispatch(Player(0), "/research geological_survey").assertTrue()
+	f.resources.output.assertEquals("Action completed.")
+	f.rpg.technologies.isUnlocked("player", "geological_survey").assertTrue()
+	f.resources.balance.assertEquals(gold - cost)
+	let extra = new RuntimeTechnology("independent_science", "Independent science", 1450, 1)
+	extra.addUnlock("independent_science", "modifier", "independent_science_source")
+	f.effects.register(new CivicEffect("modifier", "independent_science_source", "research_generation_efficiency", 10000))
+	f.rpg.technologies.register(extra).assertTrue()
+	f.unlock("independent_science")
+	f.effects.workRate(d, "player", "printed_observation_tables").assertEquals(10000)
+	f.advance(20)
+	f.military.science.states[2].work.assertEquals(15)
+	f.military.science.states[2].remainder.assertEquals(800)
+	let early = new ScienceFixture(false, false)
+	early.resources.researchYear = 1760
+	early.rpg.restoreState(early.rpg.captureState() + "|u,player,electrical_experimentation").assertTrue()
+	let earlyGold = early.resources.balance
+	let earlyCost = early.rpg.technologies.cost("chemical_classification", 1760, 0, 0)
+	(earlyCost > 361).assertTrue()
+	early.unlock("chemical_classification")
+	early.resources.balance.assertEquals(earlyGold - earlyCost)
+
+@test function chemicalActiveAbstractResumeCaptureAndMalformedLoadPreserveExactAuthority()
+	let active = new ScienceFixture(false, true)
+	let inactive = new ScienceFixture(true, false)
+	observationSetup(active, true)
+	observationSetup(inactive, true)
+	active.military.science.sites[2].dailyWork = 1
+	inactive.military.science.sites[2].dailyWork = 1
+	active.advance(31)
+	inactive.advance(31)
+	active.military.science.states[2].work.assertEquals(24)
+	active.military.science.states[2].remainder.assertEquals(9600)
+	let saved = active.military.snapshot()
+	let research = active.rpg.captureState()
+	active.military.restore(saved).assertTrue()
+	active.rpg.restoreState(research).assertTrue()
+	active.rpg.technologies.reconstructAll()
+	active.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
+	active.military.snapshot().assertEquals(saved)
+	active.advance(32)
+	inactive.advance(32)
+	active.military.science.states[2].work.assertEquals(26)
+	active.military.science.states[2].remainder.assertEquals(0)
+	active.military.science.states[2].work.assertEquals(inactive.military.science.states[2].work)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[0])
+	active.trade.markets[0].stock.assertEquals(inactive.trade.markets[0].stock)
+	active.military.transferSettlement("london", "ai")
+	active.military.science.states[2].owner.assertEquals("")
+	active.military.science.states[2].equipmentOwner.assertEquals("ai")
+	active.military.science.states[2].remainder.assertEquals(0)
+	active.effects.rate("ai", "repeatable_observation_efficiency").assertEquals(0)
+	active.advance(40)
+	active.military.science.states[2].work.assertEquals(0)
+
+@test function chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	// Read the actual typed source from generated scenario definitions.
+	let definitions = new ScienceLedger()
+	configureGeneratedScience(definitions, effects)
+	let site = definitions.sites[2]
+	site.id = "study"
+	site.settlementId = "port"
+	site.good = "grain"
+	site.firstDay = 0
+	site.prerequisite = "chemical_classification"
+	site.dailyWork = 1
+	site.equipmentDays = 1
+	site.observationTargets = "|study_target|"
+	f.military.science.register(site)
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Scholar", "england", "europe_west", "port", 40, 50, 40, 1))
+	let technology = new RuntimeTechnology("chemical_classification", "Classification", 1, 1)
+	technology.addUnlock("chemical_classification", "modifier", "progression_chemical_classification")
+	f.rpg.technologies.register(technology).assertTrue()
+	f.rpg.research("england", "chemical_classification", 1, 1).assertTrue()
+	f.rpg.technologies.register(new RuntimeTechnology("study_target", "Study", 1, 1)).assertTrue()
+	let runtime = new ScienceCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.scienceRuntime = runtime
+	runtime.act("england", "equip", "study", "").assertEquals("")
+	let day = f.clock.currentDay
+	f.clock.advanceTo(day + 1).assertTrue()
+	runtime.act("england", "start", "study", "study_target").assertEquals("")
+	f.clock.advanceTo(day + 2).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(400)
+	let savedClock = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "chemical").assertTrue()
+	f.clock.advanceTo(day + 3).assertTrue()
+	let before = f.military.snapshot()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.rate("england", "repeatable_observation_efficiency").assertEquals(400)
+	f.extension.fail = false
+	f.recordingTimer.expected = savedClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(400)
+	f.clock.advanceTo(day + 3).assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
