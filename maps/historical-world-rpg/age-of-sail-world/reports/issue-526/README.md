@@ -60,8 +60,20 @@ The current migration regression covers paid court and municipal state alongside
 a pending Armed Indiaman build, with atomic rejection of incomplete v20 ledgers.
 All five merge-conflict paths were resolved and staged without committing.
 
-Current integration validation passed **84 real pinned Wurst cases and 77 Python
+The initial integration validation passed **84 real pinned Wurst cases and 77 Python
 cases**, plus the framework content/implementation boundary audit. The Python
 framework suite includes synthetic compiler fixtures, excluded from the real
-interpreter count. `focused-results.json` and `integration-repair.json` bind the
-results to this worktree's current source identity.
+interpreter count. `integration-repair.json` records that earlier checkpoint.
+
+The controller-validation retry repairs the merged runtime manifest's stale v19
+persistence marker to match the implemented v20 snapshot. Gameplay and migration
+code remain intact. Official release-blocker, runtime-acceptance and requirement
+traceability reports, and the source-only audit copies here, were regenerated.
+
+Fresh verification passed **84 real pinned Wurst cases, 85 focused Python cases
+and 88 audit regression cases**, including the previously failing source-readiness
+and report-freshness checks. The framework boundary audit also passed.
+`validation-repair.json` records the checks and retained transcripts;
+`focused-results.json` and `generated-identities.json` identify the current source
+and both exact generated unlocks. Full repository validation, shipping archive
+inspection and post-merge blocker closure remain controller work.
