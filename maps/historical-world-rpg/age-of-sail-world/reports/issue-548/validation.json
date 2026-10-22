@@ -1,0 +1,84 @@
+{
+  "checks": [
+    {
+      "check": "binding",
+      "status": "pass",
+      "tests": 5
+    },
+    {
+      "check": "civic",
+      "status": "pass",
+      "tests": 4
+    },
+    {
+      "check": "administrative",
+      "status": "pass",
+      "tests": 4
+    },
+    {
+      "check": "integration",
+      "status": "pass",
+      "tests": 13
+    },
+    {
+      "check": "framework",
+      "status": "pass",
+      "tests": 9
+    },
+    {
+      "check": "execution",
+      "status": "pass",
+      "tests": 23
+    },
+    {
+      "check": "release",
+      "status": "pass",
+      "tests": 10
+    },
+    {
+      "check": "runtime",
+      "status": "pass",
+      "tests": 25
+    },
+    {
+      "check": "traceability",
+      "status": "pass",
+      "tests": 53
+    }
+  ],
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "fullRepositoryValidation": "deferred_to_controller",
+  "inspections": {
+    "packaged-registration": "packaged-registration.json",
+    "regional-payloads": "regional-payloads.json"
+  },
+  "mainIntegration": "Controller must regenerate all three audits with fresh full-suite and packaged campaign evidence after integration.",
+  "nativeClient": "not_run",
+  "pythonTests": 146,
+  "reports": {
+    "release": {
+      "blockers": 238,
+      "status": "fail"
+    },
+    "runtime": {
+      "blockers": null,
+      "status": "fail"
+    },
+    "traceability": {
+      "blockers": 7004,
+      "status": "fail"
+    }
+  },
+  "sourceIdentity": {
+    "sourceRevision": "14efef5af129e63021337761b6cc252a24589ddf",
+    "sourceTreeSha256": "6c6427008346d442d10f9fc320fcdd45ef715945b3be18f91027a014a49d8f86"
+  },
+  "standaloneFrameworkTests": {
+    "mutated": 3,
+    "original": 3
+  },
+  "status": "pass",
+  "typecheck": "pass",
+  "wurstTests": 43
+}

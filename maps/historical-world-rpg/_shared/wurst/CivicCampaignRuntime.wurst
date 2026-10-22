@@ -38,7 +38,10 @@ public class CampaignCivicEconomy implements CivicEconomyPort
 	override function lawful(string id) returns boolean
 		let s = settlement(id)
 		let i = campaign.militarySettlements.administratorIndex(id)
-		return s != null and s.controllerId == s.legalOwnerId and s.occupationConflictId == "" and not s.underAttack and i >= 0 and campaign.militarySettlements.administrators[i].controllerId == s.controllerId
+		if s == null or i < 0
+			return false
+		let office = campaign.militarySettlements.administrators[i]
+		return s.controllerId == s.legalOwnerId and s.occupationConflictId == "" and not s.underAttack and office.controllerId == s.controllerId and office.jurisdiction == id and office.capacity > 0
 	override function known(string controllerId, string id) returns boolean
 		// Governments know their own administered holdings, for player and AI.
 		// Other discovery alone never authorizes a project in unknown territory.
