@@ -43,11 +43,18 @@ public class NavalCampaignRuntime
 		let city = economy.settlement(d.id)
 		return marketOpen(d.id, ledger.woodGood) and marketOpen(d.id, ledger.ironGood) and marketOpen(d.id, ledger.supplyGood) and city != null and city.manpower > 0 and economy.lawful(d.id) and economy.controller(d.id) == owner and economy.accessible(d.id) and campaign.rpg.technologies.isUnlocked(owner, d.prerequisite)
 	function requirements(NavalYard d, string owner) returns boolean
-		// Delimited generated stable IDs; includes every roster tech/institution.
-		for i = 0 to campaign.rpg.technologies.count - 1
-			let id = campaign.rpg.technologies.definitions[i].id
-			if d.researchRequirements.contains("|" + id + "|") and not campaign.rpg.technologies.isUnlocked(owner, id)
+		// Recheck the authored stable IDs each construction day, including
+		// revoked prerequisites. Walking the whole technology catalogue here
+		// makes long replay depend on unrelated catalogue size.
+		var remaining = d.researchRequirements
+		while remaining != ""
+			let cut = remaining.indexOf("|")
+			if cut < 0
 				return false
+			let id = SubString(remaining, 0, cut)
+			if id != "" and not campaign.rpg.technologies.isUnlocked(owner, id)
+				return false
+			remaining = SubString(remaining, cut + 1, StringLength(remaining))
 		return true
 	function actor(NavalYard d, string owner, string id) returns RuntimeForce
 		let m = campaign.militarySettlements

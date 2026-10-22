@@ -116,3 +116,37 @@ packaged campaign, the source-only reports correctly retain 238 release blockers
 and 7,004 traceability publication blockers, including the two supplied civic
 findings. The controller must perform complete repository validation and refresh
 all three audits on the new main revision after integration.
+
+## PR #552 validation repair
+
+The failed release job at revision `f2cd383` stopped in the second execution
+shard: `charteredLongCampaignActiveAbstractCostsAndConstructionMatch` exceeded
+the pinned interpreter's 20-second test deadline. It passed in isolation. The
+construction replay was scanning every registered technology on every work day
+to find a small authored prerequisite list. It now walks those exact IDs and
+checks current unlock state directly. Unknown or malformed requirements reject;
+revocation still cancels construction without granting a hull or refund.
+The additional registered-action regression covers those cases. No coefficients,
+persisted state, migrations, test deadlines or release evidence gates changed.
+
+Fresh repair evidence uses the `ci-repair-` prefix. Focused pinned execution
+includes the civic matched controls and late rollback, dispatch integration,
+naval services and chartered actions. Original and content-mutated standalone
+framework scenarios also run under the pinned compiler. Containers use UID/GID
+1001, disabled networking, read-only source mounts and private `/tmp` builds.
+These development runs remain distinct from complete release execution evidence.
+
+`ci-repair-validation.json` records 152 passing affected Python tests, 42 passing
+focused pinned Wurst tests, the passing second 100-test CI shard (including the
+previously failing 25-year case), and three passing tests in each standalone
+framework variant. The focused and CI-shard selections overlap. Both input-hash
+checks passed around every pinned test run. The fresh generated inspection covers
+all 17 physical-map payloads and 794 districts; the fresh shipping inspection
+checks the uninstrumented archived Lua and runtime payload of one W3X. Compressed
+transcripts and input/result manifests accompany these summaries.
+
+All three source reports were regenerated for the repaired source identity.
+They retain 238 release findings and 7,004 traceability publication blockers,
+including the two supplied findings without full integration evidence. The outer
+worker must run complete repository validation and regenerate these audits with
+fresh full-suite execution and packaged campaign evidence after integration.
