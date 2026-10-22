@@ -1,0 +1,101 @@
+{
+  "audits": {
+    "release": {
+      "path": "reports/release-blocker-audit.json",
+      "sha256": "ac0ef03c8acfcbf4484990cbbfa72d8fee99c65973c5b10dc0e0e69a0758a7b5",
+      "sourceRevision": "70953dbb565c1f2ba9bc809e53231fcd009f0d3d",
+      "sourceTreeSha256": "3fef5b868cfb95d26591cd3ebf9d0df6ea5a776ed862e36cbf224590cfe3d8f0",
+      "status": "fail"
+    },
+    "runtime": {
+      "path": "reports/runtime-acceptance.json",
+      "sha256": "f3557552e28994ef89b5e8b40f8ee10c996d1a49597b54b3f572a2ac43cd846b",
+      "sourceRevision": "70953dbb565c1f2ba9bc809e53231fcd009f0d3d",
+      "sourceTreeSha256": "3fef5b868cfb95d26591cd3ebf9d0df6ea5a776ed862e36cbf224590cfe3d8f0",
+      "status": "fail"
+    },
+    "traceability": {
+      "path": "reports/traceability/requirements.json",
+      "sha256": "cb8f5510b79d3306faf08a18deaf1c0892dbf3e49ec70d5d40a5ea6381f3dbd4",
+      "sourceRevision": "70953dbb565c1f2ba9bc809e53231fcd009f0d3d",
+      "sourceTreeSha256": "3fef5b868cfb95d26591cd3ebf9d0df6ea5a776ed862e36cbf224590cfe3d8f0",
+      "status": "fail"
+    }
+  },
+  "format": "issue_528_integration_validation",
+  "frameworkBoundary": {
+    "status": "pass"
+  },
+  "generatedRegistration": {
+    "inspection": "generated-identities.json",
+    "status": "pass"
+  },
+  "logs": {
+    "boundary": {
+      "path": "integration-boundary.log.gz",
+      "sha256": "822ceeb970b5d99b6d108a1be28438d8bc7604fb0e92177ed8315a73ae9942f5"
+    },
+    "prepare": {
+      "path": "integration-prepare.log.gz",
+      "sha256": "303d3fb3dc0b9b16b360687975334b79725016e0a53f466f10eb2b87b6432da1"
+    },
+    "release-audit": {
+      "path": "integration-release-audit.log.gz",
+      "sha256": "0e5421ce818da8ab5f6243c48c24caa7807f86d3d70728e0f790287ce12d4992"
+    },
+    "runtime-audit": {
+      "path": "integration-runtime-audit.log.gz",
+      "sha256": "c57165d89d85be7fd4640e277b901d48bf9b0f9faf4225987439a66142a9a46e"
+    },
+    "tests": {
+      "path": "integration-tests.log.gz",
+      "sha256": "20586ce17748908b89b42779560e0da6b12575931fa11dfdf1d0b9ea16862e4f"
+    },
+    "traceability-audit": {
+      "path": "integration-traceability-audit.log.gz",
+      "sha256": "d00c8d19ebd564a52de7bf08f9d7f77be6e03a9db48375fe7c9ea4dde16896b9"
+    }
+  },
+  "merge": {
+    "resolution": "Regenerated the three conflicting audit reports from both integrated source streams; no implementation changes.",
+    "unmergedPaths": []
+  },
+  "python": {
+    "cases": 134,
+    "modules": [
+      "test_dispatch_contract",
+      "test_civic_governance",
+      "test_administrative_contracts",
+      "test_administration",
+      "test_research_generation",
+      "test_research_cost_contract",
+      "test_framework_conformance",
+      "test_release_blocker_audit",
+      "test_runtime_acceptance",
+      "test_requirement_traceability",
+      "test_science_exploration"
+    ],
+    "note": "Framework packaging fixtures use a synthetic compiler and do not supply additional real Wurst execution evidence.",
+    "seconds": 580.68,
+    "status": "pass"
+  },
+  "scope": "Integration repair and focused developer verification; complete repository validation, shipping archive inspection and new-main closure audits remain controller work.",
+  "sourceIdentity": {
+    "sourceRevision": "70953dbb565c1f2ba9bc809e53231fcd009f0d3d",
+    "sourceTreeSha256": "3fef5b868cfb95d26591cd3ebf9d0df6ea5a776ed862e36cbf224590cfe3d8f0"
+  },
+  "wurst": {
+    "cases": 30,
+    "compiler": {
+      "buildDirectory": "container-private /tmp",
+      "gid": 1001,
+      "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "jarSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+      "sourceMount": "read-only",
+      "uid": 1001
+    },
+    "results": "focused-results.json",
+    "status": "pass",
+    "typecheck": "pass"
+  }
+}

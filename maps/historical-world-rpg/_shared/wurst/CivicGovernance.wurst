@@ -133,16 +133,29 @@ public interface CivicEconomyPort
 	function controller(string id) returns string
 	function lawful(string id) returns boolean
 	function known(string controllerId, string id) returns boolean
+	function dispatchAccess(string originId, string recipientId) returns boolean
 	function accessible(string id) returns boolean
 	function pay(string controllerId, string id, int money, string good, int units) returns boolean
 	function collect(string controllerId, string id, int maximum) returns int
 	function diseaseAvailable(string id) returns int
 	function disease(string id, int maximum) returns int
 
+public class DispatchRelayLink
+	string originId
+	string recipientId
+	construct(string originId, string recipientId)
+		this.originId = originId
+		this.recipientId = recipientId
+
 public class CivicLedger
 	CivicDistrict array[1024] districts
 	CivicLocalState array[1024] states
 	int count = 0
+	DispatchRelayLink array[64] dispatchLinks
+	int dispatchLinkCount = 0
+	string dispatchRelayKind = ""
+	string dispatchRelayContent = ""
+	int dispatchOperatingBasisPoints = 0
 	// Derived lookup only; save records still use exact district identities.
 	// Chain hash collisions so registration and staged forks stay linear in
 	// catalogue size without treating a hash as an authoritative identity.
@@ -163,6 +176,11 @@ public class CivicLedger
 	int baseTaxBasisPoints = 9000
 	function fork() returns CivicLedger
 		let copy = new CivicLedger()
+		copy.dispatchRelayKind = dispatchRelayKind
+		copy.dispatchRelayContent = dispatchRelayContent
+		copy.dispatchOperatingBasisPoints = dispatchOperatingBasisPoints
+		for i = 0 to dispatchLinkCount - 1
+			copy.addDispatchLink(dispatchLinks[i].originId, dispatchLinks[i].recipientId)
 		copy.municipalNode = municipalNode
 		copy.municipalMinimumUrbanization = municipalMinimumUrbanization
 		copy.archiveUpkeepBasisPoints = archiveUpkeepBasisPoints
@@ -179,6 +197,27 @@ public class CivicLedger
 		for i = 0 to count - 1
 			copy.register(districts[i], 0)
 		return copy
+	function addDispatchLink(string originId, string recipientId)
+		for i = 0 to dispatchLinkCount - 1
+			if dispatchLinks[i].originId == originId and dispatchLinks[i].recipientId == recipientId
+				return
+		if dispatchLinkCount < 64
+			dispatchLinks[dispatchLinkCount] = new DispatchRelayLink(originId, recipientId)
+			dispatchLinkCount++
+	/** Re-read the named research layer and live network at the outcome boundary.
+	 * A saved normal deadline never embeds a stale dispatch entitlement. */
+	function dispatchDays(string owner, string id, CivicResearchEffects research, CivicEconomyPort economy) returns int
+		let layer = research.get(owner)
+		if layer == null or dispatchOperatingBasisPoints <= 0 or not layer.has(dispatchRelayKind, dispatchRelayContent)
+			return 0
+		let rate = IMinBJ(1000, research.rate(owner, "remote_survey_dispatch_time_reduction"))
+		if rate <= 0
+			return 0
+		for i = 0 to dispatchLinkCount - 1
+			let link = dispatchLinks[i]
+			if link.recipientId == id and economy.dispatchAccess(link.originId, id)
+				return civicScale(transitionDays, rate)
+		return 0
 	function index(string id) returns int
 		var i = LoadInteger(districtIndex, 0, StringHash(id)) - 1
 		while i >= 0
@@ -344,6 +383,11 @@ public class CivicLedger
 						s.surveyReady = 0
 					else if at >= s.surveyReady
 						s.surveyed = true
+					else
+						let days = dispatchDays(owner, d.id, research, economy)
+						if days > 0 and at >= s.surveyReady - days
+							if economy.pay(owner, d.id, civicBill(d.annualTax, dispatchOperatingBasisPoints), "", 0)
+								s.surveyed = true
 				if s.responseOwner != owner
 					s.responseOwner = ""
 					s.responseEnd = 0
@@ -388,6 +432,8 @@ public class CivicLedger
 					if actual == loss
 						s.diseaseAvoided += exposed - loss
 	ondestroy
+		for i = 0 to dispatchLinkCount - 1
+			destroy dispatchLinks[i]
 		for i = 0 to count - 1
 			destroy states[i]
 		FlushParentHashtable(districtIndex)

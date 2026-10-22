@@ -76,3 +76,43 @@ No player QA, commit, push, GitHub mutation or global tooling changes occurred.
 All container writes stayed in private temporary storage; worktree mounts were
 read-only. Python temporary fixtures stayed inside this worktree for the final
 packaging and audit regression runs. Native client validation was not run.
+
+## Integration repair after main merge
+
+The six conflicted paths were resolved and staged without a commit. The civic
+and dispatch verifiers both run in the release audit; configuration includes
+both sets of source dependencies; and the execution contract preserves every
+probe and system definition from both parents. No production coefficients,
+persisted fields or migrations changed during conflict repair. A fresh dispatch
+run exposed an outdated assertion: a local office with wrong jurisdiction or zero
+capacity cannot finish an ordinary survey. The test now asserts cancellation,
+cleared pending authority and no additional treasury charge for those cases;
+relay-only limitations retain the 90-day fallback.
+`integration-dispatch-before-repair.log.gz` retains that initial 5/6 result; the
+combined final-source 49-test run validates the corrected assertion.
+
+Fresh integration evidence uses the `integration-` prefix. The earlier files
+above remain historical development evidence; no predecessor execution or
+compiled artifact was used to validate this integration. The fresh focused
+assembly and original/mutated framework assemblies were prepared by the scripts
+above, using only cached upstream standard-library source. The pinned image ran
+with networking disabled, UID/GID 1001, read-only source mounts and private
+container `/tmp` builds. Both before/after input-hash checks and the pinned
+compiler hash were verified. `integration-focused-results.json` records the
+49 passing focused tests (including the six dispatch cases) and observed civic
+outcome calls;
+`integration-framework-{original,mutated}-results.json` record three passing
+tests each. These remain focused evidence and cannot close release findings.
+
+`integration-regional-payloads.json` inspects all 17 fresh generated payloads;
+`integration-packaged-registration.json` inspects a freshly built uninstrumented
+shipping map and its archived registration/consumers. `integration-validation.json`
+records the affected Python checks and final source identity. Compressed
+`integration-*.log.gz` files retain their transcripts.
+
+The three official audits were regenerated from the integrated source, and the
+traceability freshness check passed. Without full-suite execution and a complete
+packaged campaign, the source-only reports correctly retain 238 release blockers
+and 7,004 traceability publication blockers, including the two supplied civic
+findings. The controller must perform complete repository validation and refresh
+all three audits on the new main revision after integration.
