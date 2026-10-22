@@ -11,6 +11,12 @@ public function scienceControllerText(string value) returns boolean
 public class ScienceResearchEffects extends CivicResearchEffects
 	construct(TechnologyEffectPort upstream)
 		super(upstream)
+	function workRate(ScienceSite site, string owner, string target) returns int
+		var result = rate(owner, site.metric)
+		if site.observationMetric != "" and site.observationTargets.contains("|" + target + "|")
+			result += rate(owner, site.observationMetric)
+		// All earned sources add before a single rounding, bounded at +100%.
+		return IMinBJ(10000, result)
 
 /** A bounded, authored station-return journey or scholarly facility. Equipment
  * is commissioned locally, never granted by research. Hazard is supply lost,
@@ -22,6 +28,10 @@ public class ScienceSite
 	string metric
 	string prerequisite
 	string good
+	// Immutable scenario qualification; never persisted as a second entitlement.
+	string observationMetric = ""
+	string observationTargets = ""
+	int minimumAdministration = 0
 	int unitTypeId = 0
 	real stationX = 0.
 	real stationY = 0.
@@ -188,7 +198,7 @@ public class ScienceLedger
 					s.stop()
 					port.busyChanged(d)
 				else
-					let rate = effects.rate(owner, d.metric)
+					let rate = effects.workRate(d, owner, s.target)
 					let hazard = d.hazard(at)
 					let credit = hazard * IMinBJ(9999, rate) + s.remainder
 					let avoided = credit div 10000

@@ -28,6 +28,21 @@ def configuration(project, world, settlements, authored, trade_records):
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if {e['metric'] for e in effects} != set(METRICS) or len(effects) != 3:
         raise ValueError('science: missing effect contract')
+    observation_path = project / 'scenario/progression/chemical-classification.json'
+    observation = None
+    if observation_path.is_file():
+        observation = json.loads(observation_path.read_text())
+        node = nodes.get(observation.get('nodeId'), {})
+        if (observation.get('schemaVersion') != 1
+                or observation.get('unlock') not in node.get('unlocks', [])
+                or observation['unlock']['kind'] != 'modifier'
+                or observation.get('metric') != 'repeatable_observation_efficiency'
+                or type(observation.get('bonusBasisPoints')) is not int
+                or not 300 <= observation['bonusBasisPoints'] <= 600
+                or type(observation.get('minimumAdministration')) is not int
+                or not 1 <= observation['minimumAdministration'] <= 100):
+            raise ValueError('science: invalid observation contract')
+        effects.append(observation)
     lines = [header]
     q = json.dumps
     for e in effects:
@@ -92,5 +107,49 @@ def configuration(project, world, settlements, authored, trade_records):
             if type(value) not in (int, float) or not -32768 < value < 32768:
                 raise ValueError('science: invalid station position')
             lines.append(f'\tsite{i}.station{axis} = {float(value)}')
+        if observation and d['id'] == observation['siteId']:
+            if d['metric'] != 'research_generation_efficiency':
+                raise ValueError('science: observations require a scholarly facility')
+            targets = sorted(n['id'] for n in world['technologies']
+                             if n.get('branchId') == observation['targetBranchId'])
+            if not targets:
+                raise ValueError('science: observations require scientific targets')
+            lines.append(f'\tsite{i}.observationMetric = {q(observation["metric"])}')
+            lines.append(f'\tsite{i}.observationTargets = {q("|" + "|".join(targets) + "|")}')
+            lines.append(f'\tsite{i}.minimumAdministration = {observation["minimumAdministration"]}')
         lines.append(f'\tledger.register(site{i})')
-    return '\n'.join(lines) + '\n', data | {'effects': effects}, [path, design_path, Path(__file__)]
+    if observation and observation['siteId'] not in ids:
+        raise ValueError('science: missing observation facility')
+    return '\n'.join(lines) + '\n', data | {'effects': effects}, [path, design_path, Path(__file__)] + ([observation_path] if observation else [])
+
+
+CHEMICAL_TESTS = {
+    'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl',
+    'chemicalQualifiedWorkRejectsMissingFacilitiesStaffInputsTechnologyAndUnauthorizedControl',
+    'chemicalNamedSourceCompositionRoundingRepeatGrantsAndAheadOfTimeAccess',
+    'chemicalActiveAbstractResumeCaptureAndMalformedLoadPreserveExactAuthority',
+    'chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource',
+}
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    """Only current complete pinned execution can close this exact finding."""
+    if execution is None or execution_log is None or revision is None:
+        return set()
+    from integration_evidence import verify_execution_coverage
+    from wurst_execution import WurstExecutionError
+    try:
+        verify_execution_coverage(execution, execution_log, project, revision)
+    except (WurstExecutionError, ValueError, OSError, KeyError, TypeError):
+        return set()
+    prefix = 'wurst/ScienceExplorationTests.wurst:'
+    passed = {row['id'][len(prefix):] for row in execution['tests']
+              if row['status'] == 'pass' and row['id'].startswith(prefix)}
+    probes = execution.get('productionCoverage', {}).get('tests', {})
+    required = {'science_registration', 'science_action', 'science_advance',
+                'science_pay', 'science_complete', 'dispatch'}
+    comparative = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
+    if not CHEMICAL_TESTS <= passed or not required <= set(probes.get(comparative, [])):
+        return set()
+    contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
+    return {(contract['unlock']['kind'], contract['unlock']['contentId'])}
