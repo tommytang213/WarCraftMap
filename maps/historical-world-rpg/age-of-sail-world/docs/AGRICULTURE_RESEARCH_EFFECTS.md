@@ -64,7 +64,22 @@ agree. Capture transfers infrastructure, while policy effects and technology
 eligibility follow the current controller. Inactive replay processes deadlines
 in the same chronological order as active daily execution.
 
-The four exact research-unbound release findings remain in the release audits
-until the controller runs current-main execution, release/runtime and
-traceability validation. This implementation and its headless checks do not
-establish native client playability. Issue #438 is unchanged.
+Generated consumer metadata recognizes the four registered typed entitlements.
+The packager independently checks the generated agricultural definitions and
+configuration call against their authored builder, including when output hashes
+are resealed. This recognition does not close release findings.
+
+The release audit requires current-source pinned execution evidence, every
+agriculture regression, independent matched controls for each contribution, and
+observed production probes for research delivery, registered actions, clock
+advancement, payment, harvest, storage, tax and adoption. A separate production
+registration test checks the campaign's research chain and day listener. Missing,
+failed or stale evidence, or disconnected callbacks, retain all four exact
+findings. The controls establish individual effects before the existing combined
+harvest test checks composition; no gameplay or persisted schema changes are
+needed for this reconciliation.
+
+The controller must regenerate release-blocker, runtime-acceptance and requirement
+traceability audits with integrated new-main evidence after merge. Source-only
+audits retain the four findings. Headless checks do not establish native client
+playability. Issue #438 is unchanged.

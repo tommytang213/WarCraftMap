@@ -15,6 +15,7 @@ import ScenarioData
 import ResearchRuntimeTests
 import CampaignLoadTransactionTests
 import CampaignSaveManager
+import CampaignStartupTests
 
 
 class AgricultureOutput implements TradePresentation
@@ -136,6 +137,9 @@ class AgricultureFixture
 	function advance(int days)
 		clock.advanceTo(657072+days).assertTrue()
 		trade.refreshAgriculture()
+	function prepareHarvest()
+		local.baseCapacity=2000
+		local.seedLimit=100
 
 @test function registeredAgriculturalResearchAndActionsDebitOnceAndRespectPrerequisites()
 	let f=new AgricultureFixture()
@@ -403,3 +407,192 @@ class AgricultureFixture
 	active.advance(365)
 	active.equipment.stock.assertEquals(0)
 	active.staple.money.assertEquals(89800) // last tool supports this year's tax transaction
+
+// Each control completes the same paid research. Only the elected action or
+// the explicitly disabled contribution differs; assertions use real markets.
+@test function agriculturalGranaryCapacityBeatsMatchedControlAfterPaidNinetyDays()
+	let treated=new AgricultureFixture()
+	let control=new AgricultureFixture()
+	treated.unlock("agrarian_improvement")
+	control.unlock("agrarian_improvement")
+	let money=treated.state.countries.treasury[0]
+	treated.action("granary",true)
+	treated.state.countries.treasury[0].assertEquals(money-1000)
+	treated.construction.quantity(treated.trade.constructionGoodId).assertEquals(90)
+	treated.advance(89)
+	treated.staple.storageCapacity.assertEquals(1000)
+	treated.advance(90)
+	control.advance(90)
+	treated.staple.storageCapacity.assertEquals(1200)
+	control.staple.storageCapacity.assertEquals(1000)
+	// Isolate capacity from spoilage; both grow 400 from 100 actual seed.
+	treated.local.spoilageBp=0
+	control.local.spoilageBp=0
+	treated.advance(365)
+	control.advance(365)
+	treated.staple.stock.assertEquals(1200)
+	control.staple.stock.assertEquals(1000)
+	treated.equipment.stock.assertEquals(99)
+	control.equipment.stock.assertEquals(99)
+	treated.action("granary",false)
+
+@test function agriculturalGranarySpoilageBeatsMatchedControlWithoutFarming()
+	let treated=new AgricultureFixture()
+	let control=new AgricultureFixture()
+	treated.unlock("agrarian_improvement")
+	control.unlock("agrarian_improvement")
+	treated.action("granary",true)
+	treated.local.arable=false
+	control.local.arable=false
+	treated.advance(365)
+	control.advance(365)
+	// Actual 100 grain loss less 1000 bp = 90; no harvest or free food.
+	treated.staple.stock.assertEquals(910)
+	control.staple.stock.assertEquals(900)
+	treated.equipment.stock.assertEquals(100)
+	treated.local.knowledge.assertEquals(0)
+
+@test function agriculturalTenureHarvestAndTaxBeatMatchedElectedControl()
+	let treated=new AgricultureFixture()
+	let control=new AgricultureFixture()
+	treated.prepareHarvest()
+	control.prepareHarvest()
+	treated.unlock("agrarian_improvement")
+	control.unlock("agrarian_improvement")
+	treated.action("land_tenure_reform",true)
+	treated.advance(89)
+	treated.farm.rate(treated.local,"crop_output_efficiency",treated.farm.currentDay).assertEquals(0)
+	treated.advance(90)
+	treated.farm.rate(treated.local,"crop_output_efficiency",treated.farm.currentDay).assertEquals(500)
+	treated.farm.rate(treated.local,"rural_tax_efficiency",treated.farm.currentDay).assertEquals(200)
+	treated.advance(365)
+	control.advance(365)
+	// 100 seed -> 400 versus 420, after the same 90 stored-grain loss.
+	treated.staple.stock.assertEquals(1230)
+	control.staple.stock.assertEquals(1210)
+	treated.staple.money.assertEquals(89800)
+	control.staple.money.assertEquals(90000)
+	treated.equipment.stock.assertEquals(99)
+	control.farm.policyCount.assertEquals(0)
+
+@test function agriculturalEnclosureHarvestSeparatesEfficiencyFromTwoYearUnrest()
+	let treated=new AgricultureFixture()
+	let control=new AgricultureFixture()
+	treated.prepareHarvest()
+	control.prepareHarvest()
+	treated.unlock("agricultural_mechanization")
+	control.unlock("agricultural_mechanization")
+	treated.action("enclosure",true)
+	treated.advance(90)
+	treated.farm.rate(treated.local,"crop_output_efficiency",treated.farm.currentDay).assertEquals(800)
+	treated.farm.unrest(treated.local,657072+729).assertEquals(500)
+	treated.farm.unrest(treated.local,657072+730).assertEquals(0)
+	treated.advance(365)
+	control.advance(365)
+	// 400 + 32 efficiency - 20 transitional unrest = 412 real output.
+	treated.staple.stock.assertEquals(1222)
+	control.staple.stock.assertEquals(1210)
+	treated.staple.money.assertEquals(control.staple.money)
+	treated.advance(730)
+	control.advance(730)
+	// Second harvest has all 432 output; no unrest deduction after two years.
+	treated.staple.stock.assertEquals(1442)
+	control.staple.stock.assertEquals(1399)
+
+@test function agriculturalSocietiesSeparateDiffusionAndConditionalFarmOutput()
+	let treated=new AgricultureFixture()
+	let control=new AgricultureFixture()
+	let outputControl=new AgricultureFixture()
+	let unelected=new AgricultureFixture()
+	treated.prepareHarvest()
+	control.prepareHarvest()
+	unelected.prepareHarvest()
+	outputControl.prepareHarvest()
+	treated.local.seedLimit=32
+	control.local.seedLimit=32
+	unelected.local.seedLimit=32
+	outputControl.local.seedLimit=32
+	treated.unlock("agricultural_societies")
+	control.unlock("agricultural_societies")
+	unelected.unlock("agricultural_societies")
+	outputControl.unlock("agricultural_societies")
+	treated.action("progression_agricultural_societies",true)
+	control.action("progression_agricultural_societies",true)
+	// Counterfactual organizations disable one rounded contribution at a time.
+	// A positive 1-bp diffusion retains supported practice but rounds to zero.
+	outputControl.action("progression_agricultural_societies",true)
+	control.farm.getEffect("progression_agricultural_societies").bonus=1
+	outputControl.farm.getEffect("progression_agricultural_societies").secondary=0
+	treated.advance(365)
+	control.advance(365)
+	unelected.advance(365)
+	outputControl.advance(365)
+	treated.farm.rate(treated.local,"agricultural_knowledge_diffusion",treated.farm.currentDay).assertEquals(600)
+	treated.farm.rate(treated.local,"crop_output_efficiency",treated.farm.currentDay).assertEquals(200)
+	treated.local.knowledge.assertEquals(33) // 32 practice + floor(32*600/10000)
+	control.local.knowledge.assertEquals(32)
+	unelected.local.knowledge.assertEquals(0)
+	treated.staple.stock.assertEquals(1002) // 128 base + floor(128*200/10000)
+	control.staple.stock.assertEquals(1002)
+	outputControl.staple.stock.assertEquals(1000)
+	outputControl.local.knowledge.assertEquals(33)
+	unelected.staple.stock.assertEquals(1000)
+	let discounted=treated.research.runtime.technologies.costFor("player","seed_drill",1800,0,0)
+	control.research.runtime.technologies.costFor("player","seed_drill",1800,0,0).assertEquals(discounted+1)
+	treated.state.countries.treasury[0].assertEquals(control.state.countries.treasury[0])
+	treated.local.network=false
+	treated.advance(730)
+	treated.local.knowledge.assertEquals(33)
+	treated.farm.rate(treated.local,"crop_output_efficiency",treated.farm.currentDay).assertEquals(0)
+
+@test function agriculturalWrongKindsMissingSeedLaborAndTaxLiquidityNeverCreateBenefits()
+	let f=new AgricultureFixture()
+	f.allResearch()
+	let wrong=new ResearchEntitlements("player")
+	for i=0 to f.farm.effectCount-1
+		let e=f.farm.effects[i]
+		wrong.add(new ResearchUnlock(e.nodeId,"modifier",e.contentId))
+	f.farm.replaceResearchEntitlements(wrong)
+	for i=0 to f.farm.effectCount-1
+		f.action(f.farm.effects[i].contentId,false)
+	f.research.runtime.technologies.reconstructAll()
+	f.allActions()
+	f.staple.stock=0
+	f.advance(365)
+	f.staple.stock.assertEquals(0)
+	f.equipment.stock.assertEquals(100)
+	f.local.knowledge.assertEquals(0)
+	f.staple.stock=1000
+	// Keep upkeep funded, but make genuine farm labor unaffordable.
+	f.local.laborCost=1000000
+	f.staple.money=3
+	let money=f.state.countries.treasury[0]
+	f.advance(730)
+	f.equipment.stock.assertEquals(100)
+	f.local.knowledge.assertEquals(0)
+	f.staple.money.assertEquals(0)
+	f.state.countries.treasury[0].assertEquals(money-150+3)
+	f.local.normalTax=0
+	f.action("granary",false)
+
+@test function agriculturalProductionRegistrationConnectsResearchClockAndMarkets()
+	let f=new StartupFixture(new StartupStorage(),new StartupStorage(),"europe_west")
+	f.register()
+	let farm=f.trade.agriculture
+	let rpg=f.campaign.state.rpg
+	(farm.authority!=null and f.campaign.state.agriculture==farm).assertTrue()
+	(rpg.technologies.adoption==farm).assertTrue()
+	farm.effectCount.assertEquals(4)
+	rpg.restoreState(rpg.captureState()+"|u,england,agrarian_improvement|u,england,agricultural_mechanization|u,england,agricultural_societies").assertTrue()
+	rpg.technologies.reconstructAll()
+	for i=0 to farm.effectCount-1
+		let e=farm.effects[i]
+		rpg.technologies.bindingStatus(new ResearchUnlock(e.nodeId,e.kind,e.contentId)).assertEquals(RESEARCH_BOUND)
+		farm.get("england").has(e.kind,e.contentId).assertTrue()
+	farm.policyCount.assertEquals(0)
+	for i=0 to farm.siteCount-1
+		farm.sites[i].granaryDue.assertEquals(0)
+	f.campaign.state.startupLocked=false
+	f.clock.advanceTo(f.clock.campaignDay()+1).assertTrue()
+	farm.currentDay.assertEquals(f.clock.campaignDay())
+	f.trade.refreshAgriculture()

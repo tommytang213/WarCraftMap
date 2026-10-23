@@ -66,6 +66,65 @@ def effect_lines(rules,effects):
     return lines
 
 
+# Closure requires independent production comparisons as well as the migration,
+# replay and negative cases. Runtime labels and generated definitions are only
+# recognition metadata; they are never release evidence.
+COMPARATIVE_TESTS = {
+    'agriculturalGranaryCapacityBeatsMatchedControlAfterPaidNinetyDays',
+    'agriculturalGranarySpoilageBeatsMatchedControlWithoutFarming',
+    'agriculturalTenureHarvestAndTaxBeatMatchedElectedControl',
+    'agriculturalEnclosureHarvestSeparatesEfficiencyFromTwoYearUnrest',
+    'agriculturalSocietiesSeparateDiffusionAndConditionalFarmOutput',
+}
+REQUIRED_TESTS = COMPARATIVE_TESTS | {
+    'agriculturalProductionRegistrationConnectsResearchClockAndMarkets',
+    'registeredAgriculturalResearchAndActionsDebitOnceAndRespectPrerequisites',
+    'agriculturalAnnualConsumerUsesExactInputsSpoilageTaxAndEarnedDiffusion',
+    'agriculturalRejectionsUseCurrentControlSupplyOfficeEquipmentAndNetwork',
+    'agriculturalSaveMigrationFailedLoadAndCaptureRetainDurableSources',
+    'agriculturalAbstractReplayMatchesActiveDaysAndDuplicatesNeverStack',
+    'unsupportedFarmsProduceNoKnowledgeOrExtraOutputAndUnpaidUpkeepSuspends',
+    'granaryConstructionConsumesDeliveredMaterialsAndTheirCostBasis',
+    'agriculturalLateCampaignLoadRollbackRestoresPaidProjectsResourcesAndClock',
+    'allFourAgriculturalOptionsHaveIdenticalControllerRulesAndOutcomes',
+    'researchAloneNeverStartsOrganizationsAndLastToolSupportsTheSameHarvestTax',
+    'agriculturalWrongKindsMissingSeedLaborAndTaxLiquidityNeverCreateBenefits',
+}
+PRODUCTION_PROBES = {
+    'agriculture_definitions', 'agriculture_registration', 'dispatch', 'research',
+    'agriculture_layers', 'agriculture_action', 'agriculture_clock',
+    'agriculture_advance', 'agriculture_pay', 'agriculture_harvest',
+    'agriculture_tax', 'agriculture_storage',
+}
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    if execution is None or execution_log is None or revision is None:
+        return set()
+    from integration_evidence import verify_execution_coverage
+    from wurst_execution import WurstExecutionError
+    try:
+        verify_execution_coverage(execution, execution_log, project, revision)
+    except (WurstExecutionError, ValueError, OSError, KeyError, TypeError, AttributeError):
+        return set()
+    prefix = 'wurst/AgricultureTests.wurst:'
+    passed = {r['id'][len(prefix):] for r in execution['tests']
+              if r['status'] == 'pass' and r['id'].startswith(prefix)}
+    probes = execution.get('productionCoverage', {}).get('tests', {})
+    if not REQUIRED_TESTS <= passed:
+        return set()
+    for name in COMPARATIVE_TESTS:
+        required = PRODUCTION_PROBES | ({'agriculture_adoption'} if 'Societies' in name else set())
+        if not required <= set(probes.get(prefix + name, [])):
+            return set()
+    wiring = {'domains', 'agriculture_definitions', 'agriculture_layers',
+              'agriculture_clock', 'agriculture_advance', 'agriculture_storage'}
+    if not wiring <= set(probes.get(prefix + 'agriculturalProductionRegistrationConnectsResearchClockAndMarkets', [])):
+        return set()
+    _, effects = build(project)
+    return {(e['kind'], e['contentId']) for e in effects}
+
+
 if __name__=='__main__':
     rules,effects=build()
     print(json.dumps(dict(rules=rules,effects=effects,wurst=effect_lines(rules,effects),sources=['scenario/progression/agriculture.json','scenario/progression/gameplay-effect-design.json','scenario/progression/catalog.json','tooling/agriculture_catalog.py'])))

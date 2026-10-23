@@ -601,6 +601,29 @@ class TraceabilityTests(unittest.TestCase):
             with self.subTest(error=error), patch.object(release, "build_release_candidate", side_effect=error):
                 self.assertEqual(1, release.main([]))
 
+    def test_agriculture_closure_preserves_exact_unrelated_publication_gates(self):
+        from test_agriculture_evidence import FINDINGS, selection_evidence
+        baseline = sorted(release_audit._audit_research_bindings(), key=lambda row: row['id'])
+        self.assertTrue(FINDINGS <= {row['id'] for row in baseline})
+        report = {'format': release_audit.REPORT_FORMAT, 'status': 'fail',
+                  'candidateReady': False, 'disposition': 'release_blocked',
+                  'findings': baseline, 'unresolvedCampaignBlockers': len(baseline)}
+        self.assertTrue(release_audit.only_unbound_research_blocks(report))
+        # Definitions/metadata alone cannot waive these four diagnostics.
+        report['findings'] = [row for row in baseline if row['id'] not in FINDINGS]
+        report['unresolvedCampaignBlockers'] = len(report['findings'])
+        self.assertFalse(release_audit.only_unbound_research_blocks(report))
+        evidence = selection_evidence()
+        with patch('integration_evidence.verify_execution_coverage', return_value={}):
+            args = dict(execution=evidence, execution_log=b'protocol fixture', revision='a'*40)
+            verified = sorted(release_audit._audit_research_bindings(**args), key=lambda row: row['id'])
+            self.assertEqual(report['findings'], verified)
+            self.assertTrue(release_audit.only_unbound_research_blocks(report, **args))
+            # Remaining consumers and unrelated gates remain exact requirements.
+            report['findings'].pop()
+            report['unresolvedCampaignBlockers'] -= 1
+            self.assertFalse(release_audit.only_unbound_research_blocks(report, **args))
+
     def test_unbound_research_blocks_publication_with_complete_diagnostics(self):
         config = release.load_release_config()
         evidence_dir = self.project / "_build/wurst-tests"
