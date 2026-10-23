@@ -85,13 +85,13 @@ class FinanceReleaseEvidenceTests(unittest.TestCase):
         self.assertEqual(set(), verified_bindings(PROJECT, {}, b'', 'a' * 40))
 
     def test_only_verified_current_execution_with_every_production_case_binds(self):
-        from trade_finance import verified_bindings, REQUIRED_TESTS
+        from trade_finance import verified_bindings, REQUIRED_TESTS, AUCTION_TESTS, AUCTION_PROBES
         from unittest.mock import patch
         report = {'tests': [{'id': 'wurst/TradeFinanceTests.wurst:' + name, 'status': 'pass'}
-                            for name in REQUIRED_TESTS]}
+                            for name in REQUIRED_TESTS | AUCTION_TESTS]}
         report['productionCoverage'] = {'tests': {
-            'wurst/TradeFinanceTests.wurst:' + name: ['finance_registration', 'finance_quote', 'finance_remit', 'finance_canal', 'finance_advance']
-            for name in REQUIRED_TESTS}}
+            'wurst/TradeFinanceTests.wurst:' + name: sorted(AUCTION_PROBES | {'finance_remit', 'finance_canal', 'finance_advance'})
+            for name in REQUIRED_TESTS | AUCTION_TESTS}}
         # This isolates test coverage selection; it is not release execution evidence.
         with patch('integration_evidence.verify_execution_coverage') as verify:
             bound = verified_bindings(PROJECT, report, b'fixture', 'a' * 40)
@@ -100,7 +100,7 @@ class FinanceReleaseEvidenceTests(unittest.TestCase):
             covered = report.pop('productionCoverage')
             self.assertEqual(set(), verified_bindings(PROJECT, report, b'fixture', 'a' * 40))
             report['productionCoverage'] = covered
-            report['tests'].pop()
+            report['tests'] = [row for row in report['tests'] if not row['id'].endswith(':registeredBillsResearchReducesOnlyPaidBankFeesAndConservesPrincipal')]
             self.assertEqual(set(), verified_bindings(PROJECT, report, b'fixture', 'a' * 40))
         with patch('integration_evidence.verify_execution_coverage', side_effect=ValueError('stale')):
             self.assertEqual(set(), verified_bindings(PROJECT, report, b'fixture', 'a' * 40))

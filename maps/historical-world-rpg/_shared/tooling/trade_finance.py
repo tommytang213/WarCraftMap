@@ -95,6 +95,17 @@ REQUIRED_TESTS = {
     'registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence',
 }
 
+# Auction closure additionally proves the isolated approved effect through real
+# command settlement. Keep every original finance-suite and sibling gate.
+AUCTION_TESTS = {
+    'auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority',
+    'auctionCommitRechecksResearchFacilitiesControlAccessAndStaleStock',
+    'auctionTinyOrdersReplayReconstructionAndFailedLoadKeepAuthority',
+}
+AUCTION_PROBES = {'finance_registration', 'research', 'trade_command',
+                  'finance_quote', 'finance_buy_settle', 'finance_sell_settle'}
+AUCTION_BINDING = ('modifier', 'progression_auction_markets')
+
 
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     """Fail closed until same-revision execution verifies every finance consumer."""
@@ -120,5 +131,9 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
            for name, required in required_probes.items()):
         return set()
     design = json.loads((project / 'scenario/progression/gameplay-effect-design.json').read_text())
-    return {(e['unlock']['kind'], e['unlock']['contentId'])
-            for e in design['effects'] if e['metric'] in METRICS}
+    bindings = {(e['unlock']['kind'], e['unlock']['contentId'])
+                for e in design['effects'] if e['metric'] in METRICS}
+    if (not AUCTION_TESTS <= passed or not AUCTION_PROBES <= set(probes.get(
+            'wurst/TradeFinanceTests.wurst:auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority', []))):
+        bindings.discard(AUCTION_BINDING)
+    return bindings

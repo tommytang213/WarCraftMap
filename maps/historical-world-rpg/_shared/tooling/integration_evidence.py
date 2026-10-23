@@ -65,7 +65,7 @@ def load_contract(project: Path) -> dict:
         if (path.is_absolute() or ".." in path.parts or not path.parts or path.parts[0] != "wurst" or
                 path.suffix != ".wurst" or path.name.endswith("Tests.wurst")):
             raise ValueError("probe must target a production Wurst file")
-        if not re.match(r"(?:public |override )*function \w+\(", spec["signature"]):
+        if not re.match(r"(?:public |private |override )*function \w+\(", spec["signature"]):
             raise ValueError("probe must target a complete function declaration")
     for system, required in systems.items():
         if (not isinstance(required, list) or not required or

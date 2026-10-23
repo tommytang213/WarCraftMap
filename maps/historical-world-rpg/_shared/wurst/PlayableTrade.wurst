@@ -230,6 +230,8 @@ public class PlayableTradeController
 			return "Cargo capacity is insufficient."
 		if not destination.accepts(market.goodName)
 			return "Cargo store is incompatible with this commodity."
+		return settlePurchase(transactionId, market, destination, quantity, principal, charge)
+	private function settlePurchase(string transactionId, RuntimeMarket market, TradeStore destination, int quantity, int principal, int charge) returns string
 		market.reprice()
 		market.stock-=quantity
 		market.money+=principal
@@ -264,6 +266,8 @@ public class PlayableTradeController
 			return "Trade amount is outside the currency settlement range."
 		if market.money<principal
 			return "Market funds are insufficient."
+		return settleSale(transactionId, market, source, quantity, difficultyPermille, principal, proceeds)
+	private function settleSale(string transactionId, RuntimeMarket market, TradeStore source, int quantity, int difficultyPermille, int principal, int proceeds) returns string
 		market.reprice()
 		let allocation=provenance.consume(source.id,market.goodName,quantity,market.id)
 		market.stock+=quantity
