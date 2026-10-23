@@ -5,12 +5,15 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import hashlib
+from unittest.mock import patch
 
 PROJECT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(PROJECT/'tooling'))
 sys.path.insert(0,str(PROJECT.parent/'_shared/tooling'))
 import agriculture_catalog
-from package_wurst_map import generate, load_config, verify_generated
+from package_wurst_map import generate, load_config, verify_generated, PackagingError
+import package_wurst_map
 
 
 class AgricultureGenerationTests(unittest.TestCase):
@@ -35,6 +38,11 @@ class AgricultureGenerationTests(unittest.TestCase):
             generate(config,Path(tmp))
             verify_generated(config,Path(tmp))
             source=(Path(tmp)/'ScenarioData.wurst').read_text()
+            runtime=json.loads((Path(tmp)/'scenario-runtime.json').read_text())
+            expected={(e['nodeId'],e['kind'],e['contentId']) for e in runtime['agriculture']['effects']}
+            blockers={(e['nodeId'],e['kind'],e['contentId']) for e in runtime['researchIntegrationBlockers']}
+            self.assertEqual(4,len(expected))
+            self.assertFalse(expected & blockers)
             self.assertIn('import Agriculture',source)
             self.assertEqual(4,source.count('new AgricultureEffect('))
             # Grain merely sold/imported locally is not evidence of arable land.
@@ -57,3 +65,52 @@ class AgricultureGenerationTests(unittest.TestCase):
                 candidate[key]=value
                 with self.assertRaises(ValueError):
                     agriculture_catalog.validate_rules(candidate)
+
+    def test_resealed_omitted_or_duplicate_registrations_and_disconnected_configuration_fail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            config=load_config(PROJECT/'package.json')
+            generate(config,root)
+            source=(root/'ScenarioData.wurst').read_text()
+            runtime=(root/'scenario-runtime.json').read_text()
+            registration=next(line for line in source.splitlines() if 'runtime.agriculture.addEffect(' in line)
+            for changed in (source.replace(registration+'\n',''),
+                            source.replace(registration,registration+'\n'+registration),
+                            source.replace('configureGeneratedAgriculture(runtime)','skip')):
+                with self.subTest(change=changed!=source):
+                    (root/'ScenarioData.wurst').write_text(changed)
+                    provenance=json.loads((root/'provenance.json').read_text())
+                    provenance['outputs']['ScenarioData.wurst']=hashlib.sha256(changed.encode()).hexdigest()
+                    (root/'provenance.json').write_text(json.dumps(provenance))
+                    with self.assertRaisesRegex(PackagingError,'agriculture bindings'):
+                        verify_generated(config,root)
+            (root/'ScenarioData.wurst').write_text(source)
+            damaged=json.loads(runtime)
+            damaged['agriculture']['effects'].pop()
+            (root/'scenario-runtime.json').write_text(json.dumps(damaged))
+            provenance=json.loads((root/'provenance.json').read_text())
+            for name in ('ScenarioData.wurst','scenario-runtime.json'):
+                provenance['outputs'][name]=hashlib.sha256((root/name).read_bytes()).hexdigest()
+            (root/'provenance.json').write_text(json.dumps(provenance))
+            with self.assertRaisesRegex(PackagingError,'agriculture bindings'):
+                verify_generated(config,root)
+
+    def test_generator_does_not_recognize_omitted_agriculture_registrations(self):
+        # Compiler protocol mutation only, never release evidence. Omitted
+        # builder effects must stay unrecognized in the generated metadata.
+        original=package_wurst_map.subprocess.check_output
+        def missing(command, **kwargs):
+            value=original(command,**kwargs)
+            if str(command[1]).endswith('/tooling/agriculture_catalog.py'):
+                data=json.loads(value)
+                data['effects']=[]
+                data['wurst']=[]
+                return json.dumps(data)
+            return value
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(package_wurst_map.subprocess,'check_output',side_effect=missing):
+                generate(load_config(PROJECT/'package.json'),Path(tmp))
+            data=json.loads((Path(tmp)/'scenario-runtime.json').read_text())
+            blockers={(e['nodeId'],e['kind'],e['contentId']) for e in data['researchIntegrationBlockers']}
+            _,effects=agriculture_catalog.build()
+            self.assertTrue({(e['nodeId'],e['kind'],e['contentId']) for e in effects} <= blockers)

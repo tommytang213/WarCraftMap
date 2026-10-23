@@ -1,0 +1,101 @@
+{
+  "artifacts": {
+    "agriculture-evidence-tests.log.gz": "0988175765c9bfb1045b1e306d620e9b5306ca4b6128966f243c7128e02b001e",
+    "campaign-save-tests.log.gz": "92d73297b57a5c0b0ac201f5849914c72db833c68412ea0fafe3895c58126417",
+    "final-python-tests.log.gz": "d5d796b2e0eebb43f8bfc1ef4771d5a57ef6162c2b1ca24f504598b83c42c77b",
+    "focused-wurst-results.json.gz": "9fe9b3d599037920926869e2c0e6543374be4a24afadd8d3dcd39e695a8f2fa5",
+    "framework-boundary.log.gz": "822ceeb970b5d99b6d108a1be28438d8bc7604fb0e92177ed8315a73ae9942f5",
+    "framework-conformance-tests.log.gz": "5bf0a9d33d6fffe789ec148b6bb10e04f7809a439ed9c6c724308d24b93b78f4",
+    "integration-evidence-tests.log.gz": "ba511f499ae9d0556ef349146ee4fd12961076bd48eba428d0511dcc484a34d4",
+    "pinned-wurst.log.gz": "441a75f3f3d34311b5d6a1aa7b97b358d601b9a4d54e44aaa2f498c76a551eac",
+    "release-audit-tests.log.gz": "29224904958a804e9b4c2f5451c60135868e8b553e66aa6759af2bf450343a9f",
+    "release-save-tests.log.gz": "612a22eb1acc3258a4739b15fe93dad52dd96a0825a6e2b5c0488f2bbfae85b8",
+    "research-generation-tests.log.gz": "f351d541f5eee74da3c01011be2f5dd13417df74de6aa3ddc79f48ecb15e6d1b",
+    "runtime-tests.log.gz": "cc9ed5b32b7c3a111a39af007d39d368c848184edb303ba8d5b294f58a92f5b3",
+    "save-manager-tests.log.gz": "1a31210eaf85cee82ab3aea4564733c8ea0064fbce5f78905f1af96bf55f6509",
+    "traceability-tests.log.gz": "edc06d0105ba9d5a39f79918c2b38227e9a11dbd2b2f6dacc79ea28cbba2c30f"
+  },
+  "compiler": {
+    "buildLocation": "container-private /tmp",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "sourceMount": "read-only"
+  },
+  "diffCheck": "pass",
+  "format": "warcraftmap_focused_implementation_validation_v1",
+  "frameworkBoundary": "pass",
+  "issue": 549,
+  "python": {
+    "agriculture_evidence": {
+      "status": "pass",
+      "tests": 5
+    },
+    "agriculture_generation": {
+      "status": "pass",
+      "tests": 5
+    },
+    "campaign_save": {
+      "status": "pass",
+      "tests": 7
+    },
+    "campaign_save_manager": {
+      "status": "pass",
+      "tests": 6
+    },
+    "final_evidence_and_traceability_freshness": {
+      "status": "pass",
+      "tests": 9
+    },
+    "framework_conformance_protocol": {
+      "status": "pass",
+      "tests": 9
+    },
+    "integration_evidence": {
+      "status": "pass",
+      "tests": 13
+    },
+    "release_blocker_audit": {
+      "status": "pass",
+      "tests": 10
+    },
+    "release_save_compatibility": {
+      "status": "pass",
+      "tests": 6
+    },
+    "requirement_traceability": {
+      "status": "pass",
+      "tests": 54
+    },
+    "research_generation": {
+      "status": "pass",
+      "tests": 11
+    },
+    "runtime_acceptance": {
+      "status": "pass",
+      "tests": 25
+    }
+  },
+  "saveCompatibility": "No persisted state or schema changes.",
+  "scope": "Focused developer-side validation only. Full-suite execution, packaged artifact inspection and authoritative new-main release/runtime/traceability regeneration remain controller-owned; synthetic protocol tests are not gameplay or release evidence.",
+  "sourceIdentity": {
+    "sourceRevision": "7824284b8cee0c8082431a071249d9c39b2adaa1",
+    "sourceTreeSha256": "26555c3f6b2cf0f0d7d3270bd3d6d48d8858245f4403915e708f39ae93607490"
+  },
+  "sourceOnlyAudits": {
+    "allFourExactAgricultureFindingsRetained": true,
+    "closure": "Requires full current-source verified execution; definitions and runtime binding labels cannot close findings.",
+    "releaseBlockers": 238,
+    "runtimeFailures": 30,
+    "traceabilityBlockers": 7004
+  },
+  "wurst": {
+    "comparativeProductionProbeCoverage": "pass",
+    "discovered": 20,
+    "results": "focused-wurst-results.json.gz",
+    "scope": "17 agriculture regressions, two shared production framework contracts and the compatibility fixture",
+    "succeeded": 20,
+    "transcript": "pinned-wurst.log.gz",
+    "transcriptErrors": [],
+    "typecheck": "pass"
+  }
+}

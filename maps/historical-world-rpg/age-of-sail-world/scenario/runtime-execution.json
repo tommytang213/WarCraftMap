@@ -413,6 +413,50 @@
     "dispatch_completion": {
       "path": "wurst/CivicGovernance.wurst",
       "signature": "function dispatchDays(string owner, string id, CivicResearchEffects research, CivicEconomyPort economy) returns int"
+    },
+    "agriculture_definitions": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedAgriculture(PlayableTradeRuntime runtime)"
+    },
+    "agriculture_registration": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "public function registerAgricultureCommands(CommandRegistry commands, PlayableTradeRuntime runtime, TradePresentation presentation) returns string"
+    },
+    "agriculture_clock": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "override function onCampaignDay(int day)"
+    },
+    "agriculture_layers": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "override function replaceResearchEntitlements(ResearchEntitlements result)"
+    },
+    "agriculture_action": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "function enact(string controllerId, string siteId, string contentId) returns string"
+    },
+    "agriculture_advance": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "function advance(int day, int currentYear)"
+    },
+    "agriculture_pay": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function pay(string owner, string siteId, int money, int materials)"
+    },
+    "agriculture_harvest": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function harvest(string id, int seed, int equipmentConsumed, int output, int loss, int capacity)"
+    },
+    "agriculture_tax": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function collectTax(string id, string owner, int maximum) returns int"
+    },
+    "agriculture_storage": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "function refreshAgriculture()"
+    },
+    "agriculture_adoption": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "override function adoption(string controllerId, string nodeId) returns int"
     }
   },
   "systems": {
@@ -625,6 +669,21 @@
       "administrative_pay",
       "dispatch_network",
       "dispatch_completion"
+    ],
+    "agriculture": [
+      "agriculture_definitions",
+      "agriculture_registration",
+      "agriculture_clock",
+      "agriculture_layers",
+      "agriculture_action",
+      "agriculture_advance",
+      "agriculture_pay",
+      "agriculture_harvest",
+      "agriculture_tax",
+      "agriculture_storage",
+      "agriculture_adoption",
+      "dispatch",
+      "research"
     ]
   }
 }
