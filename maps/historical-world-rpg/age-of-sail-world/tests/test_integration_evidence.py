@@ -239,6 +239,11 @@ class IntegrationEvidenceTests(unittest.TestCase):
             report = execution.execute_tests(compiled, str(fake), self.project / "evidence",
                                              self.revision, project=self.project)
         log = (self.project / "evidence/execution.log").read_bytes()
+        for relative, digest in report['inputs'].items():
+            saved = self.project / 'evidence/verification-inputs' / relative
+            self.assertEqual(digest, evidence.digest(saved.read_bytes()))
+        instrumented = self.project / 'evidence/verification-inputs/wurst/Production.wurst'
+        self.assertIn('print("WCM_PROBE:register")', instrumented.read_text())
         self.assertEqual({"trade": []}, evidence.verify_execution_coverage(report, log, self.project, self.revision))
         self.assertEqual(before, {p: p.read_bytes() for p in before})
         # Even a rehashed manifest cannot authorize editing a function body or
