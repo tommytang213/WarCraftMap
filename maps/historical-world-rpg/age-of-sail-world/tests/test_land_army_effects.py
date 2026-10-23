@@ -30,6 +30,10 @@ class LandArmyCompilationTests(unittest.TestCase):
         self.assertTrue(profiles['sabre_cavalry']['cavalry'])
         self.assertEqual(1730, profiles['european_late_line_infantry']['firstYear'])
         self.assertEqual(',cast_cannon,', profiles['field_artillery_battery']['requiredResearch'])
+        consumers = payload['catalog']['consumers']
+        self.assertEqual(set(land.CLOSURE_EFFECTS), {(e['kind'], e['contentId']) for e in consumers})
+        self.assertNotIn('progression_bayonet_system', {e['contentId'] for e in consumers})
+        self.assertEqual({'land_reload', 'land_procurement', 'land_supply'}, {e['executionSystem'] for e in consumers})
         self.assertNotIn('unlock(', payload['wurst'])
         self.assertNotIn('treasury', payload['wurst'])
 
@@ -97,6 +101,9 @@ class LandArmyCompilationTests(unittest.TestCase):
             runtime = json.loads(runtime_path.read_text())
             self.assertEqual(['milan', 'nuremberg', 'vienna'], runtime['landArmy']['arsenalIds'])
             payload = land.build()
+            missing = {(e['kind'], e['contentId']) for e in runtime['researchIntegrationBlockers']}
+            self.assertFalse(set(land.CLOSURE_EFFECTS) & missing)
+            self.assertIn(('modifier', 'progression_bayonet_system'), missing)
             self.assertEqual(1, authored.count(payload['wurst']))
             identity = '"progression_arquebus_volley_drill", "firearm_reload_efficiency", 500'
             source.write_text(authored.replace(identity, identity.replace('500', '5000')))

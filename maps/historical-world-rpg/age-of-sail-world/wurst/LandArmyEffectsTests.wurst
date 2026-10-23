@@ -346,12 +346,16 @@ class LandFixture
 	let renewal = new LandFixture()
 	renewal.allResearch()
 	renewal.action("policy")
-	renewal.advance(90)
+	renewal.advance(450)
+	renewal.action("commission")
 	renewal.campaign.countries.treasury[0] = 0
 	renewal.advance(455)
 	renewal.arsenal().owner.assertEquals("")
 	renewal.runtime.officeActive(renewal.arsenal(), renewal.day + 455).assertFalse()
 	renewal.campaign.countries.treasury[0].assertEquals(0)
+	renewal.arsenal().work.assertEquals(54000) // Five already funded intervals.
+	renewal.advance(456)
+	renewal.arsenal().work.assertEquals(64000) // Unpaid renewal adds only normal work.
 	landReloadMillis(1, 500).assertEquals(1)
 	landReloadMillis(2147483647, 500).assertEquals(2045222520)
 
@@ -401,3 +405,137 @@ class LandFixture
 	f.arsenal().projectOwner.assertEquals("")
 	f.military.science.states[0].owner.assertEquals("")
 	f.military.science.states[0].equipmentOwner.assertEquals("ai")
+
+// Execute the shipping adapter; replace only the two unsupported native calls.
+class LandCooldownAdapter extends WarcraftMilitarySettlementAdapter
+	int lastLife = 0
+	real cooldown = 1.35
+	int writes = 0
+	override function maximumLife(unit target) returns int
+		return 100
+	override function setMaximumLife(unit target, int value)
+		lastLife = value
+	override function attackCooldown(unit target) returns real
+		return 1.35
+	override function setAttackCooldown(unit target, real seconds)
+		cooldown = seconds
+		writes++
+
+@test function landReloadMatchedControlUsesAbstractDeadlinesAndNativeCooldown()
+	let f = new LandFixture()
+	f.prerequisites()
+	let cooldownPort = new LandCooldownAdapter()
+	f.military.adapter = cooldownPort
+	let musket = f.add("musket", "european_musket_battalion", "player")
+	let target = f.add("target", "field_artillery_battery", "ai")
+	f.military.activateRegion("europe")
+	f.military.setWar("player", "ai", true)
+	cooldownPort.cooldown.assertEquals(1.35)
+	let control = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(control, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	control.damage.display().assertEquals("100")
+	musket.nextFireAt.assertEquals(1.35)
+	f.unlock("arquebus_volley_drill")
+	cooldownPort.cooldown.assertEquals(1.285)
+	f.military.firearmReloadMillis(musket, 2100).assertEquals(2000)
+	for repeat = 1 to 3
+		f.rpg.reconcile("player")
+		cooldownPort.cooldown.assertEquals(1.285)
+	// A source replacement removes just the reload contribution.
+	f.research.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	cooldownPort.cooldown.assertEquals(1.35)
+	f.rpg.reconcile("player")
+	cooldownPort.cooldown.assertEquals(1.285)
+	f.military.gameplaySeconds = 1.35
+	let drilled = new CombatHit("firearm_volley", new ExactRational("100", "1", "1"))
+	f.military.applyCombatHit(drilled, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	drilled.damage.display().assertEquals("100") // Drill is frequency, not volley damage.
+	musket.nextFireAt.assertEquals(2.635)
+	f.military.applyCombatHit(drilled, f.military.forceIndex("musket"), f.military.forceIndex("target"), "player", "ai", true)
+	musket.nextFireAt.assertEquals(2.635)
+	let saved = f.military.snapshot()
+	f.military.restore(saved, false).assertTrue()
+	cooldownPort.cooldown.assertEquals(1.285)
+	let restored = f.military.forces[f.military.forceIndex("musket")]
+	restored.nextFireAt.assertEquals(2.635)
+	// Wrong equipment restores the native baseline, even with research retained.
+	restored.combatProfileId = "sabre_cavalry"
+	f.military.refreshLandReload()
+	cooldownPort.cooldown.assertEquals(1.35)
+	f.military.firearmReloadMillis(restored, 2100).assertEquals(2100)
+	restored.combatProfileId = "european_musket_battalion"
+	f.military.refreshLandReload()
+	cooldownPort.cooldown.assertEquals(1.285)
+	configureGeneratedMilitaryTraditions(f.military, true).assertTrue()
+	f.military.awardTradition("player", "land_formation", "9007199254740993")
+	let before = f.military.resolveTradition(restored)
+	f.rpg.reconcile("player")
+	f.military.awardTradition("player", "land_formation", "1")
+	let after = f.military.resolveTradition(restored)
+	before.modifier("attack_basis_points").display().assertEquals("9007199254740993/10")
+	after.modifier("attack_basis_points").display().assertEquals("4503599627370497/5")
+	cooldownPort.cooldown.assertEquals(1.285)
+	destroy before
+	destroy after
+
+@test function landOfficeMatchedControlRequiresEnactmentSurchargeAndRealWork()
+	let funded = new LandFixture()
+	let control = new LandFixture()
+	funded.allResearch()
+	control.allResearch()
+	// Research alone never enacts policy or pays for procurement.
+	funded.runtime.officeActive(funded.arsenal(), funded.day).assertFalse()
+	funded.action("policy")
+	funded.advance(90)
+	control.advance(90)
+	funded.action("commission")
+	control.action("commission")
+	funded.campaign.countries.treasury[0].assertEquals(9562)
+	control.campaign.countries.treasury[0].assertEquals(9720)
+	funded.trade.findMarket("district", "arms").stock.assertEquals(970)
+	control.trade.findMarket("district", "arms").stock.assertEquals(970)
+	funded.military.settlements[0].manpower.assertEquals(970)
+	control.military.settlements[0].manpower.assertEquals(970)
+	funded.military.settlements[0].supply.assertEquals(970)
+	control.military.settlements[0].supply.assertEquals(970)
+	funded.advance(173)
+	control.advance(173)
+	funded.arsenal().work.assertEquals(896400) // 83 * (10000 + 800).
+	control.arsenal().work.assertEquals(830000)
+	funded.advance(174)
+	control.advance(174)
+	(funded.military.forceIndex("artillery:district:1") >= 0).assertTrue()
+	control.military.forceIndex("artillery:district:1").assertEquals(-1)
+	control.advance(180)
+	(control.military.forceIndex("artillery:district:1") >= 0).assertTrue()
+	// Repeated clock delivery does not create another battery or charge again.
+	let balance = funded.campaign.countries.treasury[0]
+	funded.runtime.advance(funded.day + 174)
+	funded.military.forceCount.assertEquals(2)
+	funded.campaign.countries.treasury[0].assertEquals(balance)
+
+@test function landTrainMatchedControlDelivers77Versus75From100ActualStock()
+	let trained = new LandFixture()
+	let control = new LandFixture()
+	trained.prerequisites()
+	control.prerequisites()
+	trained.unlock("artillery_train")
+	let guns = trained.add("guns", "field_artillery_battery", "player")
+	let ordinary = control.add("guns", "field_artillery_battery", "player")
+	trained.commands.dispatch(Player(0), "/land supply district guns").assertTrue()
+	control.commands.dispatch(Player(0), "/land supply district guns").assertTrue()
+	trained.resources.output.startsWith("Land army action completed.").assertTrue()
+	control.resources.output.startsWith("Land army action completed.").assertTrue()
+	guns.supply.assertEquals(177)
+	ordinary.supply.assertEquals(175)
+	trained.trade.findMarket("district", "arms").stock.assertEquals(900)
+	control.trade.findMarket("district", "arms").stock.assertEquals(900)
+	// Every further delivery withdraws a complete shipment; depleted stock rejects.
+	trained.trade.findMarket("district", "arms").stock = 99
+	trained.runtime.act("player", "supply", "district", "guns").contains("Insufficient").assertTrue()
+	guns.supply.assertEquals(177)
+	trained.trade.findMarket("district", "arms").stock.assertEquals(99)
+	trained.trade.findMarket("district", "arms").stock = 100
+	trained.trade.findMarket("district", "arms").occupiedByHostile = true
+	trained.runtime.act("player", "supply", "district", "guns").contains("accessible").assertTrue()
+	guns.supply.assertEquals(177)

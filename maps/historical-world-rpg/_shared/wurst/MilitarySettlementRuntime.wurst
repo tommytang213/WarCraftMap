@@ -348,6 +348,10 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 		return compatGetUnitMaxLife(target)
 	function setMaximumLife(unit target, int value)
 		compatSetUnitMaxLife(target, value)
+	function attackCooldown(unit target) returns real
+		return compatGetAttackCooldown(target)
+	function setAttackCooldown(unit target, real seconds)
+		compatSetAttackCooldown(target, seconds)
 	string array[4096] ids
 	unit array[4096] handles
 	real array[4096] baseReloadSeconds
@@ -473,11 +477,11 @@ public class WarcraftMilitarySettlementAdapter implements MilitarySettlementAdap
 			if baseMillis > 0
 				// Capture the native baseline only when this equipment uses reload.
 				if not appliedReload[found]
-					baseReloadSeconds[found] = compatGetAttackCooldown(handles[found])
-				compatSetAttackCooldown(handles[found], I2R(landReloadMillis(baseMillis, basisPoints)) / 1000.)
+					baseReloadSeconds[found] = attackCooldown(handles[found])
+				setAttackCooldown(handles[found], I2R(landReloadMillis(baseMillis, basisPoints)) / 1000.)
 				appliedReload[found] = true
 			else if appliedReload[found]
-				compatSetAttackCooldown(handles[found], baseReloadSeconds[found])
+				setAttackCooldown(handles[found], baseReloadSeconds[found])
 				appliedReload[found] = false
 	override function applyTradition(string stableId, int lifePermille, int milestoneAbilityId)
 		let found = indexOf(stableId)

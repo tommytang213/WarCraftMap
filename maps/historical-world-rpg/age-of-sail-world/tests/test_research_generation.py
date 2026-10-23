@@ -119,7 +119,10 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
                 ('modifier', 'progression_ciphered_dispatches'),
-                ('policy', 'progression_chartered_municipalities')}])
+                ('policy', 'progression_chartered_municipalities'),
+                ('modifier', 'progression_arquebus_volley_drill'),
+                ('policy', 'progression_artillery_offices'),
+                ('modifier', 'progression_artillery_train')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_dispatch_registration_keeps_scenario_network_and_bounded_consumer(self):
