@@ -438,6 +438,42 @@
       "path": "wurst/CivicGovernance.wurst",
       "signature": "function dispatchDays(string owner, string id, CivicResearchEffects research, CivicEconomyPort economy) returns int"
     },
+    "land_registration": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedLandArmy(LandArmyLedger ledger, LandResearchEffects research, int day)"
+    },
+    "land_reload_resolve": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function firearmReloadMillis(RuntimeForce runtimeForce, int baseMillis) returns int"
+    },
+    "land_shot": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function acceptLandShot(CombatHit hit, RuntimeForce runtimeForce) returns boolean"
+    },
+    "land_native_reload": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "override function replaceReload(string stableId, int baseMillis, int basisPoints)"
+    },
+    "land_action": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string forceId) returns string"
+    },
+    "land_advance": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "land_pay": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function pay(string controllerId, string id, int money, string good, int units) returns boolean"
+    },
+    "land_work": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function commitWork(ArsenalState state, int work)"
+    },
+    "land_delivery": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function commitDelivery(RuntimeMarket stock, RuntimeForce target, int shipped, int delivered)"
+    },
     "agriculture_definitions": {
       "path": "wurst/ScenarioData.wurst",
       "signature": "public function configureGeneratedAgriculture(PlayableTradeRuntime runtime)"
@@ -715,6 +751,30 @@
       "administrative_pay",
       "dispatch_network",
       "dispatch_completion"
+    ],
+    "land_reload": [
+      "dispatch",
+      "land_native_reload",
+      "land_registration",
+      "land_reload_resolve",
+      "land_shot",
+      "research"
+    ],
+    "land_procurement": [
+      "dispatch",
+      "land_action",
+      "land_advance",
+      "land_pay",
+      "land_registration",
+      "land_work",
+      "research"
+    ],
+    "land_supply": [
+      "dispatch",
+      "land_action",
+      "land_delivery",
+      "land_registration",
+      "research"
     ],
     "agriculture": [
       "agriculture_definitions",

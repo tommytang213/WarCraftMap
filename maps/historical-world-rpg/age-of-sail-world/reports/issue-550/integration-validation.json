@@ -1,0 +1,126 @@
+{
+  "audits": {
+    "commands": [
+      {
+        "exitCode": 1,
+        "script": "runtime_acceptance.py"
+      },
+      {
+        "exitCode": 1,
+        "script": "release_blocker_audit.py"
+      },
+      {
+        "exitCode": 1,
+        "script": "requirement_traceability_audit.py"
+      }
+    ],
+    "existingFindingsAndNativeStatusPreserved": true,
+    "fullReleaseClosure": "Requires controller full-suite execution and campaign artifacts after integration.",
+    "releaseBlockers": 238,
+    "traceabilityFreshnessCheck": "pass",
+    "traceabilityPublicationBlockers": 7004
+  },
+  "distinctPassingPythonTests": 174,
+  "format": "warcraftmap_integration_validation_v1",
+  "nativeClient": "not_run",
+  "pinnedWurst": {
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "focused": 40,
+    "frameworkMutated": 3,
+    "frameworkOriginal": 3,
+    "fullSuite": false,
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "inputSetSha256": {
+      "focused": "5fd7e95c3a87fc575b8bc52144bedeb6237325fa73672ca70395f38357625dbd",
+      "mutated": "f180626ec620ce0ca97d79259f059c071d22d4c4f3d2422785604dcfafc15ae1",
+      "original": "6898dce3d70aacf821d3a71c8b9606efd280323fc176412d8c5ebbf757c474a3"
+    }
+  },
+  "productionComparisons": {
+    "land_procurement": {
+      "observedRequiredProbes": [
+        "dispatch",
+        "land_action",
+        "land_advance",
+        "land_pay",
+        "land_registration",
+        "land_work",
+        "research"
+      ],
+      "status": "pass",
+      "test": "wurst/LandArmyEffectsTests.wurst:landOfficeMatchedControlRequiresEnactmentSurchargeAndRealWork"
+    },
+    "land_reload": {
+      "observedRequiredProbes": [
+        "dispatch",
+        "land_native_reload",
+        "land_registration",
+        "land_reload_resolve",
+        "land_shot",
+        "research"
+      ],
+      "status": "pass",
+      "test": "wurst/LandArmyEffectsTests.wurst:landReloadMatchedControlUsesAbstractDeadlinesAndNativeCooldown"
+    },
+    "land_supply": {
+      "observedRequiredProbes": [
+        "dispatch",
+        "land_action",
+        "land_delivery",
+        "land_registration",
+        "research"
+      ],
+      "status": "pass",
+      "test": "wurst/LandArmyEffectsTests.wurst:landTrainMatchedControlDelivers77Versus75From100ActualStock"
+    }
+  },
+  "pythonChecks": {
+    "initialPythonRun": {
+      "fixtureImportErrors": 4,
+      "passed": 152,
+      "resolution": "Corrected invocation with PYTHONPATH=tests; all affected tests and the nine framework tests passed on rerun.",
+      "tests": 156
+    },
+    "integration-evidence-rerun.log": {
+      "status": "pass",
+      "tests": 13
+    },
+    "integration-import-rerun.log": {
+      "status": "pass",
+      "tests": 11
+    },
+    "integration-land-tests.log": {
+      "status": "pass",
+      "tests": 10
+    }
+  },
+  "recognitionPreserved": [
+    "land",
+    "agriculture"
+  ],
+  "repositoryValidation": "controller",
+  "shippingInspection": "packaged-registration.json",
+  "sourceIdentity": {
+    "sourceRevision": "6065d944bdd416de33fe986171f575b933857274",
+    "sourceTreeSha256": "2165ce967bd219b3f3e7cec90422ee0ca7689058c0c519e4f7f16791d8ee0ab2"
+  },
+  "status": "pass",
+  "transcript": {
+    "file": "integration-validation.log.gz",
+    "sections": {
+      "integration-audits.log": "efca2ff1a48969d5e577ec63564fb3a3e25f63dc273dd11fa98dd8671f8a19f8",
+      "integration-boundary.log": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+      "integration-evidence-rerun.log": "827b24bb8eba7018ed5ae16549b8d6bd7be79d018480990ade1a7bb5168d0ff5",
+      "integration-focused-wurst.log": "b48b2926de6383980f17d23d5f650670e51941ca14d6d69c866a86c65aede153",
+      "integration-framework-wurst.log": "819012e558178fd60ac7da4bdeeb00a6ac8f8bdd136fb135d39a3cd64a11e520",
+      "integration-import-rerun.log": "cd6e4b042464ca9e3885093467c68176a096326b7cb15c40a3212d08734b8e06",
+      "integration-land-tests.log": "733876657048f7f83cf49c7e2e6dd0c9b6c5b46b4f98bae699b283fc0f59dd69",
+      "integration-packaged-inspection.log": "8352cbb37e3b6f977f5cfb56a33f5fea8d62e3c8324ab29ffa4b50a9e83f53ae",
+      "integration-python-tests.log": "18ad9af9078a41465a9724c3c9d2513d041852c1604e3c92b27efd02c0f70ccb",
+      "integration-shipping-build.log": "7709374337d0df078d0fa35b6b8e731866f26d133719314472ecd4b66d1cebe9",
+      "integration-traceability-check.log": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c"
+    },
+    "uncompressedSha256": "010fa6c676be0b1f01bcdf36f91ecd855152db01570cf15c208fba47637c146b"
+  },
+  "unmergedPaths": 0
+}

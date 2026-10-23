@@ -208,9 +208,19 @@ All fields participate in detached validation and the existing campaign rollback
 Balance quantities remain scenario-owned; gains round down and positive bills
 round up once at the transaction boundary.
 
-The four exact research-unbound findings from #515 remain release blockers until
-fresh current-main production execution, runtime and traceability audits remove
-them. Focused tests establish development behavior, not native client playability;
+Issue #550 adds exact generated consumer metadata and current-source,
+full-suite execution recognition for Arquebus Volley Drill, Artillery Offices
+and Artillery Train. Each requires its matched production comparison and actual
+reload, paid work or stock delivery probes. Missing, stale, failed or incomplete
+evidence keeps each finding blocked. Socket Bayonet System remains outside this
+recognition set. Office work accrues the last prepaid interval before a failed
+renewal; subsequent intervals receive no office bonus.
+
+No persisted field or schema changes are required. The integrated current
+military v20 codec retains the earlier arsenal and firing records, and the
+migration and late-load rollback tests execute that codec. After integration,
+fresh current-main production execution, runtime and traceability audits must
+remove the three supplied findings. Focused tests establish development behavior, not native client playability;
 the unrelated #438 crash remains blocked.
 ## Science, weather and exploration production consumers (#514)
 
