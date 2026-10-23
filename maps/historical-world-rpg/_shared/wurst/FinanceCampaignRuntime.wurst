@@ -50,14 +50,23 @@ public class FinanceCampaignRuntime
 				// One named capacity contribution, reconstructed from durable works.
 				store.capacity = store.initialCapacity + extra
 	function eligibleExchange(string owner, RuntimeMarket market) returns boolean
-		return campaign.isSaveSafe() and ledger().site(market.id) != null and market.discovered and not market.blockaded and not market.occupiedByHostile and port.eligible(owner, market.id)
+		if market == null or not campaign.isSaveSafe()
+			return false
+		let warehouse = trade.findStore("warehouse:" + market.id)
+		// The generated site is a capability, not proof that its live facilities
+		// still exist. Recheck the registered market and warehouse at settlement.
+		return ledger().site(market.id) != null and trade.findMarket(market.id, market.goodName) == market and warehouse != null and warehouse.warehouseService and warehouse.accessKind == "warehouse" and warehouse.accessId == market.id and market.discovered and not market.blockaded and not market.occupiedByHostile and port.eligible(owner, market.id)
 	function amount(string owner, RuntimeMarket market, int quantity, boolean buying) returns int
 		let original = market.quoteAmount(quantity, buying)
-		if original < 1 or not eligibleExchange(owner, market)
+		if original < 1 or not eligibleExchange(owner, market) or campaign.rpg == null
 			return original
 		let day = campaign.clock.currentDay
-		let auction = effects.rateAt(owner, "market_transaction_fee_reduction", day)
-		let brokerage = effects.rateAt(owner, "market_slippage_reduction", day)
+		// Preview layers can predate a restore/revocation. Resolve the current
+		// earned typed sources without mutating any reconstructed effect layer.
+		let earned = campaign.rpg.technologies.entitlements(owner)
+		let auction = effects.rateAt(earned, "market_transaction_fee_reduction", day)
+		let brokerage = effects.rateAt(earned, "market_slippage_reduction", day)
+		destroy earned
 		if auction == 0 and brokerage == 0
 			return original
 		// Existing spread is the execution cost, separated into commission and
