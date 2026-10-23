@@ -481,6 +481,14 @@
     "agriculture_adoption": {
       "path": "wurst/Agriculture.wurst",
       "signature": "override function adoption(string controllerId, string nodeId) returns int"
+    },
+    "finance_buy_settle": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "private function settlePurchase(string transactionId, RuntimeMarket market, TradeStore destination, int quantity, int principal, int charge) returns string"
+    },
+    "finance_sell_settle": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "private function settleSale(string transactionId, RuntimeMarket market, TradeStore source, int quantity, int difficultyPermille, int principal, int proceeds) returns string"
     }
   },
   "systems": {
@@ -730,6 +738,14 @@
       "agriculture_adoption",
       "dispatch",
       "research"
+    ],
+    "auction_markets": [
+      "finance_registration",
+      "research",
+      "trade_command",
+      "finance_quote",
+      "finance_buy_settle",
+      "finance_sell_settle"
     ]
   }
 }

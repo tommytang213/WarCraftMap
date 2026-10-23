@@ -78,7 +78,7 @@ public class FinanceFixture
 		military.registerSettlement(new SettlementRuntimeState(id, resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
 		military.appoint(id, new AdministratorState(id + "_clerk", "Clerk", "Administrator", resources.owner, "europe_west", id, 50, 50, 40, 1))
 		trade.registerMarket(new RuntimeMarket(id, "timber", 10000, 1000000, 100, 100))
-		trade.registerStore(new TradeStore("warehouse:" + id, 24000, 100000))
+		trade.registerStore(new TradeStore("warehouse:" + id, 24000, 100000).withAccess("warehouse", id, true))
 	function unlock(string id)
 		commands.dispatch(Player(0), "/research " + id).assertTrue()
 		resources.output.assertEquals("Action completed.")
@@ -336,30 +336,12 @@ function financeReceipt(string name)
 	trade.controller.seen("finance_rollback_purchase").assertFalse()
 
 @test function registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence()
-	let f = new TradeCommandFixture()
-	let resources = new FinanceResources()
-	resources.owner = "portugal"
-	f.rpg.researchResources = resources
-	let effects = new FinanceResearchEffects(new UnboundResearchEffects())
-	f.rpg.technologies.effects = effects
-	configureGeneratedFinance(f.military.finance, effects)
-	let finance = new FinanceCampaignRuntime(f.state, f.trade, effects)
-	f.trade.controller.finance = finance
-	f.clock.currentDay = 657072
-	f.military.appoint("lisbon", new AdministratorState("clerk", "Clerk", "Administrator", "portugal", "europe_west", "lisbon", 50, 50, 40, 1))
-	let layer = new ResearchEntitlements("portugal")
-	layer.add(new ResearchUnlock("auction_markets", "modifier", "progression_auction_markets"))
-	layer.add(new ResearchUnlock("brokerage_houses", "modifier", "progression_brokerage_houses"))
-	effects.replaceResearchEntitlements(layer)
-	f.selectPersonal()
-	let m = f.trade.market
-	m.baseUnitPrice = 100
-	m.pricing.quantityUnitsPerDisplayUnit = 1
-	let cost = finance.amount("portugal", m, 20, true)
-	(cost < m.quoteAmount(20, true)).assertTrue()
-	f.personal().money = 100000
-	f.dispatch("/trade buy 20")
-	f.ports.output.startsWith("Bought").assertTrue()
+	let a = new AuctionCommandFixture()
+	a.unlock()
+	let f = a.f
+	let cost = a.finance.amount("portugal", f.trade.market, 20, true)
+	(cost < f.trade.market.quoteAmount(20, true)).assertTrue()
+	a.buy(20)
 	f.personal().money.assertEquals(100000 - cost)
 	f.actors.actorX += 10000.
 	f.reject("/trade buy 20")
@@ -499,3 +481,260 @@ function financeReceipt(string name)
 	f.military.restore(industry16.replace(industryRecord, ""), false).assertFalse()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
+
+/** Native observation ports only; generated definitions, research, selection,
+ * transaction amounts, provenance and persistence are production implementations. */
+class AuctionCommandFixture
+	TradeCommandFixture f = new TradeCommandFixture()
+	FinanceResources resources = new FinanceResources()
+	FinanceResearchEffects effects = new FinanceResearchEffects(new UnboundResearchEffects())
+	FinanceCampaignRuntime finance
+	string withoutAuction
+	construct()
+		resources.owner = "portugal"
+		let generated = new WarcraftRpgRuntime(effects)
+		configureGeneratedRpg(generated)
+		f.rpg.technologies = generated.technologies
+		f.rpg.researchResources = resources
+		configureGeneratedFinance(f.military.finance, effects)
+		finance = new FinanceCampaignRuntime(f.state, f.trade, effects)
+		f.state.financeRuntime = finance
+		f.trade.controller.finance = finance
+		f.clock.currentDay = 657072
+		f.military.appoint("lisbon", new AdministratorState("clerk", "Clerk", "Administrator", "portugal", "europe_west", "lisbon", 50, 50, 40, 1))
+		registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+		registerFinanceCommands(f.commands, finance).assertEquals("")
+		f.rpg.restoreState(f.rpg.captureState() + "|u,portugal,consular_trade_networks").assertTrue()
+		withoutAuction = f.rpg.captureState()
+		f.selectPersonal()
+		// A deterministic stock-price band with nontrivial commission. These are
+		// fixture balances, never authored campaign starting resources.
+		f.trade.market.baseUnitPrice = 1000
+		f.trade.market.stock = 100
+		f.trade.market.targetStock = 100
+		f.trade.market.pricing.quantityUnitsPerDisplayUnit = 1
+		f.trade.market.pricing.elasticityPermille = 0
+		f.personal().money = 100000
+	function unlock()
+		f.dispatch("/research auction_markets")
+		f.ports.output.assertEquals("Action completed.")
+		effects.rateAt("portugal", "market_transaction_fee_reduction", f.clock.currentDay).assertEquals(500)
+		effects.rateAt("portugal", "market_slippage_reduction", f.clock.currentDay).assertEquals(0)
+	function buy(int quantity)
+		f.dispatch("/trade buy " + I2S(quantity))
+		f.ports.output.assertEquals("Bought " + I2S(quantity) + " grain.")
+	function sell(int quantity)
+		f.dispatch("/trade sell " + I2S(quantity))
+		SubString(f.ports.output, 0, 4).assertEquals("Sold")
+
+@test function auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority()
+	let control = new AuctionCommandFixture()
+	let treated = new AuctionCommandFixture()
+	treated.unlock()
+	let c = control.f
+	let t = treated.f
+	let marketMoney = t.trade.market.money
+	let original = t.trade.market.quoteAmount(10, true)
+	original.assertEquals(10800)
+	// Principal 10000, spread 800 = commission 400 + slippage 400.
+	// Only floor(400 * 500 / 10000) = 20 is saved, once per order.
+	treated.finance.amount("portugal", t.trade.market, 10, true).assertEquals(10780)
+	treated.buy(10)
+	control.buy(10)
+	c.personal().money.assertEquals(89200)
+	t.personal().money.assertEquals(89220)
+	t.trade.market.money.assertEquals(marketMoney + 10780)
+	(t.personal().money + t.trade.market.money).assertEquals(100000 + marketMoney)
+	t.trade.market.stock.assertEquals(c.trade.market.stock)
+	t.trade.market.stock.assertEquals(90)
+	t.personal().quantity("grain").assertEquals(10)
+	t.trade.controller.provenance.costIn(t.personal().id, "grain").assertEquals(10780)
+	t.trade.market.pricing.spreadPermille.assertEquals(80)
+	t.trade.market.quoteAmount(10, false).assertEquals(9200)
+	treated.finance.amount("portugal", t.trade.market, 10, false).assertEquals(9220)
+	treated.sell(10)
+	control.sell(10)
+	t.personal().money.assertEquals(c.personal().money + 40)
+	t.personal().money.assertEquals(98440)
+	t.trade.market.money.assertEquals(marketMoney + 1560)
+	(t.personal().money + t.trade.market.money).assertEquals(100000 + marketMoney)
+	t.trade.market.stock.assertEquals(100)
+	t.personal().quantity("grain").assertEquals(0)
+	t.trade.controller.provenance.costIn(t.personal().id, "grain").assertEquals(0)
+	t.trade.controller.processedCount.assertEquals(2)
+	t.trade.controller.seen("runtime-buy-1").assertTrue()
+	t.trade.controller.seen("runtime-sell-2").assertTrue()
+	t.trade.progress.standing.assertEquals(0)
+	t.trade.progress.completedRouteCount.assertEquals(0)
+	// The same authority and amount methods serve AI/abstract finance.
+	let ai = new FinanceFixture(true, false)
+	ai.unlock("auction_markets")
+	let m = ai.trade.markets[0]
+	m.baseUnitPrice = 1000
+	m.pricing.elasticityPermille = 0
+	ai.runtime.amount("ai", m, 10, true).assertEquals(10780)
+	ai.runtime.amount("ai", m, 10, false).assertEquals(9220)
+	ai.trade.controller.buy("ai-auction", m, ai.trade.findStore("warehouse:london"), 10).startsWith("Bought").assertTrue()
+	ai.trade.findStore("warehouse:london").money.assertEquals(89220)
+	financeReceipt("auction-only-matched-control")
+
+@test function auctionCommitRechecksResearchFacilitiesControlAccessAndStaleStock()
+	let a = new AuctionCommandFixture()
+	let f = a.f
+	a.unlock()
+	let m = f.trade.market
+	f.dispatch("/trade inspect")
+	f.ports.output.contains("buy 1078; sell 922").assertTrue()
+	// Research changed after preview: settle the current undiscounted price.
+	f.rpg.restoreState(a.withoutAuction).assertTrue()
+	a.buy(10)
+	f.personal().money.assertEquals(89200)
+	a.unlock()
+	// Stock and pricing changes do not reuse a preview or cached unit price.
+	m.stock = 80
+	m.eventPermille = 1000
+	let expected = a.finance.amount("portugal", m, 10, true)
+	expected.assertEquals(21560)
+	var before = f.personal().money
+	a.buy(10)
+	f.personal().money.assertEquals(before - expected)
+	m.eventPermille = 0
+	let warehouse = f.warehouse()
+	warehouse.warehouseService = false
+	a.finance.amount("portugal", m, 10, true).assertEquals(10800)
+	before = f.personal().money
+	a.buy(10)
+	f.personal().money.assertEquals(before - 10800)
+	warehouse.warehouseService = true
+	warehouse.accessId = "other"
+	a.finance.amount("portugal", m, 10, false).assertEquals(9200)
+	warehouse.accessId = "lisbon"
+	let sites = f.military.finance.siteCount
+	f.military.finance.siteCount = 0
+	a.finance.amount("portugal", m, 10, true).assertEquals(10800)
+	f.military.finance.siteCount = sites
+	let fake = new RuntimeMarket("lisbon", "grain", 1000, 100000, 1000, 1000)
+	a.finance.amount("portugal", fake, 10, true).assertEquals(fake.quoteAmount(10, true))
+	let office = f.military.administrators[f.military.administratorIndex("lisbon")]
+	office.capacity = 0
+	a.finance.amount("portugal", m, 10, true).assertEquals(10800)
+	office.capacity = 1
+	office.jurisdiction = "london"
+	a.finance.amount("portugal", m, 10, true).assertEquals(10800)
+	office.jurisdiction = "lisbon"
+	let city = f.military.settlements[f.military.settlementIndex("lisbon")]
+	city.legalOwnerId = "other"
+	a.finance.amount("portugal", m, 10, true).assertEquals(10800)
+	city.legalOwnerId = "portugal"
+	m.blockaded = true
+	f.reject("/trade buy 10")
+	m.blockaded = false
+	m.occupiedByHostile = true
+	f.reject("/trade sell 10")
+	m.occupiedByHostile = false
+	m.discovered = false
+	f.reject("/trade buy 10")
+	m.discovered = true
+	city.controllerId = "other"
+	f.reject("/trade buy 10")
+	city.controllerId = "portugal"
+	f.actors.exists = false
+	f.reject("/trade buy 10")
+	f.actors.exists = true
+	// Invalidation inside the native observation boundary is rechecked too.
+	f.actors.changeCity = city
+	f.actors.invalidateAt = f.actors.reads + 2
+	f.dispatch("/trade buy 10")
+	f.ports.output.contains("unavailable").assertTrue()
+	f.trade.market.stock.assertEquals(60)
+	financeReceipt("auction-commit-revalidation")
+
+@test function auctionTinyOrdersReplayReconstructionAndFailedLoadKeepAuthority()
+	let a = new AuctionCommandFixture()
+	let f = a.f
+	a.unlock()
+	f.trade.market.baseUnitPrice = 50
+	// Existing spread is four; commission two stays positive. Both savings
+	// floor once to zero. No extra fee or rounding rebate is introduced.
+	a.finance.amount("portugal", f.trade.market, 1, true).assertEquals(54)
+	a.buy(1)
+	a.finance.amount("portugal", f.trade.market, 1, false).assertEquals(46)
+	a.sell(1)
+	f.personal().money.assertEquals(99992)
+	// Ten units settle together: commission twenty saves one final floor of
+	// one, even though ten separately rounded one-unit savings would be zero.
+	a.finance.amount("portugal", f.trade.market, 10, true).assertEquals(539)
+	a.buy(10)
+	a.finance.amount("portugal", f.trade.market, 10, false).assertEquals(461)
+	a.sell(10)
+	f.personal().money.assertEquals(99914)
+	f.trade.progress.standing.assertEquals(0)
+	let research = f.rpg.captureState()
+	let saved = f.trade.capture()
+	for repeat = 1 to 3
+		f.rpg.restoreState(research).assertTrue()
+		f.trade.reconstruct(saved).assertTrue()
+		f.trade.capture().assertEquals(saved)
+		a.effects.rateAt("portugal", "market_transaction_fee_reduction", f.clock.currentDay).assertEquals(500)
+		f.trade.controller.buy("runtime-buy-1", f.trade.market, f.personal(), 1).assertEquals("Transaction already processed.")
+		f.trade.capture().assertEquals(saved)
+	f.selectPersonal()
+	f.trade.nextTransaction = 2
+	f.reject("/trade sell 1")
+	f.ports.output.assertEquals("Transaction already processed.")
+	f.trade.nextTransaction = 5
+	let money = f.trade.market.money
+	f.trade.market.money = 0
+	f.personal().contents.set("grain", 10)
+	f.reject("/trade sell 10")
+	f.ports.output.assertEquals("Market funds are insufficient.")
+	f.trade.market.money = money
+	f.personal().allowedGoodIds = "tools"
+	f.reject("/trade buy 1")
+	f.ports.output.assertEquals("Cargo store is incompatible with this commodity.")
+	f.personal().allowedGoodIds = ""
+	f.personal().capacity = 10
+	f.reject("/trade buy 1")
+	f.ports.output.assertEquals("Cargo capacity is insufficient.")
+	// Whole campaign rollback restores earned research and settled trade as one
+	// transaction, even if a candidate with no Auction research was applied.
+	let load = new LoadFixture()
+	load.clock.advanceTo(100).assertTrue()
+	load.clock.endDay = 700000
+	load.clock.advanceTo(657072).assertTrue()
+	load.recordingTimer.expected = load.clock.captureState()
+	let trade = load.extension.trade
+	let effects = new FinanceResearchEffects(load.rpg.technologies.effects)
+	load.rpg.technologies.effects = effects
+	configureGeneratedFinance(load.military.finance, effects)
+	load.military.finance.sites[load.military.finance.siteCount] = new ExchangeSite("port", "province", "")
+	load.military.finance.siteCount++
+	trade.registerStore(new TradeStore("warehouse:port", 100, 100).withAccess("warehouse", "port", true))
+	load.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	let finance = new FinanceCampaignRuntime(load.campaign.state, trade, effects)
+	load.campaign.state.financeRuntime = finance
+	trade.controller.finance = finance
+	trade.controller.financeOwner = "england"
+	let tech = new RuntimeTechnology("auction_markets", "Auction Markets", 1580, 194)
+	tech.addUnlock(tech.id, "modifier", "progression_auction_markets")
+	load.rpg.technologies.register(tech).assertTrue()
+	trade.hold.money = 10000
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before auction").assertTrue()
+	load.rpg.technologies.unlock("england", "auction_markets", 1800, 194, 0, 0).assertTrue()
+	trade.market.baseUnitPrice = 1000
+	trade.market.pricing.elasticityPermille = 0
+	let price = finance.amount("england", trade.market, 2, true)
+	trade.controller.buy("auction-rollback", trade.market, trade.hold, 2).startsWith("Bought").assertTrue()
+	trade.hold.money.assertEquals(10000 - price)
+	let authority = load.campaign.state.captureAuthoritativeState()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.campaign.state.captureAuthoritativeState().assertEquals(authority)
+	effects.rateAt("england", "market_transaction_fee_reduction", load.clock.currentDay).assertEquals(500)
+	trade.controller.seen("auction-rollback").assertTrue()
+	load.extension.fail = false
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	effects.rateAt("england", "market_transaction_fee_reduction", load.clock.currentDay).assertEquals(0)
+	trade.controller.seen("auction-rollback").assertFalse()
+	trade.hold.money.assertEquals(10000)
+	financeReceipt("auction-replay-rollback")
