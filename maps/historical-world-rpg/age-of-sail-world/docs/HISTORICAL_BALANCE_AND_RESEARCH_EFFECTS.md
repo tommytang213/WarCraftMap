@@ -144,6 +144,15 @@ until fresh integrated current-main execution, runtime and traceability evidence
 removes them. Focused interpreter execution is development evidence; it does not
 establish native client playability or resolve the unrelated #438 crash.
 
+For the two policy/medicine findings, #548 adds fail-closed binding recognition:
+current-source full pinned execution must observe registered research/actions,
+campaign-clock replay, actual payments and local outcome consumers in matched
+controls. Negative, replay and late-load rollback cases must also pass. A serving
+local administrator must have the district jurisdiction and positive capacity;
+foreign or unavailable offices authorize neither civic action nor local benefits.
+No persisted fields or migration formats change. Focused results cannot close
+these findings; the integrated-main audits must consume complete fresh evidence.
+
 ## Land drill and artillery production consumers (#515)
 
 `scenario/progression/land-army.json` owns the four land research bindings,

@@ -131,6 +131,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     navigation, _world = navigation_contract(PROJECT)
     bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
     bound |= _verified_industry_bindings(execution, execution_log, revision)
+    from civic_governance import verified_bindings as verified_civic
+    bound |= verified_civic(PROJECT, execution, execution_log, revision)
     from dispatch_contract import verified_bindings as verified_dispatch
     bound |= verified_dispatch(PROJECT, execution, execution_log, revision)
     from administrative_governance import verified_bindings as verified_administration
