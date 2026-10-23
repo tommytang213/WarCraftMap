@@ -444,3 +444,33 @@ class CharteredFixture
 	f.clock.advanceTo(f.day + 271).assertTrue()
 	f.military.forceCount.assertEquals(count + 1)
 	c.denyBuild()
+
+@test function charteredConstructionUsesExactPrerequisiteIdsAndRechecksRevocationDuringReplay()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.research()
+	f.dock()
+	let h = f.military.naval.blueprints[0]
+	let authored = h.researchRequirements
+	// Unknown IDs, including a known ID's prefix, must fail closed rather
+	// than disappear when scanning registered catalogue definitions.
+	h.researchRequirements = authored + "galleon|"
+	c.denyBuild()
+	h.researchRequirements = authored + "unknown_research|"
+	c.denyBuild()
+	h.researchRequirements = authored + "galleon_design"
+	c.denyBuild()
+	h.researchRequirements = authored + "galleon_design|"
+	f.action("build", " armed_indiaman")
+	f.clock.advanceTo(f.day + 100).assertTrue()
+	f.military.naval.states[0].job.assertEquals("build")
+	let paid = f.campaign.countries.treasury[0]
+	let stock = c.market().stock
+	let count = f.military.forceCount
+	f.rpg.restoreState(f.rpg.captureState().replace("|u,player,public_credit", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(f.day + 270).assertTrue()
+	f.military.naval.states[0].job.assertEquals("")
+	f.military.forceCount.assertEquals(count)
+	c.market().stock.assertEquals(stock)
+	(f.campaign.countries.treasury[0] <= paid).assertTrue()

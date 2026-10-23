@@ -74,6 +74,15 @@ class CivicFixture
 		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		let definitions = new CivicLedger()
 		configureGeneratedCivic(definitions, research, day)
+		military.civic.transitionDays = definitions.transitionDays
+		military.civic.enactmentBasisPoints = definitions.enactmentBasisPoints
+		military.civic.upkeepBasisPoints = definitions.upkeepBasisPoints
+		military.civic.surveyBasisPoints = definitions.surveyBasisPoints
+		military.civic.responseBasisPoints = definitions.responseBasisPoints
+		military.civic.responseDays = definitions.responseDays
+		military.civic.cooldownDays = definitions.cooldownDays
+		military.civic.tradePenaltyBasisPoints = definitions.tradePenaltyBasisPoints
+		military.civic.baseTaxBasisPoints = definitions.baseTaxBasisPoints
 		military.civic.municipalNode = definitions.municipalNode
 		military.civic.municipalMinimumUrbanization = definitions.municipalMinimumUrbanization
 		destroy definitions
@@ -278,6 +287,7 @@ class CivicFixture
 	controller.buy("second", grain, hold, 400).startsWith("Bought").assertTrue()
 	let saved = f.military.snapshot()
 	controller.buy("third", grain, hold, 1).contains("quarantine").assertTrue()
+	controller.sell("split-sale", cloth, hold, 1, 1000).contains("quarantine").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	controller.buy("fourth", grain, hold, 1).contains("quarantine").assertTrue()
 	f.advance(1)
@@ -471,10 +481,10 @@ class CivicFixture
 	f.military.administrators[0].administration = 100
 	f.military.administrators[0].jurisdiction = "foreign"
 	f.advance(taxDay + 730)
-	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450 * 2)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450)
 	f.military.settlements[0].underAttack = true
 	f.advance(taxDay + 1095)
-	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450 * 2)
+	f.military.civic.states[0].taxesCollected.assertEquals(10001 + 9450)
 
 @test function administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback()
 	let active = new CivicFixture()
@@ -550,3 +560,183 @@ class CivicFixture
 	f.advance(taxDay + 365)
 	// Archives can resume after funding; municipality still fails current eligibility.
 	f.military.civic.states[0].taxesCollected.assertEquals(9000 + 9225)
+
+// Research alone remains optional. Compare actual local meters and persisted
+// government bills at the transition, first operating day and annual renewal.
+@test function civicPolicyMatchedControlProvesOptionalTransitionFundedDiffusionAndRenewal()
+	let base = new CivicFixture()
+	let optional = new CivicFixture()
+	let funded = new CivicFixture()
+	let unpaid = new CivicFixture()
+	let renewal = new CivicFixture()
+	optional.allResearch()
+	funded.allResearch()
+	unpaid.allResearch()
+	renewal.allResearch()
+	funded.action("policy")
+	unpaid.action("policy")
+	renewal.action("policy")
+	funded.military.civic.states[0].policyReady.assertEquals(funded.day + 90)
+	funded.campaign.countries.treasury[0].assertEquals(9899)
+	unpaid.campaign.countries.treasury[0] = 50 // one short of first upkeep
+	// Remove tax liquidity so renewal is funded only by the stated treasury.
+	for i = 0 to 1
+		funded.trade.markets[i].money = 0
+		unpaid.trade.markets[i].money = 0
+		renewal.trade.markets[i].money = 0
+	base.advance(89)
+	optional.advance(89)
+	funded.advance(89)
+	unpaid.advance(89)
+	renewal.advance(89)
+	funded.military.civic.states[0].discussion.assertEquals(1780)
+	funded.campaign.countries.treasury[0].assertEquals(9899)
+	funded.advance(90)
+	funded.military.civic.states[0].discussion.assertEquals(1800)
+	funded.campaign.countries.treasury[0].assertEquals(9848)
+	funded.advance(100)
+	base.advance(100)
+	optional.advance(100)
+	unpaid.advance(100)
+	renewal.advance(100)
+	base.military.civic.states[0].discussion.assertEquals(2000)
+	optional.military.civic.states[0].discussion.assertEquals(2000)
+	optional.military.civic.states[0].policyOwner.assertEquals("")
+	funded.military.civic.states[0].discussion.assertEquals(2010) // 20 * 1.05 per day, after transition
+	unpaid.military.civic.states[0].discussion.assertEquals(2000)
+	unpaid.military.civic.states[0].policyOwner.assertEquals("")
+	unpaid.campaign.countries.treasury[0].assertEquals(50)
+	let saved = funded.military.snapshot()
+	for repeat = 1 to 3
+		funded.military.restore(saved, false).assertTrue()
+		funded.advance(100)
+		funded.military.snapshot().assertEquals(saved)
+		funded.campaign.countries.treasury[0].assertEquals(9848)
+	renewal.campaign.countries.treasury[0] = 50
+	funded.advance(455)
+	renewal.advance(455)
+	funded.military.civic.states[0].discussion.assertEquals(9465)
+	funded.campaign.countries.treasury[0].assertEquals(9797)
+	renewal.military.civic.states[0].discussion.assertEquals(9464)
+	renewal.military.civic.states[0].policyOwner.assertEquals("")
+	renewal.campaign.countries.treasury[0].assertEquals(50)
+	// Repeal is explicit and cannot refund a paid bill or retain its benefit.
+	funded.action("repeal")
+	funded.advance(456)
+	funded.military.civic.states[0].discussion.assertEquals(9485)
+	funded.campaign.countries.treasury[0].assertEquals(9797)
+
+@test function civicResponseMatchedControlProvesActualLossesBillsThroughputAndCooldown()
+	let base = new CivicFixture()
+	let treated = new CivicFixture()
+	base.allResearch()
+	treated.allResearch()
+	treated.action("response")
+	treated.campaign.countries.treasury[0].assertEquals(9799)
+	treated.trade.findMarket("district", "cloth").stock.assertEquals(996)
+	base.campaign.countries.treasury[0].assertEquals(10000)
+	base.trade.findMarket("district", "cloth").stock.assertEquals(1000)
+	let hold = new TradeStore("treated", 10000, 10000000)
+	let controlHold = new TradeStore("control", 10000, 10000000)
+	let controller = treated.trade.tradeController()
+	let control = base.trade.tradeController()
+	controller.buy("cloth", treated.trade.findMarket("district", "cloth"), hold, 500).startsWith("Bought").assertTrue()
+	controller.buy("grain", treated.trade.findMarket("district", "grain"), hold, 400).startsWith("Bought").assertTrue()
+	control.buy("cloth", base.trade.findMarket("district", "cloth"), controlHold, 500).startsWith("Bought").assertTrue()
+	control.buy("grain", base.trade.findMarket("district", "grain"), controlHold, 500).startsWith("Bought").assertTrue()
+	let before = treated.military.snapshot()
+	controller.buy("overflow", treated.trade.findMarket("district", "grain"), controlHold, 1).contains("quarantine").assertTrue()
+	treated.military.snapshot().assertEquals(before)
+	treated.trade.registerMarket(new RuntimeMarket("district", "spice", 1000, 100000, 10, 10))
+	treated.advance(89)
+	base.advance(89)
+	treated.military.settlements[0].manpower.assertEquals(9733)
+	base.military.settlements[0].manpower.assertEquals(9644)
+	controller.buy("still-active", treated.trade.findMarket("district", "spice"), hold, 901).contains("quarantine").assertTrue()
+	treated.advance(90)
+	base.advance(90)
+	treated.military.settlements[0].manpower.assertEquals(9730)
+	base.military.settlements[0].manpower.assertEquals(9640)
+	treated.military.civic.states[0].diseaseLost.assertEquals(270)
+	treated.military.civic.states[0].diseaseAvoided.assertEquals(90)
+	base.military.civic.states[0].diseaseLost.assertEquals(360)
+	base.military.civic.states[0].diseaseAvoided.assertEquals(0)
+	// Throughput resumes at day 90, after exactly 90 loss intervals.
+	controller.buy("expired", treated.trade.findMarket("district", "spice"), hold, 1000).startsWith("Bought").assertTrue()
+	treated.advance(91)
+	treated.military.settlements[0].manpower.assertEquals(9726)
+	treated.military.civic.states[0].diseaseAvoided.assertEquals(90)
+	treated.advance(179)
+	let saved = treated.military.snapshot()
+	treated.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	treated.resources.output.contains("expired cooldown").assertTrue()
+	treated.military.snapshot().assertEquals(saved)
+	treated.campaign.countries.treasury[0].assertEquals(9799)
+	treated.trade.findMarket("district", "cloth").stock.assertEquals(496)
+	treated.advance(180)
+	treated.action("response")
+	treated.campaign.countries.treasury[0].assertEquals(9598)
+	treated.trade.findMarket("district", "cloth").stock.assertEquals(492)
+
+@test function civicPolicyAndResponseRequireCurrentLocalJurisdictionAndMedicalStock()
+	let f = new CivicFixture()
+	let initial = f.military.snapshot()
+	for index = 0 to 1
+		var action = "policy"
+		if index == 1
+			action = "response"
+		f.commands.dispatch(Player(0), "/civic " + action + " district").assertTrue()
+		f.military.snapshot().assertEquals(initial)
+	f.allResearch()
+	for invalid = 1 to 3
+		f.military.administrators[0].jurisdiction = "district"
+		f.military.administrators[0].capacity = 1
+		f.military.settlements[0].legalOwnerId = "player"
+		if invalid == 1
+			f.military.administrators[0].jurisdiction = "foreign"
+		else if invalid == 2
+			f.military.administrators[0].capacity = 0
+		else
+			f.military.settlements[0].legalOwnerId = "foreign"
+		let before = f.military.snapshot()
+		for index = 0 to 1
+			var action = "policy"
+			if index == 1
+				action = "response"
+			f.commands.dispatch(Player(0), "/civic " + action + " district").assertTrue()
+			f.resources.output.contains("lawfully controlled").assertTrue()
+			f.military.snapshot().assertEquals(before)
+			f.campaign.countries.treasury[0].assertEquals(10000)
+			f.trade.findMarket("district", "cloth").stock.assertEquals(1000)
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.civic.districts[0].medicalGood = "unavailable"
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	f.military.snapshot().assertEquals(initial)
+	f.campaign.countries.treasury[0].assertEquals(10000)
+	f.military.civic.districts[0].medicalGood = "cloth"
+	f.action("policy")
+	f.action("response")
+	let paid = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("expired cooldown").assertTrue()
+	f.military.snapshot().assertEquals(paid)
+	f.campaign.countries.treasury[0].assertEquals(9698)
+	f.trade.findMarket("district", "cloth").stock.assertEquals(996)
+	// Loss of the serving local office suspends both effects during replay.
+	f.military.administrators[0].jurisdiction = "foreign"
+	f.advance(10)
+	f.military.settlements[0].manpower.assertEquals(9960)
+	f.military.civic.states[0].discussion.assertEquals(0)
+	f.military.civic.states[0].diseaseAvoided.assertEquals(0)
+	f.military.administrators[0].jurisdiction = "district"
+	f.military.transferSettlement("district", "ai")
+	f.military.transferSettlement("district", "player")
+	f.military.civic.states[0].policyOwner.assertEquals("")
+	f.military.civic.states[0].responseOwner.assertEquals("")
+	f.military.civic.states[0].cooldownEnd.assertEquals(f.day + 180)
+	f.commands.dispatch(Player(0), "/civic response district").assertTrue()
+	f.resources.output.contains("expired cooldown").assertTrue()
+	f.advance(100)
+	f.military.settlements[0].manpower.assertEquals(9600)
+	f.military.civic.states[0].diseaseAvoided.assertEquals(0)

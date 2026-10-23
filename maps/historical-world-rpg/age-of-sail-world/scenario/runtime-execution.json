@@ -406,6 +406,30 @@
       "path": "wurst/NavalCampaignRuntime.wurst",
       "signature": "function commit(string owner, NavalBuildQuote quote) returns string"
     },
+    "civic_registration": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "public function registerCivicCommands(CommandRegistry commands, CivicCampaignRuntime runtime) returns string"
+    },
+    "civic_clock": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "civic_diffusion": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function diffuse(int index, int basisPoints)"
+    },
+    "civic_disease": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function disease(string id, int maximum) returns int"
+    },
+    "civic_trade_budget": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function tradeAllowed(string id, string controllerId, int day, int quantity) returns boolean"
+    },
+    "civic_trade_commit": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function recordTrade(string id, int day, int quantity)"
+    },
     "dispatch_network": {
       "path": "wurst/CivicCampaignRuntime.wurst",
       "signature": "override function dispatchAccess(string originId, string recipientId) returns boolean"
@@ -660,6 +684,28 @@
       "construction_commit",
       "naval_pay",
       "naval_advance"
+    ],
+    "civic_policy": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_diffusion"
+    ],
+    "epidemic_response": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_disease",
+      "civic_trade_budget",
+      "civic_trade_commit"
     ],
     "dispatch_contract": [
       "research",

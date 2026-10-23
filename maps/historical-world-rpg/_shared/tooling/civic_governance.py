@@ -101,3 +101,67 @@ def configuration(project, world, settlements, authored, trade_records):
     for start in range(0, len(records), 40):
         lines.extend([f'\nfunction configureCivicDistricts{start}(CivicLedger ledger, int day)', *records[start:start + 40]])
     return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records)}, [path, design_path, __import__('pathlib').Path(__file__), *admin_sources, *dispatch_sources]
+
+
+# Deliberately limited to #548's two supplied findings. Survey and administrative
+# bindings have independent evidence requirements and cannot close here.
+CLOSURE_EFFECTS = {
+    ('policy', 'progression_abolitionist_public_sphere'):
+        ('abolitionist_public_sphere', 'civic_reform_diffusion', 500),
+    ('ability', 'epidemic_control'):
+        ('anatomy_and_medicine', 'epidemic_losses_avoided', 2500),
+}
+REQUIRED_TESTS = {
+    'civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills',
+    'civicActionsRejectOccupationMissingInstitutionsSuppliesAndCooldownAtomically',
+    'civicSaveMigrationCaptureAndFailedRestorePreserveLocalAuthorityWithoutReplay',
+    'civicQuarantineBudgetCannotBeBypassedBySplitTransactionsAndSurvivesReload',
+    'civicPlayerAndAiUseIdenticalActionsAndActiveAbstractReplayArithmetic',
+    'civicSurveyUsesExactRelativeCollectionAndPolicyNeedsActualLocalDiscussion',
+    'civicPolicyMatchedControlProvesOptionalTransitionFundedDiffusionAndRenewal',
+    'civicPolicyAndResponseRequireCurrentLocalJurisdictionAndMedicalStock',
+    'civicResponseMatchedControlProvesActualLossesBillsThroughputAndCooldown',
+}
+ROLLBACK_TEST = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresCivicPolicyResponseAndActualResourcesAtomically'
+COMMON_PROBES = {'civic_registration', 'research', 'dispatch', 'administrative_action',
+                 'administrative_advance', 'administrative_pay', 'civic_clock'}
+COMPARATIVE_PATHS = {
+    ('policy', 'progression_abolitionist_public_sphere'):
+        ('civic_policy', 'civicPolicyMatchedControlProvesOptionalTransitionFundedDiffusionAndRenewal',
+         COMMON_PROBES | {'civic_diffusion'}),
+    ('ability', 'epidemic_control'):
+        ('epidemic_response', 'civicResponseMatchedControlProvesActualLossesBillsThroughputAndCooldown',
+         COMMON_PROBES | {'civic_disease', 'civic_trade_budget', 'civic_trade_commit'}),
+}
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    """Recognize only current pinned execution, actual calls and asserted outcomes.
+
+    Full discovery, source/input hashes and transcript verification are required;
+    a focused development run or a declared binding alone cannot close a finding.
+    """
+    if execution is None or execution_log is None or revision is None:
+        return set()
+    from integration_evidence import verify_execution_coverage
+    from wurst_execution import WurstExecutionError
+    try:
+        coverage = verify_execution_coverage(execution, execution_log, project, revision)
+        prefix = 'wurst/CivicGovernanceTests.wurst:'
+        passed = {r['id'] for r in execution['tests'] if r['status'] == 'pass'}
+        if not ({prefix + name for name in REQUIRED_TESTS} | {ROLLBACK_TEST}) <= passed:
+            return set()
+        world = json.loads((project / 'scenario/world/world.json').read_text())
+        authored_districts = {row['id']: (path.stem, row)
+                             for path in (project / 'scenario/settlements').glob('*-1450.json')
+                             for row in json.loads(path.read_text())['settlements']}
+        _, catalog, _ = configuration(project, world, [], authored_districts, [])
+        authored = {(e['unlock']['kind'], e['unlock']['contentId']):
+                    (e['nodeId'], e['metric'], e['bonusBasisPoints']) for e in catalog['effects']}
+        observed = execution['productionCoverage']['tests']
+        return {pair for pair, (system, name, probes) in COMPARATIVE_PATHS.items()
+                if authored.get(pair) == CLOSURE_EFFECTS[pair]
+                and prefix + name in coverage.get(system, [])
+                and probes <= set(observed.get(prefix + name, []))}
+    except (WurstExecutionError, ValueError, OSError, KeyError, TypeError, AttributeError):
+        return set()

@@ -196,7 +196,12 @@ class DispatchFixture
 		f.campaign.countries.treasury[0].assertEquals(treasury)
 		f.runtime.advance(f.day + 90)
 		// Missing local office authority cancels ordinary lawful execution as well.
-		if missing != 13
+		if missing == 6 or missing == 7 or missing == 13
+			f.military.civic.states[0].surveyed.assertFalse()
+			f.military.civic.states[0].surveyReady.assertEquals(0)
+			f.military.civic.states[0].surveyOwner.assertEquals("")
+			f.campaign.countries.treasury[0].assertEquals(treasury)
+		else
 			f.military.civic.states[0].surveyed.assertTrue()
 
 @test function dispatchRejectedCommandsAndDuplicateOrdersPreserveAuthority()

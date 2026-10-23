@@ -346,6 +346,10 @@ public class CivicLedger
 			s.responseEnd = day + responseDays
 			s.cooldownEnd = s.responseEnd + cooldownDays
 		return ""
+	/** Authoritative local outcome boundary, shared by active and abstract replay. */
+	function diffuse(int index, int basisPoints)
+		let s = states[index]
+		s.discussion = IMinBJ(10000, s.discussion + civicScale(districts[index].discussionPerDay, basisPoints))
 	/** Replay each committed day for chunk-independent rounding and deadlines.
 	 * No load callback advances this ledger. A legacy ledger anchors on its
 	 * first live day rather than charging centuries of invented back taxes. */
@@ -399,7 +403,7 @@ public class CivicLedger
 				if s.policyOwner == owner and owner != "" and at > s.policyReady and s.upkeepThrough >= at
 					diffusionRate += research.rate(owner, "civic_reform_diffusion")
 				if lawful and d.civicCenter and at > d.discussionFirstDay
-					s.discussion = IMinBJ(10000, s.discussion + civicScale(d.discussionPerDay, diffusionRate))
+					diffuse(i, diffusionRate)
 				// Tax is a transfer from existing economic liquidity, bounded by
 				// normal taxable capacity. Survey modifies collection efficiency.
 				if lawful and at mod 365 == 0
