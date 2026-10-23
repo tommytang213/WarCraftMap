@@ -914,6 +914,8 @@ def generate(config: BuildConfig, generated: Path) -> None:
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in courts_catalog.get('effects', [])}
+    if agriculture_payload:
+        bound_research |= {(e['kind'], e['contentId']) for e in agriculture_payload['effects']}
     if naval_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
     if industry_builder:
@@ -1036,6 +1038,21 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
             raise _fail("combat bindings", "executable catalogue differs from scenario (release blocker)")
         from combat_effects import verify_executable_bindings
         verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
+
+    agriculture_builder = configuration(config.project)["scenario"].get("agricultureBuilder")
+    if agriculture_builder and not selector:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, agriculture_builder))], cwd=config.project, text=True))
+        source = (generated / GENERATED_WURST).read_text()
+        expected = payload['wurst']
+        actual = [line for line in source.splitlines() if line.startswith((
+            '\truntime.agriculture.addEffect(', '\truntime.stapleId=', '\truntime.farmEquipmentId=',
+            '\truntime.constructionGoodId=', '\truntime.agriculture.materialName=',
+            '\truntime.agriculture.agriculturalNodes=', '\truntime.agriculture.knowledgePerSeedBp=',
+            '\truntime.agriculture.maximumKnowledge='))]
+        if (actual != expected or source.count('configureGeneratedAgriculture(runtime)') != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('agriculture') !=
+                {key: payload[key] for key in ('rules', 'effects')}):
+            raise _fail('agriculture bindings', 'executable catalogue differs from scenario (release blocker)')
 
     industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
     if industry_builder and not selector:

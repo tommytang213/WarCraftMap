@@ -149,6 +149,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= verified_logistics(PROJECT, execution, execution_log, revision)
     from land_army_catalog import verified_bindings as verified_land
     bound |= verified_land(PROJECT, execution, execution_log, revision)
+    from agriculture_catalog import verified_bindings as verified_agriculture
+    bound |= verified_agriculture(PROJECT, execution, execution_log, revision)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',

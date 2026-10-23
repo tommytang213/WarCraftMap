@@ -70,3 +70,15 @@ transcripts retain the initial failure and its corrected rerun explicitly.
 
 No player QA, GitHub mutation, commit, push, global tooling change, writable
 container mount or container permission change was performed.
+
+Integration repair preserves main's agriculture verifier and every production
+probe alongside the land consumers. Fresh merged-source verification passed 174
+distinct Python tests, 40 focused pinned Wurst tests and both three-test framework
+variants. Four initial fixture-import errors were corrected by setting
+`PYTHONPATH=tests`; the affected tests passed on rerun without source changes.
+The fresh shipping archive passed all registration, paid-input, delivery and
+cooldown checks. All three audits were regenerated with current source identities
+and the merged execution-contract hash; their findings and native status remain
+unchanged. See [integration-validation.json](integration-validation.json) and its
+compressed transcript for this integration's evidence. Complete repository and
+release closure validation remains with the controller.

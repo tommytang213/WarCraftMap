@@ -108,6 +108,8 @@ class ResearchGenerationTests(unittest.TestCase):
         self.assertEqual(self.runtime['researchIntegrationBlockers'], [
             dict(nodeId=n, kind=k, contentId=c, bindingStatus='unbound', reason='missing_gameplay_consumer')
             for n, k, c in expected if (k, c) not in {('modifier', 'army_discipline'),
+                ('building', 'granary'), ('policy', 'land_tenure_reform'),
+                ('policy', 'enclosure'), ('policy', 'progression_agricultural_societies'),
                 ('modifier', 'progression_campaign_bakeries'), ('modifier', 'progression_canal_logistics'),
                 ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon'),
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
