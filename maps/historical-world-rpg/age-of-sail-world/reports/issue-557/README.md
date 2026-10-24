@@ -31,7 +31,7 @@ retains its independent requirements. Botanical Collecting and Calculus remain
 unrecognized. Synthetic Python transcripts test rejection only and cannot stand
 in for production execution.
 
-Developer validation generated a fresh assembly from this worktree and ran the
+Before integration, developer validation generated a fresh assembly and ran the
 pinned compiler with a read-only source mount and a container-private build:
 17/17 ScienceExploration tests passed, including all five isolated Barometric
 tests and the retained Chemical tests. Source generation and generated-output
@@ -39,12 +39,24 @@ verification passed. The dedicated evidence verifier tests passed (5 tests),
 as did science generation tests (5), integration-evidence tests (13), packaging
 tests (12), execution-harness tests (23), framework conformance tests (9), and
 the framework content/implementation boundary audit.
-Local detailed logs are in the ignored `_build/issue-557` directory.
+Those detailed logs were retained in the initial worktree's ignored
+`_build/issue-557` directory, rather than checked in as release evidence.
 
 Per the controller's staging instruction, full repository execution and the
 three post-integration audit refreshes belong to the controller on the new main
-revision. The release audit suite passed 9/10 tests, runtime acceptance 24/25, and
-traceability 52/54; the four remaining assertions concern checked-in report
-freshness after source changes and require that refresh. No historical or
-predecessor execution was used to establish this code's validity, and no focused run is advertised as full
-release evidence. Global release and native-client launch gates remain blocked.
+revision. The integration retry refreshed the checked-in source-only release,
+runtime and traceability snapshots against the integrated source revision. Their
+JSON now records the current source and runtime-execution contract hashes; their
+human reports and blocked findings are unchanged. The release audit suite now
+passes 10/10 tests, runtime acceptance 25/25 and traceability 54/54, including the
+previously failing freshness assertions. Barometric verifier (5), science
+generation (5), integration-evidence (13), packaging (12), framework conformance
+(9) and execution-harness (23) tests also pass on the integrated source: 156 Python
+tests in total. The framework boundary audit passes as well.
+
+Neither Grill nor Java is available in this retry environment. The controller
+must run fresh full pinned execution and regenerate all three audits with that
+execution after integration to verify closure of the exact finding. No historical
+or predecessor execution was used to establish this code's validity, and no
+focused run is advertised as full release evidence. Global release and
+native-client launch gates remain blocked.
