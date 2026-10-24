@@ -33,7 +33,7 @@ def bundle(revision=A, findings=()):
                          "dependencies": [], "blockerCount": len(findings),
                          "blockers": [{"id": key, "class": "integration-missing", "message": "production entry not executed"} for key in findings]},
     }
-    return {"revision": revision, "regenerated": True,
+    return {"revision": revision, "regenerated": True, "execution": {"valid": True},
             "reports": {name: {"report": report, "recorded": copy.deepcopy(report)} for name, report in reports.items()}}
 
 
@@ -179,6 +179,17 @@ class ClosureTests(unittest.TestCase):
         data["reports"]["runtime"]["report"]["sourceRevision"] = B
         self.assertIn("audit:runtime", build_closure(data, A).blockers)
         self.assertTrue(build_closure(bundle(), A, checkout_current=False).active)
+
+    def test_passing_reports_without_execution_inspection_cannot_authorize_release(self):
+        for execution in (None, {}, {"valid": "true"}):
+            data = bundle()
+            if execution is None:
+                data.pop("execution")
+            else:
+                data["execution"] = execution
+            closure = build_closure(data, A)
+            self.assertIn("runtime:evidence", closure.blockers)
+            self.assertFalse(closure.permits_issue(RELEASE))
 
     def test_saved_pass_flags_cannot_replace_regeneration(self):
         data = bundle()
@@ -660,6 +671,7 @@ class ControllerTests(unittest.TestCase):
             with self.subTest(revisions=revisions), \
                  mock.patch.object(worker, "default_branch", return_value="main"), \
                  mock.patch.object(worker, "remote_branch_oid", side_effect=revisions), \
+                 mock.patch.object(worker.main_evidence, "ensure", return_value={"directory": "/verified/main/bundle"}), \
                  mock.patch.object(worker, "run", side_effect=command) as invoked:
                 closure = worker.read_closure(self.config, [], [])
                 self.assertEqual(closure.active, expected)

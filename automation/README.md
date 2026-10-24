@@ -199,8 +199,9 @@ on the current origin default-branch revision. It verifies available execution
 and campaign artifacts through the existing audits; it never treats saved PASS
 flags, closed issues or merged PRs as closure. Missing reports, failed audits,
 dirty/outdated controller checkouts and stale execution evidence keep the gate
-closed. The controller does not compile during planning or rewrite tracked
-reports. Compiler execution and packaging remain repair/validation work.
+closed. Before auditing a clean current-main checkout, the controller obtains
+required execution through the bounded validation lane described below. The
+audits themselves do not compile or rewrite tracked reports.
 
 While closure is pending, the worker selects and plans only blocker repairs,
 even when unrelated ready work fills the queue. One narrow owner-approved CI
@@ -295,13 +296,36 @@ evidence before starting, and failed publication cannot reuse an older pass.
 
 Planning reads that complete bundle through the same verifiers. An earlier
 results/log pair without verification inputs is incomplete and requires a new
-run. Focused development transcripts cannot replace full discovery. After
-integration, run required validation on the new main revision, then regenerate
-the three closure audits with `tooling/planning_audit.py --source-revision <SHA>`
-from the scenario directory. This regenerates release-blocker, runtime-acceptance
-and requirement-traceability results without replacing tracked source-only
-reports. Only findings absent from those verified results establish closure;
-other blockers and the real-client release gate still apply.
+run. Focused development transcripts cannot replace full discovery.
+
+After integration, `read_closure` runs the configured complete checks command in
+the clean main checkout, with `WARCRAFTMAP_WURST_CHECK=required`. It never uses an
+issue worktree's validation receipt. The validation process group is limited by
+`WARCRAFTMAP_AGENT_TIMEOUT_MINUTES`; output is retained in
+`STATE_DIR/main-execution/<full-main-SHA>/validation.log`. Remote main, local HEAD,
+cleanliness, authored-source digest and compiler pin are checked around execution
+and publication. The existing transport stages and verifies every transcript and
+verification input before a directory rename publishes `bundle/` there. No
+predecessor identity is rewritten. A merge or source change invalidates the attempt.
+
+`attempt.json` is written before validation starts and finalized only after
+publication checks. Repeated wakes reverify the same-revision bundle without
+relaunching validation. A failed or interrupted attempt is held for that revision,
+source digest and compiler pin instead of retrying on every wake. After repairing
+the environment, an operator can remove that revision's `attempt.json` to request
+one explicit retry. A new main revision gets a separate attempt and bundle.
+`--dry-run` can reuse verified evidence but never starts validation.
+
+The controller passes the explicit bundle directory to
+`tooling/planning_audit.py --source-revision <SHA> --evidence-directory <bundle>`.
+The three regenerated reports, source identity, evidence digest, concrete evidence
+rejection (if any) and exact four agriculture/six civic-land-Auction Markets
+comparison observations are retained together in `planning-audit.json` under that
+revision. These snapshots are review records; planning regenerates every wake.
+Missing execution defers research-consumer repairs until their existing verifiers
+can run. A remaining comparison after verified execution is a separate consumer
+finding. Only findings absent from fresh verified results establish closure;
+other blockers, open repair issues and the real-client release gate still apply.
 
 ## Safe removal
 
