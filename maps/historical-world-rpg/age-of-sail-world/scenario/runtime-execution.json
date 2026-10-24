@@ -525,6 +525,18 @@
     "finance_sell_settle": {
       "path": "wurst/PlayableTrade.wurst",
       "signature": "private function settleSale(string transactionId, RuntimeMarket market, TradeStore source, int quantity, int difficultyPermille, int principal, int proceeds) returns string"
+    },
+    "science_weather": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function hazard(int day) returns int"
+    },
+    "science_supply": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "function consumeSupply(RuntimeForce actor, int provisions)"
+    },
+    "science_hazard_commit": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function commitHazard(int hazard, int avoided, int fraction)"
     }
   },
   "systems": {
@@ -806,6 +818,17 @@
       "finance_quote",
       "finance_buy_settle",
       "finance_sell_settle"
+    ],
+    "barometric_voyage": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_weather",
+      "science_supply",
+      "science_hazard_commit"
     ]
   }
 }

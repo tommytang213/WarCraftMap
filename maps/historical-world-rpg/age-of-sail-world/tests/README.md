@@ -431,3 +431,15 @@ after load), capture, v16/v17-to-v18 migration, failed-load rollback and 25 year
 active/abstract operation. The fixture configures no exchange/remittance consumer.
 `test_central_banking.py` checks the scenario contract, retained independent
 historical research/adoption data and fail-closed release evidence binding.
+
+The isolated Barometric comparison in `ScienceExplorationTests.wurst` earns only
+Barometric Measurement and commissions only the Channel instruments. It checks
+40/36 storm losses, equal 20 provisions, 940/944 final supply and actual equipment,
+departure and daily treasury/cloth bills. Calm weather, missing inputs and lawful
+qualification, duplicate delivery, fractions, active/abstract player/AI parity,
+reconstruction, capture and failed-load rollback run through production adapters.
+`test_barometric_binding_evidence.py` rejects incomplete, stale, tampered or
+disconnected execution and incorrect typed entitlement/1000-bp coefficients.
+The `barometric_voyage` probes include weather, supply mutation and committed
+hazard outcomes; only full current-source pinned execution can close its release
+finding. See `reports/issue-557/README.md` for the path and validation scope.
