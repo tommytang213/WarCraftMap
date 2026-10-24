@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import integration
+from . import integration, main_evidence
 from .budget import budget_available, recent_runs, usage_summary
 from .closure import (APPROVED_NATIVE_LAUNCH_DIAGNOSTIC, Closure, REPORTS,
                       build_closure, is_open, marked_keys)
@@ -63,6 +63,7 @@ class Config:
     checks_command: str = "./automation/run_checks.sh"
     issue_limit: int = 100
     design_notification_command: str = ""
+    main_evidence_validation: bool = True
 
 
 def utcnow() -> datetime:
@@ -228,6 +229,7 @@ def remote_branch_oid(repo: Path, branch: str) -> str:
         ["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{branch}"],
         cwd=repo,
         check=False,
+        timeout=120,
     )
     if result.returncode == 2:
         return ""
@@ -627,9 +629,20 @@ def read_closure(config: Config, issues: list[dict], prs: list[dict]) -> Closure
     current = bool(revision) and revision == head and not status
     if current:
         try:
+            evidence = main_evidence.ensure(
+                config, project, revision, run=run,
+                current=lambda: (
+                    remote_branch_oid(config.repo_root, default_branch(config.repo_root)) == revision and
+                    run(["git", "rev-parse", "HEAD"], cwd=config.repo_root).stdout.strip() == revision and
+                    not run(["git", "status", "--porcelain"], cwd=config.repo_root).stdout.strip()),
+                validate=lambda log: run_main_checks(config, revision, log),
+                allow_execute=config.main_evidence_validation)
             generated = run([sys.executable, str(project / "tooling/planning_audit.py"),
-                             "--source-revision", revision], cwd=config.repo_root, timeout=300)
+                             "--source-revision", revision, "--evidence-directory", evidence["directory"]],
+                            cwd=config.repo_root, timeout=300)
             bundle = json.loads(generated.stdout)
+            if evidence.get("error"):
+                bundle.setdefault("execution", {}).update(valid=False, error=evidence["error"])
         except (RuntimeError, ValueError, OSError, subprocess.TimeoutExpired) as exc:
             for report in bundle["reports"].values():
                 report["error"] = f"audit regeneration failed: {exc}"
@@ -637,6 +650,8 @@ def read_closure(config: Config, issues: list[dict], prs: list[dict]) -> Closure
         current = (remote_branch_oid(config.repo_root, default_branch(config.repo_root)) == revision and
                    run(["git", "rev-parse", "HEAD"], cwd=config.repo_root).stdout.strip() == revision and
                    not run(["git", "status", "--porcelain"], cwd=config.repo_root).stdout.strip())
+        if current and bundle.get("regenerated") and config.main_evidence_validation:
+            main_evidence.record_audits(config, revision, bundle)
     return build_closure(bundle, revision, issues, prs, checkout_current=current)
 
 
@@ -1291,6 +1306,32 @@ def run_checks(config: Config, worktree: Path) -> None:
     if not command:
         raise ValueError("WARCRAFTMAP_AGENT_CHECKS_COMMAND may not be empty")
     run(command, cwd=worktree, timeout=config.timeout_minutes * 60)
+
+
+def run_main_checks(config: Config, revision: str, log: Path) -> None:
+    """Required validation with a bounded process group and durable diagnostics."""
+    command = shlex.split(config.checks_command)
+    if not command:
+        raise ValueError("WARCRAFTMAP_AGENT_CHECKS_COMMAND may not be empty")
+    environment = {**os.environ, "WARCRAFTMAP_WURST_CHECK": "required", "SOURCE_REVISION": revision}
+    with log.open("w") as output:
+        process = subprocess.Popen(command, cwd=config.repo_root, stdout=output, stderr=subprocess.STDOUT,
+                                   env=environment, start_new_session=True, pass_fds=lock_fds())
+        try:
+            status = process.wait(timeout=config.timeout_minutes * 60)
+        except BaseException:
+            os.killpg(process.pid, signal.SIGTERM)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
+            raise
+    if status:
+        with log.open("rb") as output:
+            output.seek(max(0, log.stat().st_size - 4000))
+            detail = output.read().decode(errors="replace")
+        raise RuntimeError(f"complete main validation failed ({status}); see {log}\n{detail}")
 
 
 def prepare_validation_repair(config: Config, worktree: Path, issue_number: int) -> tuple[str, list[str]]:
@@ -2076,6 +2117,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", type=Path, default=Path("~/.config/warcraftmap-agent.env").expanduser())
     args = parser.parse_args(argv)
     config = make_config(args.repo, args.config)
+    config.main_evidence_validation = not args.dry_run
     config.state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     # A read-only descriptor can hold flock on Linux. Children retain ownership
     # across controller crashes without receiving a writable state-directory FD.

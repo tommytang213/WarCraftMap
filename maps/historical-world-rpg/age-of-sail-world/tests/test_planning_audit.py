@@ -30,15 +30,15 @@ class PlanningAuditTests(unittest.TestCase):
             target.write_text(json.dumps({"status": "pass", "old": name}))
         self.revision = "a" * 40
 
-    def regenerate(self, *, identity_changed=False, crash=False):
+    def regenerate(self, *, identity_changed=False, crash=False, directory=None, release_report=None):
         identity = {"sourceRevision": self.revision, "sourceTreeSha256": "b" * 64}
         with mock.patch.object(planning_audit, "PROJECT", self.project), \
              mock.patch.object(planning_audit, "source_identity", side_effect=[identity, {} if identity_changed else identity]), \
-             mock.patch.object(planning_audit.release_blocker_audit, "build_report", return_value={"status": "fail"},
+             mock.patch.object(planning_audit.release_blocker_audit, "build_report", return_value=release_report or {"status": "fail"},
                                side_effect=ValueError("broken manifest") if crash else None) as release, \
              mock.patch.object(planning_audit.runtime_acceptance, "audit_acceptance", return_value={"status": "fail"}) as runtime, \
              mock.patch.object(planning_audit.requirement_traceability_audit, "build_report", return_value={"status": "fail"}) as trace:
-            result = planning_audit.regenerate(self.revision)
+            result = planning_audit.regenerate(self.revision, directory)
         return result, release, runtime, trace
 
     def test_all_audits_regenerate_without_rewriting_recorded_passes(self):
@@ -54,6 +54,8 @@ class PlanningAuditTests(unittest.TestCase):
             self.assertIsNone(audit.call_args.kwargs["campaign"])
             self.assertEqual(audit.call_args.kwargs["revision"], self.revision)
         self.assertEqual(trace.call_args.args, (None, None, None, self.revision))
+        self.assertFalse(result['execution']['valid'])
+        self.assertIn('FileNotFoundError', result['execution']['error'])
 
     def test_incomplete_or_stale_evidence_is_not_passed_to_verifiers(self):
         execution = self.project / "_build/wurst-tests"
@@ -111,6 +113,52 @@ class PlanningAuditTests(unittest.TestCase):
             self.assertEqual(log, audit.call_args.kwargs['execution_log'])
         self.assertEqual(trace.call_args.args, (None, report, log, self.revision))
 
+    def test_explicit_main_location_is_used_without_fallback_to_checkout_results(self):
+        report, log, directory = self.exported_fixture()
+        explicit = self.project / 'main-evidence'
+        directory.rename(explicit)
+        result, release, _, trace = self.regenerate(directory=explicit)
+        self.assertTrue(result['execution']['valid'])
+        self.assertEqual(report, release.call_args.kwargs['execution'])
+        self.assertEqual(trace.call_args.args, (None, report, log, self.revision))
+        explicit.rename(directory)
+        result, release, _, _ = self.regenerate(directory=explicit)
+        self.assertFalse(result['execution']['valid'])
+        self.assertIn('FileNotFoundError', result['execution']['error'])
+        self.assertIsNone(release.call_args.kwargs['execution'])
+
+    def test_reconcile_four_agriculture_and_six_other_findings_only_after_verified_execution(self):
+        self.exported_fixture()
+        suffix = planning_audit.COMPARISONS['civicLandAuction'][-1]
+        report = {'findings': [{'id': 'RESEARCH-UNBOUND-' + suffix}], 'status': 'fail'}
+        result, _, _, _ = self.regenerate(release_report=report)
+        comparisons = result['consumerComparisons']
+        self.assertEqual(len(comparisons['agriculture']), 4)
+        self.assertEqual(set(comparisons['agriculture'].values()), {'absent'})
+        self.assertEqual(len(comparisons['civicLandAuction']), 6)
+        self.assertEqual(comparisons['civicLandAuction']['release:RESEARCH-UNBOUND-' + suffix], 'remaining')
+        result, _, _, _ = self.regenerate(release_report=report, identity_changed=True)
+        self.assertEqual(set(result['consumerComparisons']['agriculture'].values()), {'source_changed'})
+        (self.project / '_build/wurst-tests/execution.log').write_text('tampered')
+        result, _, _, _ = self.regenerate(release_report=report)
+        self.assertIn('error', result['execution'])
+        self.assertEqual(set(result['consumerComparisons']['agriculture'].values()), {'execution_unavailable'})
+
+    def test_valid_execution_with_failed_audit_is_reported_separately(self):
+        self.exported_fixture()
+        result, _, _, _ = self.regenerate(crash=True)
+        self.assertTrue(result['execution']['valid'])
+        self.assertIn('broken manifest', result['reports']['release']['error'])
+        self.assertEqual(set(result['consumerComparisons']['agriculture'].values()), {'audit_unavailable'})
+
+    def test_symlinked_bundle_is_rejected_even_when_target_is_valid(self):
+        _, _, directory = self.exported_fixture()
+        linked = self.project / 'linked-evidence'
+        linked.symlink_to(directory, target_is_directory=True)
+        result, release, _, _ = self.regenerate(directory=linked)
+        self.assertIn('non-regular execution bundle directory', result['execution']['error'])
+        self.assertIsNone(release.call_args.kwargs['execution'])
+
     def test_export_tampering_source_change_and_missing_inputs_remain_blocking(self):
         report, log, directory = self.exported_fixture()
         cases = [('sourceRevision', 'b' * 40), ('inputSetSha256', '0' * 64),
@@ -118,7 +166,9 @@ class PlanningAuditTests(unittest.TestCase):
         for field, value in cases:
             with self.subTest(field=field):
                 (directory / 'results.json').write_text(json.dumps({**report, field: value}))
-                _, release, runtime, trace = self.regenerate()
+                result, release, runtime, trace = self.regenerate()
+                self.assertFalse(result['execution']['valid'])
+                self.assertTrue(result['execution']['error'])
                 self.assertIsNone(release.call_args.kwargs['execution'])
                 self.assertIsNone(runtime.call_args.kwargs['execution'])
                 self.assertIsNone(trace.call_args.args[1])
