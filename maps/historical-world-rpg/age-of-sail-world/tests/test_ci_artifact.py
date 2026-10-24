@@ -168,16 +168,22 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertLess(campaign.index("run_execution_tests("), campaign.index("for physical in config.maps:"))
         self.assertIn("./tooling/package_release.sh", self.typecheck_workflow)
         checks = (REPOSITORY / "automation/run_checks.sh").read_text()
+        container = (REPOSITORY / "automation/container_validation.py").read_text()
+        entrypoint = (REPOSITORY / "automation/wurst_container.sh").read_text()
         self.assertIn('WARCRAFTMAP_WURST_CHECK:-required', checks)
         self.assertIn("./tooling/package_release.sh", checks)
-        self.assertIn('-v "$repo_root:/source:ro"', checks)
-        self.assertIn('chown -R wurstuser:wurstuser /tmp/historical-world-rpg', checks)
-        self.assertIn('su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"', checks)
-        self.assertNotIn('chown -R wurstuser:wurstuser /source', checks)
-        self.assertNotIn("frotty/wurstscript:latest", checks)
-        self.assertNotIn("grill install wurstscript", checks)
+        self.assertIn('python3 automation/container_validation.py --source-revision "$SOURCE_REVISION"', checks)
+        self.assertIn('"-v", f"{repository}:/source:ro"', container)
+        self.assertIn('automation/wurst_container.sh', container)
+        self.assertIn('chown -R wurstuser:wurstuser /tmp/historical-world-rpg', entrypoint)
+        self.assertIn('su -s /bin/sh wurstuser -c "cd /tmp/historical-world-rpg/age-of-sail-world && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_release.sh"', entrypoint)
+        for source in (checks, container, entrypoint):
+            self.assertNotIn('chown -R wurstuser:wurstuser /source', source)
+            self.assertNotIn("frotty/wurstscript:latest", source)
+            self.assertNotIn("grill install wurstscript", source)
         image = re.search(r"frotty/wurstscript@sha256:[0-9a-f]{64}", self.workflow)[0]
-        for source in (checks, self.typecheck_workflow, (shared / "wurst_execution.py").read_text()):
+        self.assertIn('from wurst_execution import PINNED_IMAGE', container)
+        for source in (self.typecheck_workflow, (shared / "wurst_execution.py").read_text()):
             self.assertIn(image, source)
         for workflow in (self.workflow, self.typecheck_workflow):
             self.assertIn('-e SOURCE_REVISION="$GITHUB_SHA"', workflow)

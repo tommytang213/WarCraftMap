@@ -274,10 +274,34 @@ may explicitly set `WARCRAFTMAP_WURST_CHECK=skip` only for focused Python tests;
 the worker's default remains required.
 
 Execution writes per-test results, compiler identity, revision, input hashes and
-the raw transcript under the scenario's `_build/wurst-tests/`. Both map and
+the raw transcript under the scenario's `_build/wurst-tests/`. The runner also
+snapshots every hashed compiler input in `verification-inputs/` before restoring
+instrumented production code and test annotations. Both map and
 campaign release paths require complete passing execution. The RC ZIP retains
 the evidence under `Metadata/wurst-execution.{json,log}` and the upload verifier
 checks it again. Interpreter success does not close the real-client launch gate.
+
+For Docker validation, `container_validation.py` retains the stopped private
+container until the scenario and reusable framework checks succeed and a complete
+evidence bundle has been copied back. Source mounts remain read-only. The export
+allows only results, transcript and verification inputs, rejects links and unsafe
+paths, and limits transfer to 60 seconds, 12,000 files, 32 MiB per file and 128 MiB
+of file contents (with separately bounded tar overhead). The host rechecks pinned
+compiler identity, revision, source identity, full discovery, production coverage
+and every exported input hash before publishing with one directory rename.
+Container cleanup runs on both success and failure; compiler/framework failures
+retain their exit status. Each required validation attempt invalidates previous
+evidence before starting, and failed publication cannot reuse an older pass.
+
+Planning reads that complete bundle through the same verifiers. An earlier
+results/log pair without verification inputs is incomplete and requires a new
+run. Focused development transcripts cannot replace full discovery. After
+integration, run required validation on the new main revision, then regenerate
+the three closure audits with `tooling/planning_audit.py --source-revision <SHA>`
+from the scenario directory. This regenerates release-blocker, runtime-acceptance
+and requirement-traceability results without replacing tracked source-only
+reports. Only findings absent from those verified results establish closure;
+other blockers and the real-client release gate still apply.
 
 ## Safe removal
 

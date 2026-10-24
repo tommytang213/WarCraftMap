@@ -14,6 +14,7 @@ import sys
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / "_shared/tooling"))
 from integration_evidence import source_identity
+from execution_transport import read_bundle
 import release_blocker_audit
 import requirement_traceability_audit
 import runtime_acceptance
@@ -27,11 +28,9 @@ def regenerate(revision):
     identity = source_identity(PROJECT, revision)
     result = {"revision": revision, "regenerated": True, "reports": {}}
     execution_path = PROJECT / "_build/wurst-tests/results.json"
-    transcript_path = execution_path.with_name("execution.log")
     try:
-        execution = json.loads(execution_path.read_text())
-        transcript = transcript_path.read_bytes()
-    except (OSError, ValueError):
+        execution, transcript = read_bundle(execution_path.parent, PROJECT, revision)
+    except (OSError, ValueError, RuntimeError):
         execution, transcript = None, None
     config = json.loads((PROJECT / "physical-maps.json").read_text())
     campaign = PROJECT / config["outputDirectory"] / (config["campaign"]["fileName"] + ".w3n")
