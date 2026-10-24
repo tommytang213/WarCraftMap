@@ -226,6 +226,10 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
         inputs = input_hashes(compile_root)
         report["inputs"] = inputs
         report["inputSetSha256"] = sha(canonical(inputs))
+        # Preserve the instrumented, unsharded inputs before restoring source
+        # and before the private validation container is removed.
+        from execution_transport import snapshot_inputs
+        snapshot_inputs(compile_root, evidence_dir / "verification-inputs", inputs)
         expected = report["expected"]
         batches = [expected[i:i + TESTS_PER_PROCESS] for i in range(0, len(expected), TESTS_PER_PROCESS)]
         sharded = len(batches) > 1
