@@ -87,6 +87,11 @@ public class ScienceState
 	int remainder = 0
 	int avoided = 0
 	int lost = 0
+	function commitHazard(int hazard, int avoided, int fraction)
+		// Called only after the real daily bill and supply mutation succeed.
+		remainder = fraction
+		this.avoided += IMinBJ(2147483647 - this.avoided, avoided)
+		lost += IMinBJ(2147483647 - lost, hazard - avoided)
 	function stop()
 		owner = ""
 		target = ""
@@ -217,9 +222,7 @@ public class ScienceLedger
 							s.remainder = S2I(SubString(output, IMaxBJ(0, StringLength(output) - 4), StringLength(output)))
 						else
 							s.work += d.dailyWork
-							s.remainder = credit mod 10000
-							s.avoided += IMinBJ(2147483647 - s.avoided, avoided)
-							s.lost += IMinBJ(2147483647 - s.lost, hazard - avoided)
+							s.commitHazard(hazard, avoided, credit mod 10000)
 						if s.work >= d.workRequired
 							if d.scholarly()
 								port.complete(owner, s.target, s.paid)

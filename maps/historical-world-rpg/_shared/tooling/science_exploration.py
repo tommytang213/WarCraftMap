@@ -131,6 +131,43 @@ CHEMICAL_TESTS = {
     'chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource',
 }
 
+BAROMETRIC_COMPARISON = 'barometricOnlyRegisteredVoyageCommitsExactStormLossAgainstMatchedControl'
+BAROMETRIC_TESTS = {
+    BAROMETRIC_COMPARISON,
+    'barometricCalmWeatherAndUnfundedDaysCannotCreateAvoidanceOrPartialBills',
+    'barometricVoyageRejectsMissingInstrumentsTechnologyVesselRouteAndLawfulControl',
+    'barometricFractionsResumeReconstructAndCaptureWithPlayerAiParity',
+    'barometricFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch',
+    'scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+BAROMETRIC_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                     'science_advance', 'science_pay', 'science_weather',
+                     'science_supply', 'science_hazard_commit'}
+BAROMETRIC_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_barometric_measurement'}
+
+
+def _barometric_authored(project):
+    """The approved identity and coefficient, never inferred from a similar metric."""
+    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    path = (project / data['designSource']).resolve()
+    path.relative_to(project.resolve())
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'barometric_measurement'
+               or e['unlock'] == BAROMETRIC_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'barometric_measurement']
+    return (effect['nodeId'] == 'barometric_measurement'
+            and effect['unlock'] == BAROMETRIC_UNLOCK
+            and effect['metric'] == 'storm_attrition_reduction'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 1000
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'qualified_sea_voyages'
+            and len(nodes) == 1 and BAROMETRIC_UNLOCK in nodes[0]['unlocks'])
+
 
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     """Only current complete pinned execution can close this exact finding."""
@@ -139,7 +176,7 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     from integration_evidence import verify_execution_coverage
     from wurst_execution import WurstExecutionError
     try:
-        verify_execution_coverage(execution, execution_log, project, revision)
+        coverage = verify_execution_coverage(execution, execution_log, project, revision)
     except (WurstExecutionError, ValueError, OSError, KeyError, TypeError):
         return set()
     prefix = 'wurst/ScienceExplorationTests.wurst:'
@@ -149,7 +186,17 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     required = {'science_registration', 'science_action', 'science_advance',
                 'science_pay', 'science_complete', 'dispatch'}
     comparative = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
-    if not CHEMICAL_TESTS <= passed or not required <= set(probes.get(comparative, [])):
-        return set()
-    contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
-    return {(contract['unlock']['kind'], contract['unlock']['contentId'])}
+    bound = set()
+    if CHEMICAL_TESTS <= passed and required <= set(probes.get(comparative, [])):
+        contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
+        bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+    comparative = prefix + BAROMETRIC_COMPARISON
+    try:
+        if (BAROMETRIC_TESTS <= passed
+                and comparative in coverage.get('barometric_voyage', [])
+                and BAROMETRIC_PROBES <= set(probes.get(comparative, []))
+                and _barometric_authored(project)):
+            bound.add(('modifier', 'progression_barometric_measurement'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    return bound
