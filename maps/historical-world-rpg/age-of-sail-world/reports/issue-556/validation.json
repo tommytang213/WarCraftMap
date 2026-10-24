@@ -2,7 +2,7 @@
   "diffCheck": "pass",
   "format": "warcraftmap_focused_implementation_validation_v1",
   "frameworkBoundary": "pass",
-  "freshnessRepair": "The release audit freshness test initially failed after source changes; source-only reports were regenerated and the failing test rerun successfully.",
+  "freshnessRepair": "Reproduced the post-integration runtime source-hash mismatch. Regenerated release-blocker, runtime-acceptance and requirement-traceability reports at the integrated revision; all 184 focused tests passed, including both previously failing freshness tests. Fresh planning results match the recorded reports exactly, with all nine supplied findings retained and no verified collateral closure.",
   "fullPinnedWurstExecution": {
     "reason": "No local Grill; Docker socket access denied in the Codex sandbox. Authoritative full repository validation is controller-owned.",
     "status": "not_run"
@@ -79,11 +79,11 @@
     }
   },
   "pythonTestsPassed": 184,
-  "scope": "Focused implementation checks on an uncommitted worktree. Synthetic compiler/Docker fixtures establish transport and gate behavior only, never agriculture or collateral closure.",
+  "scope": "Focused validation repair on the integrated worktree. The existing evidence transport implementation is unchanged; this repair refreshes generated audit identities. Synthetic compiler/Docker fixtures establish transport and gate behavior only, never agriculture or collateral closure.",
   "shellSyntax": "pass",
   "sourceIdentity": {
-    "sourceRevision": "7af22f69b79316798580780cbc2a50d904652b1c",
-    "sourceTreeSha256": "660eeb9d226ac43280358fefc016980a68998e99b57c05e34a3b1e4854340779"
+    "sourceRevision": "415943ee19e4eb51bc76cb5cc03adc734769f264",
+    "sourceTreeSha256": "ec4af3dea30e0669cc9490758d0bb0a8f7a7b90a7cbaa0ed7dfc200c69e95290"
   },
   "sourceOnlyAudits": {
     "agricultureFindingsRetained": [
