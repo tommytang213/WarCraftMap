@@ -66,6 +66,8 @@ def read_bundle(directory: Path, project: Path, revision: str) -> tuple[dict, by
     """Recheck all exported bytes and the existing full-source coverage gate."""
     from integration_evidence import verify_execution_coverage
     from wurst_execution import sha
+    if directory.is_symlink():
+        raise ValueError("non-regular execution bundle directory")
     sizes = {}
     paths = [directory / name for name in FILES]
     inputs_root = directory / "verification-inputs"
@@ -74,7 +76,11 @@ def read_bundle(directory: Path, project: Path, revision: str) -> tuple[dict, by
     for index, path in enumerate(chain(paths, inputs_root.rglob("*"))):
         if index >= MAX_FILES * 2:
             raise ValueError("too many execution evidence entries")
-        if path.is_symlink() or not (path.is_file() or path.is_dir()):
+        if path.is_symlink():
+            raise ValueError("non-regular execution evidence")
+        if not path.exists():
+            raise FileNotFoundError(f"missing execution evidence: {path}")
+        if not (path.is_file() or path.is_dir()):
             raise ValueError("non-regular execution evidence")
         if path.is_file():
             sizes[path.relative_to(directory).as_posix()] = path.stat().st_size

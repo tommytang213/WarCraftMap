@@ -299,4 +299,17 @@ def build_closure(bundle: dict, revision: str, issues=(), prs=(), *, checkout_cu
                                     [error or "Audit revision is stale or regeneration is missing"], [path])
         summaries[name] = {"path": path, "status": report.get("status") if isinstance(report, dict) else "missing",
                            "regenerated": fresh and not bool(error), "error": error}
+    execution = bundle.get("execution", {})
+    if not isinstance(execution, dict):
+        execution = {"valid": False, "error": "Malformed current-main execution inspection"}
+    if execution.get("valid") is not True:
+        key = "runtime:evidence"
+        evidence = blockers.setdefault(key, Blocker(key, "Obtain verified current-main execution evidence"))
+        evidence.messages.insert(0, execution.get("error") or "Current-main execution inspection missing or rejected")
+        evidence.reports = list(dict.fromkeys([*evidence.reports, REPORTS["runtime"]]))
+        # Missing shared execution cannot establish a failed consumer comparison.
+        # Re-audit agriculture, civic, land and markets before scheduling repairs.
+        for row in blockers.values():
+            if row.key.startswith("release:RESEARCH-UNBOUND-"):
+                row.dependencies.add(key)
     return Closure(revision, fresh, blockers, list(issues), list(prs), summaries)
