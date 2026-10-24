@@ -535,3 +535,240 @@ function observationSetup(ScienceFixture f, boolean earned)
 	f.military.snapshot().assertEquals(before)
 	f.extension.trade.capture().assertEquals(stocks)
 	f.campaign.countries.treasury[0].assertEquals(treasury)
+
+// Commission only the Channel instruments. No Botanical or Calculus entitlement
+// or action is present in either arm of the Barometric comparison.
+function barometricSetup(ScienceFixture f, boolean earned)
+	if earned
+		let gold = f.resources.balance
+		f.unlock("barometric_measurement")
+		f.resources.balance.assertEquals(gold - f.rpg.technologies.cost("barometric_measurement", 1778, 0, 0))
+	f.action("equip", 0, "")
+	f.campaign.countries.treasury[0].assertEquals(99880)
+	f.trade.markets[0].stock.assertEquals(998)
+	f.advance(7)
+	f.action("start", 0, "")
+	f.campaign.countries.treasury[0].assertEquals(99879)
+
+@test function barometricOnlyRegisteredVoyageCommitsExactStormLossAgainstMatchedControl()
+	let treatment = new ScienceFixture(false, true)
+	let control = new ScienceFixture(false, true)
+	barometricSetup(treatment, true)
+	barometricSetup(control, false)
+	treatment.effects.rate("player", "storm_attrition_reduction").assertEquals(1000)
+	control.effects.rate("player", "storm_attrition_reduction").assertEquals(0)
+	treatment.effects.rate("player", "unknown_route_attrition_reduction").assertEquals(0)
+	treatment.effects.rate("player", "research_generation_efficiency").assertEquals(0)
+	let ship = treatment.military.forces[treatment.military.forceIndex("english_patrol_ship")]
+	let other = control.military.forces[control.military.forceIndex("english_patrol_ship")]
+	let hull = ship.hull.integrity
+	let navigation = ship.navigation.record()
+	treatment.advance(17)
+	control.advance(17)
+	let measured = treatment.military.science.states[0]
+	let baseline = control.military.science.states[0]
+	baseline.lost.assertEquals(40)
+	measured.lost.assertEquals(36)
+	measured.avoided.assertEquals(4)
+	baseline.avoided.assertEquals(0)
+	(1000 - other.supply - baseline.lost).assertEquals(20)
+	(1000 - ship.supply - measured.lost).assertEquals(20)
+	other.supply.assertEquals(940)
+	ship.supply.assertEquals(944)
+	ship.strength.assertEquals(10)
+	ship.hull.integrity.assertEquals(hull)
+	ship.navigation.record().assertEquals(navigation)
+	treatment.campaign.countries.treasury[0].assertEquals(99869) // 120 + 1 + ten daily bills.
+	control.campaign.countries.treasury[0].assertEquals(99869)
+	treatment.trade.markets[0].stock.assertEquals(988) // two equipment + ten daily inputs.
+	control.trade.markets[0].stock.assertEquals(988)
+	treatment.campaign.knowledge.snapshot().assertEquals(control.campaign.knowledge.snapshot())
+	let saved = treatment.military.snapshot()
+	treatment.advance(17)
+	treatment.runtime.advance(treatment.day + 17)
+	treatment.rpg.technologies.reconstructAll()
+	treatment.rpg.technologies.reconstructAll()
+	treatment.military.snapshot().assertEquals(saved)
+	treatment.campaign.countries.treasury[0].assertEquals(99869)
+	treatment.trade.markets[0].stock.assertEquals(988)
+
+@test function barometricCalmWeatherAndUnfundedDaysCannotCreateAvoidanceOrPartialBills()
+	let f = new ScienceFixture(false, true)
+	barometricSetup(f, true)
+	let d = f.military.science.sites[0]
+	let ship = f.military.forces[f.military.forceIndex(d.forceId)]
+	d.weatherDays = 0
+	f.advance(8)
+	ship.supply.assertEquals(998)
+	f.military.science.states[0].lost.assertEquals(0)
+	f.military.science.states[0].avoided.assertEquals(0)
+	f.military.science.states[0].remainder.assertEquals(0)
+	d.weatherDays = d.weatherPeriod
+	ship.supply = 10 // daily provisions + discounted hazard require eleven.
+	f.advance(9)
+	ship.supply.assertEquals(10)
+	f.campaign.countries.treasury[0].assertEquals(99878)
+	f.trade.markets[0].stock.assertEquals(997)
+	f.military.science.states[0].lost.assertEquals(0)
+	f.military.science.states[0].avoided.assertEquals(0)
+	ship.supply = 1000
+	f.trade.markets[0].stock = 0
+	f.advance(10)
+	ship.supply.assertEquals(1000)
+	f.campaign.countries.treasury[0].assertEquals(99878)
+	f.trade.markets[0].stock = 997
+	f.campaign.countries.treasury[0] = 0
+	f.advance(11)
+	ship.supply.assertEquals(1000)
+	f.trade.markets[0].stock.assertEquals(997)
+	f.campaign.countries.treasury[0] = 99878
+	f.advance(12)
+	ship.supply.assertEquals(989)
+	f.military.science.states[0].lost.assertEquals(9)
+	f.military.science.states[0].avoided.assertEquals(1)
+	f.military.science.states[0].work.assertEquals(2) // missed days never replay.
+	f.campaign.countries.treasury[0].assertEquals(99877)
+	f.trade.markets[0].stock.assertEquals(996)
+
+@test function barometricVoyageRejectsMissingInstrumentsTechnologyVesselRouteAndLawfulControl()
+	let f = new ScienceFixture(false, true)
+	let d = f.military.science.sites[0]
+	f.unlock("barometric_measurement")
+	f.runtime.act("player", "start", d.id, "").startsWith("Commission").assertTrue()
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,oceanic_seamanship", "")).assertTrue()
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	f.rpg.restoreState(research).assertTrue()
+	let ship = f.military.forces[f.military.forceIndex(d.forceId)]
+	ship.unitTypeId = 'hfoo'
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	ship.unitTypeId = d.unitTypeId
+	ship.kind = FORCE_ARMY
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	ship.kind = FORCE_FLEET
+	ship.x += 256.
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	ship.x -= 256.
+	ship.controllerId = "ai"
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	ship.controllerId = "player"
+	f.military.settlements[0].legalOwnerId = "ai"
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.administrators[0].capacity = 0
+	f.runtime.act("player", "equip", d.id, "").startsWith("Requires").assertTrue()
+	f.military.administrators[0].capacity = 1
+	f.runtime.act("ai", "equip", d.id, "").startsWith("Requires").assertTrue()
+	f.action("equip", 0, "")
+	f.runtime.act("player", "start", d.id, "").startsWith("Commission").assertTrue()
+	f.advance(7)
+	f.runtime.act("player", "start", d.id, "invented_route").startsWith("Journeys").assertTrue()
+	f.action("start", 0, "")
+	f.runtime.act("player", "start", d.id, "").startsWith("Work is already").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(99879)
+	f.trade.markets[0].stock.assertEquals(998)
+	f.trade.markets[0].blockaded = true
+	f.advance(8)
+	ship.supply.assertEquals(1000)
+	f.military.science.states[0].owner.assertEquals("")
+	f.military.science.states[0].lost.assertEquals(0)
+
+@test function barometricFractionsResumeReconstructAndCaptureWithPlayerAiParity()
+	let human = new ScienceFixture(false, true)
+	let ai = new ScienceFixture(true, false)
+	barometricSetup(human, true)
+	barometricSetup(ai, true)
+	for i = 0 to 1
+		var f = human
+		if i == 1
+			f = ai
+		let d = f.military.science.sites[0]
+		d.hazardLoss = 3
+		d.weatherDays = d.weatherPeriod
+	human.advance(10)
+	ai.advance(10)
+	human.military.science.states[0].remainder.assertEquals(9000)
+	human.military.science.states[0].lost.assertEquals(9)
+	let saved = human.military.snapshot()
+	let research = human.rpg.captureState()
+	human.military.restore(saved).assertTrue()
+	human.rpg.restoreState(research).assertTrue()
+	human.rpg.technologies.reconstructAll()
+	human.rpg.technologies.reconstructAll()
+	human.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
+	human.military.snapshot().assertEquals(saved)
+	human.advance(11)
+	ai.advance(11)
+	human.military.science.states[0].remainder.assertEquals(2000)
+	human.military.science.states[0].lost.assertEquals(11)
+	human.military.science.states[0].avoided.assertEquals(1)
+	let ship = human.military.forces[human.military.forceIndex("english_patrol_ship")]
+	ship.supply.assertEquals(981)
+	ship.supply.assertEquals(ai.military.forces[ai.military.forceIndex("english_patrol_ship")].supply)
+	human.campaign.countries.treasury[0].assertEquals(ai.campaign.countries.treasury[0])
+	human.trade.markets[0].stock.assertEquals(ai.trade.markets[0].stock)
+	human.campaign.knowledge.snapshot().assertEquals(ai.campaign.knowledge.snapshot())
+	human.military.transferControl(ship.id, "ai", human.day + 11)
+	human.military.science.states[0].owner.assertEquals("")
+	human.military.science.states[0].equipmentOwner.assertEquals("ai")
+	human.military.science.states[0].remainder.assertEquals(0)
+	human.effects.rate("ai", "storm_attrition_reduction").assertEquals(0)
+	human.advance(17)
+	ship.supply.assertEquals(981)
+
+@test function barometricFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new ScienceLedger()
+	configureGeneratedScience(definitions, effects)
+	let d = definitions.sites[0]
+	d.id = "weather"
+	d.settlementId = "port"
+	d.forceId = "fleet"
+	d.good = "grain"
+	d.firstDay = 0
+	d.prerequisite = "barometric_measurement"
+	d.equipmentDays = 1
+	d.unitTypeId = 'hfoo'
+	d.stationX = 40.
+	d.stationY = 50.
+	d.hazardLoss = 3
+	d.weatherDays = d.weatherPeriod
+	f.military.science.register(d)
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Observer", "england", "europe_west", "port", 40, 50, 40, 1))
+	let technology = new RuntimeTechnology("barometric_measurement", "Barometric measurement", 1, 1)
+	technology.addUnlock("barometric_measurement", "modifier", "progression_barometric_measurement")
+	f.rpg.technologies.register(technology).assertTrue()
+	f.rpg.research("england", "barometric_measurement", 1, 1).assertTrue()
+	let runtime = new ScienceCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.scienceRuntime = runtime
+	runtime.act("england", "equip", d.id, "").assertEquals("")
+	let day = f.clock.currentDay
+	f.clock.advanceTo(day + 1).assertTrue()
+	runtime.act("england", "start", d.id, "").assertEquals("")
+	f.clock.advanceTo(day + 2).assertTrue()
+	f.military.science.states[0].remainder.assertEquals(3000)
+	let savedClock = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "barometric").assertTrue()
+	f.clock.advanceTo(day + 3).assertTrue()
+	let before = f.military.snapshot()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	let knowledge = f.campaign.state.knowledge.snapshot()
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.rate("england", "storm_attrition_reduction").assertEquals(1000)
+	f.extension.fail = false
+	f.recordingTimer.expected = savedClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].remainder.assertEquals(3000)
+	f.clock.advanceTo(day + 3).assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.campaign.state.knowledge.snapshot().assertEquals(knowledge)

@@ -45,8 +45,11 @@ public class CampaignSciencePort implements SciencePort
 		if not economy.pay(owner, d.settlementId, money, d.good, units)
 			return false
 		if provisions > 0
-			military.forces[i].supply -= provisions
+			consumeSupply(military.forces[i], provisions)
 		return true
+	function consumeSupply(RuntimeForce actor, int provisions)
+		// A successful payment commits ordinary provisions and hazard together.
+		actor.supply -= provisions
 	override function researchCost(string owner, string target) returns int
 		let research = campaign.rpg.technologies
 		let t = research.get(target)
