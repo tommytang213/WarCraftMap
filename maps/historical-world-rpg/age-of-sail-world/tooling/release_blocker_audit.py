@@ -143,6 +143,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= banking_bindings(PROJECT, execution, execution_log, revision)
     from science_exploration import verified_bindings as verified_science
     bound |= verified_science(PROJECT, execution, execution_log, revision)
+    from naval_services_catalog import verified_bindings as verified_naval
+    bound |= verified_naval(PROJECT, execution, execution_log, revision)
     from chartered_companies import verified_bindings as chartered_bindings
     bound |= chartered_bindings(PROJECT, execution, execution_log, revision)
     from army_food_logistics import verified_bindings as verified_logistics
