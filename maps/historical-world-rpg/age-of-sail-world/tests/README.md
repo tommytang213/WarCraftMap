@@ -443,3 +443,16 @@ disconnected execution and incorrect typed entitlement/1000-bp coefficients.
 The `barometric_voyage` probes include weather, supply mutation and committed
 hazard outcomes; only full current-source pinned execution can close its release
 finding. See `reports/issue-557/README.md` for the path and validation scope.
+
+The isolated Botanical comparison earns only Botanical Collecting through
+registered research and commissions only `isles_botanical_survey`. Ten funded
+days consume 20 ordinary provisions in both arms and 18 versus 20 hazard supply,
+leaving 962 versus 960 supply with identical treasury, cloth and elapsed time.
+Botanical-only negatives and lifecycle tests cover unfunded days, formation,
+route, equipment, supporting research, lawful control, duplicate sources and
+delivery, fractional save/resume, capture, active/abstract player/AI equivalence
+and late-load rollback. Unrelated scientific research cannot reduce survey loss.
+`test_botanical_binding_evidence.py` requires the exact typed 1000-bp contract,
+complete current-source pinned execution and `botanical_survey` production probes
+inside that comparison. Sibling-only, focused, stale and tampered evidence fails
+closed. See `reports/issue-566/README.md` for integration validation requirements.
