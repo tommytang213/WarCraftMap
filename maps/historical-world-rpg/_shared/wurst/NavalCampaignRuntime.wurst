@@ -241,6 +241,16 @@ public class NavalCampaignRuntime
 			// The first bill prepays the first day; one paid day never repeats.
 			s.work = 1
 		return ""
+	/** Completion is separate from purchase and runs only after funded work. */
+	private function completeBuild(NavalYard d, NavalYard hull, NavalYardState s, string owner)
+		let m = campaign.militarySettlements
+		let shipId = "naval:" + d.id + ":" + I2S(s.serial)
+		if m.forceIndex(shipId) < 0
+			let ship = new RuntimeForce(shipId, owner, d.mapId, m.combatBindings.profile(hull.profileId, hull.unitTypeId, FORCE_FLEET).categoryId, FORCE_FLEET, hull.unitTypeId, hull.strength, hull.supply, d.x, d.y)
+			ship.combatProfileId = hull.profileId
+			ship.hull.lastDay = s.lastDay
+			m.recruit(ship)
+		s.stop()
 	function advance(int day)
 		let m = campaign.militarySettlements
 		let ledger = m.naval
@@ -288,13 +298,7 @@ public class NavalCampaignRuntime
 							f.hull.carvel = true
 							s.stop()
 						else if s.job == "build" and s.work >= ledger.buildDays and m.forceCount < 4096
-							let shipId = "naval:" + d.id + ":" + I2S(s.serial)
-							if m.forceIndex(shipId) < 0
-								let ship = new RuntimeForce(shipId, owner, d.mapId, m.combatBindings.profile(hull.profileId, hull.unitTypeId, FORCE_FLEET).categoryId, FORCE_FLEET, hull.unitTypeId, hull.strength, hull.supply, d.x, d.y)
-								ship.combatProfileId = hull.profileId
-								ship.hull.lastDay = s.lastDay
-								m.recruit(ship)
-							s.stop()
+							completeBuild(d, hull, s, owner)
 			if previousTarget != "" and not ledger.busy(previousTarget)
 				let found = m.forceIndex(previousTarget)
 				if found >= 0

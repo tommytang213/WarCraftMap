@@ -557,6 +557,18 @@
     "combat_rating": {
       "path": "wurst/CombatEffects.wurst",
       "signature": "function applyForCombatants(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string sourceController, string sourceCategory, string controllerId, string categoryId)"
+    },
+    "naval_complete": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "private function completeBuild(NavalYard d, NavalYard hull, NavalYardState s, string owner)"
+    },
+    "naval_snapshot": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function snapshot() returns string"
+    },
+    "naval_restore": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function restore(string candidate, boolean project) returns boolean"
     }
   },
   "systems": {
@@ -868,6 +880,17 @@
       "combat_install",
       "land_native_weapon",
       "land_cavalry"
+    ],
+    "naval_commissioning": [
+      "research",
+      "dispatch",
+      "naval_registration",
+      "naval_action",
+      "naval_pay",
+      "naval_advance",
+      "naval_complete",
+      "naval_snapshot",
+      "naval_restore"
     ]
   }
 }

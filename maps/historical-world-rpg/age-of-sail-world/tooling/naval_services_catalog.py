@@ -12,6 +12,43 @@ METRICS = {'unlock_recruitment', 'hull_repair_throughput',
            'close_range_naval_gunfire_damage', 'voyage_hull_weather_resilience'}
 
 
+def commissioning_consumers(data):
+    """Exact closure candidates, separate from the other registered naval effects.
+
+    Bills and eligibility come from the resolved roster and scenario recipes.
+    This metadata describes the consumer; execution remains a separate gate.
+    """
+    candidates = [e for e in data['effects'] if e['nodeId'] == 'battlefleet_doctrine'
+                  or e['unlock'] == {'kind': 'unit', 'contentId': 'ship_of_the_line'}]
+    hull = data['rosterBlueprint']
+    if len(candidates) != 1:
+        return []
+    effect = candidates[0]
+    if (effect['nodeId'] != 'battlefleet_doctrine'
+            or effect['unlock'] != {'kind': 'unit', 'contentId': 'ship_of_the_line'}
+            or effect['metric'] != 'unlock_recruitment'
+            or type(effect['bonusBasisPoints']) is not int or effect['bonusBasisPoints'] != 0
+            or effect['activation'] != 'commissioning_unlock'
+            or effect['recipient'] != 'qualified_warship_yards'
+            or hull['id'] != 'ship_of_the_line_generic'
+            or effect['nodeId'] not in hull['technologyIds']):
+        return []
+    return [dict(nodeId=effect['nodeId'], **effect['unlock'], metric=effect['metric'],
+                 rosterId=hull['id'], action='build', executionSystem='naval_commissioning',
+                 dockPrerequisites=sorted({y['prerequisite'] for y in data['yards']}),
+                 boardRequired=True, requiredResearch=hull['technologyIds'] + hull['institutionIds'],
+                 availability=hull['availability'], currency=hull['cost'], upkeep=hull['upkeep'],
+                 provisions=hull['supply'], manpower=data['crewStrength'],
+                 timber=data['rules']['buildWood'], iron=data['rules']['buildIron'],
+                 constructionDays=data['constructionDays'])]
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    from naval_commissioning import verified_consumers
+    return verified_consumers(project, lambda: build(project)[0]['consumers'],
+                              execution, execution_log, revision)
+
+
 def build(project=ROOT):
     project = Path(project)
     data = json.loads((project / 'scenario/naval/services.json').read_text())
@@ -126,6 +163,8 @@ def build(project=ROOT):
     data['maximumHarborDistance'] = 1024
     data['effects'] = effects
     data['rosterBlueprint'] = hull
+    data['crewStrength'] = roster.ships[hull['shipId']]['crewStrength']
+    data['consumers'] = commissioning_consumers(data)
     return data, '\n'.join(lines) + '\n'
 
 

@@ -1,0 +1,158 @@
+{
+  "exactGeneratedConsumerMetadata": "pass",
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "generationAndProvenance": "pass",
+  "python": {
+    "checks": [
+      {
+        "name": "naval binding evidence",
+        "passed": 6
+      },
+      {
+        "name": "naval catalogue",
+        "passed": 4
+      },
+      {
+        "name": "integration evidence",
+        "passed": 13
+      },
+      {
+        "name": "research generation",
+        "passed": 11
+      },
+      {
+        "name": "release audit",
+        "passed": 10
+      },
+      {
+        "name": "runtime acceptance",
+        "passed": 25
+      },
+      {
+        "name": "requirement traceability",
+        "passed": 54
+      }
+    ],
+    "logSha256": "f46da15a61f574791fecbce24cd5102b29a03ddc4200638a99352ae66304e6d7",
+    "passed": 123
+  },
+  "remaining": "Controller runs complete repository/pinned validation after integration preflight and regenerates verified audits on integrated main using the #560 evidence path. No native-playability claim.",
+  "scope": "Focused developer validation only; not complete-suite execution or release closure evidence.",
+  "sourceIdentity": {
+    "sourceRevision": "142ccf224ceeaeb75a0bf5656f84b2e7ac9519ad",
+    "sourceTreeSha256": "1a1e2e7177799e59704cb433c997f025a77c424040ebd8787ececff7bb254684"
+  },
+  "sourceOnlyAudits": {
+    "findingIdsUnchanged": true,
+    "refreshed": [
+      "release-blocker",
+      "runtime-acceptance",
+      "requirement-traceability"
+    ],
+    "unresolvedReleaseBlockers": 238
+  },
+  "status": "pass",
+  "traceabilityFreshness": "pass",
+  "wurst": {
+    "assembledWurstInputSetSha256": "b1dc7d474dbe0279d02223205308c017235eb5f9803a584005a3fc0d48189f13",
+    "comparativeProbes": [
+      "agriculture_clock",
+      "appoint",
+      "construction_commit",
+      "construction_quote",
+      "dispatch",
+      "naval_action",
+      "naval_advance",
+      "naval_complete",
+      "naval_pay",
+      "naval_registration",
+      "naval_restore",
+      "naval_snapshot",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "currentAuthoredWurstMatchesInstrumentedAssembly": true,
+    "generatedWurstMatchesFreshGeneration": true,
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "logSha256": "2d371d765c0d82eaa26d61bf209d0130b9827cd96a7f1c615c9313f74f6d941f",
+    "passed": 14,
+    "tests": [
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineOnlyRegisteredCommissioningRequiresPaidWorkAgainstMatchedControl",
+        "line": 131,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningRejectsEachMissingConditionWithoutMutation",
+        "line": 193,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningCaptureCancelsAndReconstructionNeverRepeatsCompletion",
+        "line": 248,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 270,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningLateLoadRollbackRestoresPaidWorkAndResources",
+        "line": 299,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs",
+        "line": 354,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesOnlyModifyCloseVerifiedCannonHitsAndPreserveOtherRatingsOnCaptureAndReload",
+        "line": 393,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity",
+        "line": 420,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic",
+        "line": 438,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesUseInstalledProductionWeaponCallbacksAndRejectStaleAndIncompatibleHits",
+        "line": 482,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalSourcesReconstructOnceAndLongCampaignFractionsConserveActualHullInputs",
+        "line": 506,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalHistoryInfrastructureGearAndResourceNegativesSuspendWithoutInventedOutput",
+        "line": 531,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision",
+        "line": 564,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:combinedNavalAndLandSnapshotsPreserveBothHRecordsAndMigrateEitherVersion13Branch",
+        "line": 590,
+        "status": "pass"
+      }
+    ],
+    "typecheck": "pass"
+  }
+}
