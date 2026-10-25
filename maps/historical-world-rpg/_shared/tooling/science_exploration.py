@@ -146,6 +146,42 @@ BAROMETRIC_PROBES = {'research', 'dispatch', 'science_registration', 'science_ac
                      'science_supply', 'science_hazard_commit'}
 BAROMETRIC_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_barometric_measurement'}
 
+BOTANICAL_COMPARISON = 'botanicalOnlyRegisteredSurveyCommitsExactHazardLossAgainstMatchedControl'
+BOTANICAL_TESTS = {
+    BOTANICAL_COMPARISON,
+    'botanicalUnfundedDaysCannotCreateAvoidanceFractionsOrPartialBills',
+    'botanicalSurveyRejectsMissingEquipmentResearchFormationRouteAndLawfulControl',
+    'botanicalFractionsResumeReconstructAndCaptureWithPlayerAiParity',
+    'botanicalFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch',
+    'botanicalNamedSourcesDeduplicateAndUnrelatedResearchCannotReduceSurveyLoss',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+BOTANICAL_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                    'science_advance', 'science_pay', 'science_weather',
+                    'science_supply', 'science_hazard_commit'}
+BOTANICAL_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_botanical_collecting'}
+
+
+def _botanical_authored(project):
+    """Recognize only the approved overland source, not a sibling science metric."""
+    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    path = (project / data['designSource']).resolve()
+    path.relative_to(project.resolve())
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'botanical_collecting' or e['unlock'] == BOTANICAL_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'botanical_collecting']
+    return (effect['nodeId'] == 'botanical_collecting'
+            and effect['unlock'] == BOTANICAL_UNLOCK
+            and effect['metric'] == 'unknown_route_attrition_reduction'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 1000
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'qualified_overland_exploration_parties'
+            and len(nodes) == 1 and BOTANICAL_UNLOCK in nodes[0]['unlocks'])
+
 
 def _barometric_authored(project):
     """The approved identity and coefficient, never inferred from a similar metric."""
@@ -197,6 +233,15 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
                 and BAROMETRIC_PROBES <= set(probes.get(comparative, []))
                 and _barometric_authored(project)):
             bound.add(('modifier', 'progression_barometric_measurement'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    comparative = prefix + BOTANICAL_COMPARISON
+    try:
+        if (BOTANICAL_TESTS <= passed
+                and comparative in coverage.get('botanical_survey', [])
+                and BOTANICAL_PROBES <= set(probes.get(comparative, []))
+                and _botanical_authored(project)):
+            bound.add(('modifier', 'progression_botanical_collecting'))
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
         pass
     return bound
