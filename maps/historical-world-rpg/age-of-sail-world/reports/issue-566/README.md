@@ -55,3 +55,22 @@ audits with `tooling/planning_audit.py --source-revision REVISION
 runtime-acceptance and requirement-traceability reports against the same verified
 bundle. Confirm the exact Botanical finding disappears and retain unrelated
 blockers. No prior PR artifacts or player QA establish closure.
+
+The integration validation retry refreshed all three checked-in source-only
+audit snapshots against revision `b2cd7dd2029b9984e259b33617973e1e26519c98`.
+The release and runtime reports had retained pre-implementation source hashes,
+which caused the two freshness failures in repository validation. Their current
+source digest and execution-contract hash now match the integrated implementation.
+All 238 release findings, 30 runtime failures and 7004 traceability blockers are
+unchanged, including the Botanical finding pending complete verified execution;
+the human reports are unchanged. The previously failing freshness tests pass
+within the release audit suite (10 tests) and runtime acceptance suite (25 tests).
+The six Botanical verifier regressions and the 86-test science, Barometric,
+integration-evidence, traceability and framework regression batch also pass:
+127 Python tests in total. The framework boundary audit passes as well. Synthetic
+compiler fixtures in the Python tests verify protocols only, not release closure.
+
+Java and Grill are unavailable in this retry environment, and the Docker daemon
+denies access. Full pinned execution and evidence-backed post-integration audit
+regeneration remain assigned to the controller. This repair uses no historical
+execution as evidence for the integrated revision.
