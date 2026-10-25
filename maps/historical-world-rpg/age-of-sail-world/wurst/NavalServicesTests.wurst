@@ -107,6 +107,18 @@ public class NavalFixture
 		unlock("careening_stations")
 		unlock("carronade_batteries")
 		unlock("carvel_hull_construction")
+	function commissioningReady()
+		action("dock", "")
+		clock.advanceTo(day + military.naval.dockDays).assertTrue()
+		action("board", "")
+		clock.advanceTo(day + military.naval.dockDays + military.naval.boardDays).assertTrue()
+	function authority() returns string
+		return military.snapshot() + "#" + rpg.captureState() + "#" + trade.capture() + "#" + I2S(campaign.countries.treasury[0]) + "#" + I2S(resources.balance)
+	function rejectedBuild()
+		let before = authority()
+		commands.dispatch(Player(0), "/naval build london").assertTrue()
+		(resources.output != "Naval action completed.").assertTrue()
+		authority().assertEquals(before)
 	function hit(boolean weapon) returns string
 		let h = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
 		military.applyCombatHit(h, military.forceIndex("ship"), military.forceIndex("enemy"), resources.owner, "enemy", weapon)
@@ -115,6 +127,229 @@ public class NavalFixture
 		h.damage.display().assertEquals(result)
 		destroy h
 		return result
+
+@test function doctrineOnlyRegisteredCommissioningRequiresPaidWorkAgainstMatchedControl()
+	let f = new NavalFixture(false, true)
+	let control = new NavalFixture(false, true)
+	f.authority().assertEquals(control.authority())
+	f.commissioningReady()
+	control.commissioningReady()
+	let before = f.military.forceCount
+	f.unlock("battlefleet_doctrine")
+	f.military.forceCount.assertEquals(before)
+	f.effects.earned("player", "hull_repair_throughput").assertFalse()
+	f.effects.earned("player", "close_range_naval_gunfire_damage").assertFalse()
+	f.effects.earned("player", "voyage_hull_weather_resilience").assertFalse()
+	control.rejectedBuild()
+	let d = f.military.naval.yards[0]
+	let ledger = f.military.naval
+	let buildDays = ledger.buildDays
+	let city = f.military.settlements[0]
+	let treasury = f.campaign.countries.treasury[0]
+	let crew = city.manpower
+	let supply = city.supply
+	let wood = f.trade.markets[0].stock
+	let iron = f.trade.markets[1].stock
+	let food = f.trade.markets[2].stock
+	let start = f.clock.currentDay
+	f.action("build", "")
+	f.campaign.countries.treasury[0].assertEquals(treasury - d.price)
+	city.manpower.assertEquals(crew - d.crew)
+	city.supply.assertEquals(supply - d.supply)
+	f.trade.markets[0].stock.assertEquals(wood - ledger.buildWood)
+	f.trade.markets[1].stock.assertEquals(iron - ledger.buildIron)
+	f.trade.markets[2].stock.assertEquals(food - d.supply)
+	f.military.forceCount.assertEquals(before)
+	f.rejectedBuild()
+	f.clock.advanceTo(start + buildDays - 1).assertTrue()
+	f.military.forceCount.assertEquals(before)
+	f.military.naval.states[0].work.assertEquals(buildDays - 1)
+	let pending = f.military.snapshot()
+	f.military.restore(pending).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(start + buildDays).assertTrue()
+	f.military.forceCount.assertEquals(before + 1)
+	let ship = f.military.forces[before]
+	ship.combatProfileId.assertEquals(d.profileId)
+	ship.unitTypeId.assertEquals(d.unitTypeId)
+	ship.strength.assertEquals(d.strength)
+	ship.supply.assertEquals(d.supply)
+	let completed = f.military.snapshot()
+	f.military.restore(completed).assertTrue()
+	f.runtime.advance(f.clock.currentDay)
+	f.runtime.advance(f.clock.currentDay)
+	f.military.snapshot().assertEquals(completed)
+	f.military.forceCount.assertEquals(before + 1)
+	// Existing roster maintenance is charged after completion, without new hulls.
+	let maintenance = f.campaign.countries.treasury[0]
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.military.forces[before].supply.assertEquals(d.supply - 1)
+	f.military.forces[before].hull.upkeepCredit.assertEquals(d.upkeep mod 30)
+	// The pre-existing owned ship also pays the same roster maintenance.
+	f.campaign.countries.treasury[0].assertEquals(maintenance - (d.upkeep div 30) - ((d.upkeep + ((start - f.day + buildDays) * d.upkeep) mod 30) div 30))
+	f.military.forceCount.assertEquals(before + 1)
+
+@test function doctrineCommissioningRejectsEachMissingConditionWithoutMutation()
+	let f = new NavalFixture(false, false)
+	f.commissioningReady()
+	f.rejectedBuild() // Missing doctrine, with every other condition present.
+	f.unlock("battlefleet_doctrine")
+	let d = f.military.naval.yards[0]
+	let state = f.military.naval.states[0]
+	let ready = state.ready
+	state.ready = 0
+	f.rejectedBuild()
+	state.ready = ready
+	state.boardOwner = ""
+	f.rejectedBuild()
+	state.boardOwner = "player"
+	let first = d.firstDay
+	d.firstDay = f.clock.currentDay + 1
+	f.rejectedBuild()
+	d.firstDay = first
+	let last = d.lastDay
+	d.lastDay = f.clock.currentDay - 1
+	f.rejectedBuild()
+	d.lastDay = last
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,public_credit", "")).assertTrue()
+	f.rejectedBuild()
+	f.rpg.restoreState(research).assertTrue()
+	f.rpg.restoreState(research.replace("|u,player,dockyard_logistics", "")).assertTrue()
+	f.rejectedBuild()
+	f.rpg.restoreState(research).assertTrue()
+	let funds = f.campaign.countries.treasury[0]
+	f.campaign.countries.treasury[0] = d.price - 1
+	f.rejectedBuild()
+	f.campaign.countries.treasury[0] = funds
+	let city = f.military.settlements[0]
+	let manpower = city.manpower
+	city.manpower = d.crew // One local worker must remain.
+	f.rejectedBuild()
+	city.manpower = manpower
+	let supply = city.supply
+	city.supply = d.supply - 1
+	f.rejectedBuild()
+	city.supply = supply
+	for i = 0 to 2
+		let stock = f.trade.markets[i].stock
+		f.trade.markets[i].stock = 0
+		f.rejectedBuild()
+		f.trade.markets[i].stock = stock
+		f.trade.markets[i].blockaded = true
+		f.rejectedBuild()
+		f.trade.markets[i].blockaded = false
+	let before = f.authority()
+	(f.runtime.act("ai", "build", "london", "") != "").assertTrue()
+	f.authority().assertEquals(before)
+	f.action("build", "") // Restoring each missing condition restores eligibility.
+
+@test function doctrineCommissioningCaptureCancelsAndReconstructionNeverRepeatsCompletion()
+	let f = new NavalFixture(false, false)
+	f.unlock("battlefleet_doctrine")
+	f.commissioningReady()
+	let count = f.military.forceCount
+	f.action("build", "")
+	f.clock.advanceTo(f.clock.currentDay + f.military.naval.buildDays - 1).assertTrue()
+	let paid = f.campaign.countries.treasury[0]
+	let stock = f.trade.capture()
+	f.military.transferSettlement("london", "ai")
+	f.military.naval.states[0].job.assertEquals("")
+	f.military.naval.states[0].boardOwner.assertEquals("")
+	f.effects.entitled("ai", "ship_of_the_line").assertFalse()
+	let captured = f.military.snapshot()
+	f.military.restore(captured).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.military.forceCount.assertEquals(count)
+	f.trade.capture().assertEquals(stock)
+	(f.campaign.countries.treasury[0] <= paid).assertTrue()
+	(f.military.naval.states[0].ready > 0).assertTrue()
+
+@test function doctrineCommissioningPlayerAiAndActiveInactiveUseIdenticalAuthority()
+	var expected = ""
+	for variant = 0 to 3
+		let f = new NavalFixture(variant >= 2, variant mod 2 == 0)
+		f.unlock("battlefleet_doctrine")
+		f.commissioningReady()
+		let count = f.military.forceCount
+		f.action("build", "")
+		let start = f.clock.currentDay
+		f.clock.advanceTo(start + f.military.naval.buildDays - 1).assertTrue()
+		f.military.forceCount.assertEquals(count)
+		let pending = f.military.snapshot()
+		f.military.restore(pending).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.clock.advanceTo(start + f.military.naval.buildDays).assertTrue()
+		f.military.forceCount.assertEquals(count + 1)
+		f.military.forces[count].controllerId.assertEquals(f.resources.owner)
+		f.military.forces[count].combatProfileId.assertEquals("ship_of_the_line_generic")
+		let completed = f.military.snapshot()
+		f.runtime.advance(f.clock.currentDay)
+		f.military.restore(completed).assertTrue()
+		f.runtime.advance(f.clock.currentDay)
+		f.military.snapshot().assertEquals(completed)
+		let outcome = I2S(f.campaign.countries.treasury[0]) + "#" + I2S(f.military.settlements[0].manpower) + "#" + I2S(f.military.settlements[0].supply) + "#" + f.trade.capture() + "#" + f.military.forces[count].hull.record()
+		if variant == 0
+			expected = outcome
+		else
+			outcome.assertEquals(expected)
+
+@test function doctrineCommissioningLateLoadRollbackRestoresPaidWorkAndResources()
+	let f = new LoadFixture()
+	let effects = new NavalResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	f.military.setRpgRuntime(f.rpg)
+	f.military.navalResearch = effects
+	f.military.combatBindings = createGeneratedCombatBindings()
+	configureGeneratedNaval(f.military.naval, effects)
+	let d = f.military.naval.yards[0]
+	// Adapt only this bounded load fixture's location/calendar and supporting
+	// research. Production roster bill and construction work remain generated.
+	d.id = "port"
+	d.mapId = "europe_west"
+	d.prerequisite = "battlefleet_doctrine"
+	d.researchRequirements = "|battlefleet_doctrine|"
+	d.firstDay = 0
+	d.lastDay = 1000
+	f.military.naval.states[0].ready = 1
+	f.military.naval.states[0].lastDay = f.clock.currentDay
+	f.military.naval.states[0].boardOwner = "england"
+	f.military.settlements[0].manpower = 10000
+	f.military.settlements[0].supply = 10000
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	f.campaign.countries.treasury[0] = 100000
+	for i = 0 to 2
+		var good = "timber"
+		if i == 1
+			good = "iron"
+		else if i == 2
+			good = "ship_provisions"
+		f.extension.trade.registerMarket(new RuntimeMarket("port", good, 10000, 100000, 10, 10))
+	let technology = new RuntimeTechnology("battlefleet_doctrine", "Battlefleet Doctrine", 1, 1)
+	technology.addUnlock("battlefleet_doctrine", "unit", "ship_of_the_line")
+	f.rpg.technologies.register(technology).assertTrue()
+	let runtime = new NavalCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.navalRuntime = runtime
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before doctrine").assertTrue()
+	f.rpg.research("england", "battlefleet_doctrine", 1, 1).assertTrue()
+	runtime.act("england", "build", "port", "").assertEquals("")
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.military.naval.states[0].work.assertEquals(1)
+	let before = f.military.snapshot()
+	let research = f.rpg.captureState()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(before)
+	f.rpg.captureState().assertEquals(research)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.entitled("england", "ship_of_the_line").assertTrue()
 
 @test function registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs()
 	let f = new NavalFixture(false, true)

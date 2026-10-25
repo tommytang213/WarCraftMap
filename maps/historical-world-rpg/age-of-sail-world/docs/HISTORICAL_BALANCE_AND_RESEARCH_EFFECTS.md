@@ -450,6 +450,16 @@ fraction-conservation fixture. The integrated trace test exercises all seven
 controller completes fresh integrated repository/runtime/traceability validation.
 This work does not establish native-client launch or close #438.
 
+The #562 closure verifier recognizes only Battlefleet Doctrine's exact
+`unit:ship_of_the_line` → `ship_of_the_line_generic` paid commissioning consumer.
+Generated consumer metadata derives its bills and eligibility from the roster and
+scenario; it is not execution evidence. The isolated registered comparison,
+negative/persistence tests and payment/work/completion/restore probes must pass
+in the complete pinned suite for the exact audited revision and source digest.
+Sibling naval effects remain separately blocked. The verifier reuses the existing
+execution-evidence path; integrated-main audit regeneration remains the controller's
+gate. See `reports/issue-562/README.md` for focused validation and closure steps.
+
 ## Army food and canal freight consumers (#519)
 
 `ArmyFoodLogistics.wurst` consumes the two approved logistics modifiers through
