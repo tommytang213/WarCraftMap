@@ -11,11 +11,12 @@ RULES = {'transitionDays', 'enactmentBasisPoints', 'upkeepBasisPoints', 'procure
          'shipmentWaste', 'supplyRadius'}
 
 
-# Exact issue #550 candidates only. Bayonet research remains independently blocked.
+# Exact approved land identities; each requires its own executed comparison.
 CLOSURE_EFFECTS = {
     ('modifier', 'progression_arquebus_volley_drill'): ('arquebus_volley_drill', 'firearm_reload_efficiency', 500),
     ('policy', 'progression_artillery_offices'): ('artillery_offices', 'artillery_production_throughput', 800),
     ('modifier', 'progression_artillery_train'): ('artillery_train', 'artillery_supply_waste_reduction', 800),
+    ('modifier', 'progression_bayonet_system'): ('bayonet_system', 'anti_cavalry_melee_defense', 800),
 }
 COMMON_PROBES = {'land_registration', 'research', 'dispatch'}
 COMPARATIVE_PATHS = {
@@ -28,10 +29,18 @@ COMPARATIVE_PATHS = {
     ('modifier', 'progression_artillery_train'):
         ('land_supply', 'landTrainMatchedControlDelivers77Versus75From100ActualStock',
          COMMON_PROBES | {'land_action', 'land_delivery'}),
+    ('modifier', 'progression_bayonet_system'):
+        ('land_bayonet', 'landBayonetMatchedControlRequiresResearchEquipmentAndHostileCavalry',
+         COMMON_PROBES | {'land_equipment', 'land_damage', 'combat_rating'}),
 }
 ROLLBACK_TEST = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresLandArmyScienceWorkAndFiringClock'
 ADAPTER_TEST = 'wurst/MilitaryCombatEventsTests.wurst:installedLandDrillAndBayonetUseProductionWeaponCallbacks'
+BAYONET_ADAPTER_PROBES = COMMON_PROBES | {'combat_install', 'land_native_weapon',
+                                         'land_cavalry', 'land_equipment', 'land_damage', 'combat_rating'}
+BAYONET_ROLLBACK_TEST = 'wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense'
 REQUIRED_TESTS = {
+    'landBayonetRejectsIneligibleRosterWeaponsEraAndControllers',
+    'landBayonetReconstructionMigrationAndNamedSourcesRemainIndependent',
     'landRegisteredResearchAndOfficeActionsChargeRealInputsAndTimeline',
     'landProductionAndSupplyRejectMissingResourcesControlRoutesAndEquipment',
     'landReloadAndBayonetAreExactEquipmentGatedAndDeduplicated',
@@ -63,7 +72,11 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
         return {pair for pair, (system, name, probes) in COMPARATIVE_PATHS.items()
                 if authored.get(pair) == CLOSURE_EFFECTS[pair]
                 and prefix + name in coverage.get(system, [])
-                and probes <= set(observed.get(prefix + name, []))}
+                and probes <= set(observed.get(prefix + name, []))
+                and (pair != ('modifier', 'progression_bayonet_system')
+                     or (BAYONET_ROLLBACK_TEST in passed
+                         and ADAPTER_TEST in coverage.get('land_bayonet_callback', [])
+                         and BAYONET_ADAPTER_PROBES <= set(observed.get(ADAPTER_TEST, []))))}
     except (WurstExecutionError, ValueError, OSError, KeyError, TypeError, AttributeError):
         return set()
 

@@ -127,7 +127,7 @@ class PlanningAuditTests(unittest.TestCase):
         self.assertIn('FileNotFoundError', result['execution']['error'])
         self.assertIsNone(release.call_args.kwargs['execution'])
 
-    def test_reconcile_four_agriculture_and_six_other_findings_only_after_verified_execution(self):
+    def test_reconcile_four_agriculture_and_seven_other_findings_only_after_verified_execution(self):
         self.exported_fixture()
         suffix = planning_audit.COMPARISONS['civicLandAuction'][-1]
         report = {'findings': [{'id': 'RESEARCH-UNBOUND-' + suffix}], 'status': 'fail'}
@@ -135,7 +135,7 @@ class PlanningAuditTests(unittest.TestCase):
         comparisons = result['consumerComparisons']
         self.assertEqual(len(comparisons['agriculture']), 4)
         self.assertEqual(set(comparisons['agriculture'].values()), {'absent'})
-        self.assertEqual(len(comparisons['civicLandAuction']), 6)
+        self.assertEqual(len(comparisons['civicLandAuction']), 7)
         self.assertEqual(comparisons['civicLandAuction']['release:RESEARCH-UNBOUND-' + suffix], 'remaining')
         result, _, _, _ = self.regenerate(release_report=report, identity_changed=True)
         self.assertEqual(set(result['consumerComparisons']['agriculture'].values()), {'source_changed'})
