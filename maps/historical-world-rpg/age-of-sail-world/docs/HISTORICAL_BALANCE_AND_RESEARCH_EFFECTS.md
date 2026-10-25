@@ -212,15 +212,29 @@ Issue #550 adds exact generated consumer metadata and current-source,
 full-suite execution recognition for Arquebus Volley Drill, Artillery Offices
 and Artillery Train. Each requires its matched production comparison and actual
 reload, paid work or stock delivery probes. Missing, stale, failed or incomplete
-evidence keeps each finding blocked. Socket Bayonet System remains outside this
-recognition set. Office work accrues the last prepaid interval before a failed
+evidence keeps each finding blocked. Issue #563 extends this contract to the exact
+`bayonet_system` → `modifier progression_bayonet_system` →
+`anti_cavalry_melee_defense` identity at 800 bp. Its isolated registered-research
+comparison requires actual compatible socket equipment, legal roster dates and
+prerequisites, hostility and cavalry melee. With no other ratings, incoming 108
+resolves to 100; the unresearched control remains 108. Installed callbacks must
+also emit the weapon-authentication, equipment and final damage-resolution probes.
+Swords, bows, firearm shots, spells, siege, unknown equipment and unsupported native
+metadata contribute no bayonet defense. Independent tradition and equipment ratings
+remain additive before one final calculation. Reconstruction, transfer, current
+save/load, legacy unknown-kit migration and late-load rollback execute in the same
+required complete pinned suite. Office work accrues the last prepaid interval before a failed
 renewal; subsequent intervals receive no office bonus.
 
 No persisted field or schema changes are required. The integrated current
 military v20 codec retains the earlier arsenal and firing records, and the
 migration and late-load rollback tests execute that codec. After integration,
 fresh current-main production execution, runtime and traceability audits must
-remove the three supplied findings. Focused tests establish development behavior, not native client playability;
+remove the four land findings through verified comparisons. The #560 current-main
+evidence transport and planner regenerate all three audits against the exact
+revision and authored-source digest; missing, focused, stale or altered evidence
+retains the findings. Release/launch promotion still requires fresh zero-blocker
+closure and closed repair issues. Focused tests establish development behavior, not native client playability;
 the unrelated #438 crash remains blocked.
 ## Science, weather and exploration production consumers (#514)
 

@@ -539,3 +539,143 @@ class LandCooldownAdapter extends WarcraftMilitarySettlementAdapter
 	trained.trade.findMarket("district", "arms").occupiedByHostile = true
 	trained.runtime.act("player", "supply", "district", "guns").contains("accessible").assertTrue()
 	guns.supply.assertEquals(177)
+
+/** Fresh receipts exercise the production rating boundary, with no native unit
+ * dependency. The same force records are used while represented and abstract. */
+function bayonetDamage(LandFixture f, string attacker, string target, string attackId, boolean weapon) returns string
+	let hit = new CombatHit(attackId, new ExactRational("108", "1", "1"))
+	let source = f.military.forces[f.military.forceIndex(attacker)]
+	let recipient = f.military.forces[f.military.forceIndex(target)]
+	f.military.applyCombatHit(hit, f.military.forceIndex(attacker), f.military.forceIndex(target), source.controllerId, recipient.controllerId, weapon)
+	let result = hit.damage.display()
+	f.military.applyCombatHit(hit, f.military.forceIndex(attacker), f.military.forceIndex(target), source.controllerId, recipient.controllerId, weapon)
+	hit.damage.display().assertEquals(result)
+	destroy hit
+	return result
+
+@test function landBayonetMatchedControlRequiresResearchEquipmentAndHostileCavalry()
+	let f = new LandFixture()
+	f.prerequisites()
+	let foot = f.add("foot", "european_late_line_infantry", "player")
+	f.add("horse", "sabre_cavalry", "ai")
+	f.military.setWar("player", "ai", true)
+	f.military.activateRegion("europe")
+	f.military.landKit(foot).bayonet.assertTrue()
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	let before = f.military.snapshot()
+	let balance = f.resources.balance
+	f.unlock("bayonet_system")
+	f.resources.balance.assertEquals(balance - 288)
+	f.military.snapshot().assertEquals(before) // Research grants no force or kit.
+	f.research.rate("player", "anti_cavalry_melee_defense").assertEquals(800)
+	for repeat = 1 to 3
+		f.rpg.technologies.reconstructAll()
+		f.military.instantiate(foot)
+		bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	f.military.activateRegion("africa")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	f.research.replaceResearchEntitlements(new ResearchEntitlements("player"))
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.rpg.reconcile("player")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	f.military.setWar("player", "ai", false)
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+
+@test function landBayonetRejectsIneligibleRosterWeaponsEraAndControllers()
+	let f = new LandFixture()
+	f.prerequisites()
+	f.unlock("bayonet_system")
+	let foot = f.add("foot", "european_late_line_infantry", "player")
+	let horse = f.add("horse", "sabre_cavalry", "ai")
+	f.add("musket", "european_musket_battalion", "player")
+	f.military.setWar("player", "ai", true)
+	bayonetDamage(f, "horse", "musket", "land_cavalry_melee", true).assertEquals("108")
+	string array[6] attacks
+	attacks[0] = "melee" // Swords.
+	attacks[1] = "bow"
+	attacks[2] = "firearm_volley"
+	attacks[3] = "land_firearm"
+	attacks[4] = "siege"
+	attacks[5] = "spell"
+	for i = 0 to 5
+		bayonetDamage(f, "horse", "foot", attacks[i], true).assertEquals("108")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", false).assertEquals("108")
+	horse.combatProfileId = "european_musket_battalion"
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	horse.combatProfileId = "sabre_cavalry"
+	foot.combatProfileId = "unknown_socket_bayonet"
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	foot.combatProfileId = "european_late_line_infantry"
+	foot.unitTypeId = 'hkni'
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	foot.unitTypeId = f.military.land.profile(foot.combatProfileId).unitTypeId
+	foot.categoryId = "siege"
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	foot.categoryId = "land_formation"
+	foot.kind = FORCE_FLEET
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	foot.kind = FORCE_ARMY
+	f.military.landYear = 1729
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.military.landYear = 1821
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.military.landYear = 1778
+	let earned = f.rpg.captureState()
+	f.rpg.restoreState(earned.replace("|u,player,linear_tactics", "")).assertTrue()
+	f.rpg.reconcile("player")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.rpg.restoreState(earned).assertTrue()
+	f.rpg.reconcile("player")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	// AI receives the identical contribution only after its own legal research.
+	f.military.transferControl("foot", "ai")
+	f.military.transferControl("horse", "player")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.resources.owner = "ai"
+	f.prerequisites()
+	f.unlock("bayonet_system")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+
+@test function landBayonetReconstructionMigrationAndNamedSourcesRemainIndependent()
+	let f = new LandFixture()
+	f.prerequisites()
+	f.unlock("bayonet_system")
+	f.add("foot", "european_late_line_infantry", "player")
+	f.add("horse", "sabre_cavalry", "ai")
+	f.military.setWar("player", "ai", true)
+	let duplicate = new RuntimeTechnology("duplicate_bayonet", "Duplicate source", 1450, 1)
+	duplicate.addUnlock("duplicate_bayonet", "modifier", "progression_bayonet_system")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.rpg.technologies.unlock("player", "duplicate_bayonet", 1778, 1, 0, 0).assertTrue()
+	for repeat = 1 to 3
+		f.rpg.technologies.reconstructAll()
+		f.research.rate("player", "anti_cavalry_melee_defense").assertEquals(800)
+		bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	let saved = f.military.snapshot()
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
+	// V8 predates equipment identity. Migration must not infer it from rawcodes.
+	let legacy = saved.replace("v20|", "v8|").replace("|p,foot,european_late_line_infantry", "").replace("|p,horse,sabre_cavalry", "")
+	f.military.restore(legacy, false).assertTrue()
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
+	f.military.restore(saved, false).assertTrue()
+	configureGeneratedMilitaryTraditions(f.military, true).assertTrue()
+	f.military.awardTradition("player", "land_formation", "3000")
+	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("7200/73") // 800 + 150 defense.
+	let layer = f.military.resolveTradition(f.military.forces[f.military.forceIndex("foot")])
+	let equipment = new CombatSources()
+	equipment.replace("equipment:fixture", "", "discipline", new ExactRational("200", "1", "1"))
+	equipment.replace("equipment:fixture", "", "discipline", new ExactRational("200", "1", "1"))
+	let hit = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	hit.contextualDefense = f.research.rate("player", "anti_cavalry_melee_defense")
+	f.military.combatBindings.apply(hit, true, null, null, layer, null, null, equipment)
+	hit.damage.display().assertEquals("21600/223") // One division by 10000 + 800 + 150 + 200.
+	f.military.combatBindings.apply(hit, true, null, null, layer, null, null, equipment)
+	hit.damage.display().assertEquals("21600/223")
+	f.military.awardTradition("player", "land_formation", "9007199254740993")
+	f.rpg.reconcile("player")
+	f.military.traditions[f.military.traditionIndex("player", "land_formation")].experience.assertEquals("9007199254743993")
+	destroy hit
+	destroy equipment
+	destroy layer

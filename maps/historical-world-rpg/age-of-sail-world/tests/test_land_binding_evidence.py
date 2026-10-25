@@ -31,15 +31,20 @@ class LandBindingEvidenceTests(unittest.TestCase):
             inputs[name] = evidence.digest((PROJECT / name).read_bytes())
         cls.inputs = inputs
 
-    def transcript(self, omit_probe=None, omit_from=None, fail_test=None):
+    def transcript(self, omit_probe=None, omit_from=None, fail_test=None, omit_test=None):
         lines = ['Running tests']
         for row in self.expected:
+            if row['id'] == omit_test:
+                continue
             path, name = row['id'].split(':')
             lines.append(f'Running /synthetic/{path}:{row["line"]} - {name}..')
             for _, (system, comparative, _) in land.COMPARATIVE_PATHS.items():
                 if name == comparative:
                     lines.extend('WCM_PROBE:' + probe for probe in self.contract['systems'][system]
                                  if probe != omit_probe or name != omit_from)
+            if row['id'] == land.ADAPTER_TEST:
+                lines.extend('WCM_PROBE:' + probe for probe in self.contract['systems']['land_bayonet_callback']
+                             if probe != omit_probe or name != omit_from)
             lines.append('FAILED assertion: synthetic failure' if row['id'] == fail_test else '\tOK!')
         lines += [f'Tests succeeded: {len(self.expected)}/{len(self.expected)}', 'Finished running tests']
         log = ('\n'.join(lines) + '\n').encode()
@@ -57,7 +62,7 @@ class LandBindingEvidenceTests(unittest.TestCase):
     def bindings(self, report=None, log=None):
         return land.verified_bindings(PROJECT, report, log, self.revision)
 
-    def test_verified_protocol_removes_only_the_three_supplied_findings(self):
+    def test_verified_protocol_removes_only_the_four_land_findings(self):
         report, log = self.transcript()
         self.assertEqual(set(land.CLOSURE_EFFECTS), self.bindings(report, log))
         before = {row['id'] for row in audit._audit_research_bindings()}
@@ -67,6 +72,7 @@ class LandBindingEvidenceTests(unittest.TestCase):
             'RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL',
             'RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES',
             'RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN',
+            'RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM',
         }, before - after)
         self.assertFalse(after - before)
 
@@ -77,7 +83,8 @@ class LandBindingEvidenceTests(unittest.TestCase):
                              ('sourceRevision', 'b' * 40), ('sourceIdentity', {}),
                              ('compiler', {'sha256': '0' * 64}), ('logSha256', '0' * 64),
                              ('inputSetSha256', '0' * 64), ('productionCoverage', {}),
-                             ('expected', report['expected'][:-1])]:
+                             ('expected', report['expected'][:-1]),
+                             ('format', 'warcraftmap_focused_wurst_v1')]:
             with self.subTest(field=field):
                 invalid = copy.deepcopy(report)
                 invalid[field] = value
@@ -109,10 +116,42 @@ class LandBindingEvidenceTests(unittest.TestCase):
 
     def test_failed_negative_or_rollback_test_cannot_close_any_finding(self):
         names = {'wurst/LandArmyEffectsTests.wurst:' + name for name in land.REQUIRED_TESTS}
-        for name in names | {land.ROLLBACK_TEST, land.ADAPTER_TEST}:
+        for name in names | {land.ROLLBACK_TEST, land.ADAPTER_TEST, land.BAYONET_ROLLBACK_TEST}:
             with self.subTest(failed=name):
                 report, log = self.transcript(fail_test=name)
                 self.assertEqual(set(), self.bindings(report, log))
+
+    def test_missing_comparison_or_incomplete_transcript_keeps_all_findings_blocked(self):
+        for _, name, _ in land.COMPARATIVE_PATHS.values():
+            with self.subTest(missing=name):
+                report, log = self.transcript(omit_test='wurst/LandArmyEffectsTests.wurst:' + name)
+                self.assertEqual(set(), self.bindings(report, log))
+        report, log = self.transcript()
+        self.assertEqual(set(), self.bindings(report, log[:-30]))
+
+    def test_bayonet_requires_actual_installed_callback_probes(self):
+        pair = ('modifier', 'progression_bayonet_system')
+        for probe in land.BAYONET_ADAPTER_PROBES:
+            with self.subTest(missing=probe):
+                report, log = self.transcript(omit_probe=probe, omit_from=land.ADAPTER_TEST.split(':')[1])
+                self.assertEqual(set(land.CLOSURE_EFFECTS) - {pair}, self.bindings(report, log))
+                report['productionCoverage']['tests'][land.ADAPTER_TEST].append(probe)
+                self.assertEqual(set(), self.bindings(report, log))
+
+    def test_wrong_bayonet_identity_metric_or_coefficient_preserves_three_existing_results(self):
+        report, log = self.transcript()
+        pair = ('modifier', 'progression_bayonet_system')
+        for field, value in [('nodeId', 'linear_tactics'), ('metric', 'firearm_reload_efficiency'),
+                             ('bonusBasisPoints', 801), ('bonusBasisPoints', '800'),
+                             ('kind', 'policy'), ('contentId', 'other_bayonet')]:
+            payload = copy.deepcopy(land.build(PROJECT))
+            effect = next(e for e in payload['catalog']['effects'] if e['nodeId'] == 'bayonet_system')
+            if field in {'kind', 'contentId'}:
+                effect['unlock'][field] = value
+            else:
+                effect[field] = value
+            with self.subTest(field=field, value=value), patch.object(land, 'build', return_value=payload):
+                self.assertEqual(set(land.CLOSURE_EFFECTS) - {pair}, self.bindings(report, log))
 
     def test_weakened_contract_or_changed_design_cannot_expand_recognition(self):
         report, log = self.transcript()
