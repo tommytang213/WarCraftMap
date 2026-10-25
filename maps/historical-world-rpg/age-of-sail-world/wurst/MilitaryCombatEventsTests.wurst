@@ -1858,10 +1858,26 @@ function completeCastCannon(CombatFixture f)
 		deliveredMilestoneDamage(f, "player_fleet", "enemy_fleet", "naval_gunfire", "siege").assertEquals("105")
 	f.close()
 
-@test function installedLandDrillAndBayonetUseProductionWeaponCallbacks()
+class BayonetResearchResources extends CannonResearchResources
+	override function controllerId(player sender) returns string
+		return "france"
+	override function year() returns int
+		return 1778
+
+function completeSocketBayonet(CombatFixture f)
+	let resources = new BayonetResearchResources()
+	let output = new CannonResearchOutput()
+	f.runtime.rpg.researchResources = resources
+	let commands = new CommandRegistry(false, 6, new CommandText(), output)
+	registerRpgRuntimeCommands(commands, f.runtime.rpg).assertEquals("")
+	commands.dispatch(null, "/research bayonet_system").assertTrue()
+	output.last.assertEquals("Action completed.")
+	resources.balance.assertEquals(99712)
+
+function landWeaponCombatFixture() returns CombatFixture
 	let f = new CombatFixture()
 	let rpg = f.startup.campaign.state.rpg
-	let earned = rpg.captureState() + "|u,england,flintlock_drill|u,england,linear_tactics|u,england,arquebus_volley_drill|u,france,flintlock_drill|u,france,linear_tactics|u,france,bayonet_system"
+	let earned = rpg.captureState() + "|u,england,flintlock_drill|u,england,linear_tactics|u,england,arquebus_volley_drill|u,france,flintlock_drill|u,france,linear_tactics|u,france,countermarch_fire|u,france,insurance_markets"
 	rpg.restoreState(earned).assertTrue()
 	rpg.reconcile("england")
 	rpg.reconcile("france")
@@ -1878,6 +1894,15 @@ function completeCastCannon(CombatFixture f)
 	f.runtime.recruit(musket).assertTrue()
 	f.runtime.recruit(foot).assertTrue()
 	f.runtime.recruit(horse).assertTrue()
+	return f
+
+@test function installedLandDrillAndBayonetUseProductionWeaponCallbacks()
+	let f = landWeaponCombatFixture()
+	let rpg = f.runtime.rpg
+	let musket = f.runtime.forces[f.runtime.forceIndex("drill_musket")]
+	let foot = f.runtime.forces[f.runtime.forceIndex("bayonet_foot")]
+	let horse = f.runtime.forces[f.runtime.forceIndex("cavalry_horse")]
+	let earned = rpg.captureState()
 	rpg.restoreState(earned.replace("|u,england,arquebus_volley_drill", "")).assertTrue()
 	rpg.reconcile("england")
 	f.runtime.gameplaySeconds = 0.
@@ -1898,10 +1923,146 @@ function completeCastCannon(CombatFixture f)
 	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(musket.id), "normal", early).assertEquals(1)
 	early.damage.display().assertEquals("0")
 	f.events.nativeAttackId(f.token(horse.id), "normal").assertEquals("land_cavalry_melee")
+	let ordinary = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", ordinary).assertEquals(1)
+	ordinary.damage.display().assertEquals("108")
+	let before = f.runtime.snapshot()
+	completeSocketBayonet(f)
+	f.runtime.snapshot().assertEquals(before)
 	let melee = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
 	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", melee).assertEquals(1)
 	melee.damage.display().assertEquals("100")
+	melee.contextualDefense.assertEquals(800)
+	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", melee).assertEquals(1)
+	melee.damage.display().assertEquals("100")
+	for repeat = 1 to 3
+		rpg.technologies.reconstructAll()
+		f.runtime.instantiate(foot)
+		let again = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+		f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", again).assertEquals(1)
+		again.damage.display().assertEquals("100")
+		destroy again
+	// Unsupported native metadata cannot authenticate cavalry melee.
+	string array[4] nativeTypes
+	nativeTypes[0] = ""
+	nativeTypes[1] = "pierce"
+	nativeTypes[2] = "siege"
+	nativeTypes[3] = "unknown"
+	for i = 0 to 3
+		f.events.nativeAttackId(f.token(horse.id), nativeTypes[i]).assertEquals("")
+		let unsupported = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+		f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), nativeTypes[i], unsupported).assertEquals(1)
+		unsupported.contextualDefense.assertEquals(0)
+		unsupported.damage.display().assertEquals("108")
+		destroy unsupported
+	for i = 0 to 2
+		var attackId = "melee"
+		if i == 1
+			attackId = "bow"
+		else if i == 2
+			attackId = "siege"
+		let wrongWeapon = new CombatHit(attackId, new ExactRational("108", "1", "1"))
+		f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", wrongWeapon).assertEquals(1)
+		wrongWeapon.contextualDefense.assertEquals(0)
+		wrongWeapon.damage.display().assertEquals("108")
+		destroy wrongWeapon
+	for i = 0 to 1
+		f.runtime.landYear = 1729 + 92 * i
+		let wrongEra = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+		f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", wrongEra).assertEquals(1)
+		wrongEra.damage.display().assertEquals("108")
+		destroy wrongEra
+	f.runtime.landYear = 1778
+	foot.combatProfileId = "european_musket_battalion"
+	let noSocket = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", noSocket).assertEquals(1)
+	noSocket.damage.display().assertEquals("108")
+	foot.combatProfileId = "european_late_line_infantry"
+	// A genuine infantry firearm callback and unknown equipment receive no defense.
+	f.runtime.gameplaySeconds = 10.
+	let shot = new CombatHit("firearm_volley", new ExactRational("108", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(musket.id), "normal", shot).assertEquals(1)
+	shot.contextualDefense.assertEquals(0)
+	shot.damage.display().assertEquals("108")
+	foot.combatProfileId = "unknown_socket_bayonet"
+	let unknown = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "normal", unknown).assertEquals(1)
+	unknown.damage.display().assertEquals("108")
+	foot.combatProfileId = "european_late_line_infantry"
 	let spell = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
 	f.events.onWeaponDamage(f.events.generation, f.token(foot.id), f.token(horse.id), "", spell).assertEquals(1)
 	spell.damage.display().assertEquals("108")
+	f.close()
+
+
+function deliveredBayonetDamage(CombatFixture f) returns string
+	let hit = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token("bayonet_foot"), f.token("cavalry_horse"), "normal", hit).assertEquals(1)
+	let result = hit.damage.display()
+	destroy hit
+	return result
+
+@test function bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense()
+	let f = landWeaponCombatFixture()
+	completeSocketBayonet(f)
+	deliveredBayonetDamage(f).assertEquals("100")
+	// Restore a legal late-era clock checkpoint; this bounded persistence test
+	// does not simulate three centuries of unrelated production catch-up.
+	var cursor = 0
+	while cursor < f.startup.clock.occurrenceCount and f.startup.clock.occurrences[cursor].day <= 649041
+		cursor++
+	f.startup.clock.restoreState(2, 649041, cursor, 0., 1.).assertTrue()
+	f.runtime.landYear = f.startup.clock.campaignYear()
+	f.startup.trade.agriculture.reset(649041, f.runtime.landYear)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "socket-bayonet").assertTrue()
+	let savedResearch = f.runtime.rpg.captureState()
+	let savedMilitary = f.runtime.snapshot()
+	f.runtime.rpg.restoreState(savedResearch.replace("|u,france,bayonet_system", "") + "|u,portugal,flintlock_drill|u,portugal,linear_tactics").assertTrue()
+	f.runtime.rpg.reconcile("france")
+	f.runtime.rpg.reconcile("portugal")
+	f.runtime.transferControl("bayonet_foot", "portugal")
+	f.runtime.setWar("england", "portugal", true)
+	deliveredBayonetDamage(f).assertEquals("108")
+	let rollback = f.runtime.rpg.captureState()
+	let rollbackMilitary = f.runtime.snapshot()
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.campaign.saves.diagnostic().startsWith("runtime reconstruction failed:").assertTrue()
+	f.startup.ports.failAfterFirstMember = false
+	f.runtime.rpg.captureState().assertEquals(rollback)
+	f.runtime.snapshot().assertEquals(rollbackMilitary)
+	f.runtime.forces[f.runtime.forceIndex("bayonet_foot")].controllerId.assertEquals("portugal")
+	deliveredBayonetDamage(f).assertEquals("108")
+	for repeat = 1 to 2
+		let loaded = f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1)
+		assertTrue(loaded, f.startup.campaign.saves.diagnostic())
+		deliveredBayonetDamage(f).assertEquals("100")
+		f.runtime.rpg.technologies.reconstructAll()
+		deliveredBayonetDamage(f).assertEquals("100")
+	// Portugal has compatible prerequisites and no bayonet research. Transfer
+	// cannot retain France's contribution, even after reconstruction.
+	f.runtime.rpg.restoreState(savedResearch + "|u,portugal,flintlock_drill|u,portugal,linear_tactics").assertTrue()
+	f.runtime.rpg.reconcile("portugal")
+	f.runtime.transferControl("bayonet_foot", "portugal")
+	f.runtime.rpg.technologies.reconstructAll()
+	f.runtime.setWar("england", "portugal", true)
+	deliveredBayonetDamage(f).assertEquals("108")
+	f.runtime.transferControl("bayonet_foot", "france")
+	deliveredBayonetDamage(f).assertEquals("100")
+	f.runtime.restore(savedMilitary).assertTrue()
+	deliveredBayonetDamage(f).assertEquals("100")
+	// Unknown legacy kit never gains defense from a shared rawcode.
+	var legacy = savedMilitary.replace("v20|", "v8|")
+	for i = 0 to f.runtime.forceCount - 1
+		let savedForce = f.runtime.forces[i]
+		if savedForce.combatProfileId != ""
+			legacy = legacy.replace("|p," + savedForce.id + "," + savedForce.combatProfileId, "")
+	f.runtime.restore(legacy).assertTrue()
+	deliveredBayonetDamage(f).assertEquals("108")
+	f.runtime.restore(savedMilitary).assertTrue()
+	f.runtime.activateRegion("europe_central_east")
+	let abstractHit = new CombatHit("land_cavalry_melee", new ExactRational("108", "1", "1"))
+	f.runtime.applyCombatHit(abstractHit, f.runtime.forceIndex("cavalry_horse"), f.runtime.forceIndex("bayonet_foot"), "england", "france", true)
+	abstractHit.damage.display().assertEquals("100")
+	destroy abstractHit
 	f.close()

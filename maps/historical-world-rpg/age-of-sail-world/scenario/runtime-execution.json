@@ -538,6 +538,26 @@
       "path": "wurst/ScienceExploration.wurst",
       "signature": "function commitHazard(int hazard, int avoided, int fraction)"
     },
+    "land_equipment": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function landKit(RuntimeForce runtimeForce) returns LandProfile"
+    },
+    "land_damage": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function applyCombatHit(CombatHit hit, int sourceIndex, int targetIndex, string sourcePolity, string targetPolity, boolean weaponAttack)"
+    },
+    "land_cavalry": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function landCavalryAttack(RuntimeForce runtimeForce, string nativeAttack) returns boolean"
+    },
+    "land_native_weapon": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "function onWeaponDamage(int epoch, int target, int source, string nativeAttack, CombatHit hit, real originalDamage) returns int"
+    },
+    "combat_rating": {
+      "path": "wurst/CombatEffects.wurst",
+      "signature": "function applyForCombatants(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string sourceController, string sourceCategory, string controllerId, string categoryId)"
+    },
     "naval_complete": {
       "path": "wurst/NavalCampaignRuntime.wurst",
       "signature": "private function completeBuild(NavalYard d, NavalYard hull, NavalYardState s, string owner)"
@@ -841,6 +861,25 @@
       "science_weather",
       "science_supply",
       "science_hazard_commit"
+    ],
+    "land_bayonet": [
+      "dispatch",
+      "research",
+      "land_registration",
+      "land_equipment",
+      "land_damage",
+      "combat_rating"
+    ],
+    "land_bayonet_callback": [
+      "dispatch",
+      "research",
+      "land_registration",
+      "land_equipment",
+      "land_damage",
+      "combat_rating",
+      "combat_install",
+      "land_native_weapon",
+      "land_cavalry"
     ],
     "naval_commissioning": [
       "research",
