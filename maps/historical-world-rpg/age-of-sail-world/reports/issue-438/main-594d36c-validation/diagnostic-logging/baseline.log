@@ -1,0 +1,27 @@
+{"ran": 4, "failures": 2, "errors": 1, "success": false, "shouldStop": false}
+EF.F
+======================================================================
+ERROR: test_error (__main__.Checks.test_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in test_error
+ValueError: deliberate exception negative control
+
+======================================================================
+FAIL: test_failure (__main__.Checks.test_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 4, in test_failure
+AssertionError: deliberate assertion negative control
+
+======================================================================
+FAIL: test_subtest (__main__.Checks.test_subtest) (value=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 7, in test_subtest
+AssertionError: 1 != 2
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+FAILED (failures=2, errors=1)

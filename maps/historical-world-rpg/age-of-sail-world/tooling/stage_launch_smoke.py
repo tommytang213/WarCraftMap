@@ -22,6 +22,54 @@ from warcraft_map_info import parse_w3i
 
 FAILING_SHA256 = "4f2f9cf8ca56f81aaeca524f257ae15e273c2366e52adfaa1eafdf5b996ff9ad"
 PREVIOUS_FAILING_SHA256 = "d6651b77a48a3c7c1b4916a204676b506a380f77a4496fbadd417697e8d87abc"
+FAILED_TRANSITION_ARTIFACTS = {
+    "pr530_full17": "ca03705c83fa714e2799f3be42f109d993d96c39334885b7974d6417f6ae31da",
+    "pr536_hidden_chapters": "9309320cdb4ef9c978a7b338d2a4230b6a6b5fb407f43ef8fe0dd379d5f0c58e",
+    "pr536_selector_as_region": "31ae2c32d2a2201e3b029ec552c08f9f411c8ae830c3a20e7e81cbd90f9b33e6",
+    "pr536_root_basenames": "b2f9dfa2ab04d54d97f465aeb11c80a5f4f7852b850d58a82a4cf7d8d2665ba8",
+    "pr536_trade_startup": "9ea9a0e554fe70f6c85ca99c12718bb867d83658cad36635b39bc20dfd3ea742",
+}
+LAUNCH_PROFILE = "launch"
+HANDOFF_PROFILE = "root-basename-handoff"
+
+
+def reject_failed_digest(digest: str) -> None:
+    if digest in {FAILING_SHA256, PREVIOUS_FAILING_SHA256, *FAILED_TRANSITION_ARTIFACTS.values()}:
+        raise ValueError("diagnostic must not repeat the failing campaign bytes")
+
+
+def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
+    """Cross-check actual compiled selector literals; never claim native execution.
+
+    inspect_campaign has already checked the same configured paths against the
+    archived W3F tables, MPQ member set and nested-map checksums. The existing
+    compiled-bootstrap inspector checks the ChangeLevel call and entry points.
+    Literal presence below is static evidence, not control-flow reachability.
+    """
+    from runtime_acceptance import verify_compiled_bootstrap
+    from warcraft_lua_startup import _tokens
+
+    if any("/" in item.package_path or "\\" in item.package_path for item in config.maps):
+        raise ValueError("handoff diagnostic requires root-basename campaign paths")
+    destination = next((item for item in config.maps if item.id == "europe_central_east"), None)
+    if destination is None or destination.bootstrap:
+        raise ValueError("handoff diagnostic has no Austria destination map")
+    compiled = verify_compiled_bootstrap(bootstrap_lua)
+    if compiled["status"] != "pass":
+        raise ValueError("handoff bootstrap inspection failed: " + "; ".join(compiled["failures"]))
+    tokens = _tokens(bootstrap_lua.decode("utf-8"))
+    literals = {token[1:-1] for token in tokens
+                if len(token) >= 2 and token[0] in "\"'" and token[-1] == token[0]}
+    if not {"austria", destination.id, destination.package_path}.issubset(literals):
+        raise ValueError("compiled selector is missing the Austria root destination literals")
+    if any(value in literals for item in config.maps
+           for value in ("Maps/" + item.package_path, "Maps\\\\" + item.package_path)):
+        raise ValueError("compiled selector retains a prefixed campaign destination")
+    return {"status": "pass", "evidenceLevel": "compiled_text_static_heuristic",
+            "scope": "configured root paths, inspected W3F/MPQ, bootstrap native call and destination literals; no reachability or native-execution proof",
+            "command": "/origin choose austria", "destinationMapId": destination.id,
+            "destinationPackagePath": destination.package_path,
+            "requiredMilestone": "destination terrain AND a player-controlled unit"}
 
 
 def build_id(identity: dict, digest: str, run_id=None, attempt=None) -> str:
@@ -44,6 +92,10 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
     if output.exists() and any(output.iterdir()):
         raise ValueError("diagnostic output must be empty; do not mix installed versions")
     digest = result["campaignSha256"]
+    reject_failed_digest(digest)
+    profile = result.get("diagnosticProfile", LAUNCH_PROFILE)
+    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE):
+        raise ValueError("unknown diagnostic profile")
     if result["diagnosticId"] != build_id(result["sourceIdentity"], digest,
                                          result["buildRun"]["id"], result["buildRun"]["attempt"]):
         raise ValueError("diagnostic identity mismatch before staging")
@@ -60,24 +112,48 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
     (output / "SHA256SUMS.txt").write_text(f"{digest}  {relative}\n")
     (output / "SOURCE_REVISION.txt").write_text(result["sourceIdentity"]["sourceRevision"] + "\n")
     (output / "launch-smoke.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    observation = (
+        "At the origin selector, enter exactly /origin choose austria. If a Victory\n"
+        "screen appears, click Continue once. Success requires visible destination\n"
+        "terrain AND a player-controlled unit that responds to a movement order.\n"
+        "Origin selection, Victory/Continue, or an Opening map/Played log entry alone\n"
+        "does not establish successful regional gameplay. If still black after two\n"
+        "minutes, record the failure and whether you had to force-quit. Do not repeat\n"
+        "the unchanged candidate. Keep the installed hash and exact client build.\n"
+        "Root-basename consistency is only a static check: the previous root-path\n"
+        "candidate also failed after Victory/Continue; the native cause remains\n"
+        "unconfirmed. Hidden-chapter and duplicate-selector controls failed too.\n"
+        "The duplicate-selector control shared internal map identity, so\n"
+        "its failure did not conclusively exclude regional initialization.\n"
+        if profile == HANDOFF_PROFILE else
+        "Record the exact client build and whether origin selection opens. A process or\n"
+        "a War3Log Played entry is not gameplay success. Keep the hash with the result.\n"
+    )
+    test_request = (
+        "One native check is requested for the reviewed source change described in this receipt.\n"
+        "This request does not establish native acceptance.\n\n"
+        "For this single test, close Warcraft, keep only ONE diagnostic W3N in\n"
+        if result.get("playerTestRequested", False) else
+        "Diagnostic filename identity is not a crash repair. No player retest is requested.\n"
+        "Only test after a reviewed, materially changed candidate and a specific hypothesis.\n\n"
+        "For that future single test, close Warcraft, keep only ONE diagnostic W3N in\n"
+    )
     (output / "LAUNCH-SMOKE-ONLY.txt").write_text(
         f"DIAGNOSTIC {result['diagnosticId']} - NOT A RELEASE CANDIDATE\n"
         f"Installed file: {relative}\n"
         f"Source revision: {result['sourceIdentity']['sourceRevision']}\n"
         f"Source tree SHA-256: {result['sourceIdentity']['sourceTreeSha256']}\n"
         f"Campaign SHA-256: {digest}\n"
-        "Native campaign launch remains FAILED; these bytes have NOT RUN in Warcraft.\n"
-        "Smoke #3 failed on 3.0.0 build 24268; smoke #2 failed on 3.0.1 build 24342.\n"
-        "Diagnostic filename identity is not a crash repair. No player retest is requested.\n"
-        "Only test after a reviewed, materially changed candidate and a specific hypothesis.\n\n"
-        "For that future single test, close Warcraft, keep only ONE diagnostic W3N in\n"
+        "Native campaign acceptance remains FAILED; these bytes have NOT RUN in Warcraft.\n"
+        "Original startup crashes: smoke #3 on 3.0.0 build 24268; smoke #2 on 3.0.1 build 24342.\n"
+        "Later diagnostics opened the selector but stayed black after choosing Austria.\n"
+        + test_request +
         "Documents/Warcraft III/Campaigns, and copy the versioned filename shown above.\n"
         "The menu/editor title is still Age of Sail: The World; the filename does not\n"
         "change that label. Menu-title editing is deferred to keep every archive byte intact.\n"
         "Verify the installed file with Get-FileHash -Algorithm SHA256. Then open\n"
         "Single Player > Custom Campaigns > Age of Sail: The World > Begin the Campaign.\n"
-        "Record the exact client build and whether origin selection opens. A process or\n"
-        "a War3Log Played entry is not gameplay success. Keep the hash with the result.\n"
+        + observation +
         "Do not save in World Editor or upload private crash data. All release gates remain.\n")
     return result
 
@@ -85,6 +161,7 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
 def verify_staged(output: Path, revision: str) -> dict:
     """Post-copy/upload-input gate, using the actual installed filename."""
     result = json.loads((output / "launch-smoke.json").read_text())
+    reject_failed_digest(result["campaignSha256"])
     if result["sourceIdentity"]["sourceRevision"] != revision:
         raise ValueError("staged source revision mismatch")
     ident = result["diagnosticId"]
@@ -106,10 +183,12 @@ def verify_staged(output: Path, revision: str) -> dict:
     return result
 
 
-def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_id=None, attempt=None) -> dict:
+def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_id=None, attempt=None,
+          profile=LAUNCH_PROFILE) -> dict:
+    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE):
+        raise ValueError("unknown diagnostic profile")
     digest = hashlib.sha256(campaign.read_bytes()).hexdigest()
-    if digest in (FAILING_SHA256, PREVIOUS_FAILING_SHA256):
-        raise ValueError("diagnostic must not repeat the failing campaign bytes")
+    reject_failed_digest(digest)
     identity = source_identity(PROJECT, revision)
     config = load_campaign_config(PROJECT / "physical-maps.json")
     base = load_config(config.map_config_path)
@@ -119,6 +198,7 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
     inspect_campaign(config, campaign)
     reader = MpqReader(campaign)
     entries = []
+    bootstrap_lua = b""
     with tempfile.TemporaryDirectory(prefix="launch-smoke-", dir=campaign.parent) as directory:
         for physical in config.maps:
             payload = reader.read(physical.package_path)
@@ -131,15 +211,43 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
             if json.loads(nested.read("runtime/build-identity.json")) != identity:
                 raise ValueError(f"stale diagnostic source identity: {physical.id}")
             info = parse_w3i(nested.read("war3map.w3i"))
+            lua = nested.read("war3map.lua")
+            if physical.bootstrap:
+                bootstrap_lua = lua
             entries.append({"id": physical.id, "path": physical.package_path,
                             "sha256": hashlib.sha256(payload).hexdigest(),
-                            "luaSha256": hashlib.sha256(nested.read("war3map.lua")).hexdigest(),
+                            "luaSha256": hashlib.sha256(lua).hexdigest(),
                             "w3iFormat": info["format"], "producerVersion": info["gameVersion"],
                             "startupContract": "pass"})
     result = {
         "diagnosticId": build_id(identity, digest, run_id, attempt), "sourceIdentity": identity,
         "buildRun": {"id": run_id, "attempt": attempt},
+        "diagnosticProfile": profile,
         "campaignSha256": digest, "reproductionSha256": FAILING_SHA256,
+        "failedTransitionArtifacts": [{"id": name, "sha256": value, "destinationGameplay": "failed"}
+                                      for name, value in FAILED_TRANSITION_ARTIFACTS.items()],
+        "latestTransitionObservation": {
+            "artifactId": "pr536_trade_startup", "reportedAtUtc": "2026-10-20T16:52:49Z",
+            "sourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+            "expectedCampaignSha256": FAILED_TRANSITION_ARTIFACTS["pr536_trade_startup"],
+            "candidateAssociation": "owner report immediately following delivery of this versioned candidate",
+            "installedFileHashRecollected": False, "clientBuild": "not_recollected",
+            "originCommandContext": "/origin choose austria", "scoreScreenContext": "Victory",
+            "continueClicked": True, "postHandoffDisplay": "Windows Warcraft III is not responding dialog",
+            "durationSeconds": None, "processExit": "not_reported_for_this_run",
+            "eventualRecovery": "unknown",
+            "destinationOpenAttempt": "not_observed_for_this_run",
+            "destinationLuaInitialized": "unknown", "destinationGameplay": "failed"},
+        "priorTransitionObservations": [{"artifactId": "pr536_root_basenames",
+            "reportedAtUtc": "2026-10-20T13:46:04Z",
+            "selectorLaunch": "pass", "originCommand": "/origin choose austria",
+            "scoreScreen": "Victory", "continueClicked": True, "postHandoffDisplay": "black",
+            "durationSeconds": None, "processExit": "not_reported_for_this_run",
+            "destinationLuaInitialized": "unknown", "destinationGameplay": "failed"},
+            {"artifactId": "pr536_selector_as_region",
+            "selectorLaunch": "pass", "destinationOpenAttempt": "observed",
+            "postHandoffDisplay": "black_>120s", "processExit": "owner_force_quit",
+            "destinationLuaInitialized": "unknown", "duplicateSelectorIdentityCaveat": True}],
         "changes": [], "diagnosis": "diagnosis_unconfirmed", "playerTestRequested": False,
         "purpose": "Versioned diagnostic identity and static evidence; no verified native repair.",
         "archiveTransformation": "none; byte-identical copy including W3F and every nested W3X",
@@ -153,9 +261,16 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
         "map_standalone_native": "not_run", "campaign_native": "not_run",
         "real_client_launch": "failed",
         "releaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
-        "remainingDiscriminator": "See reports/issue-438: qualify a local WGC runner with controls before a single exact-selector standalone comparison. Full retail campaign acceptance remains mandatory.",
+        "remainingDiscriminator": "A reviewed, materially changed candidate and one targeted manual retail check; full native campaign acceptance remains mandatory.",
         "releaseCandidate": False,
     }
+    if profile == HANDOFF_PROFILE:
+        transition = inspect_root_basename_handoff(config, bootstrap_lua)
+        result["staticValidation"]["transitionPath"] = transition
+        result["changes"] = ["root-basename map destinations consistent across authored paths, W3F and MPQ; hidden regional chapters retained"]
+        result["purpose"] = "Check root-basename consistency for a materially changed diagnostic; the prior root-basename candidate failed and this check does not establish a repair."
+        result["remainingDiscriminator"] = "After review, one manual /origin choose austria transition must load destination terrain AND a player-controlled unit; Victory/Continue alone is not success."
+        result["origin_to_region_native"] = "not_run"
     publish(campaign, output, result)
     for name in ("results.json", "execution.log"):
         shutil.copyfile(execution / name, output / ("wurst-" + name))
@@ -172,8 +287,9 @@ if __name__ == "__main__":
     parser.add_argument("--run-id", default=os.environ.get("GITHUB_RUN_ID"))
     parser.add_argument("--run-attempt", default=os.environ.get("GITHUB_RUN_ATTEMPT"))
     parser.add_argument("--verify-only", action="store_true")
+    parser.add_argument("--profile", choices=(LAUNCH_PROFILE, HANDOFF_PROFILE), default=LAUNCH_PROFILE)
     args = parser.parse_args()
     result = (verify_staged(args.output, args.source_revision) if args.verify_only else
               stage(args.campaign, args.execution, args.output, args.source_revision,
-                    run_id=args.run_id, attempt=args.run_attempt))
+                    run_id=args.run_id, attempt=args.run_attempt, profile=args.profile))
     print(f"{result['installedCampaignPath']}: {result['campaignSha256']}; native launch FAILED; candidate NOT RUN")

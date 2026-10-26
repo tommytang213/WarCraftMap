@@ -1,0 +1,202 @@
+{
+  "adaptationPreparation": {
+    "bytes": 21081,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-receipt.json",
+    "sha256": "75cd8e3819a8a67e9400d510ac9bec1476dfc8372ba73436c1bf31fad84a266e"
+  },
+  "adaptationReview": {
+    "bytes": 9601,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json",
+    "sha256": "b188e4d4c0b6dbad76fcc0a21fa90c8c6ea1cc8e643b2a1178b695afcd629c75"
+  },
+  "adaptedCase": {
+    "bytes": 14746,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua",
+    "sha256": "d369236d79ec1a8cabc77e8ae17bc91e164503f353d371b6b78e349948b27a47"
+  },
+  "allOtherFullScaleAssertionsUnchanged": true,
+  "bindingChanges": [
+    {
+      "after": "ROOT = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen')",
+      "before": "ROOT = Path(__file__).resolve().parent"
+    },
+    {
+      "after": "SOURCE_SHA = '4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83'",
+      "before": "SOURCE_SHA = '0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda'"
+    },
+    {
+      "after": "case = Path('/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/full-scale-roundtrip-current-catalogue.lua')",
+      "before": "case = ROOT / 'full-scale-roundtrip.lua'"
+    }
+  ],
+  "boundRunner": {
+    "bytes": 11138,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/verify-trade-full-scale-current-catalogue.py",
+    "sha256": "5d7efcbb173d632cbf4bd16b1c029f5647762c212afd203f366c98cc2c1a5386"
+  },
+  "budgetsChanged": false,
+  "buildReceipt": {
+    "bytes": 34614,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+    "sha256": "8537c91d92b8fc22bf6844c2128b79c8db415a7d90115872b7d2892821d1c402"
+  },
+  "caseWholeTokenReplacements": {
+    "8421_to_8425": 9,
+    "8422_to_8426": 7
+  },
+  "catalogueCardinality": {
+    "bytes": 10405,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.json",
+    "sha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44"
+  },
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "-B",
+    "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/verify-trade-full-scale-current-catalogue.py",
+    "--lua-path",
+    "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/war3map.lua",
+    "--build-receipt",
+    "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/build-result.json",
+    "--library",
+    "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+    "--report",
+    "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/result.json"
+  ],
+  "compiledScript": {
+    "bytes": 16787823,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/revised/war3map.lua",
+    "sha256": "2ad8a0906a40b6c4b85fa4ef73cccfb4d0b3e1be4e3aff330945904f959c1227"
+  },
+  "exitCode": 0,
+  "format": "pr536_continuation_current_catalogue_full_scale_binding_v1",
+  "frozenInputs": {
+    "frozenPathing": {
+      "bytes": 262160,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east/war3map.wpm",
+      "sha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd"
+    },
+    "full-scale-roundtrip.lua": {
+      "copy": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      },
+      "original": {
+        "bytes": 14746,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/full-scale-roundtrip.lua",
+        "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+      }
+    },
+    "late-startup-stubs.lua": {
+      "copy": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      },
+      "original": {
+        "bytes": 13205,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/late-startup-stubs.lua",
+        "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+      }
+    },
+    "library": {
+      "bytes": 274024,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+      "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+    },
+    "observe-startup-template.py": {
+      "copy": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup-template.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      },
+      "original": {
+        "bytes": 5651,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/compiled/observer/observe-startup.py",
+        "sha256": "a461746fb1fb5f5eec6a0dfa7d06b540860495d6090f0566a41a884b9b04e2b1"
+      }
+    },
+    "observe-startup.lua": {
+      "copy": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      },
+      "original": {
+        "bytes": 10926,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/startup-work-reduction/observer-parse-once/observe-startup.lua",
+        "sha256": "cfd547d94e6d36c8183677f471a47b53dcbf912d54dfc1888d79305880ad0fe9"
+      }
+    },
+    "probe-lua54-initialization.py": {
+      "copy": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      },
+      "original": {
+        "bytes": 17193,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/native-boundary-repair/common/probe-lua54-initialization.py",
+        "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+      }
+    },
+    "verify-trade-full-scale-original.py": {
+      "copy": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/verify-trade-full-scale-original.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      },
+      "original": {
+        "bytes": 10965,
+        "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/verify-trade-full-scale.py",
+        "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+      }
+    }
+  },
+  "fullScaleCaseChangeScope": "Only whole-token 8422 to 8426 and 8421 to 8425",
+  "fullScaleLuaCaseChanged": true,
+  "instructionBudgetPerPhase": 2000000000,
+  "log": {
+    "bytes": 115,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/execution.log",
+    "sha256": "392cdb784eac163cdebac6c45b8eee5f239502fda2b0663943216d0450b6b7e7"
+  },
+  "nativeStatus": "not_run",
+  "nativeStubsChanged": false,
+  "playerArtifactProduced": false,
+  "productionFunctionOverrides": false,
+  "result": {
+    "bytes": 8839,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/result.json",
+    "sha256": "3fa77842e79bc9e20a44855bec37558f7e055c13086b588f6820ead416ebdeac"
+  },
+  "retainedCase": {
+    "bytes": 14746,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/full-scale-roundtrip.lua",
+    "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+  },
+  "retainedRunner": {
+    "bytes": 10965,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/frozen/verify-trade-full-scale-original.py",
+    "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+  },
+  "runner": {
+    "bytes": 5329,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/run_full_scale_current_catalogue.py",
+    "sha256": "f5a427c36b020bb9831251f76088ed1a08cdfbdb2600b75f53882262a0d2c157"
+  },
+  "runnerWholeTokenReplacements": {
+    "8421_to_8425": 0,
+    "8422_to_8426": 1
+  },
+  "schema": 17,
+  "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+  "sourceSha256": "4b7ddfc925f7e762e1f93a76994700be8af0c2b1b7f1b4b1bbd48c92b36d8e83",
+  "startupComparison": {
+    "bytes": 25508,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison-current-catalogue.json",
+    "sha256": "3a5f7157454983306bdd6d92d4a5c97975c188c6fd0022f31385db40c7115b9e"
+  },
+  "status": "pass_full_scale_roundtrip_under_explicit_stubs",
+  "wallSeconds": 114.314402
+}

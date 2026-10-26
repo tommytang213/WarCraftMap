@@ -1,0 +1,10 @@
+{
+  "invalid_slice_to_replacement_marker": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if utf8.len(result)==nil then return \"\ufffd\" end\n return result\nend\n",
+  "literal_X_to_empty": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\" end\n return result\nend\n",
+  "literal_X_to_invalid_unicode": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\\xef\\xbc\\x91\" end\n return result\nend\n",
+  "literal_X_to_multi_12": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\\x31\\x32\" end\n return result\nend\n",
+  "literal_X_to_multi_89": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\\x38\\x39\" end\n return result\nend\n",
+  "literal_X_to_multi_90": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\\x39\\x30\" end\n return result\nend\n",
+  "literal_X_to_whole_alphabet": "\nlocal rawSlice=SubString\nSubString=function(value,first,last)\n local result=rawSlice(value,first,last)\n if result==\"X\" then return \"\\x30\\x31\\x32\\x33\\x34\\x35\\x36\\x37\\x38\\x39\" end\n return result\nend\n",
+  "raw_byte_slices": ""
+}

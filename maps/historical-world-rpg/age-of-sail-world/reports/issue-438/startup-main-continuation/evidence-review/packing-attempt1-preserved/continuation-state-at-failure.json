@@ -1,0 +1,153 @@
+{
+  "activeWork": {
+    "compiledVerification": {
+      "executionAllowed": false,
+      "nextAction": "None; all seven stages terminal, no optional reruns",
+      "owner": "/root/startup_review",
+      "path": "compiled-checks/",
+      "status": "completed"
+    },
+    "evidencePreparation": {
+      "nextAction": "pr_ci_review preserves original reviewed scripts/log and narrowly accepts only pinned Git-tracked source links; fresh independent review required before root attempt2",
+      "owner": "/root/pr_ci_review",
+      "path": "evidence-review/",
+      "status": "attempt1_failed_tracked_source_symlink_repair_in_progress"
+    },
+    "fullWurst": {
+      "command": "python3 -B validation-536-continuation/run-wurst.py full --label full-attempt1",
+      "coverageSystemsWithObservedTests": 28,
+      "discovered": 698,
+      "lastCompletedBatch": 7,
+      "lastCompletedBatchPassed": 98,
+      "log": "full-attempt1.log",
+      "owner": "/root",
+      "sessionId": null,
+      "status": "pass",
+      "succeeded": 698,
+      "wallSeconds": 1690.729
+    },
+    "sourcePythonPrefix": {
+      "command": "WARCRAFTMAP_WURST_CHECK=skip bash automation/run_checks.sh",
+      "owner": "/root/pr_ci_review",
+      "path": "python-checks/",
+      "receiptSha256": "b255d5b5d9ecb607703427cd272e956ed60d3fa02e0b429e64013fcecd0b5afb",
+      "scope": "Prefix only; full Wurst is a separate required run",
+      "sessionId": null,
+      "status": "pass",
+      "tests": [
+        1137,
+        198
+      ]
+    }
+  },
+  "compiledContinuation": {
+    "activeSessionId": null,
+    "adaptation": "compiled-checks/catalogue-adaptation/preparation-receipt.json",
+    "baselineBuild": "pass",
+    "cardinalityProof": "compiled-checks/catalogue-cardinality.json",
+    "cardinalityProofSha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44",
+    "currentSourceMarkets": 8426,
+    "currentSourceStores": 829,
+    "fullScaleExecuted": true,
+    "fullScaleReceipt": "compiled-checks/full-scale-revised-current-catalogue/receipt.json",
+    "fullScaleReceiptSha256": "fe8f1ae65b6c72ca8a1471a7fd20d6472c9870a4a0eff72f305e410011579de8",
+    "fullScaleStatus": "pass",
+    "integerDifferential": "pass_703_cases_8_models",
+    "modelReview": "compiled-checks/model-review.json",
+    "modelReviewSha256": "5d1dd7814a230aabc25a77f415deae75afb1d7fdb2ab8c4c5513a213719aa9d1",
+    "nativeStatus": "not_run",
+    "nextAction": "None; completed model results and original failed attempts await evidence packaging",
+    "owner": "/root/startup_review",
+    "remainingStages": [],
+    "revisedBuild": "pass",
+    "startupComparison": "original_attempt_failed_at_stale_8422_market_assertion_preserved",
+    "startupModelExecutions": "both_frozen_and_observer_completed_under_stubs",
+    "stateFile": "compiled-checks/workflow-state.json",
+    "status": "completed",
+    "validationStatus": "pass_under_explicit_models_after_reviewed_catalogue_adaptation"
+  },
+  "completedEvidence": {
+    "focusedAttempt1": "focused-attempt1/; 66 assertions passed, strict gate failed on old read-only log path; retain fail",
+    "negativeGuardAttempt1": "Original failed receipt preserved; independent review confirms exactly two intended guard assertion failures",
+    "sourceReports": "source-reports/",
+    "sourceReview": "../integration/source-review.json",
+    "writableToolchain": "toolchain/relocation-receipt.json; identical pinned bytes/modes"
+  },
+  "constraints": [
+    "Workspace and GitHub only; never DevBox",
+    "Preserve existing native, release, test and review gates",
+    "Keep PR536 draft/open and issue438 open",
+    "No incremental player QA request",
+    "No second compiler while full Wurst gate is active"
+  ],
+  "currentPhase": "All production/source/model gates complete; repairing narrowly scoped evidence packer handling of tracked source symlinks after preserved attempt1 failure",
+  "format": "warcraftmap_pr536_continuation_checkpoint_v1",
+  "integratedMain": "58d1b88d0fb4b852b639d2d82a5a24dee92ed92c",
+  "lastGitHubRecheck": {
+    "atUtc": "2026-10-21T14:44:20Z",
+    "main": "58d1b88d0fb4b852b639d2d82a5a24dee92ed92c",
+    "pr536Draft": true,
+    "pr536Head": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+    "pr536Mergeable": false,
+    "pr543Head": "df6f91604cd96273d3af4c11be5e7e1d194e894a",
+    "pr543MergeableState": "unstable",
+    "pr543State": "open"
+  },
+  "localSourceCommit": "d6697380d979f96b2f3543593c6383402ba26e5b",
+  "localSourceTree": "c0a26ed3ce65539aa9b04f18597912e64126f896",
+  "nativeAcceptance": "Destination terrain and player-controlled unit responding to movement after Austria, Victory, Continue",
+  "nativeContinueVerifiedFixed": false,
+  "nextSteps": [
+    "Review narrow source-link packaging correction; all tests/models/builds remain complete and must not rerun",
+    "Root packs fresh scratch attempt2 and executes reviewed integrity verifier",
+    "Stage only verified evidence prefix and prepare hash-bound publication plan",
+    "Fresh-check GitHub main/head; publish with expected99524f6 lease",
+    "Verify conflicts and three expected GitHub CI workflows; preserve draft/native acceptance requirements"
+  ],
+  "previousWorkspace": "/workspace/scratch/243ebc79fa0a",
+  "publicationContinuation": {
+    "finalScriptReview": {
+      "blockingFindings": [],
+      "path": "evidence-review/static-review.json",
+      "sha256": "b711a9c3122d096994ad9b4991e818bedd2816d85a631aab62b9ed41c2e14a17",
+      "status": "pass_static_review"
+    },
+    "packerOwner": "/root/pr_ci_review",
+    "packingAttempt1": {
+      "log": "evidence-review/packing-attempt1.log",
+      "outputCreated": false,
+      "reason": "Strict path reader rejected existing Git-tracked Agriculture.wurst source symlink before staging",
+      "status": "fail"
+    },
+    "packingExecuted": true,
+    "plannedReportPrefix": "maps/historical-world-rpg/age-of-sail-world/reports/issue-438/startup-main-continuation/",
+    "remoteHead": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+    "remoteRefUpdated": false,
+    "scriptReviewer": "/root/startup_review/digit_patch_review",
+    "sourceCommit": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceCommitRemoteObjectOnly": true
+  },
+  "publishedHead": "99524f6e4c356e02acc6ea7fa2f3b9a73fb62d13",
+  "pullRequest": "https://github.com/tommytang213/WarCraftMap/pull/536",
+  "pythonPrefixContinuation": {
+    "beforeAfterIdentical": true,
+    "doNotDuplicate": true,
+    "doNotModifyTrackedRepoUntilTerminal": false,
+    "endedAtUtc": "2026-10-21T15:18:51Z",
+    "owner": "/root/pr_ci_review",
+    "scope": "Source/Python only; Wurst explicitly skipped here and independently passed698",
+    "sessionId": null,
+    "startedAtUtc": "2026-10-21T13:44:19.232756+00:00",
+    "status": "pass",
+    "tests": [
+      1137,
+      198
+    ]
+  },
+  "remoteBranchUpdated": false,
+  "repository": "/workspace/scratch/37daecc7d55a/WarCraftMap",
+  "sourceCommitUploadedAsUnreferencedGitObject": true,
+  "sourceIdentitySha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37",
+  "updatedAt": "2026-10-21T15:21:40.673234+00:00",
+  "updatedAtUtc": "2026-10-21T15:21:40.673234+00:00"
+}

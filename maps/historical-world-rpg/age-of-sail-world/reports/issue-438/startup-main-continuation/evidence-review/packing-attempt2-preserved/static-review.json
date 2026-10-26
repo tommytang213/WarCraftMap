@@ -1,0 +1,220 @@
+{
+  "blockingFindings": [],
+  "checks": [
+    {
+      "details": "read_source_file first rejects links in every parent and confines the lexical source path to the repository. A linked leaf is allowed only directly under the project wurst or wurst-bootstrap directory with .wurst suffix, exact ../../_shared/<section>/<same-name> text and an exact 120000 blob identity in pinned d669. It resolves only to the same-name canonical regular _shared target, whose parents/leaf are strict and whose bytes must match the pinned 100644 blob. Read-only inspection confirmed all 51 current links satisfy this boundary.",
+      "name": "Exact pinned authored-source link exception",
+      "result": "pass"
+    },
+    {
+      "details": "pinned_source_entries uses fixed-revision, path-limited, NUL-delimited recursive ls-tree with no replacement objects or optional locks. Inherited GIT_* variables are removed; protocol access, lazy fetching, prompts, system/global configuration are disabled. It has a 30-second timeout and fails on missing local objects or malformed/empty output. It does not fetch, change refs, index or worktree, run hooks or invoke model/compiler/test commands. The same read-only metadata command was used for this independent inspection; the reviewed helpers were not run.",
+      "name": "Local pinned Git tree, no mutation or network",
+      "result": "pass"
+    },
+    {
+      "details": "Inventory, reviewed source retention, full authored compiler inputs, seed authored inputs and catalogue authority reads now use the bounded source reader. The inventory includes symlink leaves so unsupported or broken selected source links cannot silently become accepted inputs. Existing d669/d084 full source identity, pinned required gate/contract hashes, compiler/dependency inputs, counts and original checks remain unchanged. Both packing and verification recheck the source/link inventory at completion.",
+      "name": "Authored source call sites and unchanged source identity",
+      "result": "pass"
+    },
+    {
+      "details": "AST comparison confirms checked_path, file_bytes, Evidence and Pack are unchanged. Evidence input reads, Pack.add, package paths, compressed files, historical references and helper imports still reject symlinks. The authored-source exception returns canonical bytes to Pack.add and is not a general relaxation of evidence handling.",
+      "name": "Evidence and package paths remain strict",
+      "result": "pass"
+    },
+    {
+      "details": "The exact first-attempt receipt is SHA-pinned. Its failed status, pre-output stage, original source identity, outputCreated=false, raw Agriculture.wurst rejection, continuation checkpoint, original reviewed helpers/review and tracked link inventory are retained and checked. All six preserved files and 29 referenced validation input identities match their recorded bytes. No original test/model/build result is overwritten or relabeled.",
+      "name": "Preserved first packing failure",
+      "result": "pass"
+    },
+    {
+      "details": "Preserved helper/review files use their new preserved paths as manifest aliases. The original review references the former live helper paths, so the verifier deliberately compares their historical SHA/length to preserved byte versions instead of aliasing those paths to the corrected live helpers. Reviewed authored links are retained from canonical source bytes and receive both canonical and lexical provenance aliases. Current receipt/input bindings retain their original paths and bytes.",
+      "name": "Old and new helper aliases remain distinct",
+      "result": "pass"
+    },
+    {
+      "details": "Static diffs and AST comparison show only the source-link reader/cache/blob helpers, their authored-source call sites, failed-attempt retention/verification, final source recheck and related documentation/metadata changed. Full test verification, failed-control parsing, prefix verification, counterfactual reconstruction, build binding, integer differential, startup/model review, full-scale verification, driver verification, compression and strict evidence classes remain as previously reviewed.",
+      "name": "Narrow delta and inherited checks",
+      "result": "pass"
+    },
+    {
+      "details": "README/manifest now disclose the first packing failure and require the local d669 Git tree; a source archive without Git objects is explicitly insufficient. Later report-only commits remain acceptable only with unchanged source identity. Native not_run, Continue freeze not established, draft/native gates and separate final integrity verification remain unchanged.",
+      "name": "Invocation and honest scope",
+      "result": "pass"
+    }
+  ],
+  "format": "pr536_evidence_scripts_independent_static_review_v2",
+  "nativeHangResolution": "not_established",
+  "nativeStatus": "not_run",
+  "preservedInputInspection": {
+    "allPreservedFilesAndValidationInputsMatch": true,
+    "failureCheckpoint": {
+      "bytes": 7143,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/continuation-state-at-failure.json",
+      "sha256": "0b6fdddf64f8146d944588d438a372075dfbf112098994cc20a302d49f7ee5a2"
+    },
+    "oldReviewIdenticalToLiveReviewBeforeReplacement": true,
+    "originalAndPreservedRejectionLogsIdentical": true,
+    "preservationReceipt": {
+      "bytes": 11853,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/receipt.json",
+      "sha256": "b7c25fd2b05bf479305fa49206d32957655a0cecf42262e40d0e014c63764e4b"
+    },
+    "preservedFailureFiles": 6,
+    "rawFailureLog": {
+      "bytes": 218,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/packing-attempt1.log",
+      "sha256": "3f898f6bbb482db7f8a29cf731a1f4749a3ff9fc81f9a2224e0879a98656d1fa"
+    },
+    "trackedSourceLinks": {
+      "bytes": 14445,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/tracked-source-links.json",
+      "sha256": "c04f144edd93c5f55a69b1136a3af5a71ad048c397a20678f66248a0cc481f64"
+    },
+    "validationInputIdentities": 29
+  },
+  "preservedPackingAttempt": {
+    "bytes": 11853,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/receipt.json",
+    "sha256": "b7c25fd2b05bf479305fa49206d32957655a0cecf42262e40d0e014c63764e4b"
+  },
+  "residualLimits": [
+    "This review did not import or execute either helper, run any verification pipeline, test, compiler, build, model, packer or native client, or write any repository file.",
+    "The corrected packing pipeline has not been executed by this reviewer. Root must use fresh staging and run the documented read-only manifest verification before publication; preserve any further failure.",
+    "The local pinned d669 Git tree is now a required verification input. No network fetch or source-archive fallback is permitted.",
+    "Prior source, full-gate, build and model evidence was reused unchanged; this static delta review is not new gameplay evidence.",
+    "Native destination terrain, actual unit control and resolution of the Continue freeze remain unverified.",
+    "Any change to either reviewed script invalidates these current reviewedScripts identities and requires renewed review."
+  ],
+  "resolvedFindings": [
+    {
+      "details": "The original blanket source/evidence symlink policy rejected legitimate tracked source links before output creation. A separate source-only reader now validates each allowed link and target against the pinned commit while preserving strict evidence readers. This is a helper compatibility correction; production source and validation gates are unchanged.",
+      "id": "tracked_authored_source_link_compatibility",
+      "status": "resolved_static_review"
+    }
+  ],
+  "reviewHistory": {
+    "earlierResolvedFindings": [
+      {
+        "details": "Source, evidence, helper, fallback, manifest and historical reads now reject the lexical leaf and all ancestor symlinks before resolving or reading bytes. The final pack also requires the exact retained file set and rejects links during enumeration.",
+        "id": "lexical_symlink_rejection",
+        "locations": [
+          "pack-evidence.py:20-28",
+          "pack-evidence.py:63-67",
+          "verify-evidence.py:53-62",
+          "verify-evidence.py:74-107",
+          "verify-evidence.py:194-200"
+        ],
+        "status": "resolved"
+      },
+      {
+        "details": "After unchanged original full-gate and production coverage verification, the verifier derives raw test-bounded probe hits and requires all 28 system mappings nonempty and exactly all 84 pinned contract probe IDs. This closes the gap where empty system lists could compare equal to a receipt without establishing complete coverage.",
+        "id": "complete_raw_derived_production_coverage",
+        "locations": [
+          "verify-evidence.py:260-267"
+        ],
+        "status": "resolved"
+      },
+      {
+        "details": "Both retained map WPM members are bound to the same static/preparation frozenPathing identity and fixed WPM SHA. Full-scale model pathing is bound to both members. Its original absolute path is an explicit alias to the retained identical WPM; the verifier never reads that old path.",
+        "id": "portable_frozen_pathing_binding",
+        "locations": [
+          "pack-evidence.py:269-270",
+          "verify-evidence.py:442-444",
+          "verify-evidence.py:827-828"
+        ],
+        "status": "resolved"
+      }
+    ],
+    "historyScope": "The original static pass and the subsequent actual packing failure both remain retained. The first pack failed before creating output because the broad source/evidence symlink reader rejected a legitimate tracked Agriculture.wurst source link. This new review replaces only the live review and scopes that reader correction to authored source.",
+    "previousReview": {
+      "bytes": 17171,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/static-review.json",
+      "sha256": "b711a9c3122d096994ad9b4991e818bedd2816d85a631aab62b9ed41c2e14a17"
+    },
+    "previousReviewedScripts": {
+      "pack-evidence.py": {
+        "bytes": 28324,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/pack-evidence.py",
+        "sha256": "8a4eb3356c3f01659d2eb2ba06f1f571bf879da085a58964a641b86d0731f8d0"
+      },
+      "verify-evidence.py": {
+        "bytes": 76501,
+        "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/packing-attempt1-preserved/verify-evidence.py",
+        "sha256": "9aa0df1341134a7fcf44f4ff6e790f0688ca6f6c5cce97cd5cd80182ed6b6682"
+      }
+    },
+    "priorGateAndModelReviewReused": true
+  },
+  "reviewScope": "Narrow source-link compatibility and failed-pack retention delta against the exact preserved previously reviewed scripts; prior substantive gate/model review reused.",
+  "reviewedRetentionPlan": {
+    "bytes": 13491,
+    "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/retention-plan.md",
+    "sha256": "7d492d05791e21036184e8af9ee0ea3015bb88dfd44e610061899ccf1161b6ee"
+  },
+  "reviewedScripts": {
+    "pack-evidence.py": {
+      "bytes": 30563,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/pack-evidence.py",
+      "sha256": "9b071d4e1efc9319af2408ae64e8c3bff2b7d442a788556daf4acf097071ccb9"
+    },
+    "verify-evidence.py": {
+      "bytes": 84351,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/verify-evidence.py",
+      "sha256": "d1f40a6346dc74bbb27f19daf3cf77948c0d2cf4a6011f4ffbf14334a57c6ef6"
+    }
+  },
+  "reviewer": "independent /root/startup_review/digit_patch_review",
+  "sourceIdentity": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "sourceLinkInspection": {
+    "allLinksAndCanonicalTargetsMatchPinnedBlobs": true,
+    "allowedLiteralTarget": "../../_shared/<source-section>/<same-name>.wurst",
+    "blobType": "blob",
+    "exactSourceLinks": {
+      "wurst": 50,
+      "wurst-bootstrap": 1
+    },
+    "gitEnvironmentPins": {
+      "GIT_ALLOW_PROTOCOL": "",
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_NO_LAZY_FETCH": "1",
+      "GIT_TERMINAL_PROMPT": "0"
+    },
+    "gitReadOnlyOptions": [
+      "--no-replace-objects",
+      "--no-optional-locks",
+      "ls-tree",
+      "-rz",
+      "--full-tree"
+    ],
+    "gitRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "inheritedGitEnvironmentRemoved": true,
+    "linkMode": "120000",
+    "targetMode": "100644",
+    "treeEntriesRead": 199
+  },
+  "status": "pass_static_review",
+  "validationPerformed": {
+    "astDeltaComparison": true,
+    "buildExecution": false,
+    "exactLinkTextAndBlobHashChecks": true,
+    "fileIdentityChecks": true,
+    "importedProjectModuleExecution": false,
+    "modelExecution": false,
+    "nativeExecution": false,
+    "networkAccess": false,
+    "packingExecution": false,
+    "pythonAstParse": true,
+    "readOnlyGitTreeInspection": true,
+    "repositoryEdits": false,
+    "requiredGateExecution": false,
+    "reviewedScriptExecution": false,
+    "staticFieldAndAliasInspection": true,
+    "staticSourceDiffReview": true,
+    "supportingReceiptReads": true,
+    "testExecution": false
+  }
+}

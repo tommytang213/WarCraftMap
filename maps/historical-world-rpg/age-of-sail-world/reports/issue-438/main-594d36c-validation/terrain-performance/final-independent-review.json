@@ -1,0 +1,25 @@
+{
+  "status": "pass_scoped_source_review",
+  "reviewer": "/root/startup_review",
+  "recordedBy": "root from returned independent review",
+  "recordedAt": "2026-10-26T06:33:36.268933+00:00",
+  "baselineCommit": "6652bdbfa87db75878543e279977c12ba24b9894",
+  "files": {
+    "maps/historical-world-rpg/_shared/tooling/generate_regional_terrain.py": "c2dd0cc0be628fe706375c0eb79db56eeb25b15824aee5ae487ccc31925ae9fe",
+    "maps/historical-world-rpg/age-of-sail-world/tests/test_terrain_rasterization.py": "22890ecd953bdc6b46830e8e75c6a22ec72533283a474d267cce305044daa203"
+  },
+  "blockingFindings": [],
+  "resolvedFinding": "Initial vertex X clipping changed crossing-cancellation behavior. Confirmed counterexample retained; final code clips only Y rows and preserves every X sample.",
+  "verified": [
+    "Original cell-center and crossing arithmetic, layer precedence, chokepoints, v2 and all budgets unchanged.",
+    "Outside finite Y extrema both edge endpoint comparisons agree, so skipped rows contain no crossings.",
+    "Final comparison binds generator hash and all seven byte-identical baseline terrain outputs.",
+    "44 passing terrain tests and log hash verified; legacy full-grid work negative control fails as intended."
+  ],
+  "limitations": [
+    "Reviewer did not run tests/builds or edit files.",
+    "Required full gate remains pending.",
+    "Local generation measurements are not native game timing."
+  ],
+  "nativeStatus": "not_run"
+}

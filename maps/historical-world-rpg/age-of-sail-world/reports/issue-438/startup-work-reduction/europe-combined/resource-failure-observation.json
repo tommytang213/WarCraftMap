@@ -1,0 +1,27 @@
+{
+  "buildResult": {
+    "path": "/workspace/scratch/243ebc79fa0a/validation-536/continue-fix/europe-combined/build-result.json",
+    "sha256": "6d854cf943a39c9810474aaee5efb852d7e8996dcf73722bece4c7e45f47d2dc"
+  },
+  "cgroupAfterFailure": {
+    "memory.current": "5399691264\n",
+    "memory.events": "low 0\nhigh 0\nmax 6913\noom 1\noom_kill 1\noom_group_kill 0\n",
+    "memory.max": "8589934592\n",
+    "memory.peak": "8589991936\n"
+  },
+  "compilerBuildLog": {
+    "path": "/workspace/scratch/243ebc79fa0a/validation-536/continue-fix/europe-combined/build.log",
+    "sha256": "1afcd266180dfed2cfa559f3fde70b6754e4a86276ef8f05b9c77261f4299d08"
+  },
+  "compilerChildExitCodeReportedByGrill": 137,
+  "concurrentWork": "Root was running complete Wurst interpreter gate, also with Xmx6g, in the same8GiB cgroup",
+  "format": "warcraftmap_compiler_resource_failure_observation_v1",
+  "grillBuildExitCode": 1,
+  "inference": "Exit137 plus observed cgroup8GiB peak and one OOM kill is consistent with resource exhaustion during concurrent JVMs; no per-process kernel OOM record was collected, so exact killed PID is not independently established.",
+  "nativeStatus": "not_run",
+  "outerRunnerExitCode": 1,
+  "recordedAt": "2026-10-21T05:15:44.937473+00:00",
+  "retryPolicy": "Preserve failed attempt; retry same frozen source/compiler/heap and unchanged gates alone after full interpreter suite terminates",
+  "sourceOrGateChanges": false,
+  "typecheckExitCode": 0
+}

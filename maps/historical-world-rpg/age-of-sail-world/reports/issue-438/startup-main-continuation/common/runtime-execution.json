@@ -1,0 +1,515 @@
+{
+  "format": "warcraftmap_execution_coverage_v1",
+  "scope": "Headless production entry coverage only. Each system requires all probes in one passing test. Native client effects and complete campaign itineraries remain unexecuted.",
+  "probes": {
+    "domains": {
+      "path": "wurst/CampaignRegistration.wurst",
+      "signature": "public function registerCampaignDomains(PlayableCampaignServices campaign, WarcraftRpgRuntime rpg, MilitarySettlementRuntime military, RpgProjectionPort projections) returns PlayableTradeRuntime"
+    },
+    "startup": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function startup() returns boolean"
+    },
+    "origin_registration": {
+      "path": "wurst/CommandRouter.wurst",
+      "signature": "public function registerOriginSelection(CommandRegistry commands, NewCampaignOriginController controller)"
+    },
+    "handoff": {
+      "path": "wurst/CampaignHandoff.wurst",
+      "signature": "override function commitSelection(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean"
+    },
+    "dispatch": {
+      "path": "wurst/CommandRouter.wurst",
+      "signature": "function dispatch(player sender,string input) returns boolean"
+    },
+    "country_registration": {
+      "path": "wurst/PlayableCountryInteractions.wurst",
+      "signature": "public function registerGovernmentRewards(CommandRegistry commands, CountryDiplomacyController controller)"
+    },
+    "trade_registration": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "public function registerPlayableTradeCommands(CommandRegistry commands,PlayableTradeRuntime runtime,TradePresentation presentation) returns string"
+    },
+    "military_registration": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "public function registerMilitarySettlementCommands(CommandRegistry commands, MilitarySettlementRuntime runtime)"
+    },
+    "rpg_registration": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgRuntime runtime) returns string"
+    },
+    "recruit": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function recruit(string id) returns boolean"
+    },
+    "equip": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function equipItem(string heroId,string itemId,int year,string controllerId) returns boolean"
+    },
+    "research": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function research(string controllerId,string id,int year,int paid) returns boolean"
+    },
+    "quest": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function acceptQuest(string id) returns boolean"
+    },
+    "save_registration": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "public function registerCampaignSaveCommands(CommandRegistry commands, PlayableCampaignServices campaign)"
+    },
+    "save": {
+      "path": "wurst/CampaignSaveManager.wurst",
+      "signature": "function save(int kind, int index, string createdAt) returns boolean"
+    },
+    "load": {
+      "path": "wurst/CampaignSaveManager.wurst",
+      "signature": "function load(int kind, int index) returns boolean"
+    },
+    "autosave": {
+      "path": "wurst/CampaignAutosaveScheduler.wurst",
+      "signature": "function advance(real elapsed, string createdAt) returns boolean"
+    },
+    "travel": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function transition(BoundaryCorrespondence boundary, real normalized, string createdAt) returns boolean"
+    },
+    "map_registration": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "public function registerCampaignMapCommand(CommandRegistry commands, MapDiscoveryScreenController maps, PlayableCampaignState state)"
+    },
+    "map_open": {
+      "path": "wurst/MapDiscoveryScreen.wurst",
+      "signature": "function openWorldMap()"
+    },
+    "region_registration": {
+      "path": "wurst/RemoteRegionManagement.wurst",
+      "signature": "public function registerRegionCommand(CommandRegistry registry, RegionSelector selector, CommandOutput output) returns string"
+    },
+    "region_select": {
+      "path": "wurst/RemoteRegionManagement.wurst",
+      "signature": "function select(player whichPlayer, string regionId) returns boolean"
+    },
+    "religion_registration": {
+      "path": "wurst/ReligionRuntime.wurst",
+      "signature": "public function registerReligion(CommandRegistry commands, ReligionRuntime runtime)"
+    },
+    "conversion": {
+      "path": "wurst/ReligionRuntime.wurst",
+      "signature": "function convert(string toFaithId) returns boolean"
+    },
+    "piracy_registration": {
+      "path": "wurst/PlayablePiracy.wurst",
+      "signature": "public function registerPiracy(CommandRegistry commands,PiracyRuntime runtime,PiracyPresentation presentation)"
+    },
+    "prize": {
+      "path": "wurst/PlayablePiracy.wurst",
+      "signature": "function previewPrize(player sender, PrizeRequest request, PrizeProposal expected) returns string"
+    },
+    "order": {
+      "path": "wurst/MilitaryOrderEvents.wurst",
+      "signature": "function onOrder(int epoch, player sender, int source, int arguments, int order, real px, real py, int target) returns boolean"
+    },
+    "capture": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function capture(string settlementId, string attackerId, real now) returns boolean"
+    },
+    "garrison": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function replenishGarrison(string settlementId, int amount, int manpowerCost, int supplyCost) returns boolean"
+    },
+    "appoint": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function appoint(string settlementId, AdministratorState administrator) returns string"
+    },
+    "country_open": {
+      "path": "wurst/CountryDiplomacyScreen.wurst",
+      "signature": "function openFromKnownCountry(string polityId) returns boolean"
+    },
+    "reward": {
+      "path": "wurst/PlayableCountryInteractions.wurst",
+      "signature": "override function requestGovernmentReward(string polityId, string rewardId) returns string"
+    },
+    "trade_command": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "override function execute(player sender,string arguments)"
+    },
+    "treasure": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function discover(string id, string locationId, PlayerInventory inventory) returns boolean"
+    },
+    "unstuck_registration": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "public function registerUnstuckCommand(CommandRegistry registry, UnstuckRecoveryService service)"
+    },
+    "unstuck_binding": {
+      "path": "wurst/WarcraftRecoveryRuntime.wurst",
+      "signature": "function bind(string stableId, unit target, string regionId)"
+    },
+    "unstuck_refresh": {
+      "path": "wurst/CampaignUnstuck.wurst",
+      "signature": "function synchronize(boolean samplePositions)"
+    },
+    "unstuck_recover": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "function recoverEntity(string id) returns boolean"
+    },
+    "unstuck_safe_export": {
+      "path": "wurst/UnstuckRecovery.wurst",
+      "signature": "function exportLastSafe(string id) returns string"
+    },
+    "unstuck_reconstructed": {
+      "path": "wurst/CampaignUnstuck.wurst",
+      "signature": "function reconstructed()"
+    },
+    "order_registration": {
+      "path": "wurst/MilitaryOrderEvents.wurst",
+      "signature": "public function installMilitaryOrderEvents(PlayableCampaignServices campaign, MilitaryOrderNatives natives) returns MilitaryOrderEvents"
+    },
+    "command_departure": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function depart(string document, string mapId) returns boolean"
+    },
+    "command_restore": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "function restore(CampaignRecoveryRequest request) returns boolean"
+    },
+    "combat_install": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "public function installMilitaryCombatEvents(PlayableCampaignServices campaign, MilitaryCombatNatives natives, ManagementScreenPauseController pause) returns MilitaryCombatEvents"
+    },
+    "combat_death": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "function onDeath(int epoch, int target, int killer)"
+    },
+    "combat_loss": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function commitCombatLoss(int victimIndex, int contributorIndex, real now) returns boolean"
+    },
+    "treasure_resolution": {
+      "path": "wurst/WarcraftRpgRuntime.wurst",
+      "signature": "function resolveAll(string seed) returns boolean"
+    },
+    "treasure_definitions": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedTreasures(TreasureRuntime runtime)"
+    },
+    "treasure_choice": {
+      "path": "wurst/TreasureResolution.wurst",
+      "signature": "function choose(string seed, string unavailable, string occupied, InteractionCatalog locations) returns TreasureCandidate"
+    },
+    "tradition_resolve": {
+      "path": "wurst/MilitaryTraditionLayer.wurst",
+      "signature": "function resolve(string controllerId, string categoryId, string experience) returns TraditionLayer"
+    },
+    "tradition_reconcile": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function reconcileForceTradition(RuntimeForce runtimeForce)"
+    },
+    "tradition_inspection": {
+      "path": "wurst/MilitaryTraditionLayer.wurst",
+      "signature": "function inspection() returns string"
+    },
+    "quest_navigation": {
+      "path": "wurst/QuestNavigation.wurst",
+      "signature": "override function show(string questId, boolean track) returns string"
+    },
+    "quest_map_focus": {
+      "path": "wurst/MapDiscoveryScreen.wurst",
+      "signature": "function focusGuidance(string questId, string regionId, string exactLocationId)"
+    },
+    "quest_marker_refresh": {
+      "path": "wurst/QuestNavigation.wurst",
+      "signature": "function refreshMarker()"
+    },
+    "voyage_registration": {
+      "path": "wurst/VoyageCommands.wurst",
+      "signature": "public function registerVoyageCommands(CommandRegistry commands, PlayableCampaignState state) returns string"
+    },
+    "voyage_start": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function startVoyage(string forceId, string routeId, string controllerId, int day, boolean destinationKnown) returns boolean"
+    },
+    "voyage_resolve": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function resolveVoyages(int day)"
+    },
+    "science_registration": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "public function registerScienceCommands(CommandRegistry commands, ScienceCampaignRuntime runtime) returns string"
+    },
+    "science_action": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string target) returns string"
+    },
+    "science_advance": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function advance(int day, ScienceResearchEffects effects, SciencePort port)"
+    },
+    "science_pay": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function pay(ScienceSite d, string owner, int money, int units, int provisions) returns boolean"
+    },
+    "science_complete": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function complete(string owner, string target, int paid) returns boolean"
+    },
+    "finance_registration": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "public function registerFinanceCommands(CommandRegistry commands, FinanceCampaignRuntime runtime) returns string"
+    },
+    "finance_quote": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function amount(string owner, RuntimeMarket market, int quantity, boolean buying) returns int"
+    },
+    "finance_remit": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function remit(string owner, string sourceId, string destinationId, int amount) returns string"
+    },
+    "finance_canal": {
+      "path": "wurst/TradeFinance.wurst",
+      "signature": "function start(string owner, string id, int day, FinanceResearchEffects effects, FinancePort port) returns string"
+    },
+    "finance_advance": {
+      "path": "wurst/TradeFinance.wurst",
+      "signature": "function advance(int day, FinancePort port)"
+    },
+    "naval_registration": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "public function registerNavalCommands(CommandRegistry commands, NavalCampaignRuntime runtime) returns string"
+    },
+    "naval_action": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string target) returns string"
+    },
+    "naval_advance": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "naval_pay": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function pay(NavalYard d, string owner, int money, int wood, int metalUnits, int provisions, int crew) returns boolean"
+    },
+    "naval_repair": {
+      "path": "wurst/NavalServices.wurst",
+      "signature": "function repair(int base, int rate) returns int"
+    },
+    "naval_weather": {
+      "path": "wurst/NavalServices.wurst",
+      "signature": "function weather(int exposure, int rate) returns int"
+    },
+    "naval_combat": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function navalCombatSources(RuntimeForce source, RuntimeForce target, boolean weaponAttack) returns CombatSources"
+    },
+    "logistics_registration": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "public function registerLogisticsCommands(CommandRegistry commands, ArmyFoodLogistics runtime) returns string"
+    },
+    "logistics_food": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "function food(string owner, string id, string forceId) returns string"
+    },
+    "logistics_freight": {
+      "path": "wurst/ArmyFoodLogistics.wurst",
+      "signature": "function freight(string owner, string id, string good, int quantity, boolean reverse) returns string"
+    },
+    "industry_registration": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "public function registerIndustryCommands(CommandRegistry commands, IndustryCampaignRuntime runtime) returns string"
+    },
+    "industry_action": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "function act(string owner, string action, string id) returns string"
+    },
+    "industry_advance": {
+      "path": "wurst/Industry.wurst",
+      "signature": "function advance(int day, IndustryResearchEffects effects, IndustryPort port)"
+    },
+    "industry_pay": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function pay(IndustrySite d, string owner, boolean setup) returns boolean"
+    },
+    "industry_labor": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function labor(IndustrySite d, string owner) returns boolean"
+    },
+    "industry_output": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "override function produce(IndustrySite d, int amount)"
+    }
+  },
+  "systems": {
+    "campaign_launch": [
+      "domains",
+      "startup"
+    ],
+    "origin_selection": [
+      "origin_registration",
+      "dispatch",
+      "handoff"
+    ],
+    "country_diplomacy": [
+      "country_registration",
+      "dispatch",
+      "country_open"
+    ],
+    "government_rewards": [
+      "country_registration",
+      "dispatch",
+      "reward"
+    ],
+    "trade": [
+      "trade_registration",
+      "dispatch",
+      "trade_command"
+    ],
+    "army_fleet_control": [
+      "military_registration",
+      "dispatch",
+      "order",
+      "order_registration"
+    ],
+    "city_capture": [
+      "military_registration",
+      "dispatch",
+      "capture"
+    ],
+    "garrisons": [
+      "military_registration",
+      "dispatch",
+      "garrison"
+    ],
+    "administration": [
+      "military_registration",
+      "dispatch",
+      "appoint"
+    ],
+    "heroes": [
+      "rpg_registration",
+      "recruit"
+    ],
+    "inventory_equipment": [
+      "rpg_registration",
+      "equip"
+    ],
+    "technology_institutions": [
+      "rpg_registration",
+      "research",
+      "voyage_registration",
+      "voyage_start",
+      "voyage_resolve"
+    ],
+    "quests_journal": [
+      "rpg_registration",
+      "quest"
+    ],
+    "treasures_discovery": [
+      "rpg_registration",
+      "dispatch",
+      "treasure"
+    ],
+    "save_autosave_load": [
+      "save_registration",
+      "dispatch",
+      "autosave",
+      "save",
+      "load"
+    ],
+    "cross_map_travel": [
+      "domains",
+      "startup",
+      "travel"
+    ],
+    "world_map": [
+      "map_registration",
+      "map_open"
+    ],
+    "remote_management": [
+      "region_registration",
+      "region_select",
+      "command_departure",
+      "command_restore"
+    ],
+    "religion": [
+      "religion_registration",
+      "conversion"
+    ],
+    "piracy": [
+      "piracy_registration",
+      "prize"
+    ],
+    "live_unstuck": [
+      "domains",
+      "startup",
+      "dispatch",
+      "unstuck_registration",
+      "unstuck_binding",
+      "unstuck_refresh",
+      "unstuck_recover",
+      "unstuck_safe_export",
+      "unstuck_reconstructed"
+    ],
+    "military_tradition": [
+      "domains",
+      "startup",
+      "combat_install",
+      "combat_death",
+      "combat_loss",
+      "save",
+      "load"
+    ],
+    "military_tradition_resolution": [
+      "domains",
+      "startup",
+      "combat_install",
+      "combat_death",
+      "combat_loss",
+      "save",
+      "load",
+      "tradition_resolve",
+      "tradition_reconcile",
+      "tradition_inspection"
+    ],
+    "quest_navigation": [
+      "dispatch",
+      "rpg_registration",
+      "map_registration",
+      "quest",
+      "quest_navigation",
+      "quest_map_focus",
+      "quest_marker_refresh"
+    ],
+    "science_exploration": [
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_complete"
+    ],
+    "naval_services": [
+      "naval_registration",
+      "naval_action",
+      "naval_advance",
+      "naval_pay",
+      "naval_repair",
+      "naval_weather",
+      "naval_combat"
+    ],
+    "army_food_logistics": [
+      "logistics_registration",
+      "logistics_food",
+      "logistics_freight",
+      "finance_canal",
+      "finance_advance"
+    ],
+    "industry": [
+      "industry_registration",
+      "industry_action",
+      "industry_advance",
+      "industry_pay",
+      "industry_labor",
+      "industry_output"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "status": "pass_component_checks",
+  "testedCommit": "791ce7f44944af124fe87400d2f1ecfa5882240b",
+  "sourceIdentity": {
+    "sourceRevision": "791ce7f44944af124fe87400d2f1ecfa5882240b",
+    "sourceTreeSha256": "91996f8be9079d4e0c3a3c6dd84b7b96f04f119ff38714765804052f7750c450"
+  },
+  "scope": "Unchanged static checks and automation suite; full project Python/Wurst verification delegated to existing PR CI. Canonical local gate did not pass.",
+  "nativeStatus": "not_run",
+  "startedAt": "2026-10-26T07:03:34.936107+00:00",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py"
+      ],
+      "exitCode": 0,
+      "log": "01.log",
+      "logSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e",
+      "logBytes": 50
+    },
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/_shared/tooling/validate_world.py",
+        "maps/historical-world-rpg/conformance-campaign/scenario/world/world.json"
+      ],
+      "exitCode": 0,
+      "log": "02.log",
+      "logSha256": "9bb8e1c2309f1082144b0f685fe199d4e5d8bff470771815700806a0ee17b7ae",
+      "logBytes": 485
+    },
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/_shared/tooling/validate_world.py",
+        "maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json"
+      ],
+      "exitCode": 0,
+      "log": "03.log",
+      "logSha256": "e12af5bfd90c48af8e2e244e2a1d86eed6b901ccba50c4e6734f48e583311e41",
+      "logBytes": 510
+    },
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/age-of-sail-world/tooling/europe_geography.py"
+      ],
+      "exitCode": 0,
+      "log": "04.log",
+      "logSha256": "fdd289596599b246e0efe5da65e731916fde53976b980516c1106353a00918cc",
+      "logBytes": 61
+    },
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/age-of-sail-world/tooling/validate_map_source.py"
+      ],
+      "exitCode": 0,
+      "log": "05.log",
+      "logSha256": "0bbaeefbd91a6fb8c0103272ebcb7fc887ec0bfbca7e24e2fa0efed96afebde1",
+      "logBytes": 141
+    },
+    {
+      "command": [
+        "python3",
+        "maps/historical-world-rpg/age-of-sail-world/tooling/requirement_traceability_audit.py",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "06.log",
+      "logSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c",
+      "logBytes": 57
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "automation/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "exitCode": 0,
+      "log": "07.log",
+      "logSha256": "0e1c7da0cc626885ffee3d68c91fbdb4be77848098930fcdf0406b7bff78553f",
+      "logBytes": 2277
+    }
+  ],
+  "sourceUnchanged": true,
+  "worktreeClean": true,
+  "finishedAt": "2026-10-26T07:05:46.700018+00:00"
+}

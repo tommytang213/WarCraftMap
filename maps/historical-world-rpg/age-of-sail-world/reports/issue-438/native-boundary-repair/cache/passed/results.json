@@ -1,0 +1,313 @@
+{
+  "command": [
+    "grill",
+    "test"
+  ],
+  "compiler": {
+    "executionImage": null,
+    "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "grillVersion": "1.4.0.0-2c676dd",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "version": "1.9.0.0-nightly-1-gedd2e5e74"
+  },
+  "discovered": 15,
+  "errors": [],
+  "executionStatus": "completed",
+  "expected": [
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:slotsAndDeferredSave",
+      "line": 50
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:rejectedLoadNeverActivates",
+      "line": 67
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:transactionalFailurePreservesStorage",
+      "line": 88
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:cacheTransactionRequiresPresentExactStringIncludingEmptyPayload",
+      "line": 73
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedStoreCannotReportSuccessAndRetryClearsDiagnostic",
+      "line": 83
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedStoreThatMutatesStillRollsBackBeforeSaving",
+      "line": 106
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:successfulStoreWithTruncatedReadbackNeverCommitsCandidate",
+      "line": 118
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedCommitRestoresExistingSlotAfterPossiblePartialPersistence",
+      "line": 129
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedCommitRestoresAbsentSlotAfterPossiblePartialPersistence",
+      "line": 141
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedRollbackStoreNeverPersistsWrongBuffer",
+      "line": 152
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:truncatedRollbackStoreNeverPersistsWrongBuffer",
+      "line": 164
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedRollbackCommitNeverClaimsRestoration",
+      "line": 176
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedRollbackFlushNeverPersistsWrongBuffer",
+      "line": 186
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:successfulCommitWithChangedReadbackRollsBack",
+      "line": 197
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:changedRollbackReadbackNeverClaimsRestoration",
+      "line": 207
+    }
+  ],
+  "format": "warcraftmap_wurst_execution_v1",
+  "inputSetSha256": "f9c58fcd0854686a06e15521a78a4314ad7e6f9d50c7415a980c3954050a7a03",
+  "inputs": {
+    "_build/blizzard.j": "b6db172525d7b106781337252efcba4f56bceb16bb4832680ad07dea052e6e26",
+    "_build/common.j": "7561e8be53a01c7105aec9a09b707ac168495a412d059e68e39e24dcf92f8fbb",
+    "wurst.build": "4fdc3183fd16ab396762bfb7a7488c90ed005c1e066a2afef27d77911d5f5d81",
+    "wurst/AbstractSettlementTests.wurst": "b45a6a9f230a7693c91f1bcee2453439e3e1d401a751140d7d4af2757773c33e",
+    "wurst/Agriculture.wurst": "f252214f84c7ec41f1d384ca43a3a335b07ceeed97ad9794deae1c491cc891f6",
+    "wurst/AgricultureTests.wurst": "03614340f1ffe1ea12c78cdfac6cd10f92f484003fe97800cd1c80326ab14d17",
+    "wurst/AuthoredQuestTests.wurst": "b7a49957bec182f2428b8a65b9c83cc69eb070752903a898fd3329b1bd5770fa",
+    "wurst/Bootstrap.wurst": "5bc977449bdce715f0eaf71dad03ba549baacb07f40ff1a303798db84124a69b",
+    "wurst/BoundaryArrival.wurst": "5d528518dba6bf3c2116e11c4f11afde5393d5744373f3f68e222aa47015ce8d",
+    "wurst/BoundaryArrivalTests.wurst": "c3a473dab96c394ab669de1bc9c2a3c2dafbfdae7dbe04749e2e62cd228af01c",
+    "wurst/CampaignAgriculture.wurst": "3cec2dbbd17c3b7cac93ed3e688d22a73b75adf8b493e7f3624613eb7c001664",
+    "wurst/CampaignAutosaveLifecycleTests.wurst": "0982e4e2ac84571cf33cd6a784559e2556fea9219681bed3d2ae15835e63de4d",
+    "wurst/CampaignAutosaveScheduler.wurst": "17203ebd488b168012d46b27cd71454a4955226052179832aa414b2272738412",
+    "wurst/CampaignAutosaveSchedulerTests.wurst": "d633105184e5ad48ebc36b1e5e2fe69d996da106edba064d102731e7b6885f4b",
+    "wurst/CampaignHandoff.wurst": "7463a25682fcad90fa4e275f523db88494271e09686a823fb67625af83b96440",
+    "wurst/CampaignLoadTransactionTests.wurst": "004070ffbd5ffdf9585330edf813778d154e463bc722f93347786818bf3ccb65",
+    "wurst/CampaignPiracyAuthority.wurst": "6852a3a99a271f8ded452bc5bd4fc3c18acc816c5107f35fe2e65c0c8ad5bb97",
+    "wurst/CampaignRecoveryTests.wurst": "d01171a1b85794f6f9f9cd96079b5d7b76e14bb8bb4e26cc57d9d5dedcb07aa9",
+    "wurst/CampaignRegistration.wurst": "1201dcfb32c83de81d71c09a4594b5a34ca02c8df57c549c4f748078b847c169",
+    "wurst/CampaignSaveManager.wurst": "48e6f7dc416bf03e8f6895d4569bbd0222ea68d2f2ca4bac33c9c221654fe6ce",
+    "wurst/CampaignSaveManagerTests.wurst": "b0c6cae9d0018669527baeb78e3c842872e984b4090515b128ae78b601ce51ad",
+    "wurst/CampaignStartupTests.wurst": "6d491f762579b80867f9aaf32ee25f3719a11757e16c56d75fde2618964af035",
+    "wurst/CampaignTimeline.wurst": "b29f305ccb5f4cc9f16f83bc358f9b200f8d020f09777f5d5624f6d8cf907dfe",
+    "wurst/CampaignTimelineTests.wurst": "ebe6b6467bf75e90c88669cf5094d08dc09636b52e095f2f63fb85a2576e8530",
+    "wurst/CampaignUnstuck.wurst": "a1fd73ecf77bc8227cfecb9af6b0648458f2c43f197a799c60a02538bdfe08d6",
+    "wurst/CargoBalances.wurst": "b15fcad0a50402bb51be25211a416348aacf9480a45c705be9e4e3fb8abd6d41",
+    "wurst/CargoProvenance.wurst": "6bec7e6e70bc13d9b2ef65468d171b8de8c6f41de9c24f1eeb8f33e5979b5e8c",
+    "wurst/CharacterAvailability.wurst": "ca46c6758da569d28ac1bc6b97d1e70f1c781105be5983cd1d9469fe2bc61d01",
+    "wurst/CharacterEquipmentTests.wurst": "3759046ae1d4191ff5d6098d9b688ebc2832bad8f73e13f01cf0def03625afe3",
+    "wurst/CivicCampaignRuntime.wurst": "071bd680357bea6f2c76839c84665f51bd562a1f7fdc97a97861ab929b381e07",
+    "wurst/CivicGovernance.wurst": "b3a877fee48ece474561316c462da45c68d6d6ce77ae9662f80b16edccaab6eb",
+    "wurst/CivicGovernanceTests.wurst": "16b3d9ccd64d4df53290ef175deb926a4b1dcb9749b0b2342495fe1dd8169c27",
+    "wurst/CombatEffects.wurst": "5306c3bc6fe9e91ae126b975d96583b09edfc185e2bad9b2513ea0418ffc2693",
+    "wurst/CommandMapContext.wurst": "3857551cfd4c9d0b03f04cb4981ab9f2547c49c9a4781d60793d337eb1be5bab",
+    "wurst/CommandMapTransportTests.wurst": "94f5a97c012a979c2ab998dd93383839d040bdb6aa3bb20868d67ae9f45edf51",
+    "wurst/CommandRouter.wurst": "e2dfe152c97cef40c181e93f07f115b15fcb9a473cde905b5be2e98fe8ee4d74",
+    "wurst/CommandRouterTests.wurst": "ca31aac1c77fc1aa0b3a8351c33bffe41e1e08eeba60a6d11d530705db01c158",
+    "wurst/ConflictPeaceIntegrationTests.wurst": "a422fc7ee442863a0a4abb8de18a1355537d76d101a2a6774e51b1efc1f6b015",
+    "wurst/ConformanceData.wurst": "e9067f700d4a175e25fed56b7f1406781a3b3dd958ab93a1eca14adcfd0a741a",
+    "wurst/CountryDiplomacyScreen.wurst": "b0a61823970fe4298d64b363fbe99febc77987115e41921ed2e4e8dbf922f9ff",
+    "wurst/CountryDiplomacyScreenTests.wurst": "1004540f0725992aea9b0dd5e2244d13ba399016c3c0ba12800e8735f02d805e",
+    "wurst/DiscoveryKnowledge.wurst": "c433fbf1e79d15c8217ea6da620064bcd74c2b6f3282377f0df3c8fbae9d46a8",
+    "wurst/EquipmentItems.wurst": "036b000f5d205874d3d579038ba5db12255cec5bd45c24b1a0abd2440f39df73",
+    "wurst/EquipmentSetTests.wurst": "d99a829b91372d3eb63d56fc7538e8b19d8bcd197e553e466750e2d521e60307",
+    "wurst/EquipmentSetVectorsTests.wurst": "9296030ebd1cc4d2b2efdd6c8121cf15afe413b4eeae530be017d45a27d48fd3",
+    "wurst/EquipmentSets.wurst": "b9c94b0350a3ecc9d28fc876a4169ba4f2263c5bd40942297094d262f7927e29",
+    "wurst/ExactNatural.wurst": "1c69c29e5c4571b31b5edc2f475ae0e475f054421fa3c2154937d59e07a0e3d0",
+    "wurst/ExactNaturalTests.wurst": "0804b8b3798c93dad764e2903c6c19543852c29aee8e781af43a42124e4e278d",
+    "wurst/ExactRational.wurst": "b5b8aa761ddce23169ab77fdadbaf3d7d3c11b3d9fd05259aaa4abed9fd0e0a7",
+    "wurst/ExactRationalTests.wurst": "3c2e350402c1622259f8f4769799cc5599e43490380f23c2b83afb6b03b7151e",
+    "wurst/FinanceCampaignRuntime.wurst": "ec6222658f79378682fb482bbad4bb76a2733332aafdbeb8a783f4f12c776b59",
+    "wurst/FrameworkConformanceTests.wurst": "7eaec81e37de199bc93b8065bc36e3dbb16651a7be0967881c7763f43a17b3eb",
+    "wurst/FrameworkPorts.wurst": "dd7c72d530d2d26c9b8a122a20a64d58d74c0dbd8f123c6c1b9cfd6b95cfc4cd",
+    "wurst/HeroAllocationDefinitions.wurst": "c5294e67cf0eb01a9e86c80c399f25ea77c7f013c1ed13b7d0a425d0827860e6",
+    "wurst/HeroAllocationTests.wurst": "7576b22d2f0c4d0d62ac7c3db2e17333ec506b3a334c6d47eff57dcb142e9a67",
+    "wurst/HeroAllocationVectorsTests.wurst": "48e984df0c70ea0c9d1f6e46d6c613db62ec037e915a5985145874dca0b9da99",
+    "wurst/HeroDefeatLifecycleTests.wurst": "6b4667f546a7ed0d6795345cdd11daede7024eca1f1a98487e92ca2d27243e6e",
+    "wurst/HeroEarnedGrowthTests.wurst": "5ed32e9d019d2046452cfb1d524bef589af09b726b59ac95b186fbdc4fe77831",
+    "wurst/HeroProgression.wurst": "0f70e0a0f40d3511865008bd601eb40dfe59a98c6137235dd8db76e08778f9b7",
+    "wurst/HeroProgressionVectorsTests.wurst": "fd685e4a037ab70fe1b8d547336a2da38f5dbe30f6d071dfc9a48ab835ef52b8",
+    "wurst/HeroStartingProfileTests.wurst": "dadc32a911544c822b4375b52088d8d6a415068ebbd284c3bb68d09415dfc1ad",
+    "wurst/InstalledCommandHelpTests.wurst": "bba7bf9dab91a5bc3a88fa884b5e12e3ecf0d25ab755bd0f1eb7856d64fa206e",
+    "wurst/InstalledGodModeTests.wurst": "e03a636c043f292884e46a9f0f16f1496f2787540185f103a8a62c73f325bb9c",
+    "wurst/ItemComparisonVectorsTests.wurst": "163f76b5c9439e9bb77e941fa994a8690011e0c948a59ac8342ef9055d4ab8ac",
+    "wurst/ItemDefinitionTests.wurst": "71ca4819fbe83ca359e9e81e81d3087dd7a1f81aad9597b865b8c237af734de7",
+    "wurst/LandArmyEffects.wurst": "6ff527618b08fb6bdf65223db358c64d82ad5d6b287ed8f11594457fc4f5a279",
+    "wurst/LandArmyEffectsTests.wurst": "4ab12052f6752073674b24be63f8355dfe178966a96e2e77161370b2a5ce6a33",
+    "wurst/LandArmyRuntime.wurst": "d84b0571b4f9686a1c9665d603252c8d8524591b66da4dd8e3ed2c1a225704af",
+    "wurst/LiveRecoveryTests.wurst": "7ebfec7fa60d998f91be7a630a69c7bb2f7ee24127d4524984b6ce5063bf5b67",
+    "wurst/LiveTradeAccess.wurst": "b7ad97e5df2c1e6a1af2b29e64a4d8f2104dc7645579576347d0093aef36b8fc",
+    "wurst/LocalBattleBenchmark.wurst": "00f5188b59662220ddc0ecad3bbd6f547cdc2a0686f4c61ae45714247ab0617d",
+    "wurst/ManagementCommandTests.wurst": "bec717b56d5772e033635f9a155069be49a677ef5865e9549cb1187a102d237f",
+    "wurst/ManagementScreenPauseController.wurst": "82e72e7cb7e746a6e5590a82eb3e1754733b77f021c1e9dd332004e11afbb20a",
+    "wurst/ManagementScreenPauseControllerTests.wurst": "bb5d1bc8e1697fc917cfd688028b222b03682b23b74879c1301d92975e5056a4",
+    "wurst/MapDiscoveryScreen.wurst": "968035063da297243ee4af28c0e7523b921ff271047339a465c38c2b6af20d15",
+    "wurst/MapDiscoveryScreenTests.wurst": "ec4e18726fad3eab66e6937ead464ab220aa33a83106cafce40c64dbc20ca0a3",
+    "wurst/MilitaryCombatEvents.wurst": "b2b4e3bb5d4dd292dcf43e07a44ad5d9dd4e4b82a4f4e6da0d10cfe25d9057f0",
+    "wurst/MilitaryCombatEventsTests.wurst": "8d54ec5a03dccbb689bdbd21ce39de8a9ebb024654b035595ac323ec8817b0a1",
+    "wurst/MilitaryOrderEvents.wurst": "fe20339109c3c5a4ab844be42d2e0a3cd446aff1cbde9d32c7473b550305a9b2",
+    "wurst/MilitaryOrderEventsTests.wurst": "bd06ba23e7b097c98e3312aa856a5e6bfdb563bbdaa8792f8d3d26557c62a44b",
+    "wurst/MilitarySettlementRuntime.wurst": "6ff22cf29821cbb1caff3f91686b053213ab2d7e4b9a87d04d1995fd6c4a33c7",
+    "wurst/MilitarySettlementRuntimeTests.wurst": "7dbe972ffabe3a325021238557eb1237f3b10923e9b654cf43b2710fbe7957a4",
+    "wurst/MilitaryTraditionLayer.wurst": "6986893046969d68f859cb25dba6f9f8eacac24835d1604cbbbdb88aabcc4c0f",
+    "wurst/MixedCargoTests.wurst": "bf558ad715efdb7bf5d6d6934719f1c2bf719cec8697732cee437948239f0863",
+    "wurst/MixedCargoVectorsTests.wurst": "8be14d116b555075004a13bdb5ef61d45a5b8d323af44097932d13286c7b1a31",
+    "wurst/NativeSaveRegressionFixture.wurst": "9834c8fdd8b2fa63e24b26c7f519962f0758c3e42a8649e0db0151ca545d43ce",
+    "wurst/NavalCampaignRuntime.wurst": "a4de602c24c98caafb163187d111973a90e87916f90e023a3a71a01463e5a931",
+    "wurst/NavalServices.wurst": "f32bd25cce02ddf3d47ee5161c2c0c6367240529847caad3aa4c7e94ac655d84",
+    "wurst/NavalServicesTests.wurst": "a271d533d38389f5f6b2807ccad297514d71a02e33db0aac5887be53e2838448",
+    "wurst/NavigationEfficiencyTests.wurst": "8f86231f7743b26e7c87006315207fce270177ed3d0345236d1b2d76583e0b45",
+    "wurst/NewCampaignOriginSelectionTests.wurst": "5044e39f8a28909efae1f3448db459e747d03093c8bccdbd71e20dcf575d7982",
+    "wurst/PartyLocationTests.wurst": "a6041d02338a0357471f68e0633f6d302cf45caf60f70cfb931a8d8ebb7d9825",
+    "wurst/PartyLocations.wurst": "cffe73f48c50af7d2ea8d10e40dc723109d50043e5b86d237bc014d8588d2ddf",
+    "wurst/PhysicalInteraction.wurst": "84c5bdc00c3e20177e5d55556251f37b37e3e37725d4a9dfa76bdc7d363193da",
+    "wurst/PiracyCommandTests.wurst": "df6bacfcc73dc231766f4dcc1d9a85fac8d72ff2b24466312566bcf1afa23060",
+    "wurst/PlayableCampaignRuntime.wurst": "d7677962a591b56d2792766f59141407e3a6024c72149517cdf51fa5718c7fa5",
+    "wurst/PlayableCampaignRuntimeTests.wurst": "2db4bf42726dfdc836ab95d80fa5e0e4494cbda768562e02af521ffa21cfa8e7",
+    "wurst/PlayableCountryInteractions.wurst": "260792f84fadb4b0d57f8c1b6b88f2fcdda1467605f3f052c0ab3e7ade9e6aaa",
+    "wurst/PlayablePiracy.wurst": "75e6fe7de12ca29e0a1273c3439d32f19e61d97996442d8f3a1e404aed3f0845",
+    "wurst/PlayablePiracyTests.wurst": "3706cb9c933a3d9153786d26cf5da72de8fd022d1dcfea087fb30571bf8381ba",
+    "wurst/PlayableTrade.wurst": "0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda",
+    "wurst/PlayableTradeTests.wurst": "a058eacd99a7f5aea83935305720e58be80b83650c685727be24ee2c881d646b",
+    "wurst/PlayerGodMode.wurst": "af5c25f1c48f1d0432699310b4cb191971d662d249e56330f3b74ab36f9d6f0b",
+    "wurst/PlayerGodModeTests.wurst": "403e2e6a912162f73b231569e9ad927d7cc5f5caa9816ca0333aac9079b75a50",
+    "wurst/PrizeCombat.wurst": "f2cc5ee46140e8f29181d4e179c1e429301c3027e316a5f8b59d3d74d7b16f45",
+    "wurst/QuestNavigation.wurst": "862daaff5d68935347f161b6b0e9ea0c4f7254caf363b2762a1acdfca83dac41",
+    "wurst/QuestNavigationTests.wurst": "8c82c34a2daaac429d27e735a78877f9b848220af700f3016b1a84331eddcadf",
+    "wurst/QuestStages.wurst": "e3ae1e0d400fc3cf51786aeb3c000ce6bdce4e5666b2b1cffd162c2d5b674377",
+    "wurst/RecruitmentWindowTests.wurst": "46fe7e273a055ca7fd9a0de3bc9b6c67903be822d431cb56b416fe9cf9238cbd",
+    "wurst/ReligionRuntime.wurst": "9ef64e6e7857e08fc9dfc9238a0c38cf6bae818c29938a06a9586cedca8cae9d",
+    "wurst/ReligionRuntimeTests.wurst": "0c7aa6aa16638b0272429071ee9614c47527159e085eeb590d7ccb60015d488f",
+    "wurst/RemoteRegionAuthorityTests.wurst": "d0ee1adeb3d8db78cb60c796371582e78142f023716ed7d2de81fbd1ba4a269b",
+    "wurst/RemoteRegionManagement.wurst": "984309cca639c123da67970eeebd633fe33c9ff054830c59a01094c0c4cb9c9b",
+    "wurst/ResearchCost.wurst": "8061a7a82b2f98a913c3d11a7e6bfdca4be8544def0a659690047aba267e021b",
+    "wurst/ResearchCostTests.wurst": "68aef06c102f5885e05a05eed41c05e58bd8237fc00a17c64c2dab2fdf5994d5",
+    "wurst/ResearchEntitlements.wurst": "3811c1ca248e5cb15542c7ba90d8ac448686d8fdba462fe4cfd7ddb5ad1b6832",
+    "wurst/ResearchRuntimeTests.wurst": "6f6327eedca375b8cbf1d643cf6527e0afbb2eed4d827a7eb585b13108225970",
+    "wurst/RpgInteractionTests.wurst": "afcea2d026a44157aefd0f5cd2e6487d03d61a3fd74db0471d5ed8340e398676",
+    "wurst/RuntimeProtection.wurst": "b19438805770e6c4ca35deaa92d47021657fa8271cdc74aaa45b075718dfc9cf",
+    "wurst/ScenarioData.wurst": "b5acae15feeab46feeaf0558fabe05966518ec2d2b2dbb537c2b0d49822844a5",
+    "wurst/ScenarioSettings.wurst": "ec3531af4de06db159d547ed78b8ee0cbe0e22e7c1cd73b8c3c7cfd1cdc5e063",
+    "wurst/ScienceCampaignRuntime.wurst": "4e5600ea36125c4e0211f751c09ff558cf6cc99a288321f567428b97bb8a6b4c",
+    "wurst/ScienceExploration.wurst": "ceb4e3085a8541f1a52ee179d0a0e6fdeb527583ade0ed37a4f1642c435554d8",
+    "wurst/ScienceExplorationTests.wurst": "4697e643c85801d334559131f2bd3a69914cb5e8f74458bd7ae3e15249260680",
+    "wurst/TradeCommandTests.wurst": "c1f86e7b8c41e0bb1068101405375fc76eb8d388e5a39930a3ca0ad53f2cad99",
+    "wurst/TradeFinance.wurst": "f0224a52a9eb1bebcd98e21ab85de7d10c8c244894af639d5c4f67c54e3c5237",
+    "wurst/TradeFinanceTests.wurst": "5b31e87343b97332fea35730adc4456908bd5c1fdf9e48e32405b657a4a73258",
+    "wurst/TradePricing.wurst": "6de7d51b51717e00c91454473a4dd88387afbefc6bd5221047246ebb8b687e12",
+    "wurst/TradePricingTests.wurst": "e04a2131d74e275b7ddd67fb3985308ca8b3e0cbf2898e16d5ca7d785d26cd02",
+    "wurst/TradePricingVectorsTests.wurst": "8d769bf31ed20f0bd4c14efb01f9243a9d011d94e580447b900969c628f4d064",
+    "wurst/TradeSnapshotTests.wurst": "2f776e6d992061940e357aed972153a24dc881615e1a9d63d266c74ef3942279",
+    "wurst/TreasureRandom.wurst": "f1443c9c50d56549b0a76fea2650296a7c441628d4224bb76ab3e8871712894e",
+    "wurst/TreasureResolution.wurst": "1432a88a5a41c22881f9a75abe3ff1e596d0289d36bbed5244f7b51a7a16922c",
+    "wurst/TreasureResolutionTests.wurst": "0d0e791c2986b7c0581faa51be3ad78b3c68eea0ebe46f6f04635408c60e5eea",
+    "wurst/TreasureVectorsTests.wurst": "b1362f172ed84622da5615493415789ded2b6703b4c03d0094e8417873bacc04",
+    "wurst/UnstuckRecovery.wurst": "25572010deef6fd66f25a2c8229753f2c2afe151eadbeb2b23fcf9d3f5bc18f7",
+    "wurst/UnstuckRecoveryTests.wurst": "31d6903b834478cb28d24f604ba9f2a22d06422f2056c133bbbc0dacc6cb75f4",
+    "wurst/VisitKnowledgeTests.wurst": "23a91d5f3ad3469533893ac763fbf7ec649cb74f349c9bc0784850bf0df61495",
+    "wurst/VoyageCommands.wurst": "1f15194d00c3b5030fbb3ea844ba692d70095922e3dbaffe0637dabdeeece176",
+    "wurst/VoyageNavigation.wurst": "fc4b8f01048b0a616b95cb98e553d701ae9b97df6d198c187e3473e031f558e9",
+    "wurst/WC3Compatibility.wurst": "18e48350fe412e847b3877534e695179177fad18f243cdf707b282412c8a75a1",
+    "wurst/WC3CompatibilityCompileFixture.wurst": "b5a3d685395950a05ec2ea7709183eec0cbc0a79dd0c71443a6df1b81653d5fe",
+    "wurst/WarcraftCampaignSaveStorageTests.wurst": "9a06d9b4240f8938e14d150582c8a0b1af3ab169b08a9b7eb0ed59fe73743884",
+    "wurst/WarcraftRecoveryRuntime.wurst": "704b836780a1fa17b5dd6e8c61513c47dcfad515fd3496e3ea121fd76f430185",
+    "wurst/WarcraftRegionalRuntime.wurst": "aff0c4162a22e3eb1c6df17ced874b16e48b4cd5eff5a537daedae77b9e23e56",
+    "wurst/WarcraftRpgProjections.wurst": "dc211d490f8aedf24e754d00cdd512bba5afcbe8e4a4ff4ef200046299a5059e",
+    "wurst/WarcraftRpgRuntime.wurst": "87e38fdb627f6901df27a7b1f4e9b5e7d9c712ee8d59a6cfd372a6e89d0e9059",
+    "wurst/WarcraftRpgRuntimeTests.wurst": "a15294ad4d1fe727dcf8e6f9558fa2743b13c28cbd2232c2084e63ea5136b0a3",
+    "wurst_run.args": "d6efe3b56042652bbb7829d4b2574d69d1727e0bcc29521bef7d1f37647a5ff6"
+  },
+  "logSha256": "1cd6b097f6186b6a5f37e69f15b4a4f2bc886b3480389833a0861015c3aac185",
+  "returnCode": 0,
+  "sourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+  "status": "pass",
+  "succeeded": 15,
+  "tests": [
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:slotsAndDeferredSave",
+      "line": 50,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:rejectedLoadNeverActivates",
+      "line": 67,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/CampaignSaveManagerTests.wurst:transactionalFailurePreservesStorage",
+      "line": 88,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:cacheTransactionRequiresPresentExactStringIncludingEmptyPayload",
+      "line": 73,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedStoreCannotReportSuccessAndRetryClearsDiagnostic",
+      "line": 83,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedStoreThatMutatesStillRollsBackBeforeSaving",
+      "line": 106,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:successfulStoreWithTruncatedReadbackNeverCommitsCandidate",
+      "line": 118,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedCommitRestoresExistingSlotAfterPossiblePartialPersistence",
+      "line": 129,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedCommitRestoresAbsentSlotAfterPossiblePartialPersistence",
+      "line": 141,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:rejectedRollbackStoreNeverPersistsWrongBuffer",
+      "line": 152,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:truncatedRollbackStoreNeverPersistsWrongBuffer",
+      "line": 164,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedRollbackCommitNeverClaimsRestoration",
+      "line": 176,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:failedRollbackFlushNeverPersistsWrongBuffer",
+      "line": 186,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:successfulCommitWithChangedReadbackRollsBack",
+      "line": 197,
+      "status": "pass"
+    },
+    {
+      "id": "wurst/WarcraftCampaignSaveStorageTests.wurst:changedRollbackReadbackNeverClaimsRestoration",
+      "line": 207,
+      "status": "pass"
+    }
+  ]
+}

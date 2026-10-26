@@ -1,0 +1,88 @@
+{
+  "compiledFunctionsCheckedUnchanged": 2412,
+  "error": "[string \"-- Supplemental compiled-Lua regression. This...\"]:61: __SCALE_INSTRUCTION_BUDGET_EXHAUSTED:startup\nstack traceback:\n\t[C]: in function 'error'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:30: in hook '?'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:217190: in function '__wurst_init_bootstrap'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:115805: in function 'config'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:87: in upvalue 'operation'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in function <[string \"-- Supplemental compiled-Lua regression. This...\"]:55>\n\t[C]: in function 'xpcall'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in upvalue 'phase'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:86: in function '__scale_run_startup'\n\t[string \"__scale_run_startup()\"]:1: in main chunk",
+  "execution": {
+    "nativeStatus": "not_run",
+    "phases": {
+      "startup": {
+        "budget": 10000,
+        "budgetExhausted": true,
+        "budgetTrace": "stack traceback:\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:28: in hook '?'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:217190: in function '__wurst_init_bootstrap'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:115805: in function 'config'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:87: in upvalue 'operation'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in function <[string \"-- Supplemental compiled-Lua regression. This...\"]:55>\n\t[C]: in function 'xpcall'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in upvalue 'phase'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:86: in function '__scale_run_startup'\n\t[string \"__scale_run_startup()\"]:1: in main chunk",
+        "completed": false,
+        "cpuSeconds": 0.003559,
+        "error": "__SCALE_INSTRUCTION_BUDGET_EXHAUSTED:startup\nstack traceback:\n\t[C]: in function 'error'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:30: in hook '?'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:217190: in function '__wurst_init_bootstrap'\n\t...3ebc79fa0a/validation-536/startup-fix/europe/war3map.lua:115805: in function 'config'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:87: in upvalue 'operation'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in function <[string \"-- Supplemental compiled-Lua regression. This...\"]:55>\n\t[C]: in function 'xpcall'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:55: in upvalue 'phase'\n\t[string \"-- Supplemental compiled-Lua regression. This...\"]:86: in function '__scale_run_startup'\n\t[string \"__scale_run_startup()\"]:1: in main chunk",
+        "instructions": 20000,
+        "name": "startup",
+        "observations": {},
+        "stages": {}
+      }
+    },
+    "timerCallbacksExecuted": 0
+  },
+  "format": "compiled_lua_full_scale_trade_roundtrip_v1",
+  "initialRequest": "v1|1|pending|austria|europe_central_east|europe_central_alpine|vienna",
+  "inputs": {
+    "buildReceipt": {
+      "bytes": 8974,
+      "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/build-result.json",
+      "sha256": "9755c3a24ab6e27b954f3865b3c00d93381f366900464391167185eeb9aaa7c3"
+    },
+    "compiledLua": {
+      "bytes": 16097583,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-fix/europe/war3map.lua",
+      "sha256": "a4fc97bb27b36466bc62bad74605128258c6847c4f46791efe2df184c3f85a45"
+    },
+    "frozenHarness": {
+      "bytes": 17193,
+      "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/probe-lua54-initialization.py",
+      "sha256": "b3bd4b946cd4ceb9b46a7c254fb1c9d498868c9deae31cf72836ff8dc1225948"
+    },
+    "frozenNativeStubs": {
+      "bytes": 13205,
+      "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/late-startup-stubs.lua",
+      "sha256": "3c7eda8627f7ba5d4c3d3f49328be834d7598f1e8616462f665b02ae8cdaa630"
+    },
+    "pathing": {
+      "bytes": 262160,
+      "path": "/workspace/scratch/243ebc79fa0a/validation-536/startup-audit/europe_central_east/war3map.wpm",
+      "sha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd"
+    },
+    "productionSourceSha256": "0730e299ae8fa093e317bb586f7b0992dd30e8ca86082be84637653c3865ecda",
+    "roundtripCase": {
+      "bytes": 14746,
+      "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/full-scale-roundtrip.lua",
+      "sha256": "8151d852ac6e7d3546494038901a9b19efd342f91604e5450aee58ece9a44f10"
+    },
+    "roundtripHarness": {
+      "bytes": 10965,
+      "path": "/workspace/scratch/243ebc79fa0a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/reports/issue-438/trade-startup/verify-trade-full-scale.py",
+      "sha256": "2cfe851ac54ce3ec9da874a4adf9b1addcc66debc85a439814e24f3ebed63e35"
+    }
+  },
+  "instructionBudgetPerPhase": 10000,
+  "limitations": [
+    "Local stock Lua with explicit typed native stubs; no Warcraft client is run.",
+    "StringHash is a collision-free ID stub, not Warcraft hashing; collision semantics require separate Wurst regressions.",
+    "InitBlizzard is a no-op and player slots are 24; synthetic units, orders, regions and timers have the frozen model defaults.",
+    "No timer/trigger callback, rendering, transition, engine collision, assets or disk game-cache behavior is exercised.",
+    "Pathing uses retained base WPM only; game-cache save always succeeds in memory.",
+    "Two independent sampled 2B instruction safety budgets include Lua stub work; this is not a Warcraft operation limit.",
+    "Startup call/return debug-hook observation adds overhead. These timings are not the frozen before/after startup comparison or native load times.",
+    "The exact embedded Warcraft Lua patch version is unverified; stock Lua 5.3.6 is not asserted binary-equivalent."
+  ],
+  "nativeStatus": "not_run",
+  "phaseWallSeconds": {
+    "startup": 0.003822
+  },
+  "productionFunctionOverrides": false,
+  "releaseStatus": "not_a_release_gate",
+  "runtimeLibrary": {
+    "bytes": 274024,
+    "path": "/workspace/scratch/243ebc79fa0a/validation-536/lua53-runtime/liblua5.3.6-probe.so",
+    "sha256": "fdaa987d06dd329be3232a65ea71cae427f3bfd26f5b757d8853628d33d9492a"
+  },
+  "runtimeVersion": "Lua 5.3",
+  "status": "failed",
+  "timerCallbacksExecuted": 0,
+  "wallSeconds": 0.610816
+}

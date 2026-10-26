@@ -1,0 +1,32 @@
+{
+  "status": "pass_diagnostic_hook_negative_control",
+  "recordedAt": "2026-10-26T05:30:05.038884+00:00",
+  "hookSha256": "d6ca065f4ef926108d0a74522b1016c75efde51eaa87cfedbf6ae65092fc8a4f",
+  "observations": [
+    {
+      "hookEnabled": false,
+      "exitCode": 1,
+      "result": {
+        "ran": 4,
+        "failures": 2,
+        "errors": 1,
+        "success": false,
+        "shouldStop": false
+      },
+      "earlyTracebacks": 0
+    },
+    {
+      "hookEnabled": true,
+      "exitCode": 1,
+      "result": {
+        "ran": 4,
+        "failures": 2,
+        "errors": 1,
+        "success": false,
+        "shouldStop": false
+      },
+      "earlyTracebacks": 2
+    }
+  ],
+  "scope": "Diagnostic logging only. Both failing runners still exit1 with identical accounting; subtest recording remains standard."
+}

@@ -1,0 +1,157 @@
+{
+  "dateGateCommonCondition": "Every gate remains conditional on campaignDay >= 0; each failure disposes and returns null. Earlier parser/version/mandatory-record checks remain unchanged.",
+  "dateGatesInOrder": [
+    "finance.states[i].lastDay > campaignDay",
+    "land.arsenals[i].lastDay > campaignDay",
+    "forces[i].navigation.pending() and forces[i].navigation.lastDay > campaignDay",
+    "science.states[i].lastDay > campaignDay",
+    "forces[i].hull.lastDay > campaignDay",
+    "naval.states[i].lastDay > campaignDay"
+  ],
+  "finalVerification": {
+    "authoredWurstUnchanged": true,
+    "compilerOrDeadlineChanged": false,
+    "dependencyInputsUnchanged": true,
+    "existingSelectedTests": 25,
+    "fullDiscovery": 671,
+    "fullSuiteStatusAtReview": "running independently; not claimed by this report",
+    "gitDiffCheck": "pass",
+    "interpreterInputsUnchanged": true,
+    "newTests": 3,
+    "releaseGateModified": false,
+    "repositoryTestAnnotationsModified": false,
+    "selectedTests": 28
+  },
+  "format": "warcraft-issue-438-military-source-review-v1",
+  "frozenSourceInputs": {
+    "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst": "e06c2f7576bafacf66adb7df098677b51620415712e4d4a5e8ca48c8a9010b6e",
+    "maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst": "a5b708859532eada5bca21655ea573cab87b922c432570bd4523c0edf125a580",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/CampaignAuthorityPerformanceTests.wurst": "c66195704cd69c9723e7f67ce7923795eb56a14aab29f6190e1fb0134381e612",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitarySnapshotValidationTests.wurst": "65d066ca668866c64c056412b73b424b63291cd6032d2caefe6149e80bf49602"
+  },
+  "implementation": [
+    "MilitarySettlementRuntime.parseValidatedSnapshot parses with the unchanged parser, enforces the same six campaign-day bounds in their prior order, and returns caller-owned detached authority or null.",
+    "Both existing boolean validateSnapshot overloads remain available; the bounded overload delegates to parseValidatedSnapshot and disposes a successful result. The default overload retains campaignDay=-1.",
+    "PlayableCampaignState retains this one detached runtime for piracy, religion, pirate-polity reconciliation, and both country checks; one caller cleanup point runs after success or rejection from the private helper.",
+    "The detached runtime is disposed before the independent extension/trade and agriculture checks, preserving the previous disposal boundary before the large trade parse. staged=candidate is published only after all checks succeed.",
+    "The second parse formerly performed solely for country conflict validation is removed. The separate remote-command and founded-pirate-polity parsers remain unchanged."
+  ],
+  "newRegressionCoverage": [
+    "All six future-day rejection paths; acceptance at the day bound; unchanged unbounded boolean overload; successful owned return remains alive until caller disposal; detached force mutation cannot affect live snapshot; borrowed ledger definitions remain usable.",
+    "Saved country conflict validation succeeds against the detached snapshot after live conflict membership changes; exactly one parse is observed; live military, country, and campaign authority remain unchanged; disposal precedes economy validation and staged publication.",
+    "Five successive rejection points (piracy, religion, diplomacy, rewards, trade) with later domains also invalid retain earliest diagnostics, clear staged publication, dispose every parsed copy, and leave live military unchanged. A subsequent valid candidate succeeds."
+  ],
+  "providerAndOwnershipReview": [
+    "GeneratedSettlementDefinitions and GeneratedMilitaryTraditions are stateless generated implementations. Their reconciliation writes only to the supplied detached runtime, creates owned derived records, and does not touch Warcraft projections or live callbacks.",
+    "Military parser ledger forks borrow authored definitions while creating new mutable states. Inspected land, civic, finance, science, and naval destructors destroy owned mutable states and leave borrowed definitions intact. Military disposal does not call adapter projection removal; its newly constructed empty PrizeEncounters retirement has no live encounters.",
+    "Production piracy/religion validators do not mutate the military providers. Production pirate reconciliation reads a separate detached military copy. Country validation only reads conflict indices and sides from the supplied detached runtime.",
+    "Removing the redundant parse intentionally removes one invocation of each present definition provider. Equivalence is established for the current stateless production providers under unchanged configuration; it is not a claim about arbitrary stateful or externally mutating implementations. The interfaces now state the stateless borrowed-provider contract."
+  ],
+  "scopeLimits": [
+    "This is source review and pinned Wurst interpreter regression evidence, not Warcraft native execution or release acceptance.",
+    "The reported native Continue freeze remains unresolved until destination terrain and player movement are observed in the real Warcraft client. No player retest is requested by this report.",
+    "Campaign schema 10, trade snapshot 5, military snapshot 15, native substring/checksum behavior, and native handoff calls are unchanged.",
+    "No DevBox, VM, SSH, remote user machine, or player-operated incremental QA was used.",
+    "All four focused attempts and raw logs remain separately retained; failed attempts are not rewritten as passes. Failed runs did not reach the successful-run terminal unchanged-input assertions."
+  ],
+  "sourceIdentity": {
+    "sourceRevision": "264b34c9a0762bdadda377fb10cb44a63af33052",
+    "sourceTreeSha256": "b69fd4f0100a2a9f5f5e4c266e4e68ee3e35af3dc5be91d010be9b325e97b62d"
+  },
+  "status": "source-review-pass-native-unresolved",
+  "testAttempts": [
+    {
+      "attempt": 1,
+      "discovered": 28,
+      "reason": "Compilation stopped before test execution: the new outer local named valid conflicted with the earlier party-location local. Renamed it to countriesValid without changing logic.",
+      "retainedEvidence": {
+        "military-focused-attempt1/execution.log": "f0d96aa72137a51b5758df793fc846726ad51b41d8b4556bbec63ac74d14f54d",
+        "military-focused-attempt1/focused-context.json": "0077327c3b37ea381684ee61d6747023cfacbf8356c4383a58bd4c5df2149db3",
+        "military-focused-attempt1/results.json": "f78dcabe532e6952f23b2042f18e8cd37eb44db3bb6f96b6fb76870c8b613008",
+        "run-military-focused-tests-attempt1.py": "abe180cab3a99cdedaa9534ff674d63b90351b3a3f0b72fc49ed2fda29b37363"
+      },
+      "returnCode": 1,
+      "sourceIdentityAtAssembly": {
+        "sourceRevision": "264b34c9a0762bdadda377fb10cb44a63af33052",
+        "sourceTreeSha256": "2f22fd816dd19bd2dd34361bc5defa9e8c197b2a8d9deb4b7fe593e05b1c7d0e"
+      },
+      "status": "fail",
+      "succeeded": 0,
+      "terminalUnchangedChecks": {}
+    },
+    {
+      "attempt": 2,
+      "discovered": 28,
+      "reason": "27/28 passed. The new rejection fixture failed a boolean assertion; all six date limits, detached ownership, saved-conflict reuse, and the 25 existing selected tests passed. The failure was subsequently localized by adding assertion messages.",
+      "retainedEvidence": {
+        "military-focused-attempt2/execution.log": "17b0ce8046f17c395f69f8d3724cb451506b69b1a8baed3c2cafd18050d3de5e",
+        "military-focused-attempt2/focused-context.json": "f814b853c7c44f0e6c8bb2c0810d6221336a7ab08931ba5b68881f3e31661f82",
+        "military-focused-attempt2/results.json": "eb8fb5692e1a6cbffc3e9e1184a55df85a40dd1772417c4a0015fe98909a341e",
+        "run-military-focused-tests-attempt2.py": "07cfb8a1811d8bd03b453b063dadcd6c0b89809dc0a15931f7b625506ea1f5d6"
+      },
+      "returnCode": 1,
+      "sourceIdentityAtAssembly": {
+        "sourceRevision": "264b34c9a0762bdadda377fb10cb44a63af33052",
+        "sourceTreeSha256": "d0942924f9f329a0cdb38192068506472f088a5bd6f4b6f06f8fe8a6b25ae503"
+      },
+      "status": "fail",
+      "succeeded": 27,
+      "terminalUnchangedChecks": {}
+    },
+    {
+      "attempt": 3,
+      "discovered": 28,
+      "reason": "27/28 passed. The failure was identified as the fixture accepting supposedly invalid trade authority: replaceCampaignField edits the first record, but validation reads the last; capture retained an earlier trade record. No production defect or changed authority semantics was established.",
+      "retainedEvidence": {
+        "military-focused-attempt3/execution.log": "087ccbf0be37dcd19d948351722c9831cce8271946e96c5ad6660a42d3f51257",
+        "military-focused-attempt3/focused-context.json": "e8ffde25f950f9d35b17f832a2048d179d4ddbc1101d87d8605d9ea997cfafdb",
+        "military-focused-attempt3/results.json": "c6812a26ad578cf937c91d227bdb0cb55a361c3162804d5964cb1150ba495665",
+        "run-military-focused-tests-attempt3.py": "e938560343da1fe2b4d45fa2f64552953b16511133d3b082726dedbdd1d951fe"
+      },
+      "returnCode": 1,
+      "sourceIdentityAtAssembly": {
+        "sourceRevision": "264b34c9a0762bdadda377fb10cb44a63af33052",
+        "sourceTreeSha256": "1adc07b6609758ea9dfb0af72dadab732435e8b1ebbeaa16e9e2970c01ed3484"
+      },
+      "status": "fail",
+      "succeeded": 27,
+      "terminalUnchangedChecks": {}
+    },
+    {
+      "attempt": 4,
+      "discovered": 28,
+      "reason": "28/28 passed after fixing only the rejection fixture to append the intended last authority record and assert lastAuthorityValue observes invalid before calling validation. Compilation, assertion, and interpreter errors are empty.",
+      "retainedEvidence": {
+        "military-focused-attempt4/execution.log": "2e2fa3cf55c07099e2d28cf75b10ea61de5e819c9f09bbbff2180c7f68c43336",
+        "military-focused-attempt4/focused-context.json": "79ab7d7dc0818963f79a373b6daf30d5492ebb398b713f39e55e4b58694d3498",
+        "military-focused-attempt4/results.json": "5b762c4590023633caf8751b19848c61aafd7bdd9ede5f74ed709aeac457d588",
+        "run-military-focused-tests-attempt4.py": "c3934c8068af4804f1cfd184f00d7e86923ac5e3562b1dfe9c626a24b134d4e6"
+      },
+      "returnCode": 0,
+      "sourceIdentityAtAssembly": {
+        "sourceRevision": "264b34c9a0762bdadda377fb10cb44a63af33052",
+        "sourceTreeSha256": "b69fd4f0100a2a9f5f5e4c266e4e68ee3e35af3dc5be91d010be9b325e97b62d"
+      },
+      "status": "pass",
+      "succeeded": 28,
+      "terminalUnchangedChecks": {
+        "authoredWurstUnchanged": true,
+        "dependencyInputsUnchanged": true,
+        "interpreterInputsUnchanged": true
+      }
+    }
+  ],
+  "validationOrder": [
+    "existing command, boundary, party, clock, identity and required-domain checks",
+    "military parser and six campaign-day bounds",
+    "piracy validation",
+    "religion validation",
+    "founded pirate-polity reconciliation, if present",
+    "diplomacy country validation",
+    "rewards country validation, short-circuited if diplomacy fails",
+    "dispose owned detached military authority",
+    "extension/trade validation",
+    "agricultural clock validation",
+    "publish staged candidate and clear diagnostic"
+  ]
+}

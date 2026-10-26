@@ -1,0 +1,19 @@
+{
+  "status": "pass_scoped_independent_review",
+  "reviewer": "/root/startup_review",
+  "recordedBy": "root from reviewer returned messages",
+  "recordedAt": "2026-10-26T05:31:06.005420+00:00",
+  "reviewScope": [
+    "sitecustomize logging wrapper",
+    "attempt2 output directory / controlled stop-file polling / SIGINT change"
+  ],
+  "finding": "Original unittest error/failure result accounting, failfast and return values preserved. Only result logging added; addSubTest untouched. Stop handling cannot produce a pass; owned process group remains scoped.",
+  "hookSha256": "d6ca065f4ef926108d0a74522b1016c75efde51eaa87cfedbf6ae65092fc8a4f",
+  "environmentWiring": "Root subsequently added this hook directory to canonical child PYTHONPATH and pinned its hash in unchanged() and receipt. No command or success-condition change.",
+  "blockingFindings": [],
+  "nativeStatus": "not_run",
+  "finalWiringReviewed": true,
+  "finalDriverSha256": "95bdc43fae4fb9d95ee4f29569ab44bfc2170602b60a909e81ff1d3c64f2fbf4",
+  "finalWiringReview": "Reviewer confirmed current PYTHONPATH wiring, unchanged hash assertions, diagnostic receipt fields, no success-criterion or gate change.",
+  "orderBridgeReview": "Reviewer checked guarded native issuance, initial reconstruction before event install, and observation-only onOrder. No production correction justified; native not_run."
+}

@@ -1,0 +1,358 @@
+package TradeSnapshotTests
+
+import PlayableTrade
+import TradePricing
+import CargoProvenance
+import Agriculture
+
+// These helpers edit literal serialized fields independently of the production
+// cursor, including its version prefix and empty final fields.
+function snapshotField(string saved,int wanted) returns string
+	var start=0
+	if saved.startsWith("v2:") or saved.startsWith("v3:") or saved.startsWith("v4:") or saved.startsWith("v5:")
+		start=3
+	var field=0
+	for i=start to StringLength(saved)
+		if i==StringLength(saved) or SubString(saved,i,i+1)==":"
+			if field==wanted
+				return SubString(saved,start,i)
+			start=i+1
+			field++
+	return ""
+
+function replaceSnapshotField(string saved,int wanted,string value) returns string
+	var start=0
+	if saved.startsWith("v2:") or saved.startsWith("v3:") or saved.startsWith("v4:") or saved.startsWith("v5:")
+		start=3
+	var field=0
+	for i=start to StringLength(saved)
+		if i==StringLength(saved) or SubString(saved,i,i+1)==":"
+			if field==wanted
+				return SubString(saved,0,start)+value+SubString(saved,i,StringLength(saved))
+			start=i+1
+			field++
+	return ""
+
+function firstSnapshotRow(string section) returns string
+	let delimiter=section.indexOf("~")
+	if delimiter<0
+		return section
+	return SubString(section,0,delimiter)
+
+function snapshotRuntime() returns PlayableTradeRuntime
+	let r=new PlayableTradeRuntime()
+	r.registerMarket(new RuntimeMarket("port","grain",23,200,10,9))
+	r.registerMarket(new RuntimeMarket("port","silk",34,300,20,18))
+	r.registerMarket(new RuntimeMarket("other","grain",45,400,30,27))
+	r.registerStore(new TradeStore("cargo:hold",20,100))
+	r.registerStore(new TradeStore("warehouse:stock",30,200))
+	r.selectMarket("port","grain").assertTrue()
+	r.stores[0].contents.set("grain",2)
+	r.stores[1].contents.set("silk",3)
+	r.controller.provenance.add("cargo:hold","grain",2,20,"port")
+	r.controller.provenance.add("warehouse:stock","silk",3,60,"port")
+	return r
+
+function rejectsSnapshotWithoutMutation(PlayableTradeRuntime r,string candidate)
+	let before=r.capture()
+	let selectedMarket=r.market
+	let selectedHold=r.hold
+	let marketSelected=r.marketSelected
+	let storeSelected=r.storeSelected
+	r.validate(candidate).assertFalse()
+	r.capture().assertEquals(before)
+	r.reconstruct(candidate).assertFalse()
+	r.capture().assertEquals(before)
+	(r.market==selectedMarket).assertTrue()
+	(r.hold==selectedHold).assertTrue()
+	r.marketSelected.assertEquals(marketSelected)
+	r.storeSelected.assertEquals(storeSelected)
+
+function reverseSnapshotCatalogue(PlayableTradeRuntime r)
+	for i=0 to r.marketCount div 2-1
+		let other=r.marketCount-i-1
+		let value=r.markets[i]
+		r.markets[i]=r.markets[other]
+		r.markets[other]=value
+	for i=0 to r.storeCount div 2-1
+		let other=r.storeCount-i-1
+		let value=r.stores[i]
+		r.stores[i]=r.stores[other]
+		r.stores[other]=value
+
+@test function tradeSnapshotRestoresReorderedMarketsStoresAndProvenance()
+	// Exercise every saved field through a reordered catalogue within the IR
+	// interpreter's unchanged 20-second deadline. Full 8,422-market/829-store
+	// coverage runs against the compiled destination in the Lua scale regression.
+	// All stores here also carry an attributed cargo lot.
+	let r=new PlayableTradeRuntime()
+	let fallbackMarket=r.market
+	let fallbackHold=r.hold
+	let pricing=new TradePricing()
+	for i=0 to 255
+		let value=new RuntimeMarket("port_"+(i div 11).toString(),"good_"+(i mod 11).toString(),10,100,10,9,pricing)
+		value.stock=i+100
+		value.money=i+10000
+		value.previousUnitPrice=i+10
+		value.eventPermille=-(i mod 100)
+		r.registerMarket(value)
+	for i=0 to 31
+		let id="cargo:"+i.toString()
+		let good="good_"+(i mod 11).toString()
+		let value=new TradeStore(id,20,i+1000)
+		value.contents.set(good,2)
+		r.registerStore(value)
+		r.controller.provenance.add(id,good,2,i+20,"port_"+(i div 11).toString())
+	r.selectMarket("port_23","good_2").assertTrue()
+	r.hold=r.stores[31]
+	let saved=r.capture()
+	for i=0 to r.marketCount-1
+		r.markets[i].stock=0
+		r.markets[i].money=0
+	for i=0 to r.storeCount-1
+		r.stores[i].contents.clear()
+		r.stores[i].money=0
+	reverseSnapshotCatalogue(r)
+	r.reconstruct(saved).assertTrue()
+	reverseSnapshotCatalogue(r)
+	r.capture().assertEquals(saved)
+	r.controller.provenance.count.assertEquals(32)
+	// This fixture owns its catalogue. Free it so subsequent tests do not
+	// accumulate these definitions in the pinned interpreter's heap.
+	for i=0 to r.marketCount-1
+		destroy r.markets[i]
+	for i=0 to r.storeCount-1
+		destroy r.stores[i]
+	r.controller.provenance.clear()
+	destroy r.controller.provenance
+	destroy r.controller
+	destroy r.progress
+	destroy pricing
+	destroy fallbackMarket.pricing
+	destroy fallbackMarket
+	destroy fallbackHold
+	destroy r.agriculture
+	destroy r.pricingDefinitions
+	destroy r.management
+	destroy r
+
+@test function tradeSnapshotHashesNeverReplaceExactMarketOrStoreIdentity()
+	// Warcraft's hash folds case. Keep two different stable identities in each
+	// collision chain and prove both survive a populated round trip.
+	StringHash("port,grain").assertEquals(StringHash("PORT,grain"))
+	StringHash("cargo;hold").assertEquals(StringHash("cargo;HOLD"))
+	let r=snapshotRuntime()
+	r.registerMarket(new RuntimeMarket("PORT","grain",99,990,40,36))
+	r.registerStore(new TradeStore("cargo:HOLD",40,400))
+	r.stores[2].contents.set("grain",4)
+	r.controller.provenance.add("cargo:HOLD","grain",4,160,"PORT")
+	r.selectMarket("PORT","grain").assertTrue()
+	r.hold=r.stores[2]
+	let saved=r.capture()
+	r.validate(saved).assertTrue()
+	r.capture().assertEquals(saved)
+	r.markets[0].stock=0
+	r.markets[3].stock=0
+	r.stores[0].contents.clear()
+	r.stores[2].contents.clear()
+	r.reconstruct(saved).assertTrue()
+	r.capture().assertEquals(saved)
+	r.markets[0].stock.assertEquals(23)
+	r.markets[3].stock.assertEquals(99)
+	r.stores[0].quantity("grain").assertEquals(2)
+	r.stores[2].quantity("grain").assertEquals(4)
+	let wrongOrigin=replaceSnapshotField(saved,22,"cargo;HOLD,grain,4,160,Port")
+	rejectsSnapshotWithoutMutation(r,wrongOrigin)
+	let wrongStore=replaceSnapshotField(saved,22,"cargo;Hold,grain,4,160,PORT")
+	rejectsSnapshotWithoutMutation(r,wrongStore)
+
+@test function tradeSnapshotRejectsDuplicateUnknownAndMalformedRowsWithoutMutation()
+	let r=snapshotRuntime()
+	r.marketSelected=true
+	r.storeSelected=true
+	let saved=r.capture()
+	let markets=snapshotField(saved,16)
+	let stores=snapshotField(saved,19)
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,16,markets+"~"+firstSnapshotRow(markets)))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,19,stores+"~"+firstSnapshotRow(stores)))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,16,"missing,grain,23,200,10,9,0,0,0,0,0,1000,1000,10,1"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,19,stores+"~missing,0,0,20,"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,16,markets+"~"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,19,"~"+stores))
+	// The second record is short: a reused cursor must not supply the first
+	// record's old fields. Excess fields and noncanonical integers also fail.
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,16,firstSnapshotRow(markets)+"~port,silk,34"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,16,firstSnapshotRow(markets)+",extra"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,19,"cargo;hold,2,0100,20,grain=2~warehouse;stock,3,200,30,silk=3"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,1,"2147483648"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,12,"-2147483649"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,22,"cargo;hold,grain,3,20,port"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,22,"cargo;hold,silk,2,20,port"))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,22,"cargo;hold,grain,2,20,unknown"))
+	rejectsSnapshotWithoutMutation(r,saved+":")
+	// Boundary signed values remain accepted; the optimization must not
+	// replace the existing canonical integer/range validation.
+	let boundary=replaceSnapshotField(replaceSnapshotField(saved,1,"2147483647"),12,"-2147483648")
+	r.validate(boundary).assertTrue()
+	r.capture().assertEquals(saved)
+
+@test function tradeSnapshotKeepsLastDefinitionValidationAndAllDefinitionApplication()
+	let r=snapshotRuntime()
+	// No warehouse lot: the old validator requires every matching registered
+	// store to have been seen before attributing cargo to duplicate IDs.
+	let saved=replaceSnapshotField(r.capture(),22,"cargo;hold,grain,2,20,port")
+	r.registerMarket(new RuntimeMarket("port","grain",1,1,1,1))
+	r.registerStore(new TradeStore("warehouse:stock",30,1))
+	r.stores[1].allowedGoodIds="grain"
+	r.stores[2].allowedGoodIds="silk"
+	r.validate(saved).assertTrue()
+	r.reconstruct(saved).assertTrue()
+	r.markets[0].stock.assertEquals(23)
+	r.markets[3].stock.assertEquals(23)
+	r.stores[1].quantity("silk").assertEquals(3)
+	r.stores[2].quantity("silk").assertEquals(3)
+	(r.market==r.markets[3]).assertTrue()
+	r.stores[2].allowedGoodIds="grain"
+	rejectsSnapshotWithoutMutation(r,saved)
+	r.stores[2].allowedGoodIds="silk"
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,22,"warehouse;stock,silk,3,60,port"))
+	// A duplicate selected hold remains invalid for mixed-cargo schemas even
+	// without lots. A hash index must not silently merge its seen flags.
+	r.registerStore(new TradeStore("cargo:hold",20,100))
+	rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,22,""))
+
+@test function tradeSnapshotRebuildsDerivedLookupsAfterCatalogueIdentitiesChange()
+	let r=snapshotRuntime()
+	let original=r.capture()
+	r.validate(original).assertTrue()
+	r.markets[0].id="renamed_port"
+	r.stores[0].id="cargo:renamed"
+	r.settlementId="renamed_port"
+	r.controller.provenance.lots[0].storeId="cargo:renamed"
+	r.controller.provenance.lots[0].origin="renamed_port"
+	let renamed=r.capture()
+	rejectsSnapshotWithoutMutation(r,original)
+	r.validate(renamed).assertTrue()
+	r.reconstruct(renamed).assertTrue()
+	r.capture().assertEquals(renamed)
+
+@test function tradeSnapshotCursorRetainsAllLegacyAndCurrentSchemaContracts()
+	let r=snapshotRuntime()
+	let summary="port:12:34:10:9:8:2:80:20:2:source:3:-4:5:6:"
+	let market="port,grain,12,34,10,9,0,0,0,0,0"
+	var legacy=summary
+	r.reconstruct(legacy).assertTrue()
+	r.hold.contents.singleGood().assertEquals("")
+	legacy+=":"+market
+	r.reconstruct(legacy).assertTrue()
+	legacy+=":cargo;hold:20"
+	r.reconstruct(legacy).assertTrue()
+	legacy+=":cargo;hold,2,80,20,grain"
+	r.reconstruct(legacy).assertTrue()
+	r.hold.quantity("grain").assertEquals(2)
+	r.stores[1].usedCapacity().assertEquals(0)
+	r.stores[1].money.assertEquals(200)
+	r.markets[2].stock.assertEquals(45)
+	r.controller.provenance.count.assertEquals(0)
+	r.controller.legacyUnattributedCost.assertEquals(20)
+	let tail=":cargo;hold:20:cargo;hold,2,80,20,grain:grain:grain:cargo;hold,grain,2,20,port"
+	r.reconstruct("v2:"+summary+":"+market+tail).assertTrue()
+	r.controller.provenance.count.assertEquals(1)
+	let extendedMarket=market+",1000,1000,8,1"
+	r.reconstruct("v3:"+summary+":"+extendedMarket+tail).assertTrue()
+	let mixed="v4:"+summary+":"+extendedMarket+":cargo;hold:20:cargo;hold,2,80,20,grain=2:grain:grain=2:cargo;hold,grain,2,20,port"
+	r.reconstruct(mixed).assertTrue()
+	r.stores[1].money.assertEquals(0)
+	r.reconstruct("v5:"+SubString(mixed,3,StringLength(mixed))+":"+AgricultureSnapshot.capture(r.agriculture)).assertTrue()
+	r.hold.quantity("grain").assertEquals(2)
+	r.controller.provenance.costIn("cargo:hold","grain").assertEquals(20)
+	let current=r.capture()
+	r.validate(current).assertTrue()
+	r.reconstruct(current).assertTrue()
+	r.capture().assertEquals(current)
+	r.validate("").assertTrue()
+	r.validate("v2:").assertFalse()
+	r.validate("v5:").assertFalse()
+	rejectsSnapshotWithoutMutation(r,"v3:"+summary+":"+market+tail)
+	rejectsSnapshotWithoutMutation(r,mixed+":unexpected")
+
+@test function tradeSnapshotRetainsUnregisteredFallbackHoldAndOrigin()
+	let r=new PlayableTradeRuntime()
+	r.settlementId="fallback"
+	r.market.id="fallback"
+	r.market.goodName="grain"
+	r.hold.contents.set("grain",2)
+	r.controller.provenance.add(r.hold.id,"grain",2,20,"fallback")
+	let saved=r.capture()
+	r.reconstruct(saved).assertTrue()
+	r.capture().assertEquals(saved)
+	r.controller.provenance.costIn(r.hold.id,"grain").assertEquals(20)
+
+
+@test function tradeSnapshotDecimalDigitsRoundTripThroughSignedAuthority()
+	let r=snapshotRuntime()
+	let saved=r.capture()
+	// Exercise the public validator and reconstruction, rather than repeating
+	// the production digit lookup. Realized profit is a signed saved field.
+	string array[12] values
+	for i=0 to 9
+		values[i]=i.toString()
+	values[10]="1234567890"
+	values[11]="-1234567890"
+	for i=0 to 11
+		let candidate=replaceSnapshotField(saved,12,values[i])
+		let before=r.capture()
+		r.validate(candidate).assertTrue()
+		r.capture().assertEquals(before)
+		r.reconstruct(candidate).assertTrue()
+		r.progress.realizedProfit.assertEquals(S2I(values[i]))
+		r.capture().assertEquals(candidate)
+
+@test function tradeSnapshotRejectsNonDecimalCharactersWithoutMutation()
+	let r=snapshotRuntime()
+	r.marketSelected=true
+	r.storeSelected=true
+	let saved=r.capture()
+	// Unicode digits are not ASCII save integers. Include invalid characters
+	// before and after valid digits so no partial parse can be published.
+	string array[15] values
+	values[0]="a"
+	values[1]="/"
+	values[2]="+"
+	values[3]="."
+	values[4]="1a"
+	values[5]="a1"
+	values[6]="1.0"
+	values[7]="1e2"
+	values[8]="0x1"
+	values[9]="１"
+	values[10]="١"
+	values[11]="𝟙"
+	values[12]="½"
+	values[13]="雪"
+	values[14]="1😀"
+	for i=0 to 14
+		rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,12,values[i]))
+
+@test function tradeSnapshotRejectsNoncanonicalSignedIntegersWithoutMutation()
+	let r=snapshotRuntime()
+	r.marketSelected=true
+	r.storeSelected=true
+	let saved=r.capture()
+	// Signed range endpoints and one-step overflow are covered by the existing
+	// malformed-row test. These cases cover syntax and the length guard.
+	string array[12] values
+	values[0]=""
+	values[1]="-"
+	values[2]="+1"
+	values[3]=" 1"
+	values[4]="1 "
+	values[5]="00"
+	values[6]="01"
+	values[7]="-0"
+	values[8]="-01"
+	values[9]="--1"
+	values[10]="1-"
+	values[11]="12345678901"
+	for i=0 to 11
+		rejectsSnapshotWithoutMutation(r,replaceSnapshotField(saved,12,values[i]))

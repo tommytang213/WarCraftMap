@@ -1,0 +1,17 @@
+Running unchanged frozen probe: baseline
+Running unchanged parse-once observer Lua: baseline
+{"phase": "startup", "wallSeconds": 13.93485}
+{"phase": "callbacks", "wallSeconds": 0.186584}
+{"nativeStatus": "not_run", "status": "completed_under_explicit_stubs", "wallSeconds": 14.542841}
+Running unchanged frozen probe: revised
+Running unchanged parse-once observer Lua: revised
+{"phase": "startup", "wallSeconds": 14.666527}
+{"phase": "callbacks", "wallSeconds": 0.185383}
+{"nativeStatus": "not_run", "status": "completed_under_explicit_stubs", "wallSeconds": 15.358398}
+Traceback (most recent call last):
+  File "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/compare_startup.py", line 159, in <module>
+    main()
+  File "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/compare_startup.py", line 113, in main
+    assert new["runtimeCounts"]["markets"] == 8422 and new["runtimeCounts"]["stores"] == 829
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

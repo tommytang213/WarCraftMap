@@ -1,0 +1,81 @@
+{
+  "assertion": "Expected <false>, Actual <true>",
+  "authoredInputsMatchCurrentIntegratedSource": true,
+  "compilerInputsBeforeAfterAndResultEqual": true,
+  "completed": true,
+  "counterfactual": "Only the two new empty-public-checkpoint encoding guards removed; all other changes are annotation-only selection of these two tests",
+  "counterfactualSourceReconstructedExactly": true,
+  "dependencyFilesUnchangedAtReview": true,
+  "discovered": 2,
+  "evidenceSha256": {
+    "negative-guard-attempt1.log": "d6682ab98aa2d5108bb0f670435e4c0ccf0d810c9d6add7d05af2bd219fa5988",
+    "negative-guard-attempt1/compiler-inputs-after.json": "5ae1d7d870d59e5107ff1f9b4510590e5d1fd465d67c30a03ce2a8d2bfa375ce",
+    "negative-guard-attempt1/compiler-inputs-before.json": "5ae1d7d870d59e5107ff1f9b4510590e5d1fd465d67c30a03ce2a8d2bfa375ce",
+    "negative-guard-attempt1/dependency-before.json": "ed079e321399062f9f2301b10dfeeb5ea5d399388226676d968f8550cfa03a5e",
+    "negative-guard-attempt1/discovery.json": "e6a8915a1737a61bb6969a495c4478d2f59ab4cbee26b274a6f357d44c147736",
+    "negative-guard-attempt1/execution.log": "8bfd023b72c178deb14bb131656ca81fa271c76793eb8a454752908315b7d98c",
+    "negative-guard-attempt1/receipt.json": "51fab7972e4f40daff9f46ea0480ba7b8c0b6cadd4c7f5afdddc31e788de3ebb",
+    "negative-guard-attempt1/results.json": "396e0e7445c4bfcad1582f06dcd4e713544da2826e6213d15a808f6e23da0fd9",
+    "run-wurst.py": "cb08e3483e84ec3b0398585b894afd4183fb1d393882681a255a23e493cec75d"
+  },
+  "expectedTests": [
+    {
+      "id": "wurst/CampaignStartupTests.wurst:emptySessionEncodingPreservesPendingStartupAndCanRetry",
+      "line": 468
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:emptyMilestoneEncodingPreservesPendingStartupAndCanRetry",
+      "line": 471
+    }
+  ],
+  "format": "warcraftmap_pr536_negative_control_review_v1",
+  "harnessFailure": {
+    "cause": "Temporary runner rejected any Exception or Error in File after correctly observing two assertion_failed terminal records",
+    "error": "AssertionError",
+    "originalCondition": "assert 'Exception' not in log and 'No builtin function' not in log and 'Error in File' not in log"
+  },
+  "limits": [
+    "This confirms the two tests detect the removed guards; it is not a passing production gate",
+    "The original temporary negative-control harness remains failed and is not relabeled",
+    "No native Warcraft campaign launch, terrain rendering or unit control was observed"
+  ],
+  "nativeContinueVerifiedFixed": false,
+  "nativeStatus": "not_run",
+  "originalAttemptStatus": "fail",
+  "originalEvidenceUnchanged": true,
+  "originalResultStatus": "fail",
+  "rawTranscriptMatchesExactExpectedOutput": true,
+  "reviewScriptSha256": "e6f6166ea8fd327fe3851735838fb50d764c8befde1d1b007b86cc8d120dfb93",
+  "reviewedAt": "2026-10-21T14:07:22.462834+00:00",
+  "scope": "Static read-only review of retained execution; no tests, compilers or models rerun",
+  "sourceIdentity": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "sourceInputsUnchangedDuringReview": true,
+  "status": "intended_assertions_confirmed_original_harness_fail_preserved",
+  "succeeded": 0,
+  "terminalResults": [
+    {
+      "id": "wurst/CampaignStartupTests.wurst:emptySessionEncodingPreservesPendingStartupAndCanRetry",
+      "line": 468,
+      "status": "assertion_failed"
+    },
+    {
+      "id": "wurst/CampaignStartupTests.wurst:emptyMilestoneEncodingPreservesPendingStartupAndCanRetry",
+      "line": 471,
+      "status": "assertion_failed"
+    }
+  ],
+  "verifierSha256": {
+    "integration_evidence.py": "eb4ca67743156f917654715f1041d2ff9d32445cf6fe5fa664b15b6cfc6426a2",
+    "wurst_execution.py": "49fe8dd2c491ef16ebfcfb481aa782d27c1356779ad229b10e0ba1b108513101"
+  },
+  "wrapper": {
+    "compilerReportedExitCode": 2,
+    "diagnosticLocation": "CampaignStartupTests.wurst:468",
+    "exception": "de.peeeq.wurstio.languageserver.requests.RequestFailedException",
+    "grillProcessReturnCode": 1,
+    "reason": "Normal failed-test wrapper repeats the first intended boolean assertion; no distinct compile/typecheck/native failure is present"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "format": "source_check_summary_v1",
+  "scope": "Local source checks; no Warcraft/native acceptance",
+  "sourceIdentity": {
+    "sourceRevision": "a1b43969eb57de4127b005956823d6b876a86068",
+    "sourceTreeSha256": "2f55ec1dc084ab27c1a4fde2897728035ea49f086c8fbdd3e1d1cb3aeca22d8b"
+  },
+  "worktreeDirty": true,
+  "checks": [
+    {
+      "command": "python3 -m unittest discover -s tests -p test_launch_diagnostics.py -v",
+      "testCount": 17,
+      "exitCode": 0,
+      "status": "pass",
+      "evidence": "observed tool transcript earlier in this turn; raw transcript not copied into this receipt"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p test_release_blocker_audit.py -k test_checked_in_machine_and_human_reports_are_current -v",
+      "testCount": 1,
+      "exitCode": 0,
+      "elapsedSeconds": 42.253,
+      "status": "pass",
+      "stdoutSummary": "Ran 1 test in 42.253s; OK"
+    },
+    {
+      "command": "python3 tooling/requirement_traceability_audit.py --check",
+      "exitCode": 0,
+      "status": "pass_freshness_acceptance_still_blocked",
+      "stdoutSummary": "Traceability: 643 obligations; 7004 publication blockers"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "nativeAcceptance": "not_run_for_repaired_source",
+  "latestDeliveredNativeResult": "failed_unresponsive_after_continue"
+}

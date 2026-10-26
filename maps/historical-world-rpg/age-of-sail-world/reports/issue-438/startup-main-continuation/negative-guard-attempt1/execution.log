@@ -1,0 +1,28 @@
+Picked up JAVA_TOOL_OPTIONS: -Xmx8g -Xmx6g
+🔥 Grill 1.4.0.0-2c676dd
+verifyInstallation: detectedCompilerJar=/workspace/scratch/37daecc7d55a/validation-536-continuation/toolchain/home/.wurst/wurst-compiler/wurstscript.jar exists=true
+Found installation at /workspace/scratch/37daecc7d55a/validation-536-continuation/toolchain/home/.wurst/wurst-compiler/wurstscript.jar
+⚗️ Running tests...
+Existing _build core JASS files have no Grill provenance; leaving them project-owned. Delete _build/common.j and _build/blizzard.j to let Grill regenerate them for v3.0.
+Picked up JAVA_TOOL_OPTIONS: -Xmx8g -Xmx6g
+Running tests
+Running /workspace/scratch/37daecc7d55a/validation-536-continuation/negative-guard-attempt1/compile/wurst/CampaignStartupTests.wurst:468 - emptySessionEncodingPreservesPendingStartupAndCanRetry..
+	FAILED assertion:
+	Test failed: Expected <false>, Actual <true>
+
+Running /workspace/scratch/37daecc7d55a/validation-536-continuation/negative-guard-attempt1/compile/wurst/CampaignStartupTests.wurst:471 - emptyMilestoneEncodingPreservesPendingStartupAndCanRetry..
+	FAILED assertion:
+	Test failed: Expected <false>, Actual <true>
+
+Tests succeeded: 0/2
+>> 2 Tests have failed!
+Finished running tests
+de.peeeq.wurstio.languageserver.requests.RequestFailedException: Could not compile project (error in running compiletime functions/expressions): 
+Error in File CampaignStartupTests.wurst:468:
+ Test failed: Expected <false>, Actual <true>
+Error: Could not compile project (error in running compiletime functions/expressions): 
+Error in File CampaignStartupTests.wurst:468:
+ Test failed: Expected <false>, Actual <true>
+❌ Wurst test failed.
+Exit code: 2
+Try: rerun with `--quiet` for a shorter error log, or `--debug` for troubleshooting details.

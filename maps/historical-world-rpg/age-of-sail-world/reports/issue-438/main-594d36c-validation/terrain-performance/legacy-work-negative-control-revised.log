@@ -1,0 +1,14 @@
+test_sparse_polygons_do_not_test_the_whole_grid (test_terrain_rasterization.TerrainRasterizationTests.test_sparse_polygons_do_not_test_the_whole_grid) ... FAIL
+
+======================================================================
+FAIL: test_sparse_polygons_do_not_test_the_whole_grid (test_terrain_rasterization.TerrainRasterizationTests.test_sparse_polygons_do_not_test_the_whole_grid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/tests/test_terrain_rasterization.py", line 98, in test_sparse_polygons_do_not_test_the_whole_grid
+    self.assertLess(predicate.call_count, 128 * 128 // 16)
+AssertionError: 32768 not less than 1024
+
+----------------------------------------------------------------------
+Ran 1 test in 0.541s
+
+FAILED (failures=1)

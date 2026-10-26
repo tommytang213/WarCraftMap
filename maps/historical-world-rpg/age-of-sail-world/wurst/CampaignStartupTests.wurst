@@ -391,6 +391,86 @@ function originLifecycle(string origin, string mapId)
 		f.saves.read("major_milestone").assertEquals("recoverable-old-save")
 	f.ports.spawns.assertEquals(0)
 
+/** Reject one public checkpoint at the existing codec boundary; private
+ * checkpoints, decoding and successful encodes still use the production codec. */
+class StartupEncodingFailure implements CampaignSaveCodec
+	CampaignSaveCodec original
+	string failSlot
+	int rejections = 0
+	construct(CampaignSaveCodec original, string failSlot)
+		this.original = original
+		this.failSlot = failSlot
+	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+		if slotId == failSlot
+			rejections++
+			return ""
+		return original.encode(slotId, slotKind, slotIndex, createdAt, authoritativeState)
+	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
+		return original.decodeMigrateAndValidate(payload, expectedSlotId)
+	override function diagnostic() returns string
+		if failSlot != ""
+			return "injected startup serialization failure"
+		return original.diagnostic()
+
+function startupRejectsEmptyPublicCheckpoint(string failSlot)
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.choose("england")
+	f.register()
+	let original = f.campaign.saves.codec
+	let codec = new StartupEncodingFailure(original, failSlot)
+	f.campaign.saves.codec = codec
+	f.saves.writeTransactional("session_start", "previous-session").assertTrue()
+	f.saves.writeTransactional("major_milestone", "previous-milestone").assertTrue()
+	let writes = f.saves.writes
+	let requestBytes = f.cache.read(HANDOFF_REQUEST)
+	let request = f.handoff.readRequest()
+	let checkpointSlot = request.checkpointSlot()
+	destroy request
+	var checkpoint = ""
+	// Attempt 1 creates the private checkpoint. Attempt 2 reconstructs that
+	// checkpoint and must abort the staged load when encoding is rejected.
+	for attempt = 0 to 1
+		f.campaign.startup().assertFalse()
+		codec.rejections.assertEquals(attempt + 1)
+		f.campaign.started.assertFalse()
+		f.campaign.state.isSaveSafe().assertFalse()
+		f.campaign.state.startupLocked.assertTrue()
+		f.campaign.saves.loading.assertFalse()
+		f.campaign.state.loading.assertFalse()
+		f.ports.activePlayers.assertEquals(0)
+		f.cache.read(HANDOFF_REQUEST).assertEquals(requestBytes)
+		f.saves.read("major_milestone").assertEquals("previous-milestone")
+		if failSlot == "session_start"
+			f.saves.read("session_start").assertEquals("previous-session")
+			f.saves.writes.assertEquals(writes)
+		else
+			// Session publication already succeeded. Preserve existing write order;
+			// the failed milestone alone must not overwrite its previous value.
+			(original.decodeMigrateAndValidate(f.saves.read("session_start"), "session_start") != "").assertTrue()
+			f.saves.writes.assertEquals(writes + attempt + 1)
+		if attempt == 0
+			checkpoint = f.cache.read(checkpointSlot)
+			(checkpoint != "").assertTrue()
+		else
+			f.cache.read(checkpointSlot).assertEquals(checkpoint)
+	codec.failSlot = ""
+	f.campaign.startup().assertTrue()
+	f.campaign.state.isSaveSafe().assertTrue()
+	f.campaign.saves.loading.assertFalse()
+	f.campaign.state.loading.assertFalse()
+	f.ports.activePlayers.assertEquals(1)
+	f.ports.loads.assertEquals(1)
+	f.handoff.readRequest().status.assertEquals("consumed")
+	f.cache.read(checkpointSlot).assertEquals(checkpoint)
+	(original.decodeMigrateAndValidate(f.saves.read("session_start"), "session_start") != "").assertTrue()
+	(original.decodeMigrateAndValidate(f.saves.read("major_milestone"), "major_milestone") != "").assertTrue()
+
+@test function emptySessionEncodingPreservesPendingStartupAndCanRetry()
+	startupRejectsEmptyPublicCheckpoint("session_start")
+
+@test function emptyMilestoneEncodingPreservesPendingStartupAndCanRetry()
+	startupRejectsEmptyPublicCheckpoint("major_milestone")
+
 @test function failedDestinationProjectionAndCheckpointCommitCanRetry()
 	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
 	f.choose("england")

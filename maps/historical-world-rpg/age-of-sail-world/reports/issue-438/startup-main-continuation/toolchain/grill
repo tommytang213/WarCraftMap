@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+TOOLCHAIN_HOME="/workspace/scratch/37daecc7d55a/validation-536-continuation/toolchain/home"
+export PATH="$TOOLCHAIN_HOME/.wurst/wurst-runtime/bin:$PATH"
+exec "$TOOLCHAIN_HOME/.wurst/wurst-runtime/bin/java" -Duser.home="$TOOLCHAIN_HOME" -Dfile.encoding=UTF-8 --enable-native-access=ALL-UNNAMED -jar "$TOOLCHAIN_HOME/.wurst/grill-cli/grill.jar" "$@"

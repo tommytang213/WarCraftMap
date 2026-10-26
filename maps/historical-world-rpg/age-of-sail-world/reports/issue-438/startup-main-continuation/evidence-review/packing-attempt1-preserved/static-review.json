@@ -1,0 +1,257 @@
+{
+  "blockingFindings": [],
+  "checks": [
+    {
+      "details": "The packer requires terminal receipts and its exact independent script review before creating a fresh scratch output outside the validation and repository trees. It writes only selected original bytes plus README/manifest, checks source and original evidence hashes again, caps payload size at 32 MiB, excludes W3X/W3N archives and toolchain binaries, and leaves partial failures visible. No test, model, compiler, Git, network or deployment command is invoked.",
+      "name": "Bounded packing and immutable inputs",
+      "result": "pass"
+    },
+    {
+      "details": "Relative logical paths are normalized and confined; all retained files and aliases are validated. Manifest entries bind original and packaged lengths/SHA-256. Newly compressed files use deterministic gzip, original payload gzip is preserved, and deduplication uses identical original hash plus encoding. All eight saved payload gzip files are retained separately. Absolute receipt paths serve only as provenance aliases.",
+      "name": "Manifest, compression, aliases and path safety",
+      "result": "pass"
+    },
+    {
+      "details": "The verifier requires exact d669/d084 authored inputs, pinned compiler/dependency, unchanged original wurst_execution and integration_evidence modules and the original coverage contract. It calls their verification APIs against retained raw results/transcript, reconstructs instrumented and annotation-only shard inputs, binds discovery and complete before/after/dependency inventories, and requires 698/698 plus all 28 systems and 84 probes. These APIs were read, not executed, during static review.",
+      "name": "Pinned source and unchanged 698-test gate",
+      "result": "pass"
+    },
+    {
+      "details": "Focused and negative-control original receipts/logs are retained without relabeling. The verifier reparses their raw test results, requires the original positive gate to reject them, rederives annotation-only and two guard-reversion inputs, and binds the separate negative-control review to the exact two assertion failures and normal failed-test wrapper.",
+      "name": "Earlier failed attempts remain failed",
+      "result": "pass"
+    },
+    {
+      "details": "Packer and verifier require the original prefix process to reach completed/zero-exit with identical before/after source identity, explicit Wurst-skip warning, raw log binding and actual unittest summaries. Synthetic fixture Wurst lines are excluded from Wurst execution claims. The prefix receipt was still running when inspected; this review does not override its completion requirement.",
+      "name": "Python prefix is a terminal scoped gate",
+      "result": "pass"
+    },
+    {
+      "details": "Both Europe arms bind the same schema-17 generated/map/dependency inputs and exact archived Lua. Baseline source reconstruction reverses only the two public empty-encode guards and trade digit helper/call. Raw build/typecheck logs, unchanged compiler inputs, known extracted members and independent-reader identities remain checked. The report explicitly limits archive checks to those performed at build and does not claim W3X re-extraction.",
+      "name": "Compiled inputs and counterfactual source",
+      "result": "pass"
+    },
+    {
+      "details": "The verifier binds corpus, eight slice models, both compiled scripts and all 16 arm outputs; requires 703 ordered cases per model, pairwise Boolean equality, the ordinary-model canonical int32 oracle, unchanged compiled-function counts and fixed instruction budgets. No differential model is rerun by the packer/verifier or this review.",
+      "name": "Integer differential",
+      "result": "pass"
+    },
+    {
+      "details": "The verifier binds the original 8,422 assertion failure and raw failure location, source proof, independent adaptation review/preparation, all retained inputs and literal patches. It statically checks 8,422 unique base pairs plus four absent iron_goods pairs, 8,426 markets/last index 8,425, and 829 stores/last index 828. It reconstructs exact reviewed Lua token substitutions and Python source/path/case bindings and verifies that the original full-scale stage was never run.",
+      "name": "Source-derived current catalogue and immutable failure",
+      "result": "pass"
+    },
+    {
+      "details": "Both frozen and observer reports bind exact scripts, same native models and four allowed observer path bindings. Callback completion/count/time/budgets/errors, source-derived cardinality, runtime/trade/request identities and native counters are derived from raw reports. Every ordered compressed payload is bound, decompressed and compared byte for byte. The root review is bound to the same inputs and explicitly verifies callback sequence/native maps/instruction samples, the one identical bridge function at a shifted compiled line, and the only non-SubString startup delta: StringLength.",
+      "name": "Startup raw evidence, payloads and scoped model review",
+      "result": "pass"
+    },
+    {
+      "details": "The separately reviewed current-catalogue runner/case and terminal result bind the revised archived Lua, source, frozen stubs/library/pathing, preparation/review and derived comparison. The verifier retains 8,426-market, 829-store, 829-lot population/mutation/reconstruction/selection/order assertions, five completed stages, function identities and both 2B budgets. Driver/checkpoint verification retains stage 5 as failed and stages 6/7 as the read-only comparison derivation and first full-scale execution; stage 1 source identity is carried by its verified seed receipt.",
+      "name": "Current full-scale model and seven-stage provenance",
+      "result": "pass"
+    },
+    {
+      "details": "The documented verifier invocation supports --project or --repo and --require-manifest. Helpers import only pinned verification modules with bytecode writes disabled; reviewed-script/model/compiler execution is absent. README and final output keep native not_run, Continue freeze not established, PR draft/unmerged and player acceptance open, distinguish schema-17 arms from historical schema-15 data, and avoid native timing/behavioral parity claims.",
+      "name": "Invocation and honest claim boundaries",
+      "result": "pass"
+    }
+  ],
+  "format": "pr536_evidence_scripts_independent_static_review_v1",
+  "nativeHangResolution": "not_established",
+  "nativeStatus": "not_run",
+  "residualLimits": [
+    "This is static approval of the exact script bytes, not an executed packing result or successful integrity-verifier receipt. Neither reviewed script was imported or executed during this review.",
+    "The original Python prefix must complete in place. Do not restart it or package its live receipt. Missing/nonterminal required evidence must continue to fail closed.",
+    "After terminal inputs are available, the staged pack still needs the documented read-only manifest integrity verification and root review before publication.",
+    "The pack retains actual compiled Lua and known member bytes but omits original W3X binaries; it cannot repeat two-reader archive extraction from the portable report.",
+    "Synthetic stock-Lua/native-stub results do not establish Warcraft terrain rendering, disk-backed saves, actual scheduling, unit control or resolution of the Continue freeze.",
+    "The independent review is invalidated by changes to either reviewed script. Update the review only after independently checking the changed bytes."
+  ],
+  "resolvedFindings": [
+    {
+      "details": "Source, evidence, helper, fallback, manifest and historical reads now reject the lexical leaf and all ancestor symlinks before resolving or reading bytes. The final pack also requires the exact retained file set and rejects links during enumeration.",
+      "id": "lexical_symlink_rejection",
+      "locations": [
+        "pack-evidence.py:20-28",
+        "pack-evidence.py:63-67",
+        "verify-evidence.py:53-62",
+        "verify-evidence.py:74-107",
+        "verify-evidence.py:194-200"
+      ],
+      "status": "resolved"
+    },
+    {
+      "details": "After unchanged original full-gate and production coverage verification, the verifier derives raw test-bounded probe hits and requires all 28 system mappings nonempty and exactly all 84 pinned contract probe IDs. This closes the gap where empty system lists could compare equal to a receipt without establishing complete coverage.",
+      "id": "complete_raw_derived_production_coverage",
+      "locations": [
+        "verify-evidence.py:260-267"
+      ],
+      "status": "resolved"
+    },
+    {
+      "details": "Both retained map WPM members are bound to the same static/preparation frozenPathing identity and fixed WPM SHA. Full-scale model pathing is bound to both members. Its original absolute path is an explicit alias to the retained identical WPM; the verifier never reads that old path.",
+      "id": "portable_frozen_pathing_binding",
+      "locations": [
+        "pack-evidence.py:269-270",
+        "verify-evidence.py:442-444",
+        "verify-evidence.py:827-828"
+      ],
+      "status": "resolved"
+    }
+  ],
+  "reviewedScripts": {
+    "pack-evidence.py": {
+      "bytes": 28324,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/pack-evidence.py",
+      "sha256": "8a4eb3356c3f01659d2eb2ba06f1f571bf879da085a58964a641b86d0731f8d0"
+    },
+    "verify-evidence.py": {
+      "bytes": 76501,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/verify-evidence.py",
+      "sha256": "9aa0df1341134a7fcf44f4ff6e790f0688ca6f6c5cce97cd5cd80182ed6b6682"
+    }
+  },
+  "reviewedSupportingInputs": {
+    "compiled-checks/catalogue-adaptation/preparation-receipt.json": {
+      "bytes": 21081,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/preparation-receipt.json",
+      "sha256": "75cd8e3819a8a67e9400d510ac9bec1476dfc8372ba73436c1bf31fad84a266e"
+    },
+    "compiled-checks/catalogue-adaptation/static-review.json": {
+      "bytes": 9601,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-adaptation/static-review.json",
+      "sha256": "b188e4d4c0b6dbad76fcc0a21fa90c8c6ea1cc8e643b2a1178b695afcd629c75"
+    },
+    "compiled-checks/catalogue-cardinality.json": {
+      "bytes": 10405,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.json",
+      "sha256": "d3f54baf2788ff473cc112f5299a2a26bda6d098cf73456ee224dbb5cc287c44"
+    },
+    "compiled-checks/catalogue-cardinality.py": {
+      "bytes": 7319,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/catalogue-cardinality.py",
+      "sha256": "d7a1c2d2e7f4da94b9499529e3d68ffa26cb6ff3221895dd698792ffe682d659"
+    },
+    "compiled-checks/driver-20261021T141701Z/run-metadata.json": {
+      "bytes": 17635,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/driver-20261021T141701Z/run-metadata.json",
+      "sha256": "e3514eea589aeb88a08416e71f72b2c3a4d9f351ee97a6da518b28d968146fa3"
+    },
+    "compiled-checks/full-scale-revised-current-catalogue/receipt.json": {
+      "bytes": 9941,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/receipt.json",
+      "sha256": "fe8f1ae65b6c72ca8a1471a7fd20d6472c9870a4a0eff72f305e410011579de8"
+    },
+    "compiled-checks/full-scale-revised-current-catalogue/result.json": {
+      "bytes": 8839,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/full-scale-revised-current-catalogue/result.json",
+      "sha256": "3fa77842e79bc9e20a44855bec37558f7e055c13086b588f6820ead416ebdeac"
+    },
+    "compiled-checks/model-review.json": {
+      "bytes": 6990,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/model-review.json",
+      "sha256": "5d1dd7814a230aabc25a77f415deae75afb1d7fdb2ab8c4c5513a213719aa9d1"
+    },
+    "compiled-checks/preparation-manifest.json": {
+      "bytes": 6857,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/preparation-manifest.json",
+      "sha256": "f852f3a2118a95c9fd8f0e8caa76b2a78ce8c1944e49c41a41ed53e15d4308b6"
+    },
+    "compiled-checks/startup-comparison/comparison-current-catalogue.json": {
+      "bytes": 25508,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison-current-catalogue.json",
+      "sha256": "3a5f7157454983306bdd6d92d4a5c97975c188c6fd0022f31385db40c7115b9e"
+    },
+    "compiled-checks/startup-comparison/comparison.json": {
+      "bytes": 6012,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/startup-comparison/comparison.json",
+      "sha256": "41893e86d65922d97d16bbd4f705616016d25566ad34ba453cc1c04f53737009"
+    },
+    "compiled-checks/static-review.json": {
+      "bytes": 13340,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/static-review.json",
+      "sha256": "92342231aebb1ac033e904a19846ac78b4caa3f8e3b187b457205e2495bfee5c"
+    },
+    "compiled-checks/workflow-state.json": {
+      "bytes": 16543,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/compiled-checks/workflow-state.json",
+      "sha256": "e0b32871004b20d93e9ad3e5b192093ff4488b44d7d5b17219f79afe81321ae4"
+    },
+    "evidence-review/negative-control-review.json": {
+      "bytes": 4221,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/negative-control-review.json",
+      "sha256": "09c8436e2f4bc4c6f173a6c53726a1bcd726b301f5a9a31491aaa7788731705d"
+    },
+    "evidence-review/retention-plan.md": {
+      "bytes": 13491,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/retention-plan.md",
+      "sha256": "7d492d05791e21036184e8af9ee0ea3015bb88dfd44e610061899ccf1161b6ee"
+    },
+    "evidence-review/review-negative-control.py": {
+      "bytes": 10900,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/evidence-review/review-negative-control.py",
+      "sha256": "e6f6166ea8fd327fe3851735838fb50d764c8befde1d1b007b86cc8d120dfb93"
+    },
+    "focused-attempt1/receipt.json": {
+      "bytes": 1024,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/focused-attempt1/receipt.json",
+      "sha256": "bcfff4eac90190ac55dbe518114c4fee70440aae290b342636167c41f31520d0"
+    },
+    "full-attempt1/receipt.json": {
+      "bytes": 50124,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/full-attempt1/receipt.json",
+      "sha256": "6f1943e037b0b2f1924545a46405a8b76a9cec3d96b4d321702740fd79a5bb11"
+    },
+    "full-attempt1/results.json": {
+      "bytes": 534312,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/full-attempt1/results.json",
+      "sha256": "262b9a336a7a7346b6b2b80c0605256200376dd73eb11b3576c86a4a160eda60"
+    },
+    "negative-guard-attempt1/receipt.json": {
+      "bytes": 990,
+      "path": "/workspace/scratch/37daecc7d55a/validation-536-continuation/negative-guard-attempt1/receipt.json",
+      "sha256": "51fab7972e4f40daff9f46ea0480ba7b8c0b6cadd4c7f5afdddc31e788de3ebb"
+    }
+  },
+  "reviewer": "independent /root/startup_review/digit_patch_review",
+  "sourceIdentity": {
+    "sourceRevision": "d6697380d979f96b2f3543593c6383402ba26e5b",
+    "sourceTreeSha256": "d08445f912a604b5fdb43beed2ec9573904075beb2e1ed6c40771df75852be37"
+  },
+  "status": "pass_static_review",
+  "unchangedRequiredVerificationModulesAndContract": {
+    "integration_evidence.py": {
+      "bytes": 11320,
+      "path": "/workspace/scratch/37daecc7d55a/WarCraftMap/maps/historical-world-rpg/_shared/tooling/integration_evidence.py",
+      "sha256": "eb4ca67743156f917654715f1041d2ff9d32445cf6fe5fa664b15b6cfc6426a2"
+    },
+    "runtime-execution.json": {
+      "bytes": 19287,
+      "path": "/workspace/scratch/37daecc7d55a/WarCraftMap/maps/historical-world-rpg/age-of-sail-world/scenario/runtime-execution.json",
+      "sha256": "c3ac7c2d1d8f34d55e05e2c46ba22acf740e86ea74b2898132dfecf8e44e3e85"
+    },
+    "wurst_execution.py": {
+      "bytes": 19142,
+      "path": "/workspace/scratch/37daecc7d55a/WarCraftMap/maps/historical-world-rpg/_shared/tooling/wurst_execution.py",
+      "sha256": "49fe8dd2c491ef16ebfcfb481aa782d27c1356779ad229b10e0ba1b108513101"
+    }
+  },
+  "validationPerformed": {
+    "buildExecution": false,
+    "fileIdentityChecks": true,
+    "importedProjectModuleExecution": false,
+    "modelExecution": false,
+    "nativeExecution": false,
+    "networkAccess": false,
+    "packingExecution": false,
+    "pythonAstParse": true,
+    "repositoryEdits": false,
+    "requiredGateExecution": false,
+    "reviewedScriptExecution": false,
+    "staticFieldAndAliasInspection": true,
+    "staticSourceReview": true,
+    "supportingReceiptReads": true,
+    "testExecution": false
+  }
+}
