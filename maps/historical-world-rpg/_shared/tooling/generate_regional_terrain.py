@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import time
+from bisect import bisect_left, bisect_right
 from collections import deque
 from pathlib import Path
 
@@ -31,6 +32,39 @@ def _point_in_polygon(x: float, y: float, polygon: list[list[float]]) -> bool:
                 inside = not inside
         previous = current
     return inside
+
+
+def _rasterize_surfaces(source: dict) -> list[int]:
+    """Paint surface unions while skipping rows outside each polygon."""
+    width, height = source["grid"]["width"], source["grid"]["height"]
+    minimum_x, minimum_y, maximum_x, maximum_y = source["coordinateSystem"]["bounds"]
+    # Keep the original arithmetic order, including samples on polygon edges.
+    xs = [minimum_x + (x + 0.5) * (maximum_x - minimum_x) / width for x in range(width)]
+    ys = [minimum_y + (y + 0.5) * (maximum_y - minimum_y) / height for y in range(height)]
+    finite_samples = all(math.isfinite(value) for value in (*xs, *ys))
+    cells = [SURFACES["void"]] * (width * height)
+    layers = (
+        ("navigable_sea", (item["polygon"] for item in source["waterBodies"] if item["kind"] == "navigable_sea")),
+        ("land", (item["polygon"] for item in source["surfaces"] if item["kind"] == "land")),
+        ("navigable_sea", (item["polygon"] for item in source["waterBodies"] if item["kind"] == "navigable_sea" and item.get("overlaysLand") is True)),
+        ("decorative_water", (item["polygon"] for item in source["waterBodies"] if item["kind"] == "decorative_water")),
+    )
+    for surface, polygons in layers:
+        for polygon in polygons:
+            y_start, y_end = 0, height
+            if finite_samples and all(math.isfinite(value) for point in polygon for value in point):
+                # Y comparisons cannot cross an edge outside these rows. Keep
+                # every X sample: floating-point crossing interpolation can
+                # round beyond a vertex's X extrema. Search the actual Y samples
+                # to avoid inverse-coordinate rounding at cell boundaries.
+                y_start = bisect_left(ys, min(point[1] for point in polygon))
+                y_end = bisect_right(ys, max(point[1] for point in polygon))
+            for y in range(y_start, y_end):
+                row = y * width
+                for x in range(width):
+                    if _point_in_polygon(xs[x], ys[y], polygon):
+                        cells[row + x] = SURFACES[surface]
+    return cells
 
 
 def _index(records: object, label: str) -> dict[str, dict]:
@@ -247,22 +281,7 @@ def generate(source: dict, regional_geography: dict | None = None, authority: di
         return result
     zones, chokepoints, features = _validate(source, regional_geography)
     width, height = source["grid"]["width"], source["grid"]["height"]
-    minimum_x, minimum_y, maximum_x, maximum_y = source["coordinateSystem"]["bounds"]
-    cells = []
-    for y in range(height):
-        py = minimum_y + (y + 0.5) * (maximum_y - minimum_y) / height
-        for x in range(width):
-            px = minimum_x + (x + 0.5) * (maximum_x - minimum_x) / width
-            surface = "void"
-            if any(_point_in_polygon(px, py, item["polygon"]) for item in source["waterBodies"] if item["kind"] == "navigable_sea"):
-                surface = "navigable_sea"
-            if any(_point_in_polygon(px, py, item["polygon"]) for item in source["surfaces"] if item["kind"] == "land"):
-                surface = "land"
-            if any(_point_in_polygon(px, py, item["polygon"]) for item in source["waterBodies"] if item["kind"] == "navigable_sea" and item.get("overlaysLand") is True):
-                surface = "navigable_sea"
-            if any(_point_in_polygon(px, py, item["polygon"]) for item in source["waterBodies"] if item["kind"] == "decorative_water"):
-                surface = "decorative_water"
-            cells.append(SURFACES[surface])
+    cells = _rasterize_surfaces(source)
 
     # Declared chokepoints are explicit playability distortions and therefore win
     # over generalized coast polygons.
