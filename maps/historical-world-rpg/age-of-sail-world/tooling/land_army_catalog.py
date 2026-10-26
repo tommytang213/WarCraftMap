@@ -11,6 +11,76 @@ RULES = {'transitionDays', 'enactmentBasisPoints', 'upkeepBasisPoints', 'procure
          'shipmentWaste', 'supplyRadius'}
 
 
+# Exact approved land identities; each requires its own executed comparison.
+CLOSURE_EFFECTS = {
+    ('modifier', 'progression_arquebus_volley_drill'): ('arquebus_volley_drill', 'firearm_reload_efficiency', 500),
+    ('policy', 'progression_artillery_offices'): ('artillery_offices', 'artillery_production_throughput', 800),
+    ('modifier', 'progression_artillery_train'): ('artillery_train', 'artillery_supply_waste_reduction', 800),
+    ('modifier', 'progression_bayonet_system'): ('bayonet_system', 'anti_cavalry_melee_defense', 800),
+}
+COMMON_PROBES = {'land_registration', 'research', 'dispatch'}
+COMPARATIVE_PATHS = {
+    ('modifier', 'progression_arquebus_volley_drill'):
+        ('land_reload', 'landReloadMatchedControlUsesAbstractDeadlinesAndNativeCooldown',
+         COMMON_PROBES | {'land_reload_resolve', 'land_shot', 'land_native_reload'}),
+    ('policy', 'progression_artillery_offices'):
+        ('land_procurement', 'landOfficeMatchedControlRequiresEnactmentSurchargeAndRealWork',
+         COMMON_PROBES | {'land_action', 'land_advance', 'land_pay', 'land_work'}),
+    ('modifier', 'progression_artillery_train'):
+        ('land_supply', 'landTrainMatchedControlDelivers77Versus75From100ActualStock',
+         COMMON_PROBES | {'land_action', 'land_delivery'}),
+    ('modifier', 'progression_bayonet_system'):
+        ('land_bayonet', 'landBayonetMatchedControlRequiresResearchEquipmentAndHostileCavalry',
+         COMMON_PROBES | {'land_equipment', 'land_damage', 'combat_rating'}),
+}
+ROLLBACK_TEST = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresLandArmyScienceWorkAndFiringClock'
+ADAPTER_TEST = 'wurst/MilitaryCombatEventsTests.wurst:installedLandDrillAndBayonetUseProductionWeaponCallbacks'
+BAYONET_ADAPTER_PROBES = COMMON_PROBES | {'combat_install', 'land_native_weapon',
+                                         'land_cavalry', 'land_equipment', 'land_damage', 'combat_rating'}
+BAYONET_ROLLBACK_TEST = 'wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense'
+REQUIRED_TESTS = {
+    'landBayonetRejectsIneligibleRosterWeaponsEraAndControllers',
+    'landBayonetReconstructionMigrationAndNamedSourcesRemainIndependent',
+    'landRegisteredResearchAndOfficeActionsChargeRealInputsAndTimeline',
+    'landProductionAndSupplyRejectMissingResourcesControlRoutesAndEquipment',
+    'landReloadAndBayonetAreExactEquipmentGatedAndDeduplicated',
+    'landActiveAbstractReplaySnapshotMigrationAndCaptureAreIdempotent',
+    'landNamedControllerSourcesAddOnceAndDoNotCrossControllers',
+    'landAbstractFiringConsumesExactReloadClockAcrossReconstruction',
+    'landAiUsesIdenticalLegalResearchProcurementAndWasteRules',
+    'landUnfundedRenewalAndCapturedWorkCannotCreateFreeArtillery',
+    'combinedLandAndScienceRecordsRoundTripAndMigrateMainVersion12',
+} | {name for _, name, _ in COMPARATIVE_PATHS.values()}
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    """Require current full-suite pinned execution and actual comparative outcomes."""
+    if execution is None or execution_log is None or revision is None:
+        return set()
+    from integration_evidence import verify_execution_coverage
+    from wurst_execution import WurstExecutionError
+    try:
+        coverage = verify_execution_coverage(execution, execution_log, project, revision)
+        prefix = 'wurst/LandArmyEffectsTests.wurst:'
+        passed = {r['id'] for r in execution['tests'] if r['status'] == 'pass'}
+        if not ({prefix + name for name in REQUIRED_TESTS} | {ROLLBACK_TEST, ADAPTER_TEST}) <= passed:
+            return set()
+        authored = {(e['unlock']['kind'], e['unlock']['contentId']):
+                    (e['nodeId'], e['metric'], e['bonusBasisPoints'])
+                    for e in build(project)['catalog']['effects']}
+        observed = execution['productionCoverage']['tests']
+        return {pair for pair, (system, name, probes) in COMPARATIVE_PATHS.items()
+                if authored.get(pair) == CLOSURE_EFFECTS[pair]
+                and prefix + name in coverage.get(system, [])
+                and probes <= set(observed.get(prefix + name, []))
+                and (pair != ('modifier', 'progression_bayonet_system')
+                     or (BAYONET_ROLLBACK_TEST in passed
+                         and ADAPTER_TEST in coverage.get('land_bayonet_callback', [])
+                         and BAYONET_ADAPTER_PROBES <= set(observed.get(ADAPTER_TEST, []))))}
+    except (WurstExecutionError, ValueError, OSError, KeyError, TypeError, AttributeError):
+        return set()
+
+
 def build(project=ROOT):
     project = Path(project)
     data = json.loads((project / 'scenario/progression/land-army.json').read_text())
@@ -107,7 +177,14 @@ def build(project=ROOT):
     sources = ['scenario/progression/land-army.json', data['designSource'], 'tooling/land_army_catalog.py', 'tooling/validate_unit_roster.py']
     sources += [str(p.relative_to(project)) for p in settlement_sources]
     sources += [str(p.relative_to(project)) for p in sorted((project / 'scenario/rosters').glob('*.json'))]
-    return dict(catalog=dict(rules=data['rules'], effects=effects, profiles=profiles, predicates=pred, arsenalIds=sorted(arsenal_ids)),
+    authored = {(e['unlock']['kind'], e['unlock']['contentId']):
+                (e['nodeId'], e['metric'], e['bonusBasisPoints']) for e in effects}
+    consumers = [dict(nodeId=node, kind=pair[0], contentId=pair[1], metric=metric,
+                      bonusBasisPoints=bonus, executionSystem=COMPARATIVE_PATHS[pair][0])
+                 for pair, (node, metric, bonus) in CLOSURE_EFFECTS.items()
+                 if authored.get(pair) == (node, metric, bonus)]
+    return dict(catalog=dict(rules=data['rules'], effects=effects, consumers=consumers,
+                             profiles=profiles, predicates=pred, arsenalIds=sorted(arsenal_ids)),
                 wurst='\n'.join(lines) + '\n', sources=sources)
 
 

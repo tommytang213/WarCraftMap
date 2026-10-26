@@ -381,6 +381,194 @@
     "banking_advance": {
       "path": "wurst/BankingOperations.wurst",
       "signature": "function advance(int day, BankingResearchEffects effects, BankingPort port)"
+    },
+    "courts_registration": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "public function registerCourtsCommands(CommandRegistry commands, CommercialCourtsRuntime runtime) returns string"
+    },
+    "courts_policy": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function policy(string owner, string id, boolean repeal) returns string"
+    },
+    "courts_fee": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function fee(string owner, RuntimeMarket market, TradeStore store, int principal) returns int"
+    },
+    "courts_advance": {
+      "path": "wurst/CommercialCourts.wurst",
+      "signature": "function advance(int day)"
+    },
+    "construction_quote": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function quote(string owner, string id, string blueprint) returns NavalBuildQuote"
+    },
+    "construction_commit": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function commit(string owner, NavalBuildQuote quote) returns string"
+    },
+    "civic_registration": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "public function registerCivicCommands(CommandRegistry commands, CivicCampaignRuntime runtime) returns string"
+    },
+    "civic_clock": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "civic_diffusion": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function diffuse(int index, int basisPoints)"
+    },
+    "civic_disease": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function disease(string id, int maximum) returns int"
+    },
+    "civic_trade_budget": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function tradeAllowed(string id, string controllerId, int day, int quantity) returns boolean"
+    },
+    "civic_trade_commit": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function recordTrade(string id, int day, int quantity)"
+    },
+    "dispatch_network": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function dispatchAccess(string originId, string recipientId) returns boolean"
+    },
+    "dispatch_completion": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function dispatchDays(string owner, string id, CivicResearchEffects research, CivicEconomyPort economy) returns int"
+    },
+    "land_registration": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedLandArmy(LandArmyLedger ledger, LandResearchEffects research, int day)"
+    },
+    "land_reload_resolve": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function firearmReloadMillis(RuntimeForce runtimeForce, int baseMillis) returns int"
+    },
+    "land_shot": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function acceptLandShot(CombatHit hit, RuntimeForce runtimeForce) returns boolean"
+    },
+    "land_native_reload": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "override function replaceReload(string stableId, int baseMillis, int basisPoints)"
+    },
+    "land_action": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function act(string owner, string action, string id, string forceId) returns string"
+    },
+    "land_advance": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function advance(int day)"
+    },
+    "land_pay": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function pay(string controllerId, string id, int money, string good, int units) returns boolean"
+    },
+    "land_work": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function commitWork(ArsenalState state, int work)"
+    },
+    "land_delivery": {
+      "path": "wurst/LandArmyRuntime.wurst",
+      "signature": "function commitDelivery(RuntimeMarket stock, RuntimeForce target, int shipped, int delivered)"
+    },
+    "agriculture_definitions": {
+      "path": "wurst/ScenarioData.wurst",
+      "signature": "public function configureGeneratedAgriculture(PlayableTradeRuntime runtime)"
+    },
+    "agriculture_registration": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "public function registerAgricultureCommands(CommandRegistry commands, PlayableTradeRuntime runtime, TradePresentation presentation) returns string"
+    },
+    "agriculture_clock": {
+      "path": "wurst/PlayableCampaignRuntime.wurst",
+      "signature": "override function onCampaignDay(int day)"
+    },
+    "agriculture_layers": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "override function replaceResearchEntitlements(ResearchEntitlements result)"
+    },
+    "agriculture_action": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "function enact(string controllerId, string siteId, string contentId) returns string"
+    },
+    "agriculture_advance": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "function advance(int day, int currentYear)"
+    },
+    "agriculture_pay": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function pay(string owner, string siteId, int money, int materials)"
+    },
+    "agriculture_harvest": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function harvest(string id, int seed, int equipmentConsumed, int output, int loss, int capacity)"
+    },
+    "agriculture_tax": {
+      "path": "wurst/CampaignAgriculture.wurst",
+      "signature": "override function collectTax(string id, string owner, int maximum) returns int"
+    },
+    "agriculture_storage": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "function refreshAgriculture()"
+    },
+    "agriculture_adoption": {
+      "path": "wurst/Agriculture.wurst",
+      "signature": "override function adoption(string controllerId, string nodeId) returns int"
+    },
+    "finance_buy_settle": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "private function settlePurchase(string transactionId, RuntimeMarket market, TradeStore destination, int quantity, int principal, int charge) returns string"
+    },
+    "finance_sell_settle": {
+      "path": "wurst/PlayableTrade.wurst",
+      "signature": "private function settleSale(string transactionId, RuntimeMarket market, TradeStore source, int quantity, int difficultyPermille, int principal, int proceeds) returns string"
+    },
+    "science_weather": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function hazard(int day) returns int"
+    },
+    "science_supply": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "function consumeSupply(RuntimeForce actor, int provisions)"
+    },
+    "science_hazard_commit": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function commitHazard(int hazard, int avoided, int fraction)"
+    },
+    "land_equipment": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function landKit(RuntimeForce runtimeForce) returns LandProfile"
+    },
+    "land_damage": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function applyCombatHit(CombatHit hit, int sourceIndex, int targetIndex, string sourcePolity, string targetPolity, boolean weaponAttack)"
+    },
+    "land_cavalry": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function landCavalryAttack(RuntimeForce runtimeForce, string nativeAttack) returns boolean"
+    },
+    "land_native_weapon": {
+      "path": "wurst/MilitaryCombatEvents.wurst",
+      "signature": "function onWeaponDamage(int epoch, int target, int source, string nativeAttack, CombatHit hit, real originalDamage) returns int"
+    },
+    "combat_rating": {
+      "path": "wurst/CombatEffects.wurst",
+      "signature": "function applyForCombatants(CombatHit hit, boolean legalAttack, TraditionLayer attacker, CombatProfile source, TraditionLayer defender, CombatProfile target, CombatSources attackSources, CombatSources defenseSources, string sourceController, string sourceCategory, string controllerId, string categoryId)"
+    },
+    "naval_complete": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "private function completeBuild(NavalYard d, NavalYard hull, NavalYardState s, string owner)"
+    },
+    "naval_snapshot": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function snapshot() returns string"
+    },
+    "naval_restore": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function restore(string candidate, boolean project) returns boolean"
     }
   },
   "systems": {
@@ -571,6 +759,149 @@
       "banking_quote",
       "banking_commit",
       "banking_advance"
+    ],
+    "commercial_courts": [
+      "courts_registration",
+      "courts_policy",
+      "courts_fee",
+      "courts_advance"
+    ],
+    "merchant_construction": [
+      "naval_registration",
+      "construction_quote",
+      "construction_commit",
+      "naval_pay",
+      "naval_advance"
+    ],
+    "civic_policy": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_diffusion"
+    ],
+    "epidemic_response": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_disease",
+      "civic_trade_budget",
+      "civic_trade_commit"
+    ],
+    "dispatch_contract": [
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "dispatch_network",
+      "dispatch_completion"
+    ],
+    "land_reload": [
+      "dispatch",
+      "land_native_reload",
+      "land_registration",
+      "land_reload_resolve",
+      "land_shot",
+      "research"
+    ],
+    "land_procurement": [
+      "dispatch",
+      "land_action",
+      "land_advance",
+      "land_pay",
+      "land_registration",
+      "land_work",
+      "research"
+    ],
+    "land_supply": [
+      "dispatch",
+      "land_action",
+      "land_delivery",
+      "land_registration",
+      "research"
+    ],
+    "agriculture": [
+      "agriculture_definitions",
+      "agriculture_registration",
+      "agriculture_clock",
+      "agriculture_layers",
+      "agriculture_action",
+      "agriculture_advance",
+      "agriculture_pay",
+      "agriculture_harvest",
+      "agriculture_tax",
+      "agriculture_storage",
+      "agriculture_adoption",
+      "dispatch",
+      "research"
+    ],
+    "auction_markets": [
+      "finance_registration",
+      "research",
+      "trade_command",
+      "finance_quote",
+      "finance_buy_settle",
+      "finance_sell_settle"
+    ],
+    "barometric_voyage": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_weather",
+      "science_supply",
+      "science_hazard_commit"
+    ],
+    "land_bayonet": [
+      "dispatch",
+      "research",
+      "land_registration",
+      "land_equipment",
+      "land_damage",
+      "combat_rating"
+    ],
+    "land_bayonet_callback": [
+      "dispatch",
+      "research",
+      "land_registration",
+      "land_equipment",
+      "land_damage",
+      "combat_rating",
+      "combat_install",
+      "land_native_weapon",
+      "land_cavalry"
+    ],
+    "naval_commissioning": [
+      "research",
+      "dispatch",
+      "naval_registration",
+      "naval_action",
+      "naval_pay",
+      "naval_advance",
+      "naval_complete",
+      "naval_snapshot",
+      "naval_restore"
+    ],
+    "botanical_survey": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_weather",
+      "science_supply",
+      "science_hazard_commit"
     ]
   }
 }

@@ -1,5 +1,6 @@
 package PlayableCampaignRuntime
 import IndustryCampaignRuntime
+import CommercialCourts
 import BankingCampaignRuntime
 import FinanceCampaignRuntime
 import NavalCampaignRuntime
@@ -414,6 +415,7 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 	NavalCampaignRuntime navalRuntime = null
 	IndustryCampaignRuntime industryRuntime = null
 	LandArmyRuntime landRuntime = null
+	CommercialCourtsRuntime courtsRuntime = null
 	BankingCampaignRuntime bankingRuntime = null
 	FinanceCampaignRuntime financeRuntime = null
 	ScienceCampaignRuntime scienceRuntime = null
@@ -434,6 +436,8 @@ public class PlayableCampaignState implements CampaignStatePort, CampaignDayList
 				industryRuntime.advance(day)
 			if landRuntime != null
 				landRuntime.advance(day)
+			if courtsRuntime != null
+				courtsRuntime.advance(day)
 			if bankingRuntime != null
 				bankingRuntime.advance(day)
 			if financeRuntime != null

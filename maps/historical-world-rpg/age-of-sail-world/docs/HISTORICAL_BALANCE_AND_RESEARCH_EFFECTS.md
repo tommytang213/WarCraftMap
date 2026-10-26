@@ -144,6 +144,15 @@ until fresh integrated current-main execution, runtime and traceability evidence
 removes them. Focused interpreter execution is development evidence; it does not
 establish native client playability or resolve the unrelated #438 crash.
 
+For the two policy/medicine findings, #548 adds fail-closed binding recognition:
+current-source full pinned execution must observe registered research/actions,
+campaign-clock replay, actual payments and local outcome consumers in matched
+controls. Negative, replay and late-load rollback cases must also pass. A serving
+local administrator must have the district jurisdiction and positive capacity;
+foreign or unavailable offices authorize neither civic action nor local benefits.
+No persisted fields or migration formats change. Focused results cannot close
+these findings; the integrated-main audits must consume complete fresh evidence.
+
 ## Land drill and artillery production consumers (#515)
 
 `scenario/progression/land-army.json` owns the four land research bindings,
@@ -199,9 +208,33 @@ All fields participate in detached validation and the existing campaign rollback
 Balance quantities remain scenario-owned; gains round down and positive bills
 round up once at the transaction boundary.
 
-The four exact research-unbound findings from #515 remain release blockers until
-fresh current-main production execution, runtime and traceability audits remove
-them. Focused tests establish development behavior, not native client playability;
+Issue #550 adds exact generated consumer metadata and current-source,
+full-suite execution recognition for Arquebus Volley Drill, Artillery Offices
+and Artillery Train. Each requires its matched production comparison and actual
+reload, paid work or stock delivery probes. Missing, stale, failed or incomplete
+evidence keeps each finding blocked. Issue #563 extends this contract to the exact
+`bayonet_system` → `modifier progression_bayonet_system` →
+`anti_cavalry_melee_defense` identity at 800 bp. Its isolated registered-research
+comparison requires actual compatible socket equipment, legal roster dates and
+prerequisites, hostility and cavalry melee. With no other ratings, incoming 108
+resolves to 100; the unresearched control remains 108. Installed callbacks must
+also emit the weapon-authentication, equipment and final damage-resolution probes.
+Swords, bows, firearm shots, spells, siege, unknown equipment and unsupported native
+metadata contribute no bayonet defense. Independent tradition and equipment ratings
+remain additive before one final calculation. Reconstruction, transfer, current
+save/load, legacy unknown-kit migration and late-load rollback execute in the same
+required complete pinned suite. Office work accrues the last prepaid interval before a failed
+renewal; subsequent intervals receive no office bonus.
+
+No persisted field or schema changes are required. The integrated current
+military v20 codec retains the earlier arsenal and firing records, and the
+migration and late-load rollback tests execute that codec. After integration,
+fresh current-main production execution, runtime and traceability audits must
+remove the four land findings through verified comparisons. The #560 current-main
+evidence transport and planner regenerate all three audits against the exact
+revision and authored-source digest; missing, focused, stale or altered evidence
+retains the findings. Release/launch promotion still requires fresh zero-blocker
+closure and closed repair issues. Focused tests establish development behavior, not native client playability;
 the unrelated #438 crash remains blocked.
 ## Science, weather and exploration production consumers (#514)
 
@@ -430,6 +463,16 @@ fraction-conservation fixture. The integrated trace test exercises all seven
 `reports/issue-516`; the exact four release findings remain blocking until the
 controller completes fresh integrated repository/runtime/traceability validation.
 This work does not establish native-client launch or close #438.
+
+The #562 closure verifier recognizes only Battlefleet Doctrine's exact
+`unit:ship_of_the_line` → `ship_of_the_line_generic` paid commissioning consumer.
+Generated consumer metadata derives its bills and eligibility from the roster and
+scenario; it is not execution evidence. The isolated registered comparison,
+negative/persistence tests and payment/work/completion/restore probes must pass
+in the complete pinned suite for the exact audited revision and source digest.
+Sibling naval effects remain separately blocked. The verifier reuses the existing
+execution-evidence path; integrated-main audit regeneration remains the controller's
+gate. See `reports/issue-562/README.md` for focused validation and closure steps.
 
 ## Army food and canal freight consumers (#519)
 

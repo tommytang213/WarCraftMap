@@ -495,6 +495,13 @@
             "archive_tax_collection_efficiency",
             "municipal_tax_collection_efficiency"
           ]
+        },
+        {
+          "path": "scenario/progression/dispatch-contract.json",
+          "contains": [
+            "remote_survey_dispatch_time_reduction",
+            "relayLinks"
+          ]
         }
       ],
       "headlessVerification": [
@@ -508,6 +515,12 @@
           "path": "tests/test_administrative_contracts.py",
           "contains": [
             "test_exact_typed_effects_and_catalogue_adoption_requirements"
+          ]
+        },
+        {
+          "path": "tests/test_dispatch_contract.py",
+          "contains": [
+            "test_generated_dispatch_keeps_exact_research_identity_and_historical_costs"
           ]
         }
       ],
@@ -572,6 +585,13 @@
           "contains": [
             "administrativeRegisteredArchivesThenAdoptionAndMunicipalPolicyProduceConservedTaxDifferences",
             "administrativeActiveAbstractParityCaptureMigrationAndFailedLoadRollback"
+          ]
+        },
+        {
+          "path": "wurst/DispatchTests.wurst",
+          "contains": [
+            "dispatchRegisteredResearchAndSurveyBeatMatchedControlWithExactBills",
+            "dispatchFailedCampaignLoadRollsBackPendingOrderResearchAndBills"
           ]
         }
       ],
@@ -871,7 +891,9 @@
           "path": "wurst/ScienceExploration.wurst",
           "contains": [
             "function advance",
-            "effects.rate(owner, d.metric)",
+            "effects.workRate(d, owner, s.target)",
+            "site.observationTargets.contains",
+            "function workRate",
             "port.pay(d, owner, d.dailyMoney, d.dailyUnits, provisions)"
           ]
         },
@@ -999,7 +1021,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 19",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 20",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages",
             "banking.states[i].record()",
@@ -1054,7 +1076,9 @@
           "contains": [
             "registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
             "calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
-            "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters"
+            "failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters",
+            "chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl",
+            "chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource"
           ]
         },
         {

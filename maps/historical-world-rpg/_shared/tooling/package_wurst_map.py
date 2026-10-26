@@ -788,6 +788,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
     from central_banking import configuration as banking_configuration
     banking_wurst, banking_catalog, banking_sources = banking_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
     runtime['centralBanking'] = banking_catalog
+    courts_wurst, courts_catalog, courts_sources = banking_configuration(
+        config.project, world, settlement_runtime, authored_sources, trade_records,
+        policy='commercial-courts', metrics={'commercial_transaction_fee_reduction': 'policy'},
+        function='configureGeneratedCourts')
+    if courts_catalog:
+        courts_wurst += '\tledger.availabilityMetric = "commercial_transaction_fee_reduction"\n'
+    runtime['commercialCourts'] = courts_catalog
     from army_food_logistics import configuration as logistics_configuration, supply_anchor
     logistics_wurst, logistics_catalog, logistics_sources = logistics_configuration(config.project, world, settlement_runtime, authored_sources, trade_records, finance_catalog)
     runtime['armyFoodLogistics'] = logistics_catalog
@@ -890,7 +897,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             for ident, good in payload['catalog']['markets'])
         if runtime['tradeMarketCount'] > 16384:
             raise PackagingError('industry: trade authority capacity exceeded')
-    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst
+    wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst + courts_wurst
     wurst = wurst.replace('import UnstuckRecovery\n', 'import BankingOperations\nimport Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport QuestStages\n')
@@ -906,12 +913,18 @@ def generate(config: BuildConfig, generated: Path) -> None:
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in courts_catalog.get('effects', [])}
+    if agriculture_payload:
+        bound_research |= {(e['kind'], e['contentId']) for e in agriculture_payload['effects']}
     if naval_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in naval_payload['catalog']['effects'])
     if industry_builder:
         bound_research.update((e['unlock']['kind'], e['unlock']['contentId']) for e in runtime['industry']['effects'])
+    if naval_builder:
+        bound_research |= {('unit', e['contentId']) for e in naval_payload['catalog'].get('recruitment', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
-                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency'}}
+                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency', 'remote_survey_dispatch_time_reduction'}}
+    bound_research |= {(e['kind'], e['contentId']) for e in runtime.get('landArmy', {}).get('consumers', [])}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
     wurst += arrival_configuration
@@ -940,6 +953,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         *science_sources,
         *finance_sources,
         *banking_sources,
+        *courts_sources,
         *naval_sources,
         *(path for path in (config.project / "scenario/economy/global-goods.json", config.project / "scenario/economy/playable-trade.json") if path.is_file()),
         *(config.project / path for path in (agriculture_payload["sources"] if agriculture_payload else [])),
@@ -1025,6 +1039,21 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
         from combat_effects import verify_executable_bindings
         verify_executable_bindings((generated / GENERATED_WURST).read_text(), expected)
 
+    agriculture_builder = configuration(config.project)["scenario"].get("agricultureBuilder")
+    if agriculture_builder and not selector:
+        payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, agriculture_builder))], cwd=config.project, text=True))
+        source = (generated / GENERATED_WURST).read_text()
+        expected = payload['wurst']
+        actual = [line for line in source.splitlines() if line.startswith((
+            '\truntime.agriculture.addEffect(', '\truntime.stapleId=', '\truntime.farmEquipmentId=',
+            '\truntime.constructionGoodId=', '\truntime.agriculture.materialName=',
+            '\truntime.agriculture.agriculturalNodes=', '\truntime.agriculture.knowledgePerSeedBp=',
+            '\truntime.agriculture.maximumKnowledge='))]
+        if (actual != expected or source.count('configureGeneratedAgriculture(runtime)') != 1
+                or json.loads((generated / GENERATED_DATA).read_text()).get('agriculture') !=
+                {key: payload[key] for key in ('rules', 'effects')}):
+            raise _fail('agriculture bindings', 'executable catalogue differs from scenario (release blocker)')
+
     industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
     if industry_builder and not selector:
         payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
@@ -1054,6 +1083,15 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
             'new VoyageContract(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line]
         if source.count(expected) != 1 or calls(source) != calls(expected):
             raise _fail("voyage bindings", "executable catalogue differs from scenario")
+
+    if not selector:
+        from dispatch_contract import verify_registration as verify_dispatch
+        try:
+            verify_dispatch(config.project, json.loads(config.scenario_file.read_text()),
+                            (generated / GENERATED_WURST).read_text(),
+                            json.loads((generated / GENERATED_DATA).read_text()).get('civicGovernance', {}))
+        except ValueError as error:
+            raise _fail('dispatch bindings', str(error)) from error
 
 def _run(stage: str, command: list[str], cwd: Path) -> None:
     result = subprocess.run(command, cwd=cwd, text=True, capture_output=True,

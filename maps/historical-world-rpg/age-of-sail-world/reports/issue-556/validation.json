@@ -1,0 +1,108 @@
+{
+  "diffCheck": "pass",
+  "format": "warcraftmap_focused_implementation_validation_v1",
+  "frameworkBoundary": "pass",
+  "freshnessRepair": "Reproduced the post-integration runtime source-hash mismatch. Regenerated release-blocker, runtime-acceptance and requirement-traceability reports at the integrated revision; all 184 focused tests passed, including both previously failing freshness tests. Fresh planning results match the recorded reports exactly, with all nine supplied findings retained and no verified collateral closure.",
+  "fullPinnedWurstExecution": {
+    "reason": "No local Grill; Docker socket access denied in the Codex sandbox. Authoritative full repository validation is controller-owned.",
+    "status": "not_run"
+  },
+  "gameplayAndSaveChanges": "None. Scenario tuning, initial assets, optional enactment, ownership rules and save schema are unchanged.",
+  "implementationHashes": {
+    "automation/container_validation.py": "4d51445405fe579518f7eab766b0802493f732d072e4533014d09d155943633e",
+    "automation/run_checks.sh": "a7dd5e565029738b7f3c85a0c7087ee251700bb389c0c460a584d53a7de9e7bd",
+    "automation/wurst_container.sh": "ff962540f3dcd7c1539021c3aab3dd59ae998b60769c6cc9b30f239457322e04",
+    "maps/historical-world-rpg/_shared/tooling/execution_transport.py": "82f95baba9c53f89a18cf105a98bfbe55fe71cdc8786cfc0d0cc561a3b9f7de2",
+    "maps/historical-world-rpg/_shared/tooling/wurst_execution.py": "aab7658608b71d43031bb854ef09db94f5911be322ab24d2a7c4614b34da8db1",
+    "maps/historical-world-rpg/age-of-sail-world/tooling/planning_audit.py": "bffcc4cc74751d58306d6ea05e1d0fa07784bad560f91fae0a1743d7e5f837d8"
+  },
+  "issue": 556,
+  "lostEvidencePath": "Previously docker run --rm removed the private /tmp full-suite results and raw transcript without copying successful evidence to the checkout.",
+  "postIntegrationRequired": [
+    "Run automation/run_checks.sh with required Wurst validation on the integrated new main revision.",
+    "Run tooling/planning_audit.py --source-revision <new-main-SHA> from the scenario checkout containing the newly exported complete evidence.",
+    "Require all four exact agriculture findings to disappear through verified full execution; re-audit the five civic/land findings before proposing repairs.",
+    "Keep unrelated blockers and release promotion/real-client gates intact."
+  ],
+  "python": {
+    "agriculture_evidence": {
+      "status": "pass",
+      "tests": 5
+    },
+    "agriculture_generation": {
+      "status": "pass",
+      "tests": 5
+    },
+    "automation_export": {
+      "status": "pass",
+      "tests": 12
+    },
+    "civic_binding_evidence": {
+      "status": "pass",
+      "tests": 5
+    },
+    "framework_conformance_protocol": {
+      "status": "pass",
+      "tests": 9
+    },
+    "integration_evidence": {
+      "status": "pass",
+      "tests": 13
+    },
+    "land_binding_evidence": {
+      "status": "pass",
+      "tests": 5
+    },
+    "planning_export_reader": {
+      "status": "pass",
+      "tests": 7
+    },
+    "release_blocker_audit": {
+      "status": "pass",
+      "tests": 10
+    },
+    "requirement_traceability": {
+      "status": "pass",
+      "tests": 54
+    },
+    "research_generation": {
+      "status": "pass",
+      "tests": 11
+    },
+    "runtime_acceptance": {
+      "status": "pass",
+      "tests": 25
+    },
+    "wurst_execution_protocol": {
+      "status": "pass",
+      "tests": 23
+    }
+  },
+  "pythonTestsPassed": 184,
+  "scope": "Focused validation repair on the integrated worktree. The existing evidence transport implementation is unchanged; this repair refreshes generated audit identities. Synthetic compiler/Docker fixtures establish transport and gate behavior only, never agriculture or collateral closure.",
+  "shellSyntax": "pass",
+  "sourceIdentity": {
+    "sourceRevision": "415943ee19e4eb51bc76cb5cc03adc734769f264",
+    "sourceTreeSha256": "ec4af3dea30e0669cc9490758d0bb0a8f7a7b90a7cbaa0ed7dfc200c69e95290"
+  },
+  "sourceOnlyAudits": {
+    "agricultureFindingsRetained": [
+      "RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY",
+      "RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM",
+      "RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE",
+      "RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES"
+    ],
+    "civicLandFindingsRetained": [
+      "RESEARCH-UNBOUND-ABOLITIONIST-PUBLIC-SPHERE-POLICY-PROGRESSION-ABOLITIONIST-PUBLIC-SPHERE",
+      "RESEARCH-UNBOUND-ANATOMY-AND-MEDICINE-ABILITY-EPIDEMIC-CONTROL",
+      "RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL",
+      "RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES",
+      "RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN"
+    ],
+    "closureVerified": false,
+    "releaseBlockers": 238,
+    "runtimeFailures": 30,
+    "traceabilityBlockers": 7004,
+    "verifiedCollateralClosures": []
+  }
+}

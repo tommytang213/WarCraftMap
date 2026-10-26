@@ -108,6 +108,8 @@ class ResearchGenerationTests(unittest.TestCase):
         self.assertEqual(self.runtime['researchIntegrationBlockers'], [
             dict(nodeId=n, kind=k, contentId=c, bindingStatus='unbound', reason='missing_gameplay_consumer')
             for n, k, c in expected if (k, c) not in {('modifier', 'army_discipline'),
+                ('building', 'granary'), ('policy', 'land_tenure_reform'),
+                ('policy', 'enclosure'), ('policy', 'progression_agricultural_societies'),
                 ('modifier', 'progression_campaign_bakeries'), ('modifier', 'progression_canal_logistics'),
                 ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_cast_cannon'),
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
@@ -115,10 +117,24 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
                 ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),
                 ('modifier', 'progression_boring_mills'), ('modifier', 'progression_central_banking'),
-                ('policy', 'progression_central_bank_institution'),
+                ('policy', 'progression_central_bank_institution'), ('policy', 'commercial_courts'),
+                ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
-                ('policy', 'progression_chartered_municipalities')}])
+                ('modifier', 'progression_ciphered_dispatches'),
+                ('policy', 'progression_chartered_municipalities'),
+                ('modifier', 'progression_arquebus_volley_drill'),
+                ('policy', 'progression_artillery_offices'),
+                ('modifier', 'progression_artillery_train'),
+                ('modifier', 'progression_bayonet_system')}])
         self.assertNotIn('effectMagnitude', self.source)
+
+    def test_dispatch_registration_keeps_scenario_network_and_bounded_consumer(self):
+        from dispatch_contract import verify_registration
+        verify_registration(PROJECT, self.world, self.source, self.runtime['civicGovernance'])
+        self.assertIn('ledger.addDispatchLink("lisbon", "goa")', self.source)
+        self.assertIn('"remote_survey_dispatch_time_reduction", 1000)', self.source)
+        self.assertFalse(any(row['nodeId'] == 'ciphered_dispatches'
+                             for row in self.runtime['researchIntegrationBlockers']))
 
     def test_logistics_depots_use_materialized_service_positions_and_land_connectivity(self):
         import re

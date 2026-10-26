@@ -57,6 +57,7 @@ public class BankingLedger
 	BankingState array[64] states
 	int count = 0
 	string prerequisite = ""
+	string availabilityMetric = "treasury_reconciliation_cost_reduction"
 	int transitionDays = 0
 	int enactmentBasisPoints = 0
 	int upkeepBasisPoints = 0
@@ -74,6 +75,7 @@ public class BankingLedger
 	function fork() returns BankingLedger
 		let copy = new BankingLedger()
 		copy.prerequisite = prerequisite
+		copy.availabilityMetric = availabilityMetric
 		copy.transitionDays = transitionDays
 		copy.enactmentBasisPoints = enactmentBasisPoints
 		copy.upkeepBasisPoints = upkeepBasisPoints
@@ -89,7 +91,7 @@ public class BankingLedger
 			if states[i].serial < 2147483647
 				states[i].serial++
 	function available(string owner, int day, BankingResearchEffects effects) returns boolean
-		return effects.rateAt(owner, "treasury_reconciliation_cost_reduction", day) > 0
+		return effects.rateAt(owner, availabilityMetric, day) > 0
 	function operating(int i, string owner, int day, BankingResearchEffects effects, BankingPort port) returns boolean
 		let s = states[i]
 		return s.owner == owner and owner != "" and s.ready <= day and s.upkeepThrough > day and available(owner, day, effects) and port.eligible(owner, sites[i].id)

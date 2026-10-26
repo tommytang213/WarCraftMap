@@ -1,4 +1,5 @@
 package PlayableTrade
+import CommercialCourts
 import FinanceCampaignRuntime
 import Agriculture
 import CivicGovernance
@@ -162,6 +163,7 @@ public class MerchantProgress
 		return standing>=500
 
 public class PlayableTradeController
+	CommercialCourtsRuntime courts = null
 	FinanceCampaignRuntime finance = null
 	string financeOwner = ""
 	function amount(RuntimeMarket market, int quantity, boolean buying) returns int
@@ -213,8 +215,14 @@ public class PlayableTradeController
 			return "Market access is restricted."
 		if market.stock<quantity
 			return "Market stock is insufficient."
-		let charge=amount(market,quantity,true)
-		if charge<1 or market.money>2147483647-charge
+		let principal=amount(market,quantity,true)
+		var fee=0
+		if courts != null
+			fee=courts.fee(financeOwner,market,destination,principal)
+		if principal<1 or principal>2147483647-fee
+			return "Trade amount is outside the currency settlement range."
+		let charge=principal+fee
+		if charge<1 or market.money>2147483647-principal
 			return "Trade amount is outside the currency settlement range."
 		if destination.money<charge
 			return "Funds are insufficient."
@@ -222,9 +230,11 @@ public class PlayableTradeController
 			return "Cargo capacity is insufficient."
 		if not destination.accepts(market.goodName)
 			return "Cargo store is incompatible with this commodity."
+		return settlePurchase(transactionId, market, destination, quantity, principal, charge)
+	private function settlePurchase(string transactionId, RuntimeMarket market, TradeStore destination, int quantity, int principal, int charge) returns string
 		market.reprice()
 		market.stock-=quantity
-		market.money+=charge
+		market.money+=principal
 		destination.contents.set(market.goodName,destination.quantity(market.goodName)+quantity)
 		destination.money-=charge
 		provenance.add(destination.id,market.goodName,quantity,charge,market.id)
@@ -247,15 +257,21 @@ public class PlayableTradeController
 			return "Market access is restricted."
 		if market.storageCapacity<2147483647 and quantity>market.storageCapacity-market.stock
 			return "Local staple storage capacity is insufficient."
-		let proceeds=amount(market,quantity,false)
+		let principal=amount(market,quantity,false)
+		var fee=0
+		if courts != null
+			fee=courts.fee(financeOwner,market,source,principal)
+		let proceeds=principal-fee
 		if proceeds<1 or source.money>2147483647-proceeds
 			return "Trade amount is outside the currency settlement range."
-		if market.money<proceeds
+		if market.money<principal
 			return "Market funds are insufficient."
+		return settleSale(transactionId, market, source, quantity, difficultyPermille, principal, proceeds)
+	private function settleSale(string transactionId, RuntimeMarket market, TradeStore source, int quantity, int difficultyPermille, int principal, int proceeds) returns string
 		market.reprice()
 		let allocation=provenance.consume(source.id,market.goodName,quantity,market.id)
 		market.stock+=quantity
-		market.money-=proceeds
+		market.money-=principal
 		source.contents.set(market.goodName,source.quantity(market.goodName)-quantity)
 		source.money+=proceeds
 		let profit=proceeds-allocation.cost
@@ -1063,7 +1079,7 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		if nextTransaction>=2147483647
 			return "Transaction history is full."
 		let id="runtime-"+side+"-"+nextTransaction.toString()
-		if controller.finance != null
+		if controller.finance != null or controller.courts != null
 			controller.financeOwner = access.state.rpg.researchResources.controllerId(sender)
 		let before=controller.processedCount
 		var result=""

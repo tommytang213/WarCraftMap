@@ -28,6 +28,21 @@ def configuration(project, world, settlements, authored, trade_records):
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if {e['metric'] for e in effects} != set(METRICS) or len(effects) != 3:
         raise ValueError('science: missing effect contract')
+    observation_path = project / 'scenario/progression/chemical-classification.json'
+    observation = None
+    if observation_path.is_file():
+        observation = json.loads(observation_path.read_text())
+        node = nodes.get(observation.get('nodeId'), {})
+        if (observation.get('schemaVersion') != 1
+                or observation.get('unlock') not in node.get('unlocks', [])
+                or observation['unlock']['kind'] != 'modifier'
+                or observation.get('metric') != 'repeatable_observation_efficiency'
+                or type(observation.get('bonusBasisPoints')) is not int
+                or not 300 <= observation['bonusBasisPoints'] <= 600
+                or type(observation.get('minimumAdministration')) is not int
+                or not 1 <= observation['minimumAdministration'] <= 100):
+            raise ValueError('science: invalid observation contract')
+        effects.append(observation)
     lines = [header]
     q = json.dumps
     for e in effects:
@@ -92,5 +107,141 @@ def configuration(project, world, settlements, authored, trade_records):
             if type(value) not in (int, float) or not -32768 < value < 32768:
                 raise ValueError('science: invalid station position')
             lines.append(f'\tsite{i}.station{axis} = {float(value)}')
+        if observation and d['id'] == observation['siteId']:
+            if d['metric'] != 'research_generation_efficiency':
+                raise ValueError('science: observations require a scholarly facility')
+            targets = sorted(n['id'] for n in world['technologies']
+                             if n.get('branchId') == observation['targetBranchId'])
+            if not targets:
+                raise ValueError('science: observations require scientific targets')
+            lines.append(f'\tsite{i}.observationMetric = {q(observation["metric"])}')
+            lines.append(f'\tsite{i}.observationTargets = {q("|" + "|".join(targets) + "|")}')
+            lines.append(f'\tsite{i}.minimumAdministration = {observation["minimumAdministration"]}')
         lines.append(f'\tledger.register(site{i})')
-    return '\n'.join(lines) + '\n', data | {'effects': effects}, [path, design_path, Path(__file__)]
+    if observation and observation['siteId'] not in ids:
+        raise ValueError('science: missing observation facility')
+    return '\n'.join(lines) + '\n', data | {'effects': effects}, [path, design_path, Path(__file__)] + ([observation_path] if observation else [])
+
+
+CHEMICAL_TESTS = {
+    'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl',
+    'chemicalQualifiedWorkRejectsMissingFacilitiesStaffInputsTechnologyAndUnauthorizedControl',
+    'chemicalNamedSourceCompositionRoundingRepeatGrantsAndAheadOfTimeAccess',
+    'chemicalActiveAbstractResumeCaptureAndMalformedLoadPreserveExactAuthority',
+    'chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource',
+}
+
+BAROMETRIC_COMPARISON = 'barometricOnlyRegisteredVoyageCommitsExactStormLossAgainstMatchedControl'
+BAROMETRIC_TESTS = {
+    BAROMETRIC_COMPARISON,
+    'barometricCalmWeatherAndUnfundedDaysCannotCreateAvoidanceOrPartialBills',
+    'barometricVoyageRejectsMissingInstrumentsTechnologyVesselRouteAndLawfulControl',
+    'barometricFractionsResumeReconstructAndCaptureWithPlayerAiParity',
+    'barometricFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch',
+    'scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+BAROMETRIC_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                     'science_advance', 'science_pay', 'science_weather',
+                     'science_supply', 'science_hazard_commit'}
+BAROMETRIC_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_barometric_measurement'}
+
+BOTANICAL_COMPARISON = 'botanicalOnlyRegisteredSurveyCommitsExactHazardLossAgainstMatchedControl'
+BOTANICAL_TESTS = {
+    BOTANICAL_COMPARISON,
+    'botanicalUnfundedDaysCannotCreateAvoidanceFractionsOrPartialBills',
+    'botanicalSurveyRejectsMissingEquipmentResearchFormationRouteAndLawfulControl',
+    'botanicalFractionsResumeReconstructAndCaptureWithPlayerAiParity',
+    'botanicalFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch',
+    'botanicalNamedSourcesDeduplicateAndUnrelatedResearchCannotReduceSurveyLoss',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+BOTANICAL_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                    'science_advance', 'science_pay', 'science_weather',
+                    'science_supply', 'science_hazard_commit'}
+BOTANICAL_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_botanical_collecting'}
+
+
+def _botanical_authored(project):
+    """Recognize only the approved overland source, not a sibling science metric."""
+    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    path = (project / data['designSource']).resolve()
+    path.relative_to(project.resolve())
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'botanical_collecting' or e['unlock'] == BOTANICAL_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'botanical_collecting']
+    return (effect['nodeId'] == 'botanical_collecting'
+            and effect['unlock'] == BOTANICAL_UNLOCK
+            and effect['metric'] == 'unknown_route_attrition_reduction'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 1000
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'qualified_overland_exploration_parties'
+            and len(nodes) == 1 and BOTANICAL_UNLOCK in nodes[0]['unlocks'])
+
+
+def _barometric_authored(project):
+    """The approved identity and coefficient, never inferred from a similar metric."""
+    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    path = (project / data['designSource']).resolve()
+    path.relative_to(project.resolve())
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'barometric_measurement'
+               or e['unlock'] == BAROMETRIC_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'barometric_measurement']
+    return (effect['nodeId'] == 'barometric_measurement'
+            and effect['unlock'] == BAROMETRIC_UNLOCK
+            and effect['metric'] == 'storm_attrition_reduction'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 1000
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'qualified_sea_voyages'
+            and len(nodes) == 1 and BAROMETRIC_UNLOCK in nodes[0]['unlocks'])
+
+
+def verified_bindings(project, execution=None, execution_log=None, revision=None):
+    """Only current complete pinned execution can close this exact finding."""
+    if execution is None or execution_log is None or revision is None:
+        return set()
+    from integration_evidence import verify_execution_coverage
+    from wurst_execution import WurstExecutionError
+    try:
+        coverage = verify_execution_coverage(execution, execution_log, project, revision)
+    except (WurstExecutionError, ValueError, OSError, KeyError, TypeError):
+        return set()
+    prefix = 'wurst/ScienceExplorationTests.wurst:'
+    passed = {row['id'][len(prefix):] for row in execution['tests']
+              if row['status'] == 'pass' and row['id'].startswith(prefix)}
+    probes = execution.get('productionCoverage', {}).get('tests', {})
+    required = {'science_registration', 'science_action', 'science_advance',
+                'science_pay', 'science_complete', 'dispatch'}
+    comparative = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
+    bound = set()
+    if CHEMICAL_TESTS <= passed and required <= set(probes.get(comparative, [])):
+        contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
+        bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+    comparative = prefix + BAROMETRIC_COMPARISON
+    try:
+        if (BAROMETRIC_TESTS <= passed
+                and comparative in coverage.get('barometric_voyage', [])
+                and BAROMETRIC_PROBES <= set(probes.get(comparative, []))
+                and _barometric_authored(project)):
+            bound.add(('modifier', 'progression_barometric_measurement'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    comparative = prefix + BOTANICAL_COMPARISON
+    try:
+        if (BOTANICAL_TESTS <= passed
+                and comparative in coverage.get('botanical_survey', [])
+                and BOTANICAL_PROBES <= set(probes.get(comparative, []))
+                and _botanical_authored(project)):
+            bound.add(('modifier', 'progression_botanical_collecting'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    return bound

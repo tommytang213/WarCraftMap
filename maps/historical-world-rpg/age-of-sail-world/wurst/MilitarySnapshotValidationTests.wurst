@@ -61,10 +61,18 @@ class MilitaryValidationFixture
 		military.finance.register(new CanalWork("canal", "port", "", "wood", 0, 1, 1, 1, 1, 10, 1, 1))
 		military.industry.register(new IndustrySite("foundry", "port", "refining", "", "ore", "metal", 0, 1, 1, 1, 1, 1, 10, 1, true))
 		military.banking.register(new BankingSite("bank", 100))
+		military.courts.availabilityMetric = "commercial_transaction_fee_reduction"
+		military.courts.register(new BankingSite("court", 100))
 		military.civic.register(new CivicDistrict("district", "province", 100, true, 1, 1, 1, 1, 1, "cloth", 1, 1), 0)
 		military.land.register("port", 10)
 		military.science.register(new ScienceSite("study", "port", "", "", "", "cloth", 0, 1, 1, 1, 1, 1, 10, 1, 0, 0, 1, 0))
+		military.naval.defaultEntitlement = "test-naval-access"
 		military.naval.register(new NavalYard("port", "sea", 0., 0., "", "", "", 'hbot', 0, 100, 1, 1, 100, 1, 10))
+		let blueprint = new NavalYard("test-blueprint", "sea", 0., 0., "", "", "", 'hbot', 0, 100, 1, 1, 100, 1, 10)
+		blueprint.profileId = "test-hull"
+		blueprint.entitlement = "test-recruitment"
+		blueprint.boardRequired = false
+		military.naval.addBlueprint(blueprint)
 		let ship = new RuntimeForce("ship", "player", "sea", "", FORCE_FLEET, 'hbot', 10, 100, 0., 0.)
 		military.registerForce(ship)
 		military.voyages = new VoyageContract("technology", "navigation", 0, 0)
@@ -72,7 +80,7 @@ class MilitaryValidationFixture
 		military.voyages.addRoute(route)
 		military.voyages.addShip(new VoyageShip("ship", 'hbot', "sea", 0., 0., "|circuit|"))
 		military.voyages.start(ship.navigation, route, 10, 100).assertTrue()
-		for domain = 0 to 9
+		for domain = 0 to 10
 			setDay(domain, 10)
 	function setDay(int domain, int day)
 		if domain == 0
@@ -93,8 +101,10 @@ class MilitaryValidationFixture
 			military.finance.states[0].freightDay = day
 		else if domain == 8
 			military.banking.states[0].lastDay = day
-		else
+		else if domain == 9
 			military.civic.states[0].lastDay = day
+		else
+			military.courts.states[0].lastDay = day
 	function assertDisposed(int expected)
 		observed.parsed.assertEquals(expected)
 		observed.retired.assertEquals(expected)
@@ -110,7 +120,7 @@ class MilitaryValidationFixture
 		observed.campaign = state
 		return state
 
-@test function validatedMilitarySnapshotsKeepOwnershipAndAllTenCampaignDayLimits()
+@test function validatedMilitarySnapshotsKeepOwnershipAndAllElevenCampaignDayLimits()
 	let f = new MilitaryValidationFixture()
 	let saved = f.military.snapshot()
 	let parsed = f.military.parseValidatedSnapshot(saved, 10)
@@ -122,13 +132,25 @@ class MilitaryValidationFixture
 	(parsed.banking.states[0] != f.military.banking.states[0]).assertTrue()
 	(parsed.banking.sites[0] == f.military.banking.sites[0]).assertTrue()
 	parsed.banking.states[0].serial = 1
+	(parsed.courts != f.military.courts).assertTrue()
+	(parsed.courts.states[0] != f.military.courts.states[0]).assertTrue()
+	(parsed.courts.sites[0] == f.military.courts.sites[0]).assertTrue()
+	parsed.courts.availabilityMetric.assertEquals("commercial_transaction_fee_reduction")
+	parsed.courts.states[0].serial = 1
 	(parsed.civic.states[0] != f.military.civic.states[0]).assertTrue()
 	(parsed.civic.districts[0] == f.military.civic.districts[0]).assertTrue()
 	parsed.civic.states[0].urbanization = 1
+	(parsed.naval != f.military.naval).assertTrue()
+	(parsed.naval.states[0] != f.military.naval.states[0]).assertTrue()
+	(parsed.naval.yards[0] == f.military.naval.yards[0]).assertTrue()
+	parsed.naval.defaultEntitlement.assertEquals("test-naval-access")
+	parsed.naval.blueprintCount.assertEquals(1)
+	(parsed.naval.blueprints[0] == f.military.naval.blueprints[0]).assertTrue()
+	parsed.naval.states[0].serial = 1
 	f.military.snapshot().assertEquals(saved)
 	parsed.dispose()
 	f.assertDisposed(1)
-	for domain = 0 to 9
+	for domain = 0 to 10
 		f.setDay(domain, 11)
 		let future = f.military.snapshot()
 		(f.military.parseValidatedSnapshot(future, 10) == null).assertTrue()
@@ -144,8 +166,16 @@ class MilitaryValidationFixture
 	f.military.finance.projects[0].id.assertEquals("canal")
 	f.military.science.sites[0].id.assertEquals("study")
 	f.military.naval.yards[0].id.assertEquals("port")
+	f.military.naval.yards[0].entitlement.assertEquals("test-naval-access")
+	let blueprint = f.military.naval.blueprint("test-hull", null)
+	(blueprint == f.military.naval.blueprints[0]).assertTrue()
+	blueprint.id.assertEquals("test-blueprint")
+	blueprint.profileId.assertEquals("test-hull")
+	blueprint.entitlement.assertEquals("test-recruitment")
+	blueprint.boardRequired.assertFalse()
 	f.military.industry.sites[0].id.assertEquals("foundry")
 	f.military.banking.sites[0].id.assertEquals("bank")
+	f.military.courts.sites[0].id.assertEquals("court")
 	f.military.civic.districts[0].id.assertEquals("district")
 
 class ValidationTradeExtension implements CampaignRuntimeExtension

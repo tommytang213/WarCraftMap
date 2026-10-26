@@ -34,6 +34,11 @@ public class LandArmyRuntime
 		return military.land.index(id) >= 0 and economy.controller(id) == owner and economy.lawful(id) and economy.accessible(id)
 	function officeActive(ArsenalState state, int day) returns boolean
 		return state.owner != "" and state.owner == economy.controller(state.id) and usable(state.id, state.owner) and day >= state.ready and day < state.upkeepThrough and campaign.militarySettlements.land.rate(state.owner, "artillery_production_throughput") > 0
+	function commitWork(ArsenalState state, int work)
+		state.work = IMinBJ(campaign.militarySettlements.land.constructionDays * 10000, state.work + work)
+	function commitDelivery(RuntimeMarket stock, RuntimeForce target, int shipped, int delivered)
+		stock.stock -= shipped
+		target.supply += delivered
 	function advance(int day)
 		let military = campaign.militarySettlements
 		let ledger = military.land
@@ -47,6 +52,8 @@ public class LandArmyRuntime
 				let at = s.lastDay
 				if economy.controller(s.id) != s.owner and s.owner != "" or economy.controller(s.id) != s.projectOwner and s.projectOwner != ""
 					s.cancel()
+				// Accrue the interval already paid before attempting the next renewal.
+				let officeWasActive = officeActive(s, at - 1)
 				if s.owner != "" and at >= s.ready and at >= s.upkeepThrough and usable(s.id, s.owner)
 					let district = military.civic.index(s.id)
 					if district >= 0 and ledger.rate(s.owner, "artillery_production_throughput") > 0 and economy.pay(s.owner, s.id, civicBill(military.civic.districts[district].annualTax, ledger.upkeepBasisPoints), "", 0)
@@ -58,10 +65,10 @@ public class LandArmyRuntime
 				let profile = ledger.profile(ledger.commissionProfile)
 				if s.projectOwner != "" and usable(s.id, s.projectOwner) and available(profile, s.projectOwner)
 					var work = 10000
-					if s.officeBillPaid and officeActive(s, at - 1)
+					if s.officeBillPaid and officeWasActive
 						work += ledger.rate(s.projectOwner, "artillery_production_throughput")
 					// Work completed during the interval ending at this day.
-					s.work = IMinBJ(ledger.constructionDays * 10000, s.work + work)
+					commitWork(s, work)
 					if s.work >= ledger.constructionDays * 10000 and military.forceCount < 4096
 						let city = economy.settlement(s.id)
 						let made = new RuntimeForce("artillery:" + s.id + ":" + I2S(s.serial), s.projectOwner, city.regionId, profile.categoryId, FORCE_ARMY, profile.unitTypeId, profile.strength, ledger.supplyPerBattery, city.x, city.y)
@@ -139,8 +146,7 @@ public class LandArmyRuntime
 			let stock = trade.findMarket(id, ledger.armsGood)
 			if stock == null or stock.blockaded or stock.occupiedByHostile or stock.stock < ledger.shipmentArms
 				return "Insufficient accessible ordnance stock; ammunition cannot be created."
-			stock.stock -= ledger.shipmentArms
-			target.supply += delivered
+			commitDelivery(stock, target, ledger.shipmentArms, delivered)
 			return ""
 		return "Use policy, repeal, commission or supply."
 	function overview(string owner, string id) returns string

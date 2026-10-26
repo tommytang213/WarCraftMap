@@ -131,14 +131,28 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     navigation, _world = navigation_contract(PROJECT)
     bound = set(bindings.research_effects) | {(navigation.kind, navigation.content)}
     bound |= _verified_industry_bindings(execution, execution_log, revision)
+    from civic_governance import verified_bindings as verified_civic
+    bound |= verified_civic(PROJECT, execution, execution_log, revision)
+    from dispatch_contract import verified_bindings as verified_dispatch
+    bound |= verified_dispatch(PROJECT, execution, execution_log, revision)
     from administrative_governance import verified_bindings as verified_administration
     bound |= verified_administration(PROJECT, execution, execution_log, revision)
     from trade_finance import verified_bindings
     bound |= verified_bindings(PROJECT, execution, execution_log, revision)
     from central_banking import verified_bindings as banking_bindings
     bound |= banking_bindings(PROJECT, execution, execution_log, revision)
+    from science_exploration import verified_bindings as verified_science
+    bound |= verified_science(PROJECT, execution, execution_log, revision)
+    from naval_services_catalog import verified_bindings as verified_naval
+    bound |= verified_naval(PROJECT, execution, execution_log, revision)
+    from chartered_companies import verified_bindings as chartered_bindings
+    bound |= chartered_bindings(PROJECT, execution, execution_log, revision)
     from army_food_logistics import verified_bindings as verified_logistics
     bound |= verified_logistics(PROJECT, execution, execution_log, revision)
+    from land_army_catalog import verified_bindings as verified_land
+    bound |= verified_land(PROJECT, execution, execution_log, revision)
+    from agriculture_catalog import verified_bindings as verified_agriculture
+    bound |= verified_agriculture(PROJECT, execution, execution_log, revision)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
