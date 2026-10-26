@@ -103,13 +103,15 @@ def configuration(project, world, settlements, authored, trade_records):
     return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records)}, [path, design_path, __import__('pathlib').Path(__file__), *admin_sources, *dispatch_sources]
 
 
-# Deliberately limited to #548's two supplied findings. Survey and administrative
-# bindings have independent evidence requirements and cannot close here.
+# Exact, independently exercised consumers only. Administrative bindings retain
+# their separate verifier; survey recognition adds no implicit sibling coverage.
 CLOSURE_EFFECTS = {
     ('policy', 'progression_abolitionist_public_sphere'):
         ('abolitionist_public_sphere', 'civic_reform_diffusion', 500),
     ('ability', 'epidemic_control'):
         ('anatomy_and_medicine', 'epidemic_losses_avoided', 2500),
+    ('modifier', 'progression_cadastral_survey'):
+        ('cadastral_survey', 'land_tax_collection_efficiency', 500),
 }
 REQUIRED_TESTS = {
     'civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills',
@@ -123,6 +125,15 @@ REQUIRED_TESTS = {
     'civicResponseMatchedControlProvesActualLossesBillsThroughputAndCooldown',
 }
 ROLLBACK_TEST = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresCivicPolicyResponseAndActualResourcesAtomically'
+SURVEY_REQUIRED_TESTS = {
+    'civicFixedPointSourcesDeduplicateAndTaxesTransferOnlyExistingEconomicCapacity',
+    'civicSurveyMatchedControlProvesPaidCompletionAndConservedAnnualCollection',
+    'civicSurveyRejectsUnknownOccupationJurisdictionAndInsufficientFundsWithoutMutation',
+    'civicSurveyUnfinishedLiquidityAndCapacityBoundsUseActualCollection',
+    'civicSurveyCompletedRecordsNeedCurrentControllerEntitlementAndLocalJurisdiction',
+    'civicSurveyActiveAbstractReplayAndReloadPreservePaidCollectionWithoutReplay',
+}
+SURVEY_ROLLBACK_TEST = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresSurveyDeadlineCollectionAndMarketLiquidityAtomically'
 COMMON_PROBES = {'civic_registration', 'research', 'dispatch', 'administrative_action',
                  'administrative_advance', 'administrative_pay', 'civic_clock'}
 COMPARATIVE_PATHS = {
@@ -132,6 +143,9 @@ COMPARATIVE_PATHS = {
     ('ability', 'epidemic_control'):
         ('epidemic_response', 'civicResponseMatchedControlProvesActualLossesBillsThroughputAndCooldown',
          COMMON_PROBES | {'civic_disease', 'civic_trade_budget', 'civic_trade_commit'}),
+    ('modifier', 'progression_cadastral_survey'):
+        ('cadastral_survey', 'civicSurveyMatchedControlProvesPaidCompletionAndConservedAnnualCollection',
+         COMMON_PROBES | {'administrative_collect'}),
 }
 
 
@@ -161,6 +175,8 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
         observed = execution['productionCoverage']['tests']
         return {pair for pair, (system, name, probes) in COMPARATIVE_PATHS.items()
                 if authored.get(pair) == CLOSURE_EFFECTS[pair]
+                and (pair != ('modifier', 'progression_cadastral_survey')
+                     or ({prefix + test for test in SURVEY_REQUIRED_TESTS} | {SURVEY_ROLLBACK_TEST}) <= passed)
                 and prefix + name in coverage.get(system, [])
                 and probes <= set(observed.get(prefix + name, []))}
     except (WurstExecutionError, ValueError, OSError, KeyError, TypeError, AttributeError):

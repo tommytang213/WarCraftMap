@@ -57,7 +57,7 @@ class CivicBindingEvidenceTests(unittest.TestCase):
     def bindings(self, report=None, log=None):
         return civic.verified_bindings(PROJECT, report, log, self.revision)
 
-    def test_verified_protocol_removes_only_the_two_supplied_findings(self):
+    def test_verified_protocol_removes_only_the_three_supplied_findings(self):
         report, log = self.transcript()
         self.assertEqual(set(civic.CLOSURE_EFFECTS), self.bindings(report, log))
         before = {row['id'] for row in audit._audit_research_bindings()}
@@ -66,6 +66,7 @@ class CivicBindingEvidenceTests(unittest.TestCase):
         self.assertEqual({
             'RESEARCH-UNBOUND-ABOLITIONIST-PUBLIC-SPHERE-POLICY-PROGRESSION-ABOLITIONIST-PUBLIC-SPHERE',
             'RESEARCH-UNBOUND-ANATOMY-AND-MEDICINE-ABILITY-EPIDEMIC-CONTROL',
+            'RESEARCH-UNBOUND-CADASTRAL-SURVEY-MODIFIER-PROGRESSION-CADASTRAL-SURVEY',
         }, before - after)
         self.assertFalse(after - before)
 
@@ -107,8 +108,9 @@ class CivicBindingEvidenceTests(unittest.TestCase):
                     self.assertEqual(set(), self.bindings(report, log))
 
     def test_failed_negative_or_rollback_test_cannot_close_either_finding(self):
-        names = {'wurst/CivicGovernanceTests.wurst:' + name for name in civic.REQUIRED_TESTS}
-        for name in names | {civic.ROLLBACK_TEST}:
+        names = {'wurst/CivicGovernanceTests.wurst:' + name
+                 for name in civic.REQUIRED_TESTS | civic.SURVEY_REQUIRED_TESTS}
+        for name in names | {civic.ROLLBACK_TEST, civic.SURVEY_ROLLBACK_TEST}:
             with self.subTest(failed=name):
                 report, log = self.transcript(fail_test=name)
                 self.assertEqual(set(), self.bindings(report, log))
