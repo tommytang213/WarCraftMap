@@ -17,6 +17,9 @@ run built all 17 physical maps and the 61,539,818-byte campaign W3N, SHA-256
 `4758e81dc4f409fcaea3ce4431233b88cacfb0ac0625d9682fd3bacd7eb03b6b`.
 The separate pinned repository/framework gate passed 741/741 scenario tests,
 3/3 framework fixture tests, and 3/3 content mutation fixture tests.
+The final complete Python discovery run passed 1,202/1,202 tests; the
+automation suite passed 215/215 tests. The four source-only audit freshness
+tests passed after restoring the tracked snapshots to their documented mode.
 
 `pinned-evidence.tar.gz` contains the verified execution results, transcript,
 and verification inputs. `audit-results.json.gz` contains the three reports
