@@ -331,6 +331,163 @@ function observationSetup(ScienceFixture f, boolean earned)
 	f.equip()
 	f.action("start", 2, " printed_observation_tables")
 
+// Both arms earn the same prerequisites and pay for identical scholarly equipment.
+// Calculus alone differs; neither arm has the later Chemical Classification source.
+function calculusSetup(ScienceFixture f, boolean earned)
+	let owner = f.resources.owner
+	f.rpg.restoreState(f.rpg.captureState() + "|u," + owner + ",scholastic_natural_philosophy").assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.unlock("barometric_measurement")
+	if earned
+		let gold = f.resources.balance
+		f.unlock("calculus_methods")
+		f.resources.balance.assertEquals(gold - f.rpg.technologies.cost("calculus_methods", 1778, 0, 0))
+	f.equip()
+	let before = f.campaign.countries.treasury[0]
+	let bill = f.rpg.technologies.cost("printed_observation_tables", 1778, 0, 0)
+	f.action("start", 2, " printed_observation_tables")
+	f.campaign.countries.treasury[0].assertEquals(before - bill)
+	f.military.science.states[2].paid.assertEquals(bill)
+
+@test function calculusOnlyRegisteredScholarlyWorkCommitsExactFundedOutputAgainstMatchedControl()
+	let treatment = new ScienceFixture(false, true)
+	let control = new ScienceFixture(false, true)
+	calculusSetup(treatment, true)
+	calculusSetup(control, false)
+	treatment.effects.rate("player", "research_generation_efficiency").assertEquals(500)
+	control.effects.rate("player", "research_generation_efficiency").assertEquals(0)
+	let treatmentFunds = treatment.campaign.countries.treasury[0]
+	let controlFunds = control.campaign.countries.treasury[0]
+	let treatmentStock = treatment.trade.markets[0].stock
+	let controlStock = control.trade.markets[0].stock
+	treatment.advance(8)
+	control.advance(8)
+	treatment.military.science.states[2].work.assertEquals(105)
+	control.military.science.states[2].work.assertEquals(100)
+	treatment.advance(17)
+	control.advance(17)
+	treatment.military.science.states[2].work.assertEquals(1050)
+	control.military.science.states[2].work.assertEquals(1000)
+	treatment.campaign.countries.treasury[0].assertEquals(treatmentFunds - 10)
+	control.campaign.countries.treasury[0].assertEquals(controlFunds - 10)
+	treatment.trade.markets[0].stock.assertEquals(treatmentStock - 10)
+	control.trade.markets[0].stock.assertEquals(controlStock - 10)
+	treatment.advance(93)
+	control.advance(93)
+	treatment.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertTrue()
+	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertFalse()
+	treatment.campaign.countries.treasury[0].assertEquals(treatmentFunds - 86)
+	control.campaign.countries.treasury[0].assertEquals(controlFunds - 86)
+	control.advance(97)
+	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertTrue()
+	control.campaign.countries.treasury[0].assertEquals(controlFunds - 90)
+
+@test function calculusScholarlyWorkRejectsUnpaidInputsAndUnqualifiedTarget()
+	let f = new ScienceFixture(false, true)
+	calculusSetup(f, true)
+	let funds = f.campaign.countries.treasury[0]
+	f.trade.markets[0].stock = 0
+	f.advance(8)
+	f.military.science.states[2].work.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	f.trade.markets[0].stock = 1000
+	f.campaign.countries.treasury[0] = 0
+	f.advance(9)
+	f.military.science.states[2].work.assertEquals(0)
+	f.trade.markets[0].stock.assertEquals(1000)
+	f.campaign.countries.treasury[0] = funds
+	f.advance(10)
+	f.military.science.states[2].work.assertEquals(105)
+	f.runtime.act("player", "start", "london_scholarly_work", "flintlock_drill").startsWith("Work is already").assertTrue()
+	f.military.administrators[0].capacity = 0
+	f.advance(11)
+	f.military.science.states[2].owner.assertEquals("")
+	f.military.science.states[2].work.assertEquals(0)
+	f.runtime.act("player", "start", "london_scholarly_work", "flintlock_drill").startsWith("Requires").assertTrue()
+	f.military.administrators[0].capacity = 1
+	f.runtime.act("player", "start", "london_scholarly_work", "flintlock_drill").startsWith("Choose an unearned").assertTrue()
+
+@test function calculusNamedSourceRoundingResumeAndCaptureKeepAuthorityExact()
+	let active = new ScienceFixture(false, true)
+	let inactive = new ScienceFixture(true, false)
+	calculusSetup(active, true)
+	calculusSetup(inactive, true)
+	active.military.science.sites[2].dailyWork = 1
+	inactive.military.science.sites[2].dailyWork = 1
+	active.advance(18)
+	inactive.advance(18)
+	active.military.science.states[2].work.assertEquals(11)
+	active.military.science.states[2].remainder.assertEquals(5500)
+	let saved = active.military.snapshot()
+	let research = active.rpg.captureState()
+	active.military.restore(saved).assertTrue()
+	active.rpg.restoreState(research).assertTrue()
+	active.rpg.technologies.reconstructAll()
+	active.advance(19)
+	inactive.advance(19)
+	active.military.science.states[2].work.assertEquals(12)
+	active.military.science.states[2].remainder.assertEquals(6000)
+	active.military.science.states[2].work.assertEquals(inactive.military.science.states[2].work)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[0])
+	active.trade.markets[0].stock.assertEquals(inactive.trade.markets[0].stock)
+	active.military.transferSettlement("london", "ai")
+	active.military.science.states[2].owner.assertEquals("")
+	active.military.science.states[2].remainder.assertEquals(0)
+	active.effects.rate("ai", "research_generation_efficiency").assertEquals(0)
+
+@test function calculusFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new ScienceLedger()
+	configureGeneratedScience(definitions, effects)
+	let site = definitions.sites[2]
+	site.id = "study"
+	site.settlementId = "port"
+	site.good = "grain"
+	site.firstDay = 0
+	site.prerequisite = "calculus_methods"
+	site.dailyWork = 1
+	site.equipmentDays = 1
+	f.military.science.register(site)
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Scholar", "england", "europe_west", "port", 40, 50, 40, 1))
+	let technology = new RuntimeTechnology("calculus_methods", "Calculus", 1, 1)
+	technology.addUnlock("calculus_methods", "modifier", "progression_calculus_methods")
+	f.rpg.technologies.register(technology).assertTrue()
+	f.rpg.research("england", "calculus_methods", 1, 1).assertTrue()
+	f.rpg.technologies.register(new RuntimeTechnology("study_target", "Study", 1, 1)).assertTrue()
+	let runtime = new ScienceCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.scienceRuntime = runtime
+	runtime.act("england", "equip", "study", "").assertEquals("")
+	let day = f.clock.currentDay
+	f.clock.advanceTo(day + 1).assertTrue()
+	runtime.act("england", "start", "study", "study_target").assertEquals("")
+	f.clock.advanceTo(day + 2).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(500)
+	let savedClock = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "calculus").assertTrue()
+	f.clock.advanceTo(day + 3).assertTrue()
+	let before = f.military.snapshot()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.rate("england", "research_generation_efficiency").assertEquals(500)
+	f.extension.fail = false
+	f.recordingTimer.expected = savedClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(500)
+	f.clock.advanceTo(day + 3).assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+
 @test function chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl()
 	let treatment = new ScienceFixture(false, true)
 	let control = new ScienceFixture(false, true)
