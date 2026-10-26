@@ -1,0 +1,42 @@
+{
+  "commit": "6652bdbfa87db75878543e279977c12ba24b9894",
+  "recordedAt": "2026-10-26T05:22:25.239580+00:00",
+  "scope": "read_only_source_inspection",
+  "nativeStatus": "not_run",
+  "priorConversationGap": "Full prior ChatGPT conversation was not retrieved; repository evidence and retained workspace handoffs were reused.",
+  "observations": [
+    "The selector closes its UI and unpauses before its compatibility adapter invokes ChangeLevel.",
+    "Destination Bootstrap registers campaign domains and invokes startup synchronously. Gameplay activation follows only a successful startup.",
+    "The retained compiled model identifies GameTimer as the first scheduled callback. The pinned dependency callback only adds ANIMATION_PERIOD to currentTime. This is source evidence, not proof of native callback delivery.",
+    "onCampaignDay retains loading, startupLocked and transitionOpen guards, including the incoming courts runtime advance.",
+    "The inspected project runtime contains no cinematic fade, user-control disable or interface-hiding call. This scoped source search is not native loading/rendering evidence.",
+    "MilitaryOrderEvents.apply sets applying before native order issuance; onOrder rejects applying, suspension and stale generations and only observes state. Initial reconstruct runs before native event installation. This inspection finds no missing reentrancy guard; synthetic order results do not prove native acceptance or event order."
+  ],
+  "files": {
+    "destinationBootstrap": {
+      "path": "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/_shared/wurst/Bootstrap.wurst",
+      "sha256": "69b5a317d232b8578d95aa2446c66b737eebcdfaaa4051a79f6c701326309e53"
+    },
+    "startupAndDayCallback": {
+      "path": "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/_shared/wurst/PlayableCampaignRuntime.wurst",
+      "sha256": "c422d6cb6de140fc772be6924891bcfcc7e846706ab249d7250a815ac0bdbf9c"
+    },
+    "firstCallbackDependency": {
+      "path": "/workspace/scratch/50715b766e3d/validation/WurstStdlib2/wurst/util/GameTimer.wurst",
+      "sha256": "a4876eb5cc38dbab56b2796b79477897a5986a01aeda4738243b05596c4232e1"
+    },
+    "selectorController": {
+      "path": "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/_shared/wurst/CommandRouter.wurst",
+      "sha256": "e2dfe152c97cef40c181e93f07f115b15fcb9a473cde905b5be2e98fe8ee4d74"
+    },
+    "nativeTransitionAdapter": {
+      "path": "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/_shared/wurst/WC3Compatibility.wurst",
+      "sha256": "18e48350fe412e847b3877534e695179177fad18f243cdf707b282412c8a75a1"
+    },
+    "nativeOrderBridge": {
+      "path": "/workspace/scratch/50715b766e3d/WarCraftMap/maps/historical-world-rpg/_shared/wurst/MilitaryOrderEvents.wurst",
+      "sha256": "fe20339109c3c5a4ab844be42d2e0a3cd446aff1cbde9d32c7473b550305a9b2"
+    }
+  },
+  "conclusion": "No additional production startup/timer repair is justified by this inspection. A current hash-bound real selector-to-Continue trace must distinguish entry, initialization completion, callback delivery, terrain and movement."
+}

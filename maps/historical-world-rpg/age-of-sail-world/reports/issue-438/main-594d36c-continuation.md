@@ -101,10 +101,23 @@ terrain regions. Europe predicate calls fall from **226,040 to 73,600**; the
 recorded local generation observation is **131.359 ms**. The legacy full-grid
 negative control fails the work-reduction assertion without changing output.
 
-This repairs build-generation cost. It neither changes the generated terrain
-bytes nor establishes native loading speed or a Continue repair. The corrected
-source requires a fresh complete gate before publication; terminal evidence is
-recorded separately.
+This reduces build-generation work. It neither changes the generated terrain
+bytes nor establishes native loading speed or a Continue repair.
+
+The third canonical attempt, on committed `791ce7f`, still failed the unchanged
+terrain budget: `GeneratedBoundaryArrivalTests.setUpClass` reported Europe at
+**2,980.4 ms** against **1,500 ms**. The assistant stopped the owned process
+group after preserving that traceback. Its terminal receipt records
+`interrupted`, confirmed process cleanup and no passing full-gate result.
+Again, the real Wurst stage was not reached. Printed Wurst counts inside Python
+packaging fixtures are synthetic compiler output, not real Wurst execution.
+
+A separate full source-generation observation completed all seven regions;
+Europe took **231.293 ms wall / 231.287 ms CPU**, with one **0.205 ms** generation-0
+collection. Read-only review found no leaked trace, timer patch or GC policy
+change in predecessor tests. This does not explain the slower full-suite result.
+No further generator, clock, GC, timing-budget or test-discovery change is made
+without evidence. The failed full-suite result remains retained.
 
 The refreshed source audits use precommit revision label `6652bdb` and authored
 source SHA-256
@@ -113,7 +126,20 @@ Their runtime, release and traceability blocker counts remain 30, 238 and 7,004.
 
 ## Validation scope
 
-Required validation must run against the combined committed candidate with the
-unchanged pinned compiler, dependency, test discovery, budgets and release gates.
-The previous head's passing tests and synthetic timers are not substituted for
-that run. Completion evidence is recorded separately after the gate terminates.
+The unchanged static checks and **215 automation tests passed** on clean
+`791ce7f`, with authored source unchanged before/after. The full canonical local
+gate has **not passed**. The existing PR workflows are the next independent
+environment for complete project Python discovery, real Wurst execution,
+original/mutated framework builds and full campaign acceptance. They retain the
+pinned compiler, dependency, test discovery, budgets and release gates. Their
+actual checkout SHA/tree and terminal logs must be checked before claiming a
+pass; source revision association alone is insufficient.
+
+[Retained pre-CI evidence](main-594d36c-validation/manifest.json) binds scoped
+source reviews, focused terrain tests, byte comparisons, negative controls,
+component checks and all three interrupted canonical attempts. It explicitly
+records `canonicalLocalGate=interrupted_after_failure`, CI not yet started at
+collection, and native `not_run`. It is neither a full-gate success receipt nor a
+standalone replay bundle. Future CI results belong in the PR's current status;
+the historical receipt is not overwritten. A green campaign workflow can still
+mean diagnostics-only publication when release gates remain blocked.

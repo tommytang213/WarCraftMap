@@ -1,0 +1,21 @@
+{
+  "candidate": "6652bdbfa87db75878543e279977c12ba24b9894",
+  "reviewer": "/root/startup_review",
+  "recordedBy": "/root from the independent reviewer's returned result",
+  "status": "no_additional_production_repair_supported",
+  "findings": [
+    "The destination-isolation tool is pinned to the failed 54911ca campaign and rejects current a09/6652bdb artifacts.",
+    "The control preserves selector, ChangeLevel, metadata, configuration and terrain, but replaces destination Lua and removes production registration, checkpoints, startup and gameplay timers.",
+    "Its zero-delay Footman callback and two-second heartbeat could establish a minimal historical destination transition if observed natively; no native result for that control is retained.",
+    "Its first visible report is after InitBlizzard. An absent marker cannot distinguish failure before main from initialization failure or rendering that never resumed.",
+    "Rebinding hashes or replaying synthetic timers would not validate current production startup."
+  ],
+  "missingNativeObservation": [
+    "Real Continue on a hash-bound current full-runtime campaign reaches destination main/Blizzard initialization.",
+    "Production campaign.startup returns successfully.",
+    "First native timer callbacks execute.",
+    "Terrain is visible and a player unit responds to movement."
+  ],
+  "nativeStatus": "not_run",
+  "testsBuildsOrMutationsPerformedByReviewer": false
+}
