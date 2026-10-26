@@ -2,7 +2,7 @@
 
 Result: **FAIL**
 
-Unresolved campaign blockers: **238**
+Unresolved campaign blockers: **187**
 
 ## Severity taxonomy
 
@@ -28,65 +28,35 @@ Static readiness, executed production integration, built-artifact inspection and
 
 | System | Data complete | Headless simulation complete | Runtime integrated | Player-facing complete | Release-validated |
 |---|---:|---:|---:|---:|---:|
-| `campaign_launch` | yes | no | no | no | no |
-| `origin_selection` | yes | no | no | no | no |
-| `country_diplomacy` | yes | no | no | no | no |
-| `trade` | yes | no | no | no | no |
-| `army_fleet_control` | yes | no | no | no | no |
-| `city_capture` | yes | no | no | no | no |
-| `garrisons` | yes | no | no | no | no |
-| `administration` | yes | no | no | no | no |
-| `heroes` | yes | no | no | no | no |
-| `inventory_equipment` | yes | no | no | no | no |
-| `technology_institutions` | yes | no | no | no | no |
-| `quests_journal` | yes | no | no | no | no |
-| `treasures_discovery` | yes | no | no | no | no |
-| `save_autosave_load` | yes | no | no | no | no |
-| `cross_map_travel` | yes | no | no | no | no |
-| `world_map` | yes | no | no | no | no |
-| `remote_management` | yes | no | no | no | no |
-| `government_rewards` | yes | no | no | no | no |
-| `religion` | yes | no | no | no | no |
-| `piracy` | yes | no | no | no | no |
+| `campaign_launch` | yes | yes | yes | yes | yes |
+| `origin_selection` | yes | yes | yes | yes | yes |
+| `country_diplomacy` | yes | yes | yes | yes | yes |
+| `trade` | yes | yes | yes | yes | yes |
+| `army_fleet_control` | yes | yes | yes | yes | yes |
+| `city_capture` | yes | yes | yes | yes | yes |
+| `garrisons` | yes | yes | yes | yes | yes |
+| `administration` | yes | yes | yes | yes | yes |
+| `heroes` | yes | yes | yes | yes | yes |
+| `inventory_equipment` | yes | yes | yes | yes | yes |
+| `technology_institutions` | yes | yes | yes | yes | yes |
+| `quests_journal` | yes | yes | yes | yes | yes |
+| `treasures_discovery` | yes | yes | yes | yes | yes |
+| `save_autosave_load` | yes | yes | yes | yes | yes |
+| `cross_map_travel` | yes | yes | yes | yes | yes |
+| `world_map` | yes | yes | yes | yes | yes |
+| `remote_management` | yes | yes | yes | yes | yes |
+| `government_rewards` | yes | yes | yes | yes | yes |
+| `religion` | yes | yes | yes | yes | yes |
+| `piracy` | yes | yes | yes | yes | yes |
 
 ## Findings
 
 | Stable ID | Severity | Class | Context | Disposition |
 |---|---|---|---|---|
-| `RESEARCH-UNBOUND-ABOLITIONIST-PUBLIC-SPHERE-POLICY-PROGRESSION-ABOLITIONIST-PUBLIC-SPHERE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-ANATOMY-AND-MEDICINE-ABILITY-EPIDEMIC-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-AUCTION-MARKETS-MODIFIER-PROGRESSION-AUCTION-MARKETS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BAROMETRIC-MEASUREMENT-MODIFIER-PROGRESSION-BAROMETRIC-MEASUREMENT` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BATTLEFLEET-DOCTRINE-UNIT-SHIP-OF-THE-LINE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BILL-OF-EXCHANGE-NETWORKS-MODIFIER-PROGRESSION-BILL-OF-EXCHANGE-NETWORKS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BLAST-FURNACE-PRACTICE-MODIFIER-PROGRESSION-BLAST-FURNACE-PRACTICE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BORING-MILLS-MODIFIER-PROGRESSION-BORING-MILLS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BOTANICAL-COLLECTING-MODIFIER-PROGRESSION-BOTANICAL-COLLECTING` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-BROKERAGE-HOUSES-MODIFIER-PROGRESSION-BROKERAGE-HOUSES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CADASTRAL-SURVEY-MODIFIER-PROGRESSION-CADASTRAL-SURVEY` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CALCULUS-METHODS-MODIFIER-PROGRESSION-CALCULUS-METHODS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CAMPAIGN-BAKERIES-MODIFIER-PROGRESSION-CAMPAIGN-BAKERIES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CANAL-LOGISTICS-MODIFIER-PROGRESSION-CANAL-LOGISTICS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CANAL-TOLLS-FINANCE-MODIFIER-PROGRESSION-CANAL-TOLLS-FINANCE` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CAREENING-STATIONS-MODIFIER-PROGRESSION-CAREENING-STATIONS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CARRONADE-BATTERIES-MODIFIER-PROGRESSION-CARRONADE-BATTERIES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CARVEL-HULL-CONSTRUCTION-MODIFIER-PROGRESSION-CARVEL-HULL-CONSTRUCTION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CENTRAL-BANK-INSTITUTION-POLICY-PROGRESSION-CENTRAL-BANK-INSTITUTION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CENTRAL-BANKING-MODIFIER-PROGRESSION-CENTRAL-BANKING` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CHANCERY-ARCHIVES-MODIFIER-PROGRESSION-CHANCERY-ARCHIVES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CHARTERED-COMPANIES-POLICY-COMMERCIAL-COURTS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CHARTERED-COMPANIES-UNIT-ARMED-INDIAMAN` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CHARTERED-MUNICIPALITIES-POLICY-PROGRESSION-CHARTERED-MUNICIPALITIES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CHEMICAL-CLASSIFICATION-MODIFIER-PROGRESSION-CHEMICAL-CLASSIFICATION` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RESEARCH-UNBOUND-CIPHERED-DISPATCHES-MODIFIER-PROGRESSION-CIPHERED-DISPATCHES` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CIVIC-PEST-HOSPITALS-MODIFIER-PROGRESSION-CIVIC-PEST-HOSPITALS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CIVIL-SERVICE-EXAMINATIONS-MODIFIER-PROGRESSION-CIVIL-SERVICE-EXAMINATIONS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-CLINICAL-CASE-RECORDS-MODIFIER-PROGRESSION-CLINICAL-CASE-RECORDS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
@@ -270,27 +240,6 @@ Static readiness, executed production integration, built-artifact inspection and
 | `RESEARCH-UNBOUND-WAREHOUSE-WARRANTS-MODIFIER-PROGRESSION-WAREHOUSE-WARRANTS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-WATER-POWERED-MACHINERY-MODIFIER-PROGRESSION-WATER-POWERED-MACHINERY` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
 | `RESEARCH-UNBOUND-WIRE-DRAWING-MILLS-MODIFIER-PROGRESSION-WIRE-DRAWING-MILLS` | campaign_blocker | missing_runtime_integration | scenario/world/world.json | unresolved |
-| `RUNTIME-EVIDENCE-INCOMPLETE` | campaign_blocker | missing_runtime_integration | runtime-acceptance | unresolved |
-| `RUNTIME-MISSING-ADMINISTRATION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-ARMY-FLEET-CONTROL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-CAMPAIGN-LAUNCH` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-CITY-CAPTURE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-COUNTRY-DIPLOMACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-CROSS-MAP-TRAVEL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-GARRISONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-GOVERNMENT-REWARDS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-HEROES` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-INVENTORY-EQUIPMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-ORIGIN-SELECTION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-PIRACY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-QUESTS-JOURNAL` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-RELIGION` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-REMOTE-MANAGEMENT` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-SAVE-AUTOSAVE-LOAD` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TRADE` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-TREASURES-DISCOVERY` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
-| `RUNTIME-MISSING-WORLD-MAP` | campaign_blocker | missing_runtime_integration | scenario/runtime-integration.json | unresolved |
 
 ## Audited release evidence
 

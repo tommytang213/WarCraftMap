@@ -50,12 +50,484 @@
   "disposition": "release_blocked",
   "evidenceLevels": {
     "builtArtifact": {
+      "artifactSha256": "4758e81dc4f409fcaea3ce4431233b88cacfb0ac0625d9682fd3bacd7eb03b6b",
       "evidenceLevel": "built_artifact_verification",
-      "executionStatus": "not_run",
-      "failures": [
-        "same-revision built W3N/W3X verification is missing"
+      "evidenceLevels": [
+        "binary_structure",
+        "packaged_data_consistency",
+        "compiled_text_static_heuristic"
       ],
-      "status": "fail"
+      "executionStatus": "completed",
+      "failures": [],
+      "maps": [
+        {
+          "artifactSha256": "12bed9c22b6ddb5271e5f61e82c14622521c7615268b37c4ec8b64998daab0e7",
+          "bootstrap": true,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "compiledLuaBytes": 290631
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "bootstrap_runtime_validation",
+          "objectCount": 1,
+          "pathingSha256": "6d0b368c1b8a30b001f98a1b6b6ad1b35f1c65673815e4092574e51d7d404730",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "80d9ca8bf7e6de0a5666c2e3546b3f055db62e2a41d7b88b053f3d2deb90003b",
+          "width": 64
+        },
+        {
+          "artifactSha256": "d2d4aaf4b118873b643c520763de97d12a8bab5956dde2eb74fe0f88b69a5eba",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592048,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "europe_west",
+          "objectCount": 89,
+          "pathingSha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "26c12aecf0672f1eb3ae4ef8ce494aabc4754f7b5868a0c5a5a3bfbcdea06441",
+          "width": 128
+        },
+        {
+          "artifactSha256": "1ccbda7a40df32698a6c0f56cc3b1255a590c5d7a534b4a90d7a65351b199265",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591918,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "europe_central_east",
+          "objectCount": 103,
+          "pathingSha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "43dca3e43518f6a397725ce8127178ee4e89d0dd75d8852f5c95ea6ab6b9400b",
+          "width": 128
+        },
+        {
+          "artifactSha256": "3aeb5d9de271953bf328a187a151c72fe019d47263438d8954080f048f1a231b",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591879,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "africa",
+          "objectCount": 141,
+          "pathingSha256": "8df38a2d5fb042e04e0723c35cf33c161875e9139e7a13cfabc9ca82e22875d6",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "e8f27793d4a2e03c74603eea85867f491f0b5fa8f2322b15aab96f7f73eaca68",
+          "width": 128
+        },
+        {
+          "artifactSha256": "165c6ecaabf49be800272caeb1a229f81d3f92bf378a81091f00150e25528664",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592068,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "middle_east_india",
+          "objectCount": 189,
+          "pathingSha256": "32ff3f1a6291d89e9124bbc2c439509b1d6961d65836679ea9c402015e1c0a3a",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "e20baf9265725ecb20430245625fb01320e57d033e54a4039d7381956b99872a",
+          "width": 128
+        },
+        {
+          "artifactSha256": "cf4b3e8cdc1c1796baf905e28d2f54e525cd011122c26f47705ba1751858e566",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592055,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 192,
+          "mapId": "southeast_asia",
+          "objectCount": 154,
+          "pathingSha256": "2b5a7535ecf31de137ba6bf653fa9683b1bb0ccc0a04cd40de7aa6b666daee91",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "fae0be2858a8e5ab2fe23f56c7af357d84a170ca04498d66636e5f6de2348068",
+          "width": 192
+        },
+        {
+          "artifactSha256": "0bb41d865b2005aad56f606bacedbbc70d7e42cb82a16dc8bde88fc1ec4813ac",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591887,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "east_asia",
+          "objectCount": 169,
+          "pathingSha256": "4de0bfbcfab05816f9338d98b6e156c27c1347635e14f5dd12abac2cc6713bc8",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "35c3c6e5bfcaf2ed30d14655ab05d472cb965e0dfdfa504b3b17e5a82484210e",
+          "width": 192
+        },
+        {
+          "artifactSha256": "6ddd31f44ad139cf2ea2f64b626fe3b6538cffc9ae28e0133c691b5779aa283c",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591944,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "americas_north_central",
+          "objectCount": 106,
+          "pathingSha256": "ec2d9858e7a4a9cecce4f128ee95861667203a9a620b4c3e2baa2e621a15bb8e",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "5f0948f40bf956c241bf4568a29e42a26a9b349a2b4bc48c5c08ce1795178e5c",
+          "width": 128
+        },
+        {
+          "artifactSha256": "d3c403c46dc2441cb23ceb328e8ac90385a77b74604ecb00594c8e9409d61d54",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592080,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "americas_caribbean",
+          "objectCount": 28,
+          "pathingSha256": "62ae0249f3afe70d2bc9dcda726910384237b71806d8efba20d5bc2f2cb149df",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "d793f742604af62d4263a74973ed2562d73052cb39766f46c35be004fc710b14",
+          "width": 64
+        },
+        {
+          "artifactSha256": "f9eca58bbf60d445e714b7909298a793d8949f6ae7268bbc1097514bebe4fabb",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591751,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 128,
+          "mapId": "americas_south",
+          "objectCount": 87,
+          "pathingSha256": "1279a49b49fcbb6ff53484c4f2ea99372c1b1ed4e5038e3d63269ab1aaa4f422",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "7c7882a51a49f450ece7b11e017aac4375c244106834710665de9c3182aa7bbd",
+          "width": 128
+        },
+        {
+          "artifactSha256": "4b717345ba60a3de8f3bbd2843861d3ed2d41d56834b83bbabae2ef7369f8cb4",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591953,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "americas_pacific_transition",
+          "objectCount": 8,
+          "pathingSha256": "2a9a1a791af0bd037b337cb1236a4bbd09e49689b60e17349b1b7c2a651b161e",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "f8e56534aacdffb824a269a382237048814e818c0639c1da1f43be8758675da3",
+          "width": 64
+        },
+        {
+          "artifactSha256": "c278f62525072c1338458be616c67dc39bf5130aff51de7891fb358ce0df9d16",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591893,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_north",
+          "objectCount": 15,
+          "pathingSha256": "dc5cbf73959409da17c3630a6bce1383d7cdd1b426f375ec37922d2e509a2659",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "f5913d0e7706e4604573776e9f8a1304be06330582e49a06176f06656cace01e",
+          "width": 64
+        },
+        {
+          "artifactSha256": "968bf5d960d206f20ec977e0bab967e61a9e4d99b6af5735106412fe1aae4f9d",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592053,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_west",
+          "objectCount": 19,
+          "pathingSha256": "ca962c288a7e4f8eb1400e203682ffe3d508636df8322c35e9219d4a8f4a659e",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "5697a300978f1cf811f469c622e5910a4a53eea1dae75af7706af67becd0e1b9",
+          "width": 64
+        },
+        {
+          "artifactSha256": "952ca4c781da9428a90ade27bb7d86dc7ba0b0a7e99bd2b27658f378a0376e7e",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16592077,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_melanesia",
+          "objectCount": 24,
+          "pathingSha256": "bfc43b423cfb8fffc70e91e3073a5739d8eb2f97757972ccba566fc7e4b39476",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "e3e2ce78ddc2de23a718816948726095c06733516f2bdd7ed2ae7a221e386404",
+          "width": 64
+        },
+        {
+          "artifactSha256": "5648d7cdf13be0b7db2b1455305e6447d1960fe91aedfb41671b8cd3e2abbd6e",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591928,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_polynesia",
+          "objectCount": 34,
+          "pathingSha256": "fa30f89a1f354ca94efe920601088416ac1649117827d022c6158608cd260011",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "8fd2e1f360d700de2d50d43ad965c99f206aa450a8821b3de5a52bf1b65154bf",
+          "width": 128
+        },
+        {
+          "artifactSha256": "ade99800a0d72130c4b0725ce0da408232160e95e4554a593d7146d16d0d3c9d",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3096,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16591760,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_new_zealand",
+          "objectCount": 15,
+          "pathingSha256": "f77f5a8d0a952ba864a1848d411cad7080b212f6b3b573fdb9e82e3ad9b470f2",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "a75662257bc320b032edcf403f1bd61abf92f71f0c08ed62a81af176673031ba",
+          "width": 64
+        },
+        {
+          "artifactSha256": "885105be71ce7e7253bfd13f2990014d2a60e33acd43abe0d736d16e9673b2c5",
+          "bootstrap": false,
+          "compiledScript": {
+            "evidenceLevel": "compiled_text_static_heuristic",
+            "failures": [],
+            "metrics": {
+              "callNameMatches": 3094,
+              "commandRegistrations": 54,
+              "compiledLuaBytes": 16589457,
+              "longestLineBytes": 9556
+            },
+            "status": "pass"
+          },
+          "executionStatus": "not_run",
+          "failures": [],
+          "height": 64,
+          "mapId": "pacific_open_ocean_encounter",
+          "objectCount": 1,
+          "pathingSha256": "0a311c85dcc87be3a2587b1a4de4709d7b5e66eb57c47b06a40229a7a908bac9",
+          "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+          "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+          "status": "pass",
+          "terrainSha256": "24d992e85970256c917881db64a045c5adde5042aff12fc4fdc0726fe48c777d",
+          "width": 64
+        }
+      ],
+      "origins": 230,
+      "runtimeExecutionStatus": "not_run",
+      "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+      "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+      "status": "pass",
+      "systems": [
+        "administration",
+        "army_fleet_control",
+        "campaign_launch",
+        "city_capture",
+        "country_diplomacy",
+        "cross_map_travel",
+        "garrisons",
+        "government_rewards",
+        "heroes",
+        "inventory_equipment",
+        "origin_selection",
+        "piracy",
+        "quests_journal",
+        "religion",
+        "remote_management",
+        "save_autosave_load",
+        "technology_institutions",
+        "trade",
+        "treasures_discovery",
+        "world_map"
+      ],
+      "transitions": 34
     },
     "realClient": {
       "declaredReleaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
@@ -67,11 +539,13 @@
     },
     "runtimeIntegration": {
       "evidenceLevel": "headless_runtime_integration",
-      "executionStatus": "not_run",
-      "failures": [
-        "required executable production-path evidence is missing"
-      ],
-      "status": "fail"
+      "executionStatus": "completed",
+      "failures": [],
+      "inputSetSha256": "82d3f48cc288af53a7c95e772f9651daa19a59f161c06594b9cbb04995551ebc",
+      "logSha256": "3a1ddd33bccdd6250d7d3f825d2fd3a118a1a11c234112e074180f22cb799964",
+      "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+      "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+      "status": "pass"
     },
     "sourceStatic": {
       "evidenceLevel": "source_text_static_heuristic",
@@ -85,184 +559,8 @@
       "class": "missing_runtime_integration",
       "context": "scenario/world/world.json",
       "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-ABOLITIONIST-PUBLIC-SPHERE-POLICY-PROGRESSION-ABOLITIONIST-PUBLIC-SPHERE",
-      "message": "abolitionist_public_sphere: policy progression_abolitionist_public_sphere is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY",
-      "message": "agrarian_improvement: building granary is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM",
-      "message": "agrarian_improvement: policy land_tenure_reform is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE",
-      "message": "agricultural_mechanization: policy enclosure is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES",
-      "message": "agricultural_societies: policy progression_agricultural_societies is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-ANATOMY-AND-MEDICINE-ABILITY-EPIDEMIC-CONTROL",
-      "message": "anatomy_and_medicine: ability epidemic_control is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-ARQUEBUS-VOLLEY-DRILL-MODIFIER-PROGRESSION-ARQUEBUS-VOLLEY-DRILL",
-      "message": "arquebus_volley_drill: modifier progression_arquebus_volley_drill is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES",
-      "message": "artillery_offices: policy progression_artillery_offices is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN",
-      "message": "artillery_train: modifier progression_artillery_train is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-AUCTION-MARKETS-MODIFIER-PROGRESSION-AUCTION-MARKETS",
-      "message": "auction_markets: modifier progression_auction_markets is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BAROMETRIC-MEASUREMENT-MODIFIER-PROGRESSION-BAROMETRIC-MEASUREMENT",
-      "message": "barometric_measurement: modifier progression_barometric_measurement is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BATTLEFLEET-DOCTRINE-UNIT-SHIP-OF-THE-LINE",
-      "message": "battlefleet_doctrine: unit ship_of_the_line is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM",
-      "message": "bayonet_system: modifier progression_bayonet_system is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BILL-OF-EXCHANGE-NETWORKS-MODIFIER-PROGRESSION-BILL-OF-EXCHANGE-NETWORKS",
-      "message": "bill_of_exchange_networks: modifier progression_bill_of_exchange_networks is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BLAST-FURNACE-PRACTICE-MODIFIER-PROGRESSION-BLAST-FURNACE-PRACTICE",
-      "message": "blast_furnace_practice: modifier progression_blast_furnace_practice is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BORING-MILLS-MODIFIER-PROGRESSION-BORING-MILLS",
-      "message": "boring_mills: modifier progression_boring_mills is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BOTANICAL-COLLECTING-MODIFIER-PROGRESSION-BOTANICAL-COLLECTING",
-      "message": "botanical_collecting: modifier progression_botanical_collecting is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-BROKERAGE-HOUSES-MODIFIER-PROGRESSION-BROKERAGE-HOUSES",
-      "message": "brokerage_houses: modifier progression_brokerage_houses is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CADASTRAL-SURVEY-MODIFIER-PROGRESSION-CADASTRAL-SURVEY",
-      "message": "cadastral_survey: modifier progression_cadastral_survey is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
       "id": "RESEARCH-UNBOUND-CALCULUS-METHODS-MODIFIER-PROGRESSION-CALCULUS-METHODS",
       "message": "calculus_methods: modifier progression_calculus_methods is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CAMPAIGN-BAKERIES-MODIFIER-PROGRESSION-CAMPAIGN-BAKERIES",
-      "message": "campaign_bakeries: modifier progression_campaign_bakeries is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CANAL-LOGISTICS-MODIFIER-PROGRESSION-CANAL-LOGISTICS",
-      "message": "canal_logistics: modifier progression_canal_logistics is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CANAL-TOLLS-FINANCE-MODIFIER-PROGRESSION-CANAL-TOLLS-FINANCE",
-      "message": "canal_tolls_finance: modifier progression_canal_tolls_finance is unbound; no gameplay consumer",
       "severity": "campaign_blocker"
     },
     {
@@ -287,70 +585,6 @@
       "disposition": "unresolved",
       "id": "RESEARCH-UNBOUND-CARVEL-HULL-CONSTRUCTION-MODIFIER-PROGRESSION-CARVEL-HULL-CONSTRUCTION",
       "message": "carvel_hull_construction: modifier progression_carvel_hull_construction is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CENTRAL-BANK-INSTITUTION-POLICY-PROGRESSION-CENTRAL-BANK-INSTITUTION",
-      "message": "central_bank_institution: policy progression_central_bank_institution is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CENTRAL-BANKING-MODIFIER-PROGRESSION-CENTRAL-BANKING",
-      "message": "central_banking: modifier progression_central_banking is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CHANCERY-ARCHIVES-MODIFIER-PROGRESSION-CHANCERY-ARCHIVES",
-      "message": "chancery_archives: modifier progression_chancery_archives is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CHARTERED-COMPANIES-POLICY-COMMERCIAL-COURTS",
-      "message": "chartered_companies: policy commercial_courts is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CHARTERED-COMPANIES-UNIT-ARMED-INDIAMAN",
-      "message": "chartered_companies: unit armed_indiaman is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CHARTERED-MUNICIPALITIES-POLICY-PROGRESSION-CHARTERED-MUNICIPALITIES",
-      "message": "chartered_municipalities: policy progression_chartered_municipalities is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CHEMICAL-CLASSIFICATION-MODIFIER-PROGRESSION-CHEMICAL-CLASSIFICATION",
-      "message": "chemical_classification: modifier progression_chemical_classification is unbound; no gameplay consumer",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/world/world.json",
-      "disposition": "unresolved",
-      "id": "RESEARCH-UNBOUND-CIPHERED-DISPATCHES-MODIFIER-PROGRESSION-CIPHERED-DISPATCHES",
-      "message": "ciphered_dispatches: modifier progression_ciphered_dispatches is unbound; no gameplay consumer",
       "severity": "campaign_blocker"
     },
     {
@@ -1816,174 +2050,6 @@
       "id": "RESEARCH-UNBOUND-WIRE-DRAWING-MILLS-MODIFIER-PROGRESSION-WIRE-DRAWING-MILLS",
       "message": "wire_drawing_mills: modifier progression_wire_drawing_mills is unbound; no gameplay consumer",
       "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "runtime-acceptance",
-      "disposition": "unresolved",
-      "id": "RUNTIME-EVIDENCE-INCOMPLETE",
-      "message": "required integration executionStatus is not completed; required executable production-path evidence is missing; runtimeIntegration: required evidence does not pass; runtimeIntegration: execution is missing, not_run or stale; runtimeIntegration: verified logSha256 is missing or malformed; runtimeIntegration: verified inputSetSha256 is missing or malformed; same-revision built W3N/W3X verification is missing; builtArtifact: required evidence does not pass; builtArtifact: execution is missing, not_run or stale; builtArtifact: verified artifactSha256 is missing or malformed; campaign_launch: required production integration/release validation is incomplete; origin_selection: required production integration/release validation is incomplete; country_diplomacy: required production integration/release validation is incomplete; trade: required production integration/release validation is incomplete; army_fleet_control: required production integration/release validation is incomplete; city_capture: required production integration/release validation is incomplete; garrisons: required production integration/release validation is incomplete; administration: required production integration/release validation is incomplete; heroes: required production integration/release validation is incomplete; inventory_equipment: required production integration/release validation is incomplete; technology_institutions: required production integration/release validation is incomplete; quests_journal: required production integration/release validation is incomplete; treasures_discovery: required production integration/release validation is incomplete; save_autosave_load: required production integration/release validation is incomplete; cross_map_travel: required production integration/release validation is incomplete; world_map: required production integration/release validation is incomplete; remote_management: required production integration/release validation is incomplete; government_rewards: required production integration/release validation is incomplete; religion: required production integration/release validation is incomplete; piracy: required production integration/release validation is incomplete",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-ADMINISTRATION",
-      "message": "administration lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-ARMY-FLEET-CONTROL",
-      "message": "army_fleet_control lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-CAMPAIGN-LAUNCH",
-      "message": "campaign_launch lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-CITY-CAPTURE",
-      "message": "city_capture lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-COUNTRY-DIPLOMACY",
-      "message": "country_diplomacy lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-CROSS-MAP-TRAVEL",
-      "message": "cross_map_travel lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-GARRISONS",
-      "message": "garrisons lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-GOVERNMENT-REWARDS",
-      "message": "government_rewards lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-HEROES",
-      "message": "heroes lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-INVENTORY-EQUIPMENT",
-      "message": "inventory_equipment lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-ORIGIN-SELECTION",
-      "message": "origin_selection lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-PIRACY",
-      "message": "piracy lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-QUESTS-JOURNAL",
-      "message": "quests_journal lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-RELIGION",
-      "message": "religion lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-REMOTE-MANAGEMENT",
-      "message": "remote_management lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-SAVE-AUTOSAVE-LOAD",
-      "message": "save_autosave_load lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-TECHNOLOGY-INSTITUTIONS",
-      "message": "technology_institutions lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-TRADE",
-      "message": "trade lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-TREASURES-DISCOVERY",
-      "message": "treasures_discovery lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
-    },
-    {
-      "class": "missing_runtime_integration",
-      "context": "scenario/runtime-integration.json",
-      "disposition": "unresolved",
-      "id": "RUNTIME-MISSING-WORLD-MAP",
-      "message": "world_map lacks same-revision executed production integration and built-artifact verification",
-      "severity": "campaign_blocker"
     }
   ],
   "format": "age_of_sail_release_blocker_report_v2",
@@ -2117,7 +2183,7 @@
     "physical-maps.json": "42678ebc8cd286da4341738bd1afa498be278b4923a0766249da3f483d2e7089",
     "scenario/compatibility/release-save-v1.json": "3616088159c4ec5bfe98cd88a0189b72290fc2665ceaf4eee00e7df565cf0855",
     "scenario/maps/world-map.json": "7336faae8315c4a703320b5d563d4656fc5d0ff995d70458c6a4091d7c80065c",
-    "scenario/runtime-execution.json": "075b663a718a0726322b9062f17940c00cc7a8e2e32b67732aa12222fd46e5f0",
+    "scenario/runtime-execution.json": "636d142f623bd45f8a1c68bebe15d7c5a5355fc01248b759629102a2bb16c71b",
     "scenario/runtime-integration.json": "d20e26ea1f4c90cc5635e7d157a0c23a95435ca2cc77283fa9961e6f9fb6b995",
     "scenario/world/world.json": "f57e6ce2455b90c4b63b338c7f6cd90918df0740c5048c089bf3a905d98a4a40"
   },
@@ -2153,16 +2219,488 @@
     ]
   },
   "runtimeAcceptance": {
-    "candidateReady": false,
+    "candidateReady": true,
     "evidenceLevel": "automated_release_acceptance",
     "evidenceLevels": {
       "builtArtifact": {
+        "artifactSha256": "4758e81dc4f409fcaea3ce4431233b88cacfb0ac0625d9682fd3bacd7eb03b6b",
         "evidenceLevel": "built_artifact_verification",
-        "executionStatus": "not_run",
-        "failures": [
-          "same-revision built W3N/W3X verification is missing"
+        "evidenceLevels": [
+          "binary_structure",
+          "packaged_data_consistency",
+          "compiled_text_static_heuristic"
         ],
-        "status": "fail"
+        "executionStatus": "completed",
+        "failures": [],
+        "maps": [
+          {
+            "artifactSha256": "12bed9c22b6ddb5271e5f61e82c14622521c7615268b37c4ec8b64998daab0e7",
+            "bootstrap": true,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "compiledLuaBytes": 290631
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "bootstrap_runtime_validation",
+            "objectCount": 1,
+            "pathingSha256": "6d0b368c1b8a30b001f98a1b6b6ad1b35f1c65673815e4092574e51d7d404730",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "80d9ca8bf7e6de0a5666c2e3546b3f055db62e2a41d7b88b053f3d2deb90003b",
+            "width": 64
+          },
+          {
+            "artifactSha256": "d2d4aaf4b118873b643c520763de97d12a8bab5956dde2eb74fe0f88b69a5eba",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592048,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "europe_west",
+            "objectCount": 89,
+            "pathingSha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "26c12aecf0672f1eb3ae4ef8ce494aabc4754f7b5868a0c5a5a3bfbcdea06441",
+            "width": 128
+          },
+          {
+            "artifactSha256": "1ccbda7a40df32698a6c0f56cc3b1255a590c5d7a534b4a90d7a65351b199265",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591918,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "europe_central_east",
+            "objectCount": 103,
+            "pathingSha256": "7cf3b29475751ebe1d962e17651b0c42ace030b9fa2e4523cf935adf27aee0bd",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "43dca3e43518f6a397725ce8127178ee4e89d0dd75d8852f5c95ea6ab6b9400b",
+            "width": 128
+          },
+          {
+            "artifactSha256": "3aeb5d9de271953bf328a187a151c72fe019d47263438d8954080f048f1a231b",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591879,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "africa",
+            "objectCount": 141,
+            "pathingSha256": "8df38a2d5fb042e04e0723c35cf33c161875e9139e7a13cfabc9ca82e22875d6",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "e8f27793d4a2e03c74603eea85867f491f0b5fa8f2322b15aab96f7f73eaca68",
+            "width": 128
+          },
+          {
+            "artifactSha256": "165c6ecaabf49be800272caeb1a229f81d3f92bf378a81091f00150e25528664",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592068,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "middle_east_india",
+            "objectCount": 189,
+            "pathingSha256": "32ff3f1a6291d89e9124bbc2c439509b1d6961d65836679ea9c402015e1c0a3a",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "e20baf9265725ecb20430245625fb01320e57d033e54a4039d7381956b99872a",
+            "width": 128
+          },
+          {
+            "artifactSha256": "cf4b3e8cdc1c1796baf905e28d2f54e525cd011122c26f47705ba1751858e566",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592055,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 192,
+            "mapId": "southeast_asia",
+            "objectCount": 154,
+            "pathingSha256": "2b5a7535ecf31de137ba6bf653fa9683b1bb0ccc0a04cd40de7aa6b666daee91",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "fae0be2858a8e5ab2fe23f56c7af357d84a170ca04498d66636e5f6de2348068",
+            "width": 192
+          },
+          {
+            "artifactSha256": "0bb41d865b2005aad56f606bacedbbc70d7e42cb82a16dc8bde88fc1ec4813ac",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591887,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "east_asia",
+            "objectCount": 169,
+            "pathingSha256": "4de0bfbcfab05816f9338d98b6e156c27c1347635e14f5dd12abac2cc6713bc8",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "35c3c6e5bfcaf2ed30d14655ab05d472cb965e0dfdfa504b3b17e5a82484210e",
+            "width": 192
+          },
+          {
+            "artifactSha256": "6ddd31f44ad139cf2ea2f64b626fe3b6538cffc9ae28e0133c691b5779aa283c",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591944,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "americas_north_central",
+            "objectCount": 106,
+            "pathingSha256": "ec2d9858e7a4a9cecce4f128ee95861667203a9a620b4c3e2baa2e621a15bb8e",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "5f0948f40bf956c241bf4568a29e42a26a9b349a2b4bc48c5c08ce1795178e5c",
+            "width": 128
+          },
+          {
+            "artifactSha256": "d3c403c46dc2441cb23ceb328e8ac90385a77b74604ecb00594c8e9409d61d54",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592080,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "americas_caribbean",
+            "objectCount": 28,
+            "pathingSha256": "62ae0249f3afe70d2bc9dcda726910384237b71806d8efba20d5bc2f2cb149df",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "d793f742604af62d4263a74973ed2562d73052cb39766f46c35be004fc710b14",
+            "width": 64
+          },
+          {
+            "artifactSha256": "f9eca58bbf60d445e714b7909298a793d8949f6ae7268bbc1097514bebe4fabb",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591751,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 128,
+            "mapId": "americas_south",
+            "objectCount": 87,
+            "pathingSha256": "1279a49b49fcbb6ff53484c4f2ea99372c1b1ed4e5038e3d63269ab1aaa4f422",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "7c7882a51a49f450ece7b11e017aac4375c244106834710665de9c3182aa7bbd",
+            "width": 128
+          },
+          {
+            "artifactSha256": "4b717345ba60a3de8f3bbd2843861d3ed2d41d56834b83bbabae2ef7369f8cb4",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591953,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "americas_pacific_transition",
+            "objectCount": 8,
+            "pathingSha256": "2a9a1a791af0bd037b337cb1236a4bbd09e49689b60e17349b1b7c2a651b161e",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "f8e56534aacdffb824a269a382237048814e818c0639c1da1f43be8758675da3",
+            "width": 64
+          },
+          {
+            "artifactSha256": "c278f62525072c1338458be616c67dc39bf5130aff51de7891fb358ce0df9d16",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591893,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_north",
+            "objectCount": 15,
+            "pathingSha256": "dc5cbf73959409da17c3630a6bce1383d7cdd1b426f375ec37922d2e509a2659",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "f5913d0e7706e4604573776e9f8a1304be06330582e49a06176f06656cace01e",
+            "width": 64
+          },
+          {
+            "artifactSha256": "968bf5d960d206f20ec977e0bab967e61a9e4d99b6af5735106412fe1aae4f9d",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592053,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_west",
+            "objectCount": 19,
+            "pathingSha256": "ca962c288a7e4f8eb1400e203682ffe3d508636df8322c35e9219d4a8f4a659e",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "5697a300978f1cf811f469c622e5910a4a53eea1dae75af7706af67becd0e1b9",
+            "width": 64
+          },
+          {
+            "artifactSha256": "952ca4c781da9428a90ade27bb7d86dc7ba0b0a7e99bd2b27658f378a0376e7e",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16592077,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_melanesia",
+            "objectCount": 24,
+            "pathingSha256": "bfc43b423cfb8fffc70e91e3073a5739d8eb2f97757972ccba566fc7e4b39476",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "e3e2ce78ddc2de23a718816948726095c06733516f2bdd7ed2ae7a221e386404",
+            "width": 64
+          },
+          {
+            "artifactSha256": "5648d7cdf13be0b7db2b1455305e6447d1960fe91aedfb41671b8cd3e2abbd6e",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591928,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_polynesia",
+            "objectCount": 34,
+            "pathingSha256": "fa30f89a1f354ca94efe920601088416ac1649117827d022c6158608cd260011",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "8fd2e1f360d700de2d50d43ad965c99f206aa450a8821b3de5a52bf1b65154bf",
+            "width": 128
+          },
+          {
+            "artifactSha256": "ade99800a0d72130c4b0725ce0da408232160e95e4554a593d7146d16d0d3c9d",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3096,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16591760,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_new_zealand",
+            "objectCount": 15,
+            "pathingSha256": "f77f5a8d0a952ba864a1848d411cad7080b212f6b3b573fdb9e82e3ad9b470f2",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "a75662257bc320b032edcf403f1bd61abf92f71f0c08ed62a81af176673031ba",
+            "width": 64
+          },
+          {
+            "artifactSha256": "885105be71ce7e7253bfd13f2990014d2a60e33acd43abe0d736d16e9673b2c5",
+            "bootstrap": false,
+            "compiledScript": {
+              "evidenceLevel": "compiled_text_static_heuristic",
+              "failures": [],
+              "metrics": {
+                "callNameMatches": 3094,
+                "commandRegistrations": 54,
+                "compiledLuaBytes": 16589457,
+                "longestLineBytes": 9556
+              },
+              "status": "pass"
+            },
+            "executionStatus": "not_run",
+            "failures": [],
+            "height": 64,
+            "mapId": "pacific_open_ocean_encounter",
+            "objectCount": 1,
+            "pathingSha256": "0a311c85dcc87be3a2587b1a4de4709d7b5e66eb57c47b06a40229a7a908bac9",
+            "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+            "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+            "status": "pass",
+            "terrainSha256": "24d992e85970256c917881db64a045c5adde5042aff12fc4fdc0726fe48c777d",
+            "width": 64
+          }
+        ],
+        "origins": 230,
+        "runtimeExecutionStatus": "not_run",
+        "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+        "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+        "status": "pass",
+        "systems": [
+          "administration",
+          "army_fleet_control",
+          "campaign_launch",
+          "city_capture",
+          "country_diplomacy",
+          "cross_map_travel",
+          "garrisons",
+          "government_rewards",
+          "heroes",
+          "inventory_equipment",
+          "origin_selection",
+          "piracy",
+          "quests_journal",
+          "religion",
+          "remote_management",
+          "save_autosave_load",
+          "technology_institutions",
+          "trade",
+          "treasures_discovery",
+          "world_map"
+        ],
+        "transitions": 34
       },
       "realClient": {
         "declaredReleaseStatus": "blocked_pending_real_forsaken_kingdom_launch_smoke",
@@ -2174,11 +2712,13 @@
       },
       "runtimeIntegration": {
         "evidenceLevel": "headless_runtime_integration",
-        "executionStatus": "not_run",
-        "failures": [
-          "required executable production-path evidence is missing"
-        ],
-        "status": "fail"
+        "executionStatus": "completed",
+        "failures": [],
+        "inputSetSha256": "82d3f48cc288af53a7c95e772f9651daa19a59f161c06594b9cbb04995551ebc",
+        "logSha256": "3a1ddd33bccdd6250d7d3f825d2fd3a118a1a11c234112e074180f22cb799964",
+        "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+        "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
+        "status": "pass"
       },
       "sourceStatic": {
         "evidenceLevel": "source_text_static_heuristic",
@@ -2187,39 +2727,8 @@
         "status": "pass"
       }
     },
-    "executionStatus": "not_run",
-    "failures": [
-      "required integration executionStatus is not completed",
-      "required executable production-path evidence is missing",
-      "runtimeIntegration: required evidence does not pass",
-      "runtimeIntegration: execution is missing, not_run or stale",
-      "runtimeIntegration: verified logSha256 is missing or malformed",
-      "runtimeIntegration: verified inputSetSha256 is missing or malformed",
-      "same-revision built W3N/W3X verification is missing",
-      "builtArtifact: required evidence does not pass",
-      "builtArtifact: execution is missing, not_run or stale",
-      "builtArtifact: verified artifactSha256 is missing or malformed",
-      "campaign_launch: required production integration/release validation is incomplete",
-      "origin_selection: required production integration/release validation is incomplete",
-      "country_diplomacy: required production integration/release validation is incomplete",
-      "trade: required production integration/release validation is incomplete",
-      "army_fleet_control: required production integration/release validation is incomplete",
-      "city_capture: required production integration/release validation is incomplete",
-      "garrisons: required production integration/release validation is incomplete",
-      "administration: required production integration/release validation is incomplete",
-      "heroes: required production integration/release validation is incomplete",
-      "inventory_equipment: required production integration/release validation is incomplete",
-      "technology_institutions: required production integration/release validation is incomplete",
-      "quests_journal: required production integration/release validation is incomplete",
-      "treasures_discovery: required production integration/release validation is incomplete",
-      "save_autosave_load: required production integration/release validation is incomplete",
-      "cross_map_travel: required production integration/release validation is incomplete",
-      "world_map: required production integration/release validation is incomplete",
-      "remote_management: required production integration/release validation is incomplete",
-      "government_rewards: required production integration/release validation is incomplete",
-      "religion: required production integration/release validation is incomplete",
-      "piracy: required production integration/release validation is incomplete"
-    ],
+    "executionStatus": "completed",
+    "failures": [],
     "format": "age_of_sail_runtime_acceptance_report_v3",
     "releaseReady": false,
     "releaseValidationAuthority": "same-revision production execution and exact built W3N/W3X inspection",
@@ -2227,8 +2736,8 @@
       "new-campaign-core-loops",
       "save-travel-remote-return"
     ],
-    "sourceRevision": "b2cd7dd2029b9984e259b33617973e1e26519c98",
-    "sourceTreeSha256": "b4aff56d11db75524f106c66bc3a1ea79ad10279df7e81aadb2cb0e80ce640f6",
+    "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+    "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
     "stages": [
       "dataComplete",
       "headlessSimulationComplete",
@@ -2236,12 +2745,196 @@
       "playerFacingComplete",
       "releaseValidated"
     ],
-    "status": "fail",
+    "status": "pass",
     "systems": [
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CampaignRecoveryTests.wurst:consumedRecoveryReconstructsAfterAcknowledgementInterruption",
+          "wurst/CampaignRecoveryTests.wurst:destinationFailuresRetainDurableRequestWithoutActivation",
+          "wurst/CampaignRecoveryTests.wurst:durableRecoveryRejectsCorruptForeignAndWrongDestinationRequests",
+          "wurst/CampaignRecoveryTests.wurst:failedRecoveryRequestWriteNeverInvokesLoader",
+          "wurst/CampaignRecoveryTests.wurst:laterBoundaryTravelSupersedesConsumedRecovery",
+          "wurst/CampaignRecoveryTests.wurst:laterOriginSelectionSupersedesPendingRecovery",
+          "wurst/CampaignRecoveryTests.wurst:malformedRecoveryArgumentsNeverSelectAnotherSlot",
+          "wurst/CampaignRecoveryTests.wurst:ordinarySavedArrivalIsNotReplayedByCrossMapRecovery",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaFive",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaFour",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaOne",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaSeven",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaSix",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaThree",
+          "wurst/CampaignRecoveryTests.wurst:recoveryPreservesSchemaTwo",
+          "wurst/CampaignRecoveryTests.wurst:recoverySupersedesInterruptedOriginEvenAfterLaterTravel",
+          "wurst/CampaignRecoveryTests.wurst:registeredAutosaveRecoveryLoadsRecordedPhysicalMap",
+          "wurst/CampaignRecoveryTests.wurst:registeredManualRecoveryLoadsRecordedPhysicalMap",
+          "wurst/CampaignRecoveryTests.wurst:registeredMilestoneRecoveryLoadsRecordedPhysicalMap",
+          "wurst/CampaignRecoveryTests.wurst:registeredRecoveryListsAndLoadsManualAndCheckpoints",
+          "wurst/CampaignRecoveryTests.wurst:registeredRecoveryLoadsAutosavesElevenThroughFifteen",
+          "wurst/CampaignRecoveryTests.wurst:registeredRecoveryLoadsAutosavesOneThroughFive",
+          "wurst/CampaignRecoveryTests.wurst:registeredRecoveryLoadsAutosavesSixThroughTen",
+          "wurst/CampaignRecoveryTests.wurst:registeredRecoveryRestoresAuthorityAndLocations",
+          "wurst/CampaignRecoveryTests.wurst:registeredSessionRecoveryLoadsRecordedPhysicalMap",
+          "wurst/CampaignRecoveryTests.wurst:rejectedRecoveryEnvelopesAndDestinationsPreserveAuthority",
+          "wurst/CampaignStartupTests.wurst:abstractStartingSettlementStillHasAuthoredPhysicalProjection",
+          "wurst/CampaignStartupTests.wurst:boundStartupAcknowledgementFailureRollsBackAndRetainsHandoff",
+          "wurst/CampaignStartupTests.wurst:boundStartupMilestoneFailureRollsBackBeforePublication",
+          "wurst/CampaignStartupTests.wurst:boundStartupProjectionFailureRollsBackAllDomainsAndRetries",
+          "wurst/CampaignStartupTests.wurst:boundStartupSessionFailureRollsBackBeforePublication",
+          "wurst/CampaignStartupTests.wurst:checksumValidTransferWithUnknownOriginCannotActivateOrOverwrite",
+          "wurst/CampaignStartupTests.wurst:civicCampaignFailedProjectionRollsBackLedgerTreasuryAndCommodityStock",
+          "wurst/CampaignStartupTests.wurst:configuredScaleOffsetAndReverseAreNotReappliedByDestinationStartup",
+          "wurst/CampaignStartupTests.wurst:coordinateLessSchemasFiveAndSixUseDeterministicFallback",
+          "wurst/CampaignStartupTests.wurst:coordinateLessSchemasOneAndTwoUseDeterministicFallback",
+          "wurst/CampaignStartupTests.wurst:coordinateLessSchemasThreeAndFourUseDeterministicFallback",
+          "wurst/CampaignStartupTests.wurst:currentPartyCoordinatesSurviveManualAutosaveAndRecoveryLoads",
+          "wurst/CampaignStartupTests.wurst:destinationUnavailableRetainsTransferForRetryWithoutPartyOrAutosaves",
+          "wurst/CampaignStartupTests.wurst:failedDestinationProjectionAndCheckpointCommitCanRetry",
+          "wurst/CampaignStartupTests.wurst:failedMilestonePublicationAndCorruptBoundCheckpointNeverActivate",
+          "wurst/CampaignStartupTests.wurst:failedPartyReconstructionRetainsMovedMembersAuthorityAndStoredSaves",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryHalfUsesDistinctCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryQuarterUsesCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryThirtySevenPercentUsesCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedTravelFailureNeverCommitsOrLoadsAndCanRetry",
+          "wurst/CampaignStartupTests.wurst:interruptedAcknowledgementRestoresBoundCheckpointWithoutReinitializing",
+          "wurst/CampaignStartupTests.wurst:invalidTransferCheckpointStopsBeforeAutosavesOrRewrites",
+          "wurst/CampaignStartupTests.wurst:legacyClockMigrationUsesConfiguredInitialTimeEvenAfterLiveAdvancement",
+          "wurst/CampaignStartupTests.wurst:legacySelectorFieldsMigrateWithoutChangingCampaignSaveSchema",
+          "wurst/CampaignStartupTests.wurst:legacyTransferMigrationUsesRegisteredDefaultsAndCreatesMissingRpgParty",
+          "wurst/CampaignStartupTests.wurst:legacyTransferSchemasOneAndTwoResolveGeneratedBoundary",
+          "wurst/CampaignStartupTests.wurst:legacyTransferSchemasThreeAndFourResolveGeneratedBoundary",
+          "wurst/CampaignStartupTests.wurst:lostRepresentationsRetainCommittedPositionsAndRemoteCompanionsStayAbstract",
+          "wurst/CampaignStartupTests.wurst:malformedAndBlockedPartyLocationsRejectWithoutRelocatingAuthority",
+          "wurst/CampaignStartupTests.wurst:malformedHandoffsAndWrongPhysicalMapPreserveRecoverySaves",
+          "wurst/CampaignStartupTests.wurst:malformedSavedBoundaryTupleNeverReconstructsOrOverwrites",
+          "wurst/CampaignStartupTests.wurst:ordinaryDestinationMovementDoesNotReplayTransferArrival",
+          "wurst/CampaignStartupTests.wurst:originStartupRequiresConfiguredBoundariesButAllowsAnEmptyCatalogue",
+          "wurst/CampaignStartupTests.wurst:populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain",
+          "wurst/CampaignStartupTests.wurst:productionAutosaveDelayAndRotationSurviveGeneratedDestinationStartup",
+          "wurst/CampaignStartupTests.wurst:productionClockRestoresExactlyThroughManualAutosaveAndRecoverySlots",
+          "wurst/CampaignStartupTests.wurst:productionClockSurvivesDestinationStartupAndReturnTravel",
+          "wurst/CampaignStartupTests.wurst:registeredOriginAndSaveCommandsRoundTripCampaignAndAutosave",
+          "wurst/CampaignStartupTests.wurst:rejectedStartupCheckpointPreservesViewsUntilSuccessfulRetry",
+          "wurst/CampaignStartupTests.wurst:reversedGeneratedBoundaryAppliesTransformOnceThenPartialReturnSegment",
+          "wurst/CampaignStartupTests.wurst:selectorToAfricanRegionUsesGeneratedOriginAndCodec",
+          "wurst/CampaignStartupTests.wurst:selectorToAsianRegionUsesPhysicalStartingCoordinates",
+          "wurst/CampaignStartupTests.wurst:selectorToEuropeanRegionUsesGeneratedOriginAndCodec",
+          "wurst/CampaignStartupTests.wurst:startupClosesTransientViewsAndRepeatedStartupRetainsNewOwners",
+          "wurst/CampaignStartupTests.wurst:startupRequiresRegistrationsAndRejectsEmptyCacheWithoutSaving",
+          "wurst/CampaignStartupTests.wurst:transferDoesNotMaterializeAbstractCompanionAssignedToDestination",
+          "wurst/CampaignStartupTests.wurst:transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject",
+          "wurst/CampaignStartupTests.wurst:transferSchemasFiveThroughEightResolveGeneratedBoundary",
+          "wurst/CampaignStartupTests.wurst:unrelatedMilestoneCannotReplaceNewCampaignAndConsumedStartupIsIdempotent",
+          "wurst/CommandMapTransportTests.wurst:commandBetweenTwoMapsInSameLogicalRegionStillOwnsRemotePause",
+          "wurst/CommandMapTransportTests.wurst:commandDestinationCannotAcquireDiscoveryFromLoadedTerrain",
+          "wurst/CommandMapTransportTests.wurst:commandHandoffRevalidatesPermissionAtRetryAndDestination",
+          "wurst/CommandMapTransportTests.wurst:commandInterruptedAcknowledgementAndConsumedReplayAreIdempotent",
+          "wurst/CommandMapTransportTests.wurst:commandMapResolutionAndRejectedWritesHaveNoDepartureEffects",
+          "wurst/CommandMapTransportTests.wurst:commandPreservesIncapacitatedPartyPauseClockAndAutosave",
+          "wurst/CommandMapTransportTests.wurst:commandRemoteSaveRecoveryAndRejectedHomeProjectionRetainOrders",
+          "wurst/CommandMapTransportTests.wurst:commandSchemaEightMigrationAndCurrentMetadataAreValidated",
+          "wurst/CommandMapTransportTests.wurst:commandSourceCancellationRetainsCurrentControlAndDistinctRecoveryKind",
+          "wurst/CommandMapTransportTests.wurst:registeredCommandLoadsActualTerrainOrdersAndReturnsHome",
+          "wurst/FrameworkConformanceTests.wurst:productionCampaignContentContract",
+          "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+          "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+          "wurst/HeroDefeatLifecycleTests.wurst:obsoleteHeroDeathsRetirementAndReconstructionAreHarmless",
+          "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "wurst/InstalledGodModeTests.wurst:installedGodModeDuplicateEventsAndIndependentProtectionOrders",
+          "wurst/InstalledGodModeTests.wurst:installedGodModeNormalizesEveryRecipientAndCategory",
+          "wurst/InstalledGodModeTests.wurst:installedGodModePreservesCaptureDeadlinesAndOtherPlayers",
+          "wurst/InstalledGodModeTests.wurst:installedGodModeRebindsReusedRegistryAfterSessionTeardown",
+          "wurst/InstalledGodModeTests.wurst:installedGodModeReconstructsAndRejectsRetiredDelivery",
+          "wurst/InstalledGodModeTests.wurst:installedGodModeRejectsMissingObsoleteAndUncontrolledRecipients",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+          "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryTravelRebuildsHintsInDestinationCoordinates",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryUsesPerEntityCandidatesThenLastSafeThenConnectedAnchor",
+          "wurst/LiveRecoveryTests.wurst:nativeHeroDefeatRetiresRecoveryRegistrationAndKeepsPhysicalAuthority",
+          "wurst/MilitaryCombatEventsTests.wurst:attackerAllegianceUsesCampaignIdentityForForcesAndHeroes",
+          "wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonComposesExactTraditionRefitAndAbstractRatings",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonRegisteredResearchChangesQualifiedGameplayExactlyOnce",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonRejectsWrongWeaponsControllersAndNativeEvents",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonSaveLoadReconstructionAndLateRollbackKeepCurrentContribution",
+          "wurst/MilitaryCombatEventsTests.wurst:combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint",
+          "wurst/MilitaryCombatEventsTests.wurst:combatOnMappedTerrainPreservesCaptureAndEarnedTradition",
+          "wurst/MilitaryCombatEventsTests.wurst:combatProfilesMigrateAndLateCampaignRollbackRetainsDamage",
+          "wurst/MilitaryCombatEventsTests.wurst:combatWavesRemainBoundedAndCasualtiesAndQuietDeadlinesSurviveResume",
+          "wurst/MilitaryCombatEventsTests.wurst:committedGarrisonAndDefenseLossesEarnOnlyTheirOwnEnemyKillContribution",
+          "wurst/MilitaryCombatEventsTests.wurst:disciplineAddsToContinuousExactRatingsBeforeOneDefensiveDivision",
+          "wurst/MilitaryCombatEventsTests.wurst:disciplineFollowsControllerAndCategoryAndRejectsStaleCombat",
+          "wurst/MilitaryCombatEventsTests.wurst:disciplineReconstructsOldSavesAndRollsBackLateCampaignLoads",
+          "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+          "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+          "wurst/MilitaryCombatEventsTests.wurst:everyMilestoneBoundaryKeepsAdjacentContinuousProgression",
+          "wurst/MilitaryCombatEventsTests.wurst:exactFractionalCaptureDeadlineSurvivesNestedPausesAndLiveSaveLoad",
+          "wurst/MilitaryCombatEventsTests.wurst:failedCombatLoadRestoresRemainingTimeAndRetiresObsoleteCallbacks",
+          "wurst/MilitaryCombatEventsTests.wurst:formationInspectionDescribesActiveReplacedAndUnarmedEffects",
+          "wurst/MilitaryCombatEventsTests.wurst:freshPhysicalRuntimeKeepsFractionalProtectionAndManualPause",
+          "wurst/MilitaryCombatEventsTests.wurst:gunfireResistanceAndIndependentSourcesUseExactRatings",
+          "wurst/MilitaryCombatEventsTests.wurst:installedCombatCrossesIntegerBoundaryAndCommitsOnce",
+          "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+          "wurst/MilitaryCombatEventsTests.wurst:installedLandCallbacksDeliverExactResolvedLayers",
+          "wurst/MilitaryCombatEventsTests.wurst:installedLandDrillAndBayonetUseProductionWeaponCallbacks",
+          "wurst/MilitaryCombatEventsTests.wurst:installedNavalCallbacksDeliverExactResolvedLayers",
+          "wurst/MilitaryCombatEventsTests.wurst:landMilestoneDamageBoundariesAndUnboundedGrowth",
+          "wurst/MilitaryCombatEventsTests.wurst:largeWeightedCallbacksMatchIntegerOracleAcrossControllersAndCategories",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion1MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion2MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion3MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion4MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion5MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion6MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion7MigratesThroughFreshCampaignCodec",
+          "wurst/MilitaryCombatEventsTests.wurst:malformedExactExperienceIsRejectedByCampaignLoadBeforeMutation",
+          "wurst/MilitaryCombatEventsTests.wurst:milestoneDamageFollowsTransferReconstructionAndLossReceipts",
+          "wurst/MilitaryCombatEventsTests.wurst:milestoneReplacementRetainsUnrelatedEarlierEffectsAndExactGrowth",
+          "wurst/MilitaryCombatEventsTests.wurst:militaryClockVersionMigrationAndMalformedSnapshotsAreAtomic",
+          "wurst/MilitaryCombatEventsTests.wurst:nativeDamageValidationPreservesUnsupportedAndSubprecisionEvents",
+          "wurst/MilitaryCombatEventsTests.wurst:navalMilestoneDamageBoundariesAndUnboundedGrowth",
+          "wurst/MilitaryCombatEventsTests.wurst:peacefulAlliedUnknownAndObsoleteCombatCannotChangeAuthority",
+          "wurst/MilitaryCombatEventsTests.wurst:pikeDisciplineUsesCompletedTypedEntitlementsOnceAndLeavesOtherLayers",
+          "wurst/MilitaryCombatEventsTests.wurst:productionCombatRegistrationCapturesOnceAndKeepsPeaceAuthority",
+          "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition",
+          "wurst/MilitaryCombatEventsTests.wurst:resolvedLayersFollowControlCategoriesActivationAndInspection",
+          "wurst/MilitaryCombatEventsTests.wurst:rosterRecruitmentAndMalformedProfilesCannotInventWeapons",
+          "wurst/MilitaryCombatEventsTests.wurst:traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves",
+          "wurst/MilitaryCombatEventsTests.wurst:unassignedIneligibleContributionsAndLargeEligibleAwardsRemainSeparate",
+          "wurst/MilitaryCombatEventsTests.wurst:verifiedMilitaryFireAlsoModifiesHostileCampaignHeroDamage",
+          "wurst/MilitaryCombatEventsTests.wurst:weaponAndAttackMetadataFailClosedWithoutChangingOtherCombat",
+          "wurst/MilitaryCombatEventsTests.wurst:weightedNativeKillsUseCommittedStrengthAndFloorEachContribution",
+          "wurst/MilitaryOrderEventsTests.wurst:installedOrdersIgnoreStaleAndReentrantCallbacksOnRepeatedReconstruction",
+          "wurst/MilitaryOrderEventsTests.wurst:installedOrdersRejectDefendersOwnershipMapsAndUnsupportedArguments",
+          "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations",
+          "wurst/MilitaryOrderEventsTests.wurst:installedTargetOrdersRebindThenCancelCompletedAndObsoleteTargets",
+          "wurst/MilitaryOrderEventsTests.wurst:loadedAllegiancePrecedesTargetOrderReplay",
+          "wurst/MilitaryOrderEventsTests.wurst:militaryOrderMigrationRetainsLegacyDestinationsAndRejectsMalformedV6",
+          "wurst/MilitaryOrderEventsTests.wurst:rejectedCampaignLoadRetainsCommittedOrdersAndNativeTargetBindings",
+          "wurst/MixedCargoTests.wurst:mixedCargoSurvivesFailedStorageFreshServicesPhysicalTravelAndReturn",
+          "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+          "wurst/QuestNavigationTests.wurst:awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards",
+          "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority",
+          "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionAdapterFailureRestoresPreviousViewAndPauseOwner",
+          "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionLoadsReconstructAccessAndRejectWithoutChangingContext",
+          "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRejectsKnowledgeCitizenshipVisitationAndOtherPlayers",
+          "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionRevalidatesCaptureAndControlLossEvenForOpenContext",
+          "wurst/RemoteRegionAuthorityTests.wurst:registeredRegionUsesCurrentHoldingsAndOnlyEligibleForces",
+          "wurst/TreasureResolutionTests.wurst:treasureStartupCheckpointFailureKeepsSeedAcrossFreshServices",
+          "wurst/VisitKnowledgeTests.wurst:legacyDiscoveryPreservesOnlyRecordedIdsAndCurrentMalformedKnowledgeRejects",
+          "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurviveFailedSaveAndFreshLoad",
+          "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurvivePhysicalTravelAndReturn",
+          "wurst/VisitKnowledgeTests.wurst:remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights",
+          "wurst/VisitKnowledgeTests.wurst:validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus",
+          "wurst/VisitKnowledgeTests.wurst:wrongMapDistantStaleAndMalformedInteractionsNeverInventVisits"
+        ],
+        "executionStatus": "completed",
         "id": "campaign_launch",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2254,16 +2947,22 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CampaignStartupTests.wurst:registeredOriginAndSaveCommandsRoundTripCampaignAndAutosave",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners"
+        ],
+        "executionStatus": "completed",
         "id": "origin_selection",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2276,16 +2975,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/ConflictPeaceIntegrationTests.wurst:registeredCountryAndRewardCommandsUsePersistentAuthority"
+        ],
+        "executionStatus": "completed",
         "id": "country_diplomacy",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2298,16 +2999,48 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/AbstractSettlementTests.wurst:abstractAuthorityRoundTripsAcrossInactiveMapsAndRepeatedReconstruction",
+          "wurst/AbstractSettlementTests.wurst:abstractSettlementsUseAuthorizedLocalServicesAndRespectChangedControl",
+          "wurst/CampaignLoadTransactionTests.wurst:managementLoadCommitPreservesManualPauseAndDirectReconstructionIsIdempotent",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsAndAbortedReconstructionRetainManagementOwners",
+          "wurst/CampaignLoadTransactionTests.wurst:successfulRepeatedLoadsCloseOnlyCommittedManagementSessions",
+          "wurst/CampaignStartupTests.wurst:rejectedStartupCheckpointPreservesViewsUntilSuccessfulRetry",
+          "wurst/CampaignStartupTests.wurst:startupClosesTransientViewsAndRepeatedStartupRetainsNewOwners",
+          "wurst/ManagementCommandTests.wurst:actionResultsHelpInvalidCommandsAndPassiveNotificationsDoNotOpenManagement",
+          "wurst/ManagementCommandTests.wurst:everyRegisteredManagementViewOwnsPauseUntilItsDocumentedClose",
+          "wurst/ManagementCommandTests.wurst:manualPauseSurvivesAllManagementClosesAndLateClockBinding",
+          "wurst/ManagementCommandTests.wurst:registeredManagementCommandsSuspendAndResumeGameplayTimers",
+          "wurst/ManagementCommandTests.wurst:reopeningAndSwitchingRetainOwnersWithoutUnpauseEdges",
+          "wurst/ManagementCommandTests.wurst:rpgAndMarketNestWithRegisteredMilitaryAndMapOwners",
+          "wurst/MixedCargoTests.wurst:mixedCargoInspectionAndAccessRetainPhysicalStoreAuthority",
+          "wurst/MixedCargoTests.wurst:mixedCargoKeepsUncostedGoodsSeparateFromOtherCommodityLots",
+          "wurst/MixedCargoTests.wurst:mixedCargoRejectsAmbiguityCapacityCompatibilityAndReplayAtomically",
+          "wurst/MixedCargoTests.wurst:mixedCargoSnapshotRejectsMalformedBalancesAndCrossCommodityOverAttribution",
+          "wurst/MixedCargoTests.wurst:supportedSingleCommoditySavesMigrateThenAdmitMixedUncostedCargoExactly",
+          "wurst/MixedCargoVectorsTests.wurst:registeredMixedCargoOracleOrder0",
+          "wurst/MixedCargoVectorsTests.wurst:registeredMixedCargoOracleOrder1",
+          "wurst/TradeCommandTests.wurst:legacySummaryTradeKeepsHistoricalStoreAndCapacityDespiteCurrentSelection",
+          "wurst/TradeCommandTests.wurst:registeredTradeCommandsCompleteTwoCommodityTwoSettlementCargoJourney",
+          "wurst/TradeCommandTests.wurst:tradeCommandsRecheckMovementOwnershipAndCampaignAvailabilityAtCommit",
+          "wurst/TradeCommandTests.wurst:tradeCommandsRejectUnknownHiddenRemoteAndUnauthorizedTargets",
+          "wurst/TradeCommandTests.wurst:tradeCommitRejectsControlChangesBetweenResolutionAndMutation",
+          "wurst/TradeCommandTests.wurst:tradeListsAreBoundedAndShareOnlyTheExistingMarketPauseOwner",
+          "wurst/TradeCommandTests.wurst:tradeSelectionLoadRollbackAndLegacyPersonalStoreMigrationPreserveAuthority",
+          "wurst/TradeFinanceTests.wurst:auctionCommitRechecksResearchFacilitiesControlAccessAndStaleStock",
+          "wurst/TradeFinanceTests.wurst:auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority",
+          "wurst/TradeFinanceTests.wurst:auctionTinyOrdersReplayReconstructionAndFailedLoadKeepAuthority",
+          "wurst/TradeFinanceTests.wurst:registeredTradeCommandUsesFinanceAndStillRequiresPhysicalPresence"
+        ],
+        "executionStatus": "completed",
         "id": "trade",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2320,16 +3053,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations"
+        ],
+        "executionStatus": "completed",
         "id": "army_fleet_control",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2342,16 +3077,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/MilitaryCombatEventsTests.wurst:productionCombatRegistrationCapturesOnceAndKeepsPeaceAuthority"
+        ],
+        "executionStatus": "completed",
         "id": "city_capture",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2364,16 +3101,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/MilitarySettlementRuntimeTests.wurst:garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly"
+        ],
+        "executionStatus": "completed",
         "id": "garrisons",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2386,16 +3125,23 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/MilitaryCombatEventsTests.wurst:installedCombatCrossesIntegerBoundaryAndCommitsOnce",
+          "wurst/MilitaryCombatEventsTests.wurst:productionCombatRegistrationCapturesOnceAndKeepsPeaceAuthority",
+          "wurst/MilitaryCombatEventsTests.wurst:resolvedLayersFollowControlCategoriesActivationAndInspection",
+          "wurst/MilitaryOrderEventsTests.wurst:installedOrdersSaveMovedLandAndNavalForcesAndResumeDestinations",
+          "wurst/MilitarySettlementRuntimeTests.wurst:governorReplacementWarnsAndNeverImpliesPhysicalClone",
+          "wurst/MilitarySettlementRuntimeTests.wurst:snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration"
+        ],
+        "executionStatus": "completed",
         "id": "administration",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2408,16 +3154,74 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/AuthoredQuestTests.wurst:failedCampaignLoadRollsBackQuestBranchAndRewardsWithoutReplayingProgress",
+          "wurst/BankingOperationsTests.wurst:bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
+          "wurst/CampaignLoadTransactionTests.wurst:managementLoadCommitPreservesManualPauseAndDirectReconstructionIsIdempotent",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsAndAbortedReconstructionRetainManagementOwners",
+          "wurst/CampaignLoadTransactionTests.wurst:successfulRepeatedLoadsCloseOnlyCommittedManagementSessions",
+          "wurst/CampaignStartupTests.wurst:rejectedStartupCheckpointPreservesViewsUntilSuccessfulRetry",
+          "wurst/CampaignStartupTests.wurst:startupClosesTransientViewsAndRepeatedStartupRetainsNewOwners",
+          "wurst/DispatchTests.wurst:dispatchFailedCampaignLoadRollsBackPendingOrderResearchAndBills",
+          "wurst/HeroAllocationTests.wurst:accomplishedProfilesAndOtherCharactersKeepIndependentAllocations",
+          "wurst/HeroAllocationTests.wurst:allocationRestorationFailureRollsBackCompleteAuthorityAndEntitlements",
+          "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+          "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+          "wurst/HeroDefeatLifecycleTests.wurst:obsoleteHeroDeathsRetirementAndReconstructionAreHarmless",
+          "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+          "wurst/HeroStartingProfileTests.wurst:invalidStartingProfilesAndDatesRejectWithoutProgressionMutation",
+          "wurst/HeroStartingProfileTests.wurst:legacyProfilesMigrateWithoutStartingGrantsAndUnrecruitedStillInitialize",
+          "wurst/HeroStartingProfileTests.wurst:malformedRankSnapshotsAndFailedRestorationAreAtomic",
+          "wurst/HeroStartingProfileTests.wurst:profileStateSurvivesExpiryLoadTravelAuthorityAndRepeatedReconstruction",
+          "wurst/HeroStartingProfileTests.wurst:registeredRecruitmentAppliesComposedEarlyAndLateRoleProfiles",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "wurst/ManagementCommandTests.wurst:actionResultsHelpInvalidCommandsAndPassiveNotificationsDoNotOpenManagement",
+          "wurst/ManagementCommandTests.wurst:everyRegisteredManagementViewOwnsPauseUntilItsDocumentedClose",
+          "wurst/ManagementCommandTests.wurst:managementRegistrationReportsConflictsBeforeUnclosableRpgViews",
+          "wurst/ManagementCommandTests.wurst:manualPauseSurvivesAllManagementClosesAndLateClockBinding",
+          "wurst/ManagementCommandTests.wurst:registeredManagementCommandsSuspendAndResumeGameplayTimers",
+          "wurst/ManagementCommandTests.wurst:reopeningAndSwitchingRetainOwnersWithoutUnpauseEdges",
+          "wurst/ManagementCommandTests.wurst:rpgAndMarketNestWithRegisteredMilitaryAndMapOwners",
+          "wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonComposesExactTraditionRefitAndAbstractRatings",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonRegisteredResearchChangesQualifiedGameplayExactlyOnce",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonRejectsWrongWeaponsControllersAndNativeEvents",
+          "wurst/MilitaryCombatEventsTests.wurst:castCannonSaveLoadReconstructionAndLateRollbackKeepCurrentContribution",
+          "wurst/MilitaryCombatEventsTests.wurst:installedLandDrillAndBayonetUseProductionWeaponCallbacks",
+          "wurst/NavalServicesTests.wurst:navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic",
+          "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+          "wurst/QuestNavigationTests.wurst:awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards",
+          "wurst/QuestNavigationTests.wurst:failedLoadRetainsQuestMapMarkerTrackingOrdersAndPauseOwnership",
+          "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority",
+          "wurst/RecruitmentWindowTests.wurst:generatedLeonardoIsUnavailableAtStartAndHasInclusiveAuthoredDates",
+          "wurst/RecruitmentWindowTests.wurst:largeJumpPastAnUnrecruitedWindowDoesNotGrantEligibility",
+          "wurst/RecruitmentWindowTests.wurst:legacyRecruitedHeroesAreRetainedAcrossEverySupportedEnvelope",
+          "wurst/RecruitmentWindowTests.wurst:newCampaignChoosesFirstEligibleGeneratedHeroAndRetainsExistingOwnership",
+          "wurst/RecruitmentWindowTests.wurst:oneDayWindowsAreInclusiveAndInvalidRuntimeWindowsFailClosed",
+          "wurst/RecruitmentWindowTests.wurst:recruitedHeroSurvivesExpirySaveLoadAndRepeatedReconstruction",
+          "wurst/RecruitmentWindowTests.wurst:recruitmentCommandChecksEverySideOfBothFullDateBoundaries",
+          "wurst/RecruitmentWindowTests.wurst:recruitmentUsesLiveTicksAndPreservesDuplicatesAfterExpiry",
+          "wurst/RecruitmentWindowTests.wurst:restoredCampaignClockControlsTheNextRecruitmentCommit",
+          "wurst/RecruitmentWindowTests.wurst:unavailableNewCampaignAndMissingClockFailWithoutRosterMutation",
+          "wurst/TradeFinanceTests.wurst:auctionTinyOrdersReplayReconstructionAndFailedLoadKeepAuthority",
+          "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurviveFailedSaveAndFreshLoad",
+          "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurvivePhysicalTravelAndReturn",
+          "wurst/VisitKnowledgeTests.wurst:remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights",
+          "wurst/VisitKnowledgeTests.wurst:validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus",
+          "wurst/VisitKnowledgeTests.wurst:wrongMapDistantStaleAndMalformedInteractionsNeverInventVisits"
+        ],
+        "executionStatus": "completed",
         "id": "heroes",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2430,16 +3234,32 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CharacterEquipmentTests.wurst:equipmentCommandsPreserveWearerSelectionAndRecordedOutput",
+          "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRecheckEligibilityAndConserveCopiesAcrossWearers",
+          "wurst/CharacterEquipmentTests.wurst:equipmentCommandsRejectMissingOverlappingAndOtherControllerResearchAtomically",
+          "wurst/CharacterEquipmentTests.wurst:equipmentResearchSavesRetainEligibleAndLegacyLoadoutsAcrossReconstruction",
+          "wurst/CharacterEquipmentTests.wurst:generatedEquipmentCommandsRequireEveryAuthoredResearchIdentity",
+          "wurst/EquipmentSetTests.wurst:generatedAkanTiersResolveThroughRegisteredEquipmentActions",
+          "wurst/EquipmentSetVectorsTests.wurst:equipmentSetParity_cumulative_false",
+          "wurst/EquipmentSetVectorsTests.wurst:equipmentSetParity_cumulative_true",
+          "wurst/EquipmentSetVectorsTests.wurst:equipmentSetParity_exclusive_false",
+          "wurst/EquipmentSetVectorsTests.wurst:equipmentSetParity_replacement_false",
+          "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+          "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+          "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+          "wurst/HeroStartingProfileTests.wurst:registeredRecruitmentAppliesComposedEarlyAndLateRoleProfiles",
+          "wurst/ItemDefinitionTests.wurst:registeredPulwarEquipmentRetainsStatsWithoutGrantingMaximumLife"
+        ],
+        "executionStatus": "completed",
         "id": "inventory_equipment",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2452,16 +3272,24 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/NavigationEfficiencyTests.wurst:activeAbstractSaveResumeAndRepeatedCallbackHaveExactVoyageParity",
+          "wurst/NavigationEfficiencyTests.wurst:fixedPointVoyageInterruptionsAndControllerChangesPreserveOnlyElapsedBenefit",
+          "wurst/NavigationEfficiencyTests.wurst:navigationSaveValidationAndLegacyMigrationAreTransactional",
+          "wurst/NavigationEfficiencyTests.wurst:registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl",
+          "wurst/NavigationEfficiencyTests.wurst:sharedCelestialEntitlementsAndReconstructionNeverMultiplyTheVoyageBenefit",
+          "wurst/NavigationEfficiencyTests.wurst:voyageEquipmentIsPaidIdempotentAndReevaluatedAtResolution",
+          "wurst/NavigationEfficiencyTests.wurst:voyageRejectionsKeepProvisionTimeKnowledgeEquipmentAndResearchAuthority"
+        ],
+        "executionStatus": "completed",
         "id": "technology_institutions",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2474,16 +3302,50 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/AuthoredQuestTests.wurst:authoredAcceptanceRejectsUnavailableAndMissingPrerequisites",
+          "wurst/AuthoredQuestTests.wurst:authoredJournalPreservesApproximateHiddenAndTerminalGuidance",
+          "wurst/AuthoredQuestTests.wurst:authoredSettlementReturnRequiresActualTargetAndSeparateTurnIn",
+          "wurst/AuthoredQuestTests.wurst:invalidRegisteredQuestGrowthLeavesQuestCurrencyAndProgressionIntact",
+          "wurst/AuthoredQuestTests.wurst:printedCompactArchiveBranchRetainsChoiceAndRejectsOtherBranchAfterRestore",
+          "wurst/AuthoredQuestTests.wurst:printedCompactNegotiationBranchRequiresMatchingReceiptAndPhysicalReturn",
+          "wurst/AuthoredQuestTests.wurst:questCandidateRejectsForgedPathsObjectivesAndPrematureReadinessAtomically",
+          "wurst/AuthoredQuestTests.wurst:registeredGrowthBelongsToSelectedCharacterAcrossRepeatedReconstruction",
+          "wurst/AuthoredQuestTests.wurst:registeredGrowthResumesReadyQuestAndRejectsRemoteStaleTurnin",
+          "wurst/AuthoredQuestTests.wurst:registeredQuestGrowthUsesConvexExperienceAndEarnsCapPointsOnce",
+          "wurst/HeroAllocationTests.wurst:accomplishedProfilesAndOtherCharactersKeepIndependentAllocations",
+          "wurst/HeroAllocationTests.wurst:allocationRestorationFailureRollsBackCompleteAuthorityAndEntitlements",
+          "wurst/HeroAllocationTests.wurst:allocationUsesEveryPrerequisiteAndDoesNotGrantEffects",
+          "wurst/HeroAllocationTests.wurst:investedWoundedCharactersRestoreWithoutReplayingGrantsOrRecovery",
+          "wurst/HeroAllocationTests.wurst:registeredAllocationInspectionPauseOwnershipMalformedInputAndCollisions",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_cap",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_chain",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_civic",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_discovery",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_level",
+          "wurst/HeroAllocationVectorsTests.wurst:allocationParity_zero",
+          "wurst/HeroDefeatLifecycleTests.wurst:entirelyIncapacitatedSaveResumesAgainstTheSameDeadline",
+          "wurst/HeroDefeatLifecycleTests.wurst:installedHeroDeathAndClockRecoverWithoutReplacingProgression",
+          "wurst/HeroDefeatLifecycleTests.wurst:rejectedMixedPartyRestoreRetainsConditionsLocationsAndProjections",
+          "wurst/ManagementCommandTests.wurst:actionResultsHelpInvalidCommandsAndPassiveNotificationsDoNotOpenManagement",
+          "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+          "wurst/QuestNavigationTests.wurst:awaitingTurnInSaveRestoresLocalReturnMarkerWithoutReplayingRewards",
+          "wurst/QuestNavigationTests.wurst:failedQuestsWrongPhysicalMapsAndTrackingChangesRetireObsoleteMarkers",
+          "wurst/QuestNavigationTests.wurst:objectiveAdaptersReplaceMarkersAndRetainReturnUntilSuccessfulTurnIn",
+          "wurst/QuestNavigationTests.wurst:questPrecisionMatchesHeadlessScopesCluesAndEarnedPointKnowledge",
+          "wurst/QuestNavigationTests.wurst:recordedMapCallsMatchHeadlessPrecisionVectors",
+          "wurst/QuestNavigationTests.wurst:registeredQuestActionsFocusExactWithoutDiscoveryAndPreservePauseOwners",
+          "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority"
+        ],
+        "executionStatus": "completed",
         "id": "quests_journal",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2496,16 +3358,19 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/RpgInteractionTests.wurst:rpgTreasureCommandsRequireLocalCluesAndResolvedGeneratedCandidate",
+          "wurst/RpgInteractionTests.wurst:rpgTreasureSeedFourCommandsUseAlmourolAndRejectTomar"
+        ],
+        "executionStatus": "completed",
         "id": "treasures_discovery",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2518,16 +3383,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CampaignStartupTests.wurst:registeredOriginAndSaveCommandsRoundTripCampaignAndAutosave"
+        ],
+        "executionStatus": "completed",
         "id": "save_autosave_load",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2540,16 +3407,43 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CampaignRecoveryTests.wurst:laterBoundaryTravelSupersedesConsumedRecovery",
+          "wurst/CampaignRecoveryTests.wurst:ordinarySavedArrivalIsNotReplayedByCrossMapRecovery",
+          "wurst/CampaignRecoveryTests.wurst:recoverySupersedesInterruptedOriginEvenAfterLaterTravel",
+          "wurst/CampaignStartupTests.wurst:configuredScaleOffsetAndReverseAreNotReappliedByDestinationStartup",
+          "wurst/CampaignStartupTests.wurst:destinationUnavailableRetainsTransferForRetryWithoutPartyOrAutosaves",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryHalfUsesDistinctCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryQuarterUsesCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedBoundaryThirtySevenPercentUsesCorrespondence",
+          "wurst/CampaignStartupTests.wurst:generatedTravelFailureNeverCommitsOrLoadsAndCanRetry",
+          "wurst/CampaignStartupTests.wurst:legacyTransferSchemasOneAndTwoResolveGeneratedBoundary",
+          "wurst/CampaignStartupTests.wurst:legacyTransferSchemasThreeAndFourResolveGeneratedBoundary",
+          "wurst/CampaignStartupTests.wurst:malformedSavedBoundaryTupleNeverReconstructsOrOverwrites",
+          "wurst/CampaignStartupTests.wurst:ordinaryDestinationMovementDoesNotReplayTransferArrival",
+          "wurst/CampaignStartupTests.wurst:populatedTransferRestoresAfterProductionRegistrationAndPreservesEveryDomain",
+          "wurst/CampaignStartupTests.wurst:productionAutosaveDelayAndRotationSurviveGeneratedDestinationStartup",
+          "wurst/CampaignStartupTests.wurst:productionClockSurvivesDestinationStartupAndReturnTravel",
+          "wurst/CampaignStartupTests.wurst:reversedGeneratedBoundaryAppliesTransformOnceThenPartialReturnSegment",
+          "wurst/CampaignStartupTests.wurst:transferDoesNotMaterializeAbstractCompanionAssignedToDestination",
+          "wurst/CampaignStartupTests.wurst:transferFromAbstractOriginUsesDestinationArrivalWithoutCityObject",
+          "wurst/CampaignStartupTests.wurst:transferSchemasFiveThroughEightResolveGeneratedBoundary",
+          "wurst/FrameworkConformanceTests.wurst:productionCampaignContentContract",
+          "wurst/LiveRecoveryTests.wurst:liveRecoveryTravelRebuildsHintsInDestinationCoordinates",
+          "wurst/MilitaryCombatEventsTests.wurst:combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint",
+          "wurst/MixedCargoTests.wurst:mixedCargoSurvivesFailedStorageFreshServicesPhysicalTravelAndReturn",
+          "wurst/QuestNavigationTests.wurst:activeQuestSaveAndPhysicalTransitionRebuildGuidanceWithoutObjectiveReplay",
+          "wurst/VisitKnowledgeTests.wurst:multipleVisitsSurvivePhysicalTravelAndReturn"
+        ],
+        "executionStatus": "completed",
         "id": "cross_map_travel",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2562,16 +3456,20 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/ManagementCommandTests.wurst:rpgAndMarketNestWithRegisteredMilitaryAndMapOwners",
+          "wurst/VisitKnowledgeTests.wurst:remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights",
+          "wurst/VisitKnowledgeTests.wurst:validatedQuestlessVisitFeedsRegisteredFilteredMapAndExactFocus"
+        ],
+        "executionStatus": "completed",
         "id": "world_map",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2584,16 +3482,27 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CommandMapTransportTests.wurst:commandBetweenTwoMapsInSameLogicalRegionStillOwnsRemotePause",
+          "wurst/CommandMapTransportTests.wurst:commandDestinationCannotAcquireDiscoveryFromLoadedTerrain",
+          "wurst/CommandMapTransportTests.wurst:commandHandoffRevalidatesPermissionAtRetryAndDestination",
+          "wurst/CommandMapTransportTests.wurst:commandInterruptedAcknowledgementAndConsumedReplayAreIdempotent",
+          "wurst/CommandMapTransportTests.wurst:commandPreservesIncapacitatedPartyPauseClockAndAutosave",
+          "wurst/CommandMapTransportTests.wurst:commandRemoteSaveRecoveryAndRejectedHomeProjectionRetainOrders",
+          "wurst/CommandMapTransportTests.wurst:commandSourceCancellationRetainsCurrentControlAndDistinctRecoveryKind",
+          "wurst/CommandMapTransportTests.wurst:registeredCommandLoadsActualTerrainOrdersAndReturnsHome",
+          "wurst/QuestNavigationTests.wurst:remoteCommandQuestFocusPreservesHomePartyOrdersAndCommandAuthority",
+          "wurst/VisitKnowledgeTests.wurst:remoteCommandAndReturnPreserveKnowledgeWithoutDestinationVisitOrRights"
+        ],
+        "executionStatus": "completed",
         "id": "remote_management",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2606,16 +3515,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/ConflictPeaceIntegrationTests.wurst:registeredCountryAndRewardCommandsUsePersistentAuthority"
+        ],
+        "executionStatus": "completed",
         "id": "government_rewards",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2628,16 +3539,18 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/ReligionRuntimeTests.wurst:bootstrapRegistrationOpeningOverviewAndBenefitExplanation"
+        ],
+        "executionStatus": "completed",
         "id": "religion",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2650,16 +3563,60 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       },
       {
         "diagnostics": [],
-        "executedTests": [],
-        "executionStatus": "not_run",
+        "executedTests": [
+          "wurst/CampaignLoadTransactionTests.wurst:checksummedLateReligionAndDiplomacyRejectBeforeAnyMutation",
+          "wurst/CampaignLoadTransactionTests.wurst:failedCampaignLoadRestoresPopulatedCargoLotsAndEarnedStanding",
+          "wurst/CampaignLoadTransactionTests.wurst:failedLoadRetainsFoundedPolityLossesAndLegacyMigrationIsAtomic",
+          "wurst/CampaignLoadTransactionTests.wurst:failedLoadRetainsSettledConflictsBoundOffersAndActiveSieges",
+          "wurst/CampaignLoadTransactionTests.wurst:foundedPolityLoadsPreserveCapturesCessionsAllegianceAndResources",
+          "wurst/CampaignLoadTransactionTests.wurst:invalidTradeAndPirateTerritoriesAreStagedWithoutLiveCallbacks",
+          "wurst/CampaignLoadTransactionTests.wurst:lateExtensionFailureRestoresEveryAuthorityAndProjection",
+          "wurst/CampaignLoadTransactionTests.wurst:latePartyFailureRestoresProjectionsAndRetryCommitsExactlyOnce",
+          "wurst/CampaignLoadTransactionTests.wurst:managementLoadCommitPreservesManualPauseAndDirectReconstructionIsIdempotent",
+          "wurst/CampaignLoadTransactionTests.wurst:registeredFoundingCannotConvertOccupationIntoLegalOwnership",
+          "wurst/CampaignLoadTransactionTests.wurst:registeredFoundingCommitsOrdinaryTerritoryAndReconstructionIsIdempotent",
+          "wurst/CampaignLoadTransactionTests.wurst:registeredFoundingRejectsMalformedListsAndLateTerritoryFailures",
+          "wurst/CampaignLoadTransactionTests.wurst:registeredFoundingRejectsUnqualifiedCaptainsAndGovernmentTerritory",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRestoresInactiveMilitaryProjectionTarget",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadRetainsEquipmentContributionsOnSurvivingObjects",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsAndAbortedReconstructionRetainManagementOwners",
+          "wurst/CampaignLoadTransactionTests.wurst:rejectedLoadsRestoreTypedResearchLayersForEveryController",
+          "wurst/CampaignLoadTransactionTests.wurst:reportedOrdinaryPolityFailureRollsBackItsOwnMutations",
+          "wurst/CampaignLoadTransactionTests.wurst:stagedLoadAbortRetainsClockAndTimerUntilCommit",
+          "wurst/CampaignLoadTransactionTests.wurst:successfulRepeatedLoadsCloseOnlyCommittedManagementSessions",
+          "wurst/HeroAllocationTests.wurst:allocationRestorationFailureRollsBackCompleteAuthorityAndEntitlements",
+          "wurst/HeroEarnedGrowthTests.wurst:invalidGrowthRestorationAndLateLoadFailureRetainAuthorityAndProjections",
+          "wurst/HeroStartingProfileTests.wurst:malformedRankSnapshotsAndFailedRestorationAreAtomic",
+          "wurst/MixedCargoTests.wurst:mixedCargoLateExtensionAndPartyFailuresRestoreEveryBalanceAndLot",
+          "wurst/PiracyCommandTests.wurst:piracyCaptureRequiresFreshPreviewWhenVesselSuppliesOrMaximumStrengthChange",
+          "wurst/PiracyCommandTests.wurst:piracyChangedKindAllegianceAndWarNeedCurrentAuthorization",
+          "wurst/PiracyCommandTests.wurst:piracyCoastalRaidUsesSettlementAuthorityAndRejectsVesselDisposition",
+          "wurst/PiracyCommandTests.wurst:piracyConfirmationRechecksCommissionRevocationExpiryAndClockCooldown",
+          "wurst/PiracyCommandTests.wurst:piracyConfirmationRechecksControllerRemovalAndPhysicalContext",
+          "wurst/PiracyCommandTests.wurst:piracyConfirmationRequiresNewPreviewForChangedCargoPrisonersOrReward",
+          "wurst/PiracyCommandTests.wurst:piracyCrimeAuthorityDecidesEligibilityWithoutInventingADiplomaticWar",
+          "wurst/PiracyCommandTests.wurst:piracyFinalAdapterReadCannotUsePreviewAuthorizationOrPartiallyCommit",
+          "wurst/PiracyCommandTests.wurst:piracyFinalReadRevalidatesCommissionTermsEvenWithIdenticalRewards",
+          "wurst/PiracyCommandTests.wurst:piracyForgedFactsAndUnsupportedDispositionsLeaveEveryAuthorityUnchanged",
+          "wurst/PiracyCommandTests.wurst:piracyProductionCommandsPermitExplicitUnlicensedCrimeAndOrdinaryWar",
+          "wurst/PiracyCommandTests.wurst:piracyProductionCommandsResolvePrivateeringAndConserveCargoAndMoney",
+          "wurst/PiracyCommandTests.wurst:piracyReconstructionAndAuthorityReplacementCannotRetainAPendingCapability",
+          "wurst/PiracyCommandTests.wurst:piracyRequiresPresentActingPartyAndCompletedLocalCombat",
+          "wurst/PiracyCommandTests.wurst:piracySaveLoadRetiresPendingRequestsAndPreservesHistoricalDeduplication",
+          "wurst/PiracyCommandTests.wurst:prizeAdapterPreservesMixedDestinationAndRejectsAmbiguousSource",
+          "wurst/PlayablePiracyTests.wurst:saveLoadReconstructsVesselsPressureTerritoryGovernmentDiplomacyAndRecognition",
+          "wurst/QuestNavigationTests.wurst:failedLoadRetainsQuestMapMarkerTrackingOrdersAndPauseOwnership",
+          "wurst/VisitKnowledgeTests.wurst:lateRestorationFailureRollsBackKnowledgeAndRetainsMapPauseOwnership"
+        ],
+        "executionStatus": "completed",
         "id": "piracy",
         "releaseRequired": true,
         "simulationOnly": false,
@@ -2672,10 +3629,10 @@
         },
         "stages": {
           "dataComplete": true,
-          "headlessSimulationComplete": false,
-          "playerFacingComplete": false,
-          "releaseValidated": false,
-          "runtimeIntegrated": false
+          "headlessSimulationComplete": true,
+          "playerFacingComplete": true,
+          "releaseValidated": true,
+          "runtimeIntegrated": true
         }
       }
     ]
@@ -2731,8 +3688,8 @@
       }
     ]
   },
-  "sourceRevision": "b2cd7dd2029b9984e259b33617973e1e26519c98",
-  "sourceTreeSha256": "b4aff56d11db75524f106c66bc3a1ea79ad10279df7e81aadb2cb0e80ce640f6",
+  "sourceRevision": "09cbb0b385f58db78f16b844080bce7977faed5f",
+  "sourceTreeSha256": "889eac893510a506cc797c9ef48be35789b37f34694e4a7b823f573f2f9fdd8d",
   "status": "fail",
   "taxonomy": [
     {
@@ -2760,5 +3717,5 @@
       "releaseBlocking": false
     }
   ],
-  "unresolvedCampaignBlockers": 238
+  "unresolvedCampaignBlockers": 187
 }

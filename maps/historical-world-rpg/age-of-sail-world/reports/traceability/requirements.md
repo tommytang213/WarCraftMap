@@ -1,6 +1,6 @@
 # Requirement-to-production traceability
 
-Candidate ready: **False**; blockers: **7004**.
+Candidate ready: **False**; blockers: **8363**.
 
 Each row is an individual obligation. Source and compiled markers are supplementary evidence; internal-method tests and broad system presence cannot satisfy production integration.
 
@@ -56,8 +56,8 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0035.01 | combination | These ranges are release-planning targets rather than hard ceilings. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0035.02 | combination | The final content audit should flag clearly thin regions, eras, major powers, gameplay roles, store inventories, progression branches, or quest/event density even if a global raw-count minimum is technically met. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0036.01 | combination | Large technology trees with multiple branches. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0037.01 | combination | Technology availability/cost changes with historical time. | artifact-missing, integration-missing, static-only |
-| REQ-0038.01 | combination | Ahead-of-time technology is possible, not absolutely forbidden; extreme early research should be exceptionally expensive/difficult. | artifact-missing, integration-missing, static-only |
+| REQ-0037.01 | combination | Technology availability/cost changes with historical time. | none |
+| REQ-0038.01 | combination | Ahead-of-time technology is possible, not absolutely forbidden; extreme early research should be exceptionally expensive/difficult. | none |
 | REQ-0039.01 | combination | Technologies can have cross-tree prerequisites. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0040.01 | combination | Institutions/technology adoption can diffuse unevenly through provinces. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0041.01 | combination | Countries can have unique/special units and other distinct content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -132,14 +132,14 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0089.01 | combination | Recruited named heroes persist after their historical initial-availability window closes; the historical window gates first availability/recruitment rather than removing an already recruited hero. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0090.01 | combination | Recruited heroes must not disappear merely because the historical death/end date is reached. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0090.02 | combination | Once recruited, they belong to the campaign's alternate-history state unless removed by an explicit gameplay rule chosen for that campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0091.01 | combination | The target named-hero level cap is 300 for the long campaign. | artifact-missing, integration-missing, static-only |
-| REQ-0091.02 | combination | Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers. | artifact-missing, integration-missing, static-only |
-| REQ-0092.01 | combination | Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently. | artifact-missing, integration-missing, static-only |
-| REQ-0093.01 | combination | Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1. | artifact-missing, integration-missing, static-only |
+| REQ-0091.01 | combination | The target named-hero level cap is 300 for the long campaign. | none |
+| REQ-0091.02 | combination | Levels should provide frequent incremental growth plus regular meaningful perk/ability/mastery decisions rather than hundreds of cosmetic numbers. | integration-missing, static-only |
+| REQ-0092.01 | combination | Hero progression is multi-axis: character level, core skills, profession/mastery tracks, personal/signature trees, equipment and sets, relationships, loyalty/Oathbound, titles/offices, command experience, quest unlocks, and other scenario-defined progression may advance independently. | integration-missing, static-only |
+| REQ-0093.01 | combination | Late-era historical heroes should enter at a contextually appropriate starting level/skill state based on campaign year, career/reputation, role, and world/player progression rather than universally starting at level 1. | none |
 | REQ-0094.01 | combination | The recruited strategic hero roster has no arbitrary gameplay cap. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0094.02 | combination | Physical co-location is a runtime/performance concern separate from ownership; the initial target for simultaneously instantiated player-side heroes in one active field group is at least 32, and may be raised after performance validation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0095.01 | combination | Recruited heroes may instead serve as governors, advisers, army commanders, fleet commanders, specialists, or other remote assignments while retaining one authoritative physical location. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0096.01 | combination | Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default. | artifact-missing, integration-missing, static-only |
+| REQ-0096.01 | combination | Ordinary combat defeat of a recruited named hero should default to a recoverable wounded/incapacitated state rather than silently deleting a long-invested character; any permanent-death mode must be an explicit campaign rule rather than the default. | integration-missing |
 | REQ-0097.01 | mechanism | Do not use native WC3 food as the strategic ownership cap. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0098.01 | mechanism | Strategic armies/fleets may represent many soldiers/ships without spawning every represented entity simultaneously. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0099.01 | mechanism | Economic/logistical cost is the intended practical limiter. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -227,25 +227,25 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0152.01 | combination | Player-controlled forces and AI-controlled polities maintain independent persistent military-tradition progression rather than sharing one global combat-experience value. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0153.01 | combination | Traditions are controller-scoped and category-specific. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0153.02 | combination | Scenario data may define tracks such as infantry, cavalry, artillery, naval, marine/boarding, siege, or other appropriate military categories without hardcoding those names into the shared engine. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | artifact-missing, integration-missing, static-only |
+| REQ-0154.01 | combination | Relevant combat by a unit contributes experience to its controller's matching tradition track. | none |
 | REQ-0154.02 | combination | Enemy kills are a primary supported source; scenario/balance data may also award weighted experience for other meaningful combat contribution so the system is not tied only to literal last-hit ownership. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0155.01 | combination | Tradition progression benefits all currently controlled units that qualify for that tradition category, including units represented abstractly while another physical map is active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0156.01 | combination | Tradition belongs to the controller, not permanently to the individual unit. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | artifact-missing, integration-missing, static-only, unpersisted |
+| REQ-0155.02 | combination | Runtime units receive the derived modifiers when instantiated or when controller/tradition state changes. | integration-missing, unpersisted |
+| REQ-0156.01 | combination | Tradition belongs to the controller, not permanently to the individual unit. | integration-missing, unpersisted |
+| REQ-0156.02 | combination | If a unit changes controller, its controller-wide tradition modifiers are recalculated from the new controller's state; the previous controller keeps its accumulated tradition. | integration-missing, unpersisted |
 | REQ-0157.01 | combination | The core numerical tradition bonus is continuous and experience-proportional rather than a discrete level table. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | artifact-missing, integration-missing, static-only |
+| REQ-0157.02 | combination | Do not require fixed "level X -> bonus Y" thresholds for ordinary stat progression: every additional unit of valid tradition experience should contribute proportionally according to the tradition's data-driven coefficient/curve (for example, if 100 XP grants Y bonus, 1,000 XP grants 10Y under a linear coefficient). | integration-missing, unpersisted |
+| REQ-0158.01 | combination | Controller tradition experience has no ordinary hard progression ceiling or maximum tradition level. | none |
 | REQ-0158.02 | combination | Long-running player and AI controllers may continue improving as they accumulate valid experience across the campaign. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0158.03 | combination | Balance should come from experience rates, coefficients, opposing progression, costs, counters, and scenario tuning rather than an arbitrary cap that makes further combat experience worthless. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0159.01 | combination | Milestone thresholds may unlock additional category-wide buffs, passive effects, doctrines, formations, morale/discipline mechanics, logistics advantages, or other qualitative rewards once the controller reaches the required tradition experience. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0160.01 | combination | Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0160.02 | combination | Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0161.01 | combination | Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | artifact-missing, integration-missing, static-only, unpersisted |
-| REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | artifact-missing, integration-missing, static-only |
+| REQ-0160.01 | combination | Milestone rewards are additive to the continuous XP-derived progression and must not replace, cap, reset, or stall it. | integration-missing, unpersisted |
+| REQ-0160.02 | combination | Reaching 10,000 XP may grant a milestone buff while 10,001 XP still gives a slightly larger continuous numerical bonus than 10,000 XP. | integration-missing, unpersisted |
+| REQ-0161.01 | combination | Reached milestone rewards remain active for that controller/tradition and normally stack with earlier milestones unless a specific scenario-defined milestone explicitly upgrades/replaces an earlier effect. | integration-missing, unpersisted |
+| REQ-0162.01 | combination | Milestone XP thresholds and effects are data-driven per tradition, so different military categories may have different milestone spacing and rewards. | integration-missing, unpersisted |
+| REQ-0163.01 | combination | Do not require every tradition to raise every numerical stat. | integration-missing, unpersisted |
+| REQ-0163.02 | combination | Each tradition's affected attributes and coefficients are data-driven so infantry, cavalry, artillery, naval, and other categories can scale differently while preserving their distinct roles. | integration-missing, unpersisted |
+| REQ-0164.01 | combination | Tradition state is authoritative campaign data and must persist across saves, physical-map transitions, inactive-region simulation, and remote command. | none |
 | REQ-0165.01 | combination | AI controllers use the same progression rules as the player unless scenario data deliberately defines a historical/special starting value or modifier. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0166.01 | combination | Religion is a reusable, scenario-neutral system. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0166.02 | combination | Faith traditions, denominations, reforms, schisms, syncretic and local traditions, their relationships, labels, influence curves, and benefit profiles are scenario data; the engine contains no closed list of religions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -272,45 +272,45 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0178.01 | combination | On capture, controller changes, old military defenses are cleaned up, and the city's predefined defensive layout respawns at its original locations under the new controller. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0179.01 | combination | New defenses receive exactly 5 seconds of post-capture immunity/capture cooldown to prevent immediate hostile survivor/third-party recapture loops. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0180.01 | combination | City functionality must not become irrecoverably broken because an object was unexpectedly destroyed. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0181.01 | combination | Persistent city state is authoritative; | artifact-missing, integration-missing, state-unmapped, static-only |
-| REQ-0181.02 | combination | Warcraft object instances are representations of that state. | artifact-missing, integration-missing, state-unmapped, static-only |
+| REQ-0181.01 | combination | Persistent city state is authoritative; | integration-missing, state-unmapped |
+| REQ-0181.02 | combination | Warcraft object instances are representations of that state. | integration-missing, state-unmapped |
 | REQ-0182.01 | mechanism | Native Warcraft save/load must be regression-tested and must not intentionally be broken. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0183.01 | mechanism | Separate versioned campaign persistence is required for long-term compatibility. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | artifact-missing, integration-missing, static-only |
-| REQ-0185.01 | mechanism | Manual save slots. | artifact-missing, integration-missing, static-only |
-| REQ-0186.01 | mechanism | Separate session-start and major-milestone recovery checkpoints. | artifact-missing, integration-missing, static-only |
-| REQ-0187.01 | mechanism | Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes. | artifact-missing, integration-missing, static-only |
+| REQ-0184.01 | mechanism | 15 rolling timed autosave slots. | none |
+| REQ-0185.01 | mechanism | Manual save slots. | none |
+| REQ-0186.01 | mechanism | Separate session-start and major-milestone recovery checkpoints. | none |
+| REQ-0187.01 | mechanism | Autosaves should defer during unsafe transitional states instead of serializing half-completed state changes. | none |
 | REQ-0188.01 | mechanism | Save data includes format/build/scenario version metadata and integrity checks. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0189.01 | mechanism | Save-format changes require migrations whenever practical. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0190.01 | mechanism | Failed/incompatible loads must not overwrite the original save. | artifact-missing, integration-missing, static-only |
-| REQ-0191.01 | mechanism | `/unstuck` applies to selected eligible mobile units. | artifact-missing, integration-missing, static-only |
-| REQ-0192.01 | mechanism | If no eligible selection exists because nothing is selected, it may recover the main character. | artifact-missing, integration-missing, static-only |
-| REQ-0193.01 | mechanism | Mixed selections move eligible mobile units and skip structures. | artifact-missing, integration-missing, static-only |
-| REQ-0194.01 | mechanism | If only ineligible objects such as buildings are selected, report the issue and do not silently move something else. | artifact-missing, integration-missing, static-only |
-| REQ-0195.01 | mechanism | Buildings, walls, towers, city cores, destructibles and dummy/system units must never be moved by `/unstuck`. | artifact-missing, integration-missing, static-only |
-| REQ-0196.01 | mechanism | Recovery must be connectivity-aware, not merely pathability-aware. | artifact-missing, integration-missing, static-only |
-| REQ-0197.01 | mechanism | Ships must not be moved into isolated/decorative lakes or disconnected water. | artifact-missing, integration-missing, static-only |
-| REQ-0198.01 | mechanism | Land units must not be moved onto unreachable/disconnected land. | artifact-missing, integration-missing, static-only |
-| REQ-0199.01 | mechanism | Track last-known-safe position/navigation zone for important active units. | artifact-missing, integration-missing, static-only |
-| REQ-0200.01 | mechanism | Prefer nearby reachable safe position, then verified last-safe position, then a valid connected recovery anchor. | artifact-missing, integration-missing, static-only |
-| REQ-0201.01 | mechanism | If safety cannot be proven, fail without moving the unit. | artifact-missing, integration-missing, static-only |
-| REQ-0202.01 | mechanism | `/unstuck all` may operate on physically active player-controlled mobile units in the current relevant region, never abstract world entities. | artifact-missing, integration-missing, static-only |
-| REQ-0203.01 | mechanism | `/help` lists player commands. | artifact-missing, integration-missing, static-only |
-| REQ-0204.01 | mechanism | Help is paged: `/help 2`, `/help 3`, etc. | artifact-missing, integration-missing, static-only |
-| REQ-0205.01 | mechanism | Topic help is supported, e.g. | artifact-missing, integration-missing, static-only |
-| REQ-0205.02 | mechanism | `/help unstuck`. | artifact-missing, integration-missing, static-only |
-| REQ-0206.01 | mechanism | Invalid page numbers produce a clear message. | artifact-missing, integration-missing, static-only |
-| REQ-0207.01 | mechanism | Release builds hide internal developer/debug commands. | artifact-missing, integration-missing, static-only |
-| REQ-0208.01 | mechanism | A player-facing `/god` command is provided so native `whosyourdaddy` is unnecessary for recovery. | artifact-missing, integration-missing, static-only |
-| REQ-0209.01 | mechanism | `/god` applies to all player-controlled runtime entities, not only the main character. | artifact-missing, integration-missing, static-only |
-| REQ-0209.02 | mechanism | This includes player-controlled heroes/companions, ordinary units, summons, ships, structures, and any other controllable Warcraft runtime objects. | artifact-missing, integration-missing, static-only |
-| REQ-0210.01 | mechanism | While `/god` is enabled, newly created, spawned, acquired, or otherwise transferred player-controlled runtime entities inherit the same protection automatically. | artifact-missing, integration-missing, static-only |
-| REQ-0211.01 | mechanism | `/god` toggles the mode; | artifact-missing, integration-missing, static-only |
-| REQ-0211.02 | mechanism | `/god on` and `/god off` are idempotent explicit forms. | artifact-missing, integration-missing, static-only |
-| REQ-0212.01 | mechanism | The mode is a session/recovery convenience rather than campaign progression. | artifact-missing, integration-missing, static-only |
-| REQ-0212.02 | mechanism | It is excluded from custom campaign persistence and defaults to OFF for a new session and after loading campaign state. | artifact-missing, integration-missing, static-only |
-| REQ-0213.01 | mechanism | If protected runtime objects are reconstructed while `/god` remains enabled in the same active session, protection is reapplied to their replacements. | artifact-missing, integration-missing, static-only |
-| REQ-0214.01 | mechanism | Command feedback must clearly report whether player-wide god mode is ON or OFF. | artifact-missing, integration-missing, static-only |
+| REQ-0190.01 | mechanism | Failed/incompatible loads must not overwrite the original save. | none |
+| REQ-0191.01 | mechanism | `/unstuck` applies to selected eligible mobile units. | none |
+| REQ-0192.01 | mechanism | If no eligible selection exists because nothing is selected, it may recover the main character. | none |
+| REQ-0193.01 | mechanism | Mixed selections move eligible mobile units and skip structures. | none |
+| REQ-0194.01 | mechanism | If only ineligible objects such as buildings are selected, report the issue and do not silently move something else. | none |
+| REQ-0195.01 | mechanism | Buildings, walls, towers, city cores, destructibles and dummy/system units must never be moved by `/unstuck`. | none |
+| REQ-0196.01 | mechanism | Recovery must be connectivity-aware, not merely pathability-aware. | none |
+| REQ-0197.01 | mechanism | Ships must not be moved into isolated/decorative lakes or disconnected water. | none |
+| REQ-0198.01 | mechanism | Land units must not be moved onto unreachable/disconnected land. | none |
+| REQ-0199.01 | mechanism | Track last-known-safe position/navigation zone for important active units. | none |
+| REQ-0200.01 | mechanism | Prefer nearby reachable safe position, then verified last-safe position, then a valid connected recovery anchor. | none |
+| REQ-0201.01 | mechanism | If safety cannot be proven, fail without moving the unit. | none |
+| REQ-0202.01 | mechanism | `/unstuck all` may operate on physically active player-controlled mobile units in the current relevant region, never abstract world entities. | none |
+| REQ-0203.01 | mechanism | `/help` lists player commands. | none |
+| REQ-0204.01 | mechanism | Help is paged: `/help 2`, `/help 3`, etc. | none |
+| REQ-0205.01 | mechanism | Topic help is supported, e.g. | none |
+| REQ-0205.02 | mechanism | `/help unstuck`. | none |
+| REQ-0206.01 | mechanism | Invalid page numbers produce a clear message. | none |
+| REQ-0207.01 | mechanism | Release builds hide internal developer/debug commands. | none |
+| REQ-0208.01 | mechanism | A player-facing `/god` command is provided so native `whosyourdaddy` is unnecessary for recovery. | none |
+| REQ-0209.01 | mechanism | `/god` applies to all player-controlled runtime entities, not only the main character. | none |
+| REQ-0209.02 | mechanism | This includes player-controlled heroes/companions, ordinary units, summons, ships, structures, and any other controllable Warcraft runtime objects. | none |
+| REQ-0210.01 | mechanism | While `/god` is enabled, newly created, spawned, acquired, or otherwise transferred player-controlled runtime entities inherit the same protection automatically. | none |
+| REQ-0211.01 | mechanism | `/god` toggles the mode; | none |
+| REQ-0211.02 | mechanism | `/god on` and `/god off` are idempotent explicit forms. | none |
+| REQ-0212.01 | mechanism | The mode is a session/recovery convenience rather than campaign progression. | none |
+| REQ-0212.02 | mechanism | It is excluded from custom campaign persistence and defaults to OFF for a new session and after loading campaign state. | none |
+| REQ-0213.01 | mechanism | If protected runtime objects are reconstructed while `/god` remains enabled in the same active session, protection is reapplied to their replacements. | none |
+| REQ-0214.01 | mechanism | Command feedback must clearly report whether player-wide god mode is ON or OFF. | none |
 | REQ-0215.01 | mechanism | The campaign is single-player, so opening a modal management screen pauses the entire campaign simulation. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0216.01 | mechanism | While a modal management screen is open, campaign time progression, strategic AI actions, combat/travel simulation, economy ticks, and event progression are paused. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0217.01 | mechanism | Inventory/equipment, character/companion management, technology, economy/trade management, titles/land/government, fleet/army management, journal/encyclopedia, and full strategic-management/map screens are modal for this policy unless deliberately reclassified later. | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -434,20 +434,20 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | REQ-0293.01 | combination | Revealing general fog-of-war or exploring a region does not automatically identify every hidden point of interest inside it; precise quest markers require that the destination itself is known or has been explicitly revealed by the quest/clue. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0294.01 | combination | The world/region map should support centering or focusing on a known named settlement/location without physically moving the player's character. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0295.01 | combination | Quest navigation is informational only: tracking or viewing a destination does not teleport units or bypass travel. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0296.01 | combination | The player can manage owned or authorized holdings in other regions without physically traveling there. | artifact-missing, integration-missing, static-only |
-| REQ-0297.01 | combination | Remote regional access supports both management and active command. | artifact-missing, integration-missing, static-only |
-| REQ-0297.02 | combination | Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there. | artifact-missing, integration-missing, static-only |
-| REQ-0298.01 | combination | Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location. | artifact-missing, integration-missing, static-only |
-| REQ-0299.01 | combination | Remote regional management is modal and follows the existing campaign pause policy. | artifact-missing, integration-missing, static-only |
-| REQ-0300.01 | combination | If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. | artifact-missing, integration-missing, static-only |
-| REQ-0300.02 | combination | The main character's authoritative location remains unchanged unless the character actually travels. | artifact-missing, integration-missing, static-only |
-| REQ-0301.01 | combination | The player's main character keeps a separate physical-region/map location from the current command/view region. | artifact-missing, integration-missing, static-only |
-| REQ-0301.02 | combination | Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model. | artifact-missing, integration-missing, static-only |
-| REQ-0302.01 | combination | Multiple regions may contain player-owned troops and holdings at the same campaign time. | artifact-missing, integration-missing, static-only |
+| REQ-0296.01 | combination | The player can manage owned or authorized holdings in other regions without physically traveling there. | none |
+| REQ-0297.01 | combination | Remote regional access supports both management and active command. | none |
+| REQ-0297.02 | combination | Switching to another owned/authorized region changes the camera and control context to that region so the player can click buildings and directly command eligible local troops there. | none |
+| REQ-0298.01 | combination | Entering a remote regional management view does not move the player's character, party, army, fleet, or authoritative physical campaign location. | none |
+| REQ-0299.01 | combination | Remote regional management is modal and follows the existing campaign pause policy. | none |
+| REQ-0300.01 | combination | If the requested command region is on another physical map, switching active command context may load that map and reconstruct the eligible local military/building/character representations there. | none |
+| REQ-0300.02 | combination | The main character's authoritative location remains unchanged unless the character actually travels. | none |
+| REQ-0301.01 | combination | The player's main character keeps a separate physical-region/map location from the current command/view region. | none |
+| REQ-0301.02 | combination | Leaving remote command can load/reconstruct the character's physical map and return control there without teleporting the character through the world model. | none |
+| REQ-0302.01 | combination | Multiple regions may contain player-owned troops and holdings at the same campaign time. | none |
 | REQ-0302.02 | combination | Only the currently active command region needs full local Warcraft representations; player forces in other regions continue executing strategic orders and simulation in abstract state until their region becomes active. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0303.01 | combination | Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world. | artifact-missing, integration-missing, static-only |
+| REQ-0303.01 | combination | Switching active command regions must preserve ongoing orders, battles, construction, movement, and other authoritative state so activity continues coherently across the whole world. | none |
 | REQ-0304.01 | combination | The feature may be opened from a world/region selector and by a player-facing command; exact command syntax can be chosen during UI implementation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| REQ-0305.01 | combination | Remote management shows only campaign information the player is already authorized to know. | artifact-missing, integration-missing, static-only |
+| REQ-0305.01 | combination | Remote management shows only campaign information the player is already authorized to know. | none |
 | REQ-0306.01 | combination | The player remains an individual. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0306.02 | combination | A country screen is reachable from a known country, its known ruler/government, map context, or a relevant quest; every entry path applies the same persistent discovery filter. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | REQ-0307.01 | combination | The screen reports the current relation and war state, whether the player currently serves the polity, immutable-origin/history relevance, reputation, favor and service standing, known government, active wars, discovered partners, territorial disputes/occupations, and currently eligible government interactions. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -552,10 +552,10 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0048.01 | combination | Armies/fleets | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
 | ROAD-0049.01 | combination | City capture/rebuild | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0050.01 | combination | Titles/land/taxation | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0051.01 | combination | Characters/relationships | artifact-missing, integration-missing, static-only |
-| ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | artifact-missing, integration-missing, static-only |
+| ROAD-0051.01 | combination | Characters/relationships | integration-missing, static-only |
+| ROAD-0052.01 | combination | Controller military tradition / category combat-experience progression | none |
 | ROAD-0053.01 | combination | Equipment set definitions and partial/full threshold-bonus resolution | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
-| ROAD-0054.01 | combination | Quests/events/exploration | artifact-missing, integration-missing, static-only |
+| ROAD-0054.01 | combination | Quests/events/exploration | integration-missing, static-only |
 | ROAD-0055.01 | mechanism | Early performance stress harness and provisional budgets | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0056.01 | mechanism | Synthetic large-world simulation tests before full content population | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0057.01 | mechanism | Maximum-reasonable local battle performance test | artifact-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -563,7 +563,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0059.01 | combination | Multi-map campaign packaging and per-region/subregion physical map build pipeline | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0060.01 | combination | Cross-map campaign persistence, visited-map reconstruction, and versioned state transfer | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0061.01 | combination | Regional instance activation, boundary transitions, and cross-map/cross-region travel | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0062.01 | combination | Cross-region troop command and remote regional building management (authoritative simulation and physical command-map handoff; native launch acceptance remains separate) | artifact-missing, integration-missing, static-only |
+| ROAD-0062.01 | combination | Cross-region troop command and remote regional building management (authoritative simulation and physical command-map handoff; native launch acceptance remains separate) | none |
 | ROAD-0063.01 | combination | World/region map presentation, discovery knowledge, and reusable location/search-area focus APIs | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0064.01 | combination | Custom quest journal and quest-to-map tracking integration | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0065.01 | combination | Europe | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
@@ -633,7 +633,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 | ROAD-0127.01 | combination | Expand historical rulers, commanders, admirals, recruitable characters, generated officials, personal quests, relationships, and office/command assignments. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0128.01 | combination | Expand the prototype goods catalogue into the authored settlement-level global commodity/trade set with production, consumption, availability, pricing, logistics, and regional differentiation. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0129.01 | combination | Expand technology/institution progression and historical/conditional event coverage across 1450–1820. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
-| ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | artifact-missing, integration-missing, static-only |
+| ROAD-0130.01 | combination | Expand regional quests, campaign-spanning quest chains, personal quests, treasures, secrets, discoveries, and other exploration content. | integration-missing, static-only |
 | ROAD-0131.01 | combination | Audit every major region, polity, era, military category, settlement role, economy role, character role, quest type, treasure type, and progression branch for materially thin or placeholder-like player-facing content. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0132.01 | combination | Expand 1450 settlement coverage to historically grounded release-scale density, targeting roughly 800-1,200 meaningful authored settlements with real-world placement and appropriate polity/province/control context. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, unmapped, unpersisted, unreachable |
 | ROAD-0133.01 | combination | Expand player-use stores and RPG inventory: region/era-aware merchant archetypes, common/regional/polity-specific/rare/unique equipment and consumables, item levels/rarities/comparison UI, 100+ unique/historical items, and roughly 50-80 equipment sets. | artifact-missing, authority-missing, integration-missing, mechanism-missing, state-unmapped, static-only, unpersisted, unreachable |
@@ -684,7 +684,7 @@ Each row is an individual obligation. Source and compiled markers are supplement
 - DEP-combat-tradition: Legal combat credits controller-specific tradition and reapplies modifiers to active and abstract forces. — fail (REQ-0154.01, REQ-0155.01, REQ-0156.02)
 - DEP-autosave-transition: Autosave defers unsafe state changes and boundary travel commits before reconstruction. — fail (REQ-0187.01, REQ-0224.01, REQ-0233.01)
 - DEP-recovery-navigation: Unstuck uses active entity identity and connected navigation zones without moving abstract units. — fail (REQ-0196.01, REQ-0199.01, REQ-0200.01, REQ-0202.01)
-- DEP-god-controller-reconstruction: Recovery protection follows acquired player objects and same-session reconstruction but resets on campaign load. — fail (REQ-0210.01, REQ-0212.02, REQ-0213.01)
+- DEP-god-controller-reconstruction: Recovery protection follows acquired player objects and same-session reconstruction but resets on campaign load. — pass (REQ-0210.01, REQ-0212.02, REQ-0213.01)
 - DEP-modal-ai: Opening and closing modal screens suspends and restores strategic AI processing. — fail (REQ-0216.01, REQ-0219.01, REQ-0022.01)
 - DEP-modal-trade-clock: Modal trade UI suspends economy and event ticks without resetting transaction history. — fail (REQ-0216.01, REQ-0062.02, REQ-0064.02)
 - DEP-modal-remote-orders: Remote management pauses local and strategic simulation while preserving orders and character location. — fail (REQ-0299.01, REQ-0303.01, REQ-0220.01)
@@ -708,83 +708,102 @@ Counts are unique stable IDs; per-map assignments, missing/extra/changed IDs and
 
 | Catalogue | Source | Packaged union | Status |
 |---|---:|---:|---|
-| settlements | 827 | None | fail |
-| polities | 230 | None | fail |
-| provinces | 281 | None | fail |
-| goods | 90 | None | fail |
-| markets | 827 | None | fail |
-| military-variants | 472 | None | fail |
-| heroes | 107 | None | fail |
-| items | 468 | None | fail |
-| equipment-sets | 51 | None | fail |
-| technologies | 181 | None | fail |
-| institutions | 25 | None | fail |
-| campaign-quests | 304 | None | fail |
-| personal-quests | 107 | None | fail |
-| local-quest-families | 16 | None | fail |
-| events | 204 | None | fail |
-| faiths | 7 | None | fail |
-| religion-policies | 3 | None | fail |
-| regions | 7 | None | fail |
-| regional-instances | 50 | None | fail |
-| boundaries | 34 | None | fail |
-| routes | 5 | None | fail |
-| navigation-zones | 95 | None | fail |
-| treasures | 28 | None | fail |
-| treasure-locations | 35 | None | fail |
-| merchant-archetypes | 11 | None | fail |
-| rarities | 7 | None | fail |
-| item-effects | 78 | None | fail |
-| military-traditions | 2 | None | fail |
-| defense-layouts | 792 | None | fail |
-| city-cores | 792 | None | fail |
-| ship-refits | 11 | None | fail |
-| ship-milestones | 5 | None | fail |
-| hero-abilities | 6 | None | fail |
-| hero-masteries | 6 | None | fail |
-| title-styles | 231 | None | fail |
-| government-forms | 3 | None | fail |
-| pirate-havens | 2 | None | fail |
-| strategic-units | 2 | None | fail |
-| armies | 1 | None | fail |
-| fleets | 1 | None | fail |
-| government-profiles | 230 | None | fail |
-| treaty-clauses | 10 | None | fail |
-| merchant-standing-tiers | 3 | None | fail |
-| audio-assets | 17 | None | fail |
-| treasure-clues | 4 | None | fail |
-| settlement-services | 9 | None | fail |
-| timeline-eras | 1 | None | fail |
-| timeline-event-definitions | 204 | None | fail |
-| timeline-schedules | 204 | None | fail |
-| navigation-safe-points | 3 | None | fail |
-| initial-unit-navigation | 1 | None | fail |
-| settlement-object-templates | 5 | None | fail |
-| officers | 2 | None | fail |
-| military-runtime-templates | 2 | None | fail |
-| character-traits | 6 | None | fail |
-| character-skills | 7 | None | fail |
-| character-professions | 6 | None | fail |
-| relationship-thresholds | 3 | None | fail |
-| companion-relationships | 10 | None | fail |
-| research-branches | 12 | None | fail |
-| polity-research-state | 230 | None | fail |
-| province-adoption-state | 281 | None | fail |
-| title-grants | 230 | None | fail |
-| territorial-holdings | 281 | None | fail |
-| allegiances | 12 | None | fail |
-| geographic-areas | 7 | None | fail |
-| geographic-anchors | 19 | None | fail |
-| logical-boundaries | 6 | None | fail |
-| quest-locations | 20 | None | fail |
+| settlements | 827 | 827 | pass |
+| polities | 230 | 230 | pass |
+| provinces | 281 | 278 | fail |
+| goods | 90 | 90 | pass |
+| markets | 827 | 827 | pass |
+| military-variants | 472 | 0 | fail |
+| heroes | 107 | 107 | pass |
+| items | 468 | 468 | pass |
+| equipment-sets | 51 | 51 | pass |
+| technologies | 181 | 181 | pass |
+| institutions | 25 | 25 | pass |
+| campaign-quests | 304 | 304 | pass |
+| personal-quests | 107 | 0 | fail |
+| local-quest-families | 16 | 0 | fail |
+| events | 204 | 204 | fail |
+| faiths | 7 | 7 | pass |
+| religion-policies | 3 | 3 | fail |
+| regions | 7 | 7 | fail |
+| regional-instances | 50 | 50 | fail |
+| boundaries | 34 | 34 | fail |
+| routes | 5 | 5 | fail |
+| navigation-zones | 95 | 0 | fail |
+| treasures | 28 | 28 | pass |
+| treasure-locations | 35 | 35 | fail |
+| merchant-archetypes | 11 | 11 | fail |
+| rarities | 7 | 7 | fail |
+| item-effects | 78 | 78 | fail |
+| military-traditions | 2 | 2 | fail |
+| defense-layouts | 792 | 792 | fail |
+| city-cores | 792 | 0 | fail |
+| ship-refits | 11 | 0 | fail |
+| ship-milestones | 5 | 0 | fail |
+| hero-abilities | 6 | 0 | fail |
+| hero-masteries | 6 | 0 | fail |
+| title-styles | 231 | 0 | fail |
+| government-forms | 3 | 3 | fail |
+| pirate-havens | 2 | 2 | fail |
+| strategic-units | 2 | 2 | pass |
+| armies | 1 | 1 | fail |
+| fleets | 1 | 1 | fail |
+| government-profiles | 230 | 230 | fail |
+| treaty-clauses | 10 | 0 | fail |
+| merchant-standing-tiers | 3 | 0 | fail |
+| audio-assets | 17 | 17 | fail |
+| treasure-clues | 4 | 4 | fail |
+| settlement-services | 9 | 0 | fail |
+| timeline-eras | 1 | 1 | fail |
+| timeline-event-definitions | 204 | 204 | fail |
+| timeline-schedules | 204 | 204 | fail |
+| navigation-safe-points | 3 | 0 | fail |
+| initial-unit-navigation | 1 | 0 | fail |
+| settlement-object-templates | 5 | 0 | fail |
+| officers | 2 | 0 | fail |
+| military-runtime-templates | 2 | 2 | fail |
+| character-traits | 6 | 0 | fail |
+| character-skills | 7 | 0 | fail |
+| character-professions | 6 | 0 | fail |
+| relationship-thresholds | 3 | 0 | fail |
+| companion-relationships | 10 | 0 | fail |
+| research-branches | 12 | 0 | fail |
+| polity-research-state | 230 | 0 | fail |
+| province-adoption-state | 281 | 0 | fail |
+| title-grants | 230 | 0 | fail |
+| territorial-holdings | 281 | 278 | fail |
+| allegiances | 12 | 0 | fail |
+| geographic-areas | 7 | 7 | fail |
+| geographic-anchors | 19 | 19 | fail |
+| logical-boundaries | 6 | 6 | fail |
+| quest-locations | 20 | 0 | fail |
+
+settlements projection policy: **pass** across 827 authoritative IDs. Authored policy values and independent compiled-policy differences are retained in JSON.
 
 ## Final artifact byte composition
 
-No final W3N supplied. Byte composition and packaged evidence are unavailable; publication is blocked.
+W3N SHA-256: `4758e81dc4f409fcaea3ce4431233b88cacfb0ac0625d9682fd3bacd7eb03b6b`
+
+Outer and nested views are separate. Stored categories plus container overhead equal archive bytes; decoded categories expose compression. Size is not a correctness gate.
+
+| Category | Outer stored | Outer decoded | Nested stored | Nested decoded |
+|---|---:|---:|---:|---:|
+| compiled_lua | 0 | 0 | 42300239 | 265759382 |
+| runtime_data | 0 | 0 | 18390416 | 105227446 |
+| terrain | 0 | 0 | 52953 | 1430412 |
+| pathing | 0 | 0 | 45900 | 3211536 |
+| object_data | 0 | 0 | 12505 | 127265 |
+| imported_assets | 0 | 0 | 641325 | 6456362 |
+| campaign_metadata | 4452 | 4452 | 0 | 0 |
+| map_metadata | 0 | 0 | 31408 | 3220291 |
+| embedded_maps | 61533472 | 61533472 | 0 | 0 |
+| archive_metadata | 502 | 502 | 9798 | 38828 |
+| other | 0 | 0 | 0 | 0 |
+
+Final archive: 61539818 bytes. Container overhead: 1392 outer bytes, 48928 nested bytes.
 
 ## Blockers
 
-- artifact [artifact-missing]: exact final W3N has not been supplied
 - REQ-0001.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0001.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0001.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -1333,18 +1352,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0036.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0036.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0036.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0037.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0037.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0037.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0037.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0037.01 [static-only]: source references cannot establish executed integration
-- REQ-0037.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0038.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0038.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0038.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0038.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0038.01 [static-only]: source references cannot establish executed integration
-- REQ-0038.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0039.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0039.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0039.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -2233,30 +2240,16 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0090.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0090.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0090.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0091.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0091.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0091.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0091.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0091.01 [static-only]: source references cannot establish executed integration
-- REQ-0091.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0091.02 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0091.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0091.02 [static-only]: source references cannot establish executed integration
-- REQ-0091.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0092.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0092.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0092.01 [static-only]: source references cannot establish executed integration
-- REQ-0092.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0093.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0093.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0093.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0093.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0093.01 [static-only]: source references cannot establish executed integration
-- REQ-0093.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0094.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0094.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0094.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -2293,12 +2286,7 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0095.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0095.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0095.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0096.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0096.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0096.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0096.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0096.01 [static-only]: source references cannot establish executed integration
-- REQ-0096.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0097.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0097.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0097.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -3339,12 +3327,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0153.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0153.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0153.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0154.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0154.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0154.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0154.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0154.01 [static-only]: source references cannot establish executed integration
-- REQ-0154.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0154.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0154.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0154.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -3371,25 +3353,10 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0155.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0155.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0155.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0155.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0155.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0155.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0155.02 [static-only]: source references cannot establish executed integration
-- REQ-0155.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0156.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0156.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0156.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0156.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0156.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0156.01 [static-only]: source references cannot establish executed integration
-- REQ-0156.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0156.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0156.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0156.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0156.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0156.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0156.02 [static-only]: source references cannot establish executed integration
-- REQ-0156.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0157.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0157.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0157.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -3404,17 +3371,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0157.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0157.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0157.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0157.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0157.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0157.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0157.02 [static-only]: source references cannot establish executed integration
-- REQ-0157.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0158.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0158.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0158.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0158.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0158.01 [static-only]: source references cannot establish executed integration
-- REQ-0158.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0158.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0158.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0158.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -3453,52 +3409,16 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0159.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0160.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0160.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0160.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0160.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0160.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0160.01 [static-only]: source references cannot establish executed integration
-- REQ-0160.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0160.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0160.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0160.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0160.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0160.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0160.02 [static-only]: source references cannot establish executed integration
-- REQ-0160.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0161.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0161.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0161.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0161.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0161.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0161.01 [static-only]: source references cannot establish executed integration
-- REQ-0161.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0162.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0162.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0162.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0162.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0162.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0162.01 [static-only]: source references cannot establish executed integration
-- REQ-0162.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0163.01 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0163.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0163.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0163.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0163.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0163.01 [static-only]: source references cannot establish executed integration
-- REQ-0163.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0163.02 [unpersisted]: transition behavior/path is absent or stale
 - REQ-0163.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0163.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0163.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0163.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0163.02 [static-only]: source references cannot establish executed integration
-- REQ-0163.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0164.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0164.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0164.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0164.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0164.01 [static-only]: source references cannot establish executed integration
-- REQ-0164.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0165.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0165.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0165.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -3812,19 +3732,9 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0180.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0180.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0181.01 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0181.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0181.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0181.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0181.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0181.01 [static-only]: source references cannot establish executed integration
-- REQ-0181.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0181.02 [state-unmapped]: owner, mutation, rejection and player-visible outcome must be explicit
-- REQ-0181.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0181.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0181.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0181.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0181.02 [static-only]: source references cannot establish executed integration
-- REQ-0181.02 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0182.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0182.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0182.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -3847,30 +3757,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0183.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0183.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0183.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0184.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0184.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0184.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0184.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0184.01 [static-only]: source references cannot establish executed integration
-- REQ-0184.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0185.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0185.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0185.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0185.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0185.01 [static-only]: source references cannot establish executed integration
-- REQ-0185.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0186.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0186.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0186.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0186.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0186.01 [static-only]: source references cannot establish executed integration
-- REQ-0186.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0187.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0187.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0187.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0187.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0187.01 [static-only]: source references cannot establish executed integration
-- REQ-0187.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0188.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0188.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0188.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -3893,180 +3779,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0189.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0189.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0189.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0190.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0190.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0190.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0190.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0190.01 [static-only]: source references cannot establish executed integration
-- REQ-0190.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0191.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0191.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0191.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0191.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0191.01 [static-only]: source references cannot establish executed integration
-- REQ-0191.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0192.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0192.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0192.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0192.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0192.01 [static-only]: source references cannot establish executed integration
-- REQ-0192.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0193.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0193.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0193.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0193.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0193.01 [static-only]: source references cannot establish executed integration
-- REQ-0193.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0194.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0194.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0194.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0194.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0194.01 [static-only]: source references cannot establish executed integration
-- REQ-0194.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0195.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0195.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0195.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0195.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0195.01 [static-only]: source references cannot establish executed integration
-- REQ-0195.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0196.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0196.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0196.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0196.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0196.01 [static-only]: source references cannot establish executed integration
-- REQ-0196.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0197.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0197.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0197.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0197.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0197.01 [static-only]: source references cannot establish executed integration
-- REQ-0197.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0198.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0198.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0198.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0198.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0198.01 [static-only]: source references cannot establish executed integration
-- REQ-0198.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0199.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0199.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0199.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0199.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0199.01 [static-only]: source references cannot establish executed integration
-- REQ-0199.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0200.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0200.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0200.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0200.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0200.01 [static-only]: source references cannot establish executed integration
-- REQ-0200.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0201.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0201.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0201.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0201.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0201.01 [static-only]: source references cannot establish executed integration
-- REQ-0201.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0202.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0202.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0202.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0202.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0202.01 [static-only]: source references cannot establish executed integration
-- REQ-0202.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0203.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0203.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0203.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0203.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0203.01 [static-only]: source references cannot establish executed integration
-- REQ-0203.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0204.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0204.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0204.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0204.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0204.01 [static-only]: source references cannot establish executed integration
-- REQ-0204.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0205.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0205.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0205.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0205.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0205.01 [static-only]: source references cannot establish executed integration
-- REQ-0205.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0205.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0205.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0205.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0205.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0205.02 [static-only]: source references cannot establish executed integration
-- REQ-0205.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0206.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0206.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0206.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0206.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0206.01 [static-only]: source references cannot establish executed integration
-- REQ-0206.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0207.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0207.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0207.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0207.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0207.01 [static-only]: source references cannot establish executed integration
-- REQ-0207.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0208.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0208.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0208.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0208.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0208.01 [static-only]: source references cannot establish executed integration
-- REQ-0208.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0209.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0209.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0209.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0209.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0209.01 [static-only]: source references cannot establish executed integration
-- REQ-0209.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0209.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0209.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0209.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0209.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0209.02 [static-only]: source references cannot establish executed integration
-- REQ-0209.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0210.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0210.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0210.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0210.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0210.01 [static-only]: source references cannot establish executed integration
-- REQ-0210.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0211.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0211.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0211.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0211.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0211.01 [static-only]: source references cannot establish executed integration
-- REQ-0211.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0211.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0211.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0211.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0211.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0211.02 [static-only]: source references cannot establish executed integration
-- REQ-0211.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0212.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0212.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0212.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0212.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0212.01 [static-only]: source references cannot establish executed integration
-- REQ-0212.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0212.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0212.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0212.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0212.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0212.02 [static-only]: source references cannot establish executed integration
-- REQ-0212.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0213.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0213.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0213.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0213.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0213.01 [static-only]: source references cannot establish executed integration
-- REQ-0213.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0214.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0214.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0214.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0214.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0214.01 [static-only]: source references cannot establish executed integration
-- REQ-0214.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0215.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0215.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - REQ-0215.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -5477,66 +5189,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0295.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0295.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0295.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0296.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0296.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0296.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0296.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0296.01 [static-only]: source references cannot establish executed integration
-- REQ-0296.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0297.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0297.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0297.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0297.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0297.01 [static-only]: source references cannot establish executed integration
-- REQ-0297.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0297.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0297.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0297.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0297.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0297.02 [static-only]: source references cannot establish executed integration
-- REQ-0297.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0298.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0298.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0298.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0298.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0298.01 [static-only]: source references cannot establish executed integration
-- REQ-0298.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0299.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0299.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0299.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0299.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0299.01 [static-only]: source references cannot establish executed integration
-- REQ-0299.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0300.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0300.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0300.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0300.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0300.01 [static-only]: source references cannot establish executed integration
-- REQ-0300.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0300.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0300.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0300.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0300.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0300.02 [static-only]: source references cannot establish executed integration
-- REQ-0300.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0301.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0301.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0301.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0301.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0301.01 [static-only]: source references cannot establish executed integration
-- REQ-0301.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0301.02 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0301.02 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0301.02 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0301.02 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0301.02 [static-only]: source references cannot establish executed integration
-- REQ-0301.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0302.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0302.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0302.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0302.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0302.01 [static-only]: source references cannot establish executed integration
-- REQ-0302.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0302.02 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0302.02 [authority-missing]: scenario content authority is absent or stale
 - REQ-0302.02 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -5549,12 +5201,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0302.02 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0302.02 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0302.02 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0303.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0303.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0303.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0303.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0303.01 [static-only]: source references cannot establish executed integration
-- REQ-0303.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0304.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0304.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0304.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -5567,12 +5213,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - REQ-0304.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - REQ-0304.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - REQ-0304.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- REQ-0305.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- REQ-0305.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- REQ-0305.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- REQ-0305.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- REQ-0305.01 [static-only]: source references cannot establish executed integration
-- REQ-0305.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - REQ-0306.01 [unmapped]: no explicit requirement-to-production mapping
 - REQ-0306.01 [authority-missing]: scenario content authority is absent or stale
 - REQ-0306.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -6696,13 +6336,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0051.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0051.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0051.01 [static-only]: source references cannot establish executed integration
-- ROAD-0051.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0052.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- ROAD-0052.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- ROAD-0052.01 [integration-missing]: stale: current executable production-adapter evidence is absent
-- ROAD-0052.01 [integration-missing]: replay: current executable production-adapter evidence is absent
-- ROAD-0052.01 [static-only]: source references cannot establish executed integration
-- ROAD-0052.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0053.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0053.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - ROAD-0053.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -6720,7 +6353,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0054.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0054.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0054.01 [static-only]: source references cannot establish executed integration
-- ROAD-0054.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0055.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0055.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
 - ROAD-0055.01 [unreachable]: production entry/registration/call chain is absent or stale
@@ -6788,10 +6420,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0061.01 [integration-missing]: success: current executable production-adapter evidence is absent
 - ROAD-0061.01 [integration-missing]: failure: current executable production-adapter evidence is absent
 - ROAD-0061.01 [artifact-missing]: compiled implementation/registration evidence is absent
-- ROAD-0062.01 [integration-missing]: success: current executable production-adapter evidence is absent
-- ROAD-0062.01 [integration-missing]: failure: current executable production-adapter evidence is absent
-- ROAD-0062.01 [static-only]: source references cannot establish executed integration
-- ROAD-0062.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0063.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0063.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0063.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -7506,7 +7134,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - ROAD-0130.01 [integration-missing]: stale: current executable production-adapter evidence is absent
 - ROAD-0130.01 [integration-missing]: replay: current executable production-adapter evidence is absent
 - ROAD-0130.01 [static-only]: source references cannot establish executed integration
-- ROAD-0130.01 [artifact-missing]: compiled implementation/registration evidence is absent
 - ROAD-0131.01 [unmapped]: no explicit requirement-to-production mapping
 - ROAD-0131.01 [authority-missing]: scenario content authority is absent or stale
 - ROAD-0131.01 [mechanism-missing]: reusable mechanism evidence is absent or stale
@@ -7702,7 +7329,6 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - DEP-combat-tradition [dependency-uncovered]: Legal combat credits controller-specific tradition and reapplies modifiers to active and abstract forces.
 - DEP-autosave-transition [dependency-uncovered]: Autosave defers unsafe state changes and boundary travel commits before reconstruction.
 - DEP-recovery-navigation [dependency-uncovered]: Unstuck uses active entity identity and connected navigation zones without moving abstract units.
-- DEP-god-controller-reconstruction [dependency-uncovered]: Recovery protection follows acquired player objects and same-session reconstruction but resets on campaign load.
 - DEP-modal-ai [dependency-uncovered]: Opening and closing modal screens suspends and restores strategic AI processing.
 - DEP-modal-trade-clock [dependency-uncovered]: Modal trade UI suspends economy and event ticks without resetting transaction history.
 - DEP-modal-remote-orders [dependency-uncovered]: Remote management pauses local and strategic simulation while preserving orders and character location.
@@ -7719,72 +7345,1825 @@ No final W3N supplied. Byte composition and packaged evidence are unavailable; p
 - DEP-hero-office-progression [dependency-uncovered]: Heroes retain invested progression, loyalty and physical identity across remote command and civil offices.
 - DEP-quest-map-travel [dependency-uncovered]: Quest route and return assistance uses earned knowledge without teleporting or changing physical location.
 - DEP-inactive-world-simulation [dependency-uncovered]: Unloaded regions retain economy, armies, wars, events and changed settlement state on reconstruction.
-- catalogues [census-mismatch]: settlements: final runtime payload not inspected
-- catalogues [census-mismatch]: polities: final runtime payload not inspected
-- catalogues [census-mismatch]: provinces: final runtime payload not inspected
-- catalogues [census-mismatch]: goods: final runtime payload not inspected
-- catalogues [census-mismatch]: markets: final runtime payload not inspected
-- catalogues [census-mismatch]: military-variants: final runtime payload not inspected
-- catalogues [census-mismatch]: heroes: final runtime payload not inspected
-- catalogues [census-mismatch]: items: final runtime payload not inspected
-- catalogues [census-mismatch]: equipment-sets: final runtime payload not inspected
-- catalogues [census-mismatch]: technologies: final runtime payload not inspected
-- catalogues [census-mismatch]: institutions: final runtime payload not inspected
-- catalogues [census-mismatch]: campaign-quests: final runtime payload not inspected
-- catalogues [census-mismatch]: personal-quests: final runtime payload not inspected
-- catalogues [census-mismatch]: local-quest-families: final runtime payload not inspected
-- catalogues [census-mismatch]: events: final runtime payload not inspected
-- catalogues [census-mismatch]: faiths: final runtime payload not inspected
-- catalogues [census-mismatch]: religion-policies: final runtime payload not inspected
-- catalogues [census-mismatch]: regions: final runtime payload not inspected
-- catalogues [census-mismatch]: regional-instances: final runtime payload not inspected
-- catalogues [census-mismatch]: boundaries: final runtime payload not inspected
-- catalogues [census-mismatch]: routes: final runtime payload not inspected
-- catalogues [census-mismatch]: navigation-zones: final runtime payload not inspected
-- catalogues [census-mismatch]: treasures: final runtime payload not inspected
-- catalogues [census-mismatch]: treasure-locations: final runtime payload not inspected
-- catalogues [census-mismatch]: merchant-archetypes: final runtime payload not inspected
-- catalogues [census-mismatch]: rarities: final runtime payload not inspected
-- catalogues [census-mismatch]: item-effects: final runtime payload not inspected
-- catalogues [census-mismatch]: military-traditions: final runtime payload not inspected
-- catalogues [census-mismatch]: defense-layouts: final runtime payload not inspected
-- catalogues [census-mismatch]: city-cores: final runtime payload not inspected
-- catalogues [census-mismatch]: ship-refits: final runtime payload not inspected
-- catalogues [census-mismatch]: ship-milestones: final runtime payload not inspected
-- catalogues [census-mismatch]: hero-abilities: final runtime payload not inspected
-- catalogues [census-mismatch]: hero-masteries: final runtime payload not inspected
-- catalogues [census-mismatch]: title-styles: final runtime payload not inspected
-- catalogues [census-mismatch]: government-forms: final runtime payload not inspected
-- catalogues [census-mismatch]: pirate-havens: final runtime payload not inspected
-- catalogues [census-mismatch]: strategic-units: final runtime payload not inspected
-- catalogues [census-mismatch]: armies: final runtime payload not inspected
-- catalogues [census-mismatch]: fleets: final runtime payload not inspected
-- catalogues [census-mismatch]: government-profiles: final runtime payload not inspected
-- catalogues [census-mismatch]: treaty-clauses: final runtime payload not inspected
-- catalogues [census-mismatch]: merchant-standing-tiers: final runtime payload not inspected
-- catalogues [census-mismatch]: audio-assets: final runtime payload not inspected
-- catalogues [census-mismatch]: treasure-clues: final runtime payload not inspected
-- catalogues [census-mismatch]: settlement-services: final runtime payload not inspected
-- catalogues [census-mismatch]: timeline-eras: final runtime payload not inspected
-- catalogues [census-mismatch]: timeline-event-definitions: final runtime payload not inspected
-- catalogues [census-mismatch]: timeline-schedules: final runtime payload not inspected
-- catalogues [census-mismatch]: navigation-safe-points: final runtime payload not inspected
-- catalogues [census-mismatch]: initial-unit-navigation: final runtime payload not inspected
-- catalogues [census-mismatch]: settlement-object-templates: final runtime payload not inspected
-- catalogues [census-mismatch]: officers: final runtime payload not inspected
-- catalogues [census-mismatch]: military-runtime-templates: final runtime payload not inspected
-- catalogues [census-mismatch]: character-traits: final runtime payload not inspected
-- catalogues [census-mismatch]: character-skills: final runtime payload not inspected
-- catalogues [census-mismatch]: character-professions: final runtime payload not inspected
-- catalogues [census-mismatch]: relationship-thresholds: final runtime payload not inspected
-- catalogues [census-mismatch]: companion-relationships: final runtime payload not inspected
-- catalogues [census-mismatch]: research-branches: final runtime payload not inspected
-- catalogues [census-mismatch]: polity-research-state: final runtime payload not inspected
-- catalogues [census-mismatch]: province-adoption-state: final runtime payload not inspected
-- catalogues [census-mismatch]: title-grants: final runtime payload not inspected
-- catalogues [census-mismatch]: territorial-holdings: final runtime payload not inspected
-- catalogues [census-mismatch]: allegiances: final runtime payload not inspected
-- catalogues [census-mismatch]: geographic-areas: final runtime payload not inspected
-- catalogues [census-mismatch]: geographic-anchors: final runtime payload not inspected
-- catalogues [census-mismatch]: logical-boundaries: final runtime payload not inspected
-- catalogues [census-mismatch]: quest-locations: final runtime payload not inspected
+- catalogues [census-mismatch]: provinces: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: provinces: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: military-variants: europe_west: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: europe_central_east: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: africa: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: middle_east_india: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: southeast_asia: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: east_asia: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: americas_north_central: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: americas_caribbean: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: americas_south: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: americas_pacific_transition: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_north: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_west: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_melanesia: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_polynesia: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_new_zealand: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: pacific_open_ocean_encounter: missing catalogue selector militaryArchetypes
+- catalogues [census-mismatch]: military-variants: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-variants: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: military-variants: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: personal-quests: europe_west: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: europe_central_east: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: africa: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: middle_east_india: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: southeast_asia: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: east_asia: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: americas_north_central: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: americas_caribbean: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: americas_south: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: americas_pacific_transition: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_north: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_west: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_melanesia: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_polynesia: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_new_zealand: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: pacific_open_ocean_encounter: missing catalogue selector personalQuests
+- catalogues [census-mismatch]: personal-quests: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: personal-quests: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: personal-quests: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: local-quest-families: europe_west: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: europe_central_east: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: africa: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: middle_east_india: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: southeast_asia: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: east_asia: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: americas_north_central: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: americas_caribbean: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: americas_south: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: americas_pacific_transition: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_north: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_west: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_melanesia: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_polynesia: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_new_zealand: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: pacific_open_ocean_encounter: missing catalogue selector localQuestFamilies
+- catalogues [census-mismatch]: local-quest-families: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: local-quest-families: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: local-quest-families: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: events: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: events: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: religion-policies: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regions: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: regional-instances: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: boundaries: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: routes: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: europe_west: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: europe_central_east: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: africa: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: middle_east_india: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: southeast_asia: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: east_asia: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: americas_north_central: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: americas_caribbean: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: americas_south: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: americas_pacific_transition: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_north: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_west: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_melanesia: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_polynesia: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_new_zealand: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: pacific_open_ocean_encounter: missing catalogue selector navigationZones
+- catalogues [census-mismatch]: navigation-zones: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-zones: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-zones: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: treasure-locations: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-locations: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-archetypes: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: rarities: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: item-effects: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-traditions: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: defense-layouts: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: europe_west: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: europe_central_east: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: africa: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: middle_east_india: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: southeast_asia: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: east_asia: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: americas_north_central: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: americas_caribbean: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: americas_south: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: americas_pacific_transition: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_north: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_west: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_melanesia: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_polynesia: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_new_zealand: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: pacific_open_ocean_encounter: missing catalogue selector cityCores
+- catalogues [census-mismatch]: city-cores: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: city-cores: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: city-cores: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: ship-refits: europe_west: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: europe_central_east: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: africa: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: middle_east_india: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: southeast_asia: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: east_asia: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: americas_north_central: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: americas_caribbean: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: americas_south: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: americas_pacific_transition: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_north: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_west: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_melanesia: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_polynesia: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_new_zealand: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: pacific_open_ocean_encounter: missing catalogue selector shipRefits
+- catalogues [census-mismatch]: ship-refits: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-refits: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-refits: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: ship-milestones: europe_west: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: europe_central_east: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: africa: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: middle_east_india: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: southeast_asia: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: east_asia: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: americas_north_central: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: americas_caribbean: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: americas_south: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: americas_pacific_transition: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_north: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_west: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_melanesia: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_polynesia: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_new_zealand: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: pacific_open_ocean_encounter: missing catalogue selector shipMilestones
+- catalogues [census-mismatch]: ship-milestones: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: ship-milestones: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: ship-milestones: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: hero-abilities: europe_west: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: europe_central_east: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: africa: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: middle_east_india: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: southeast_asia: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: east_asia: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: americas_north_central: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: americas_caribbean: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: americas_south: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: americas_pacific_transition: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_north: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_west: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_melanesia: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_polynesia: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_new_zealand: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: pacific_open_ocean_encounter: missing catalogue selector heroAbilities
+- catalogues [census-mismatch]: hero-abilities: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-abilities: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-abilities: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: hero-masteries: europe_west: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: europe_central_east: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: africa: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: middle_east_india: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: southeast_asia: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: east_asia: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: americas_north_central: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: americas_caribbean: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: americas_south: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: americas_pacific_transition: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_north: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_west: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_melanesia: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_polynesia: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_new_zealand: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: pacific_open_ocean_encounter: missing catalogue selector heroMasteries
+- catalogues [census-mismatch]: hero-masteries: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: hero-masteries: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: hero-masteries: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: title-styles: europe_west: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: europe_central_east: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: africa: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: middle_east_india: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: southeast_asia: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: east_asia: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: americas_north_central: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: americas_caribbean: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: americas_south: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: americas_pacific_transition: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_north: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_west: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_melanesia: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_polynesia: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_new_zealand: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: pacific_open_ocean_encounter: missing catalogue selector titleStyles
+- catalogues [census-mismatch]: title-styles: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-styles: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-styles: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: government-forms: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-forms: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: pirate-havens: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: armies: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: fleets: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: government-profiles: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: europe_west: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: europe_central_east: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: africa: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: middle_east_india: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: southeast_asia: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: east_asia: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: americas_north_central: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: americas_caribbean: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: americas_south: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: americas_pacific_transition: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_north: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_west: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_melanesia: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_polynesia: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_new_zealand: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: pacific_open_ocean_encounter: missing catalogue selector treatyClauses
+- catalogues [census-mismatch]: treaty-clauses: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treaty-clauses: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: treaty-clauses: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_west: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_central_east: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: africa: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: middle_east_india: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: southeast_asia: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: east_asia: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_north_central: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_caribbean: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_south: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_pacific_transition: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_north: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_west: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_melanesia: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_polynesia: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_new_zealand: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_open_ocean_encounter: missing catalogue selector merchantStandingTiers
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: merchant-standing-tiers: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: merchant-standing-tiers: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: audio-assets: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: audio-assets: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: treasure-clues: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: europe_west: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: europe_central_east: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: africa: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: middle_east_india: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: southeast_asia: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: east_asia: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: americas_north_central: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: americas_caribbean: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: americas_south: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: americas_pacific_transition: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_north: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_west: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_melanesia: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_polynesia: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_new_zealand: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: pacific_open_ocean_encounter: missing catalogue selector settlementServiceDefinitions
+- catalogues [census-mismatch]: settlement-services: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-services: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-services: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: timeline-eras: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-eras: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-event-definitions: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: timeline-schedules: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: europe_west: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: europe_central_east: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: africa: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: middle_east_india: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: southeast_asia: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: east_asia: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: americas_north_central: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: americas_caribbean: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: americas_south: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: americas_pacific_transition: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_north: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_west: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_melanesia: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_polynesia: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_new_zealand: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: pacific_open_ocean_encounter: missing catalogue selector navigationSafePoints
+- catalogues [census-mismatch]: navigation-safe-points: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: navigation-safe-points: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: navigation-safe-points: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: europe_west: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: europe_central_east: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: africa: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: middle_east_india: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: southeast_asia: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: east_asia: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: americas_north_central: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: americas_caribbean: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: americas_south: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: americas_pacific_transition: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_north: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_west: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_melanesia: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_polynesia: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_new_zealand: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_open_ocean_encounter: missing catalogue selector activeUnitNavigationStates
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: initial-unit-navigation: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: initial-unit-navigation: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: settlement-object-templates: europe_west: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: europe_central_east: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: africa: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: middle_east_india: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: southeast_asia: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: east_asia: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: americas_north_central: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: americas_caribbean: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: americas_south: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: americas_pacific_transition: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_north: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_west: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_melanesia: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_polynesia: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_new_zealand: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: pacific_open_ocean_encounter: missing catalogue selector settlementObjectTemplates
+- catalogues [census-mismatch]: settlement-object-templates: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: settlement-object-templates: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: settlement-object-templates: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: officers: europe_west: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: europe_central_east: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: africa: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: middle_east_india: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: southeast_asia: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: east_asia: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: americas_north_central: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: americas_caribbean: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: americas_south: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: americas_pacific_transition: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_north: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_west: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_melanesia: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_polynesia: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_new_zealand: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: pacific_open_ocean_encounter: missing catalogue selector officers
+- catalogues [census-mismatch]: officers: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: officers: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: officers: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: military-runtime-templates: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: military-runtime-templates: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: europe_west: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: europe_central_east: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: africa: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: middle_east_india: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: southeast_asia: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: east_asia: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: americas_north_central: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: americas_caribbean: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: americas_south: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: americas_pacific_transition: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_north: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_west: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_melanesia: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_polynesia: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_new_zealand: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: pacific_open_ocean_encounter: missing catalogue selector traits
+- catalogues [census-mismatch]: character-traits: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-traits: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-traits: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: character-skills: europe_west: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: europe_central_east: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: africa: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: middle_east_india: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: southeast_asia: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: east_asia: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: americas_north_central: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: americas_caribbean: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: americas_south: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: americas_pacific_transition: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_north: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_west: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_melanesia: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_polynesia: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_new_zealand: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: pacific_open_ocean_encounter: missing catalogue selector skills
+- catalogues [census-mismatch]: character-skills: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-skills: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-skills: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: character-professions: europe_west: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: europe_central_east: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: africa: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: middle_east_india: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: southeast_asia: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: east_asia: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: americas_north_central: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: americas_caribbean: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: americas_south: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: americas_pacific_transition: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_north: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_west: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_melanesia: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_polynesia: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_new_zealand: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: pacific_open_ocean_encounter: missing catalogue selector professions
+- catalogues [census-mismatch]: character-professions: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: character-professions: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: character-professions: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: relationship-thresholds: europe_west: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: europe_central_east: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: africa: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: middle_east_india: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: southeast_asia: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: east_asia: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: americas_north_central: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: americas_caribbean: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: americas_south: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: americas_pacific_transition: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_north: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_west: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_melanesia: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_polynesia: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_new_zealand: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: pacific_open_ocean_encounter: missing catalogue selector relationshipThresholds
+- catalogues [census-mismatch]: relationship-thresholds: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: relationship-thresholds: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: relationship-thresholds: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: companion-relationships: europe_west: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: europe_central_east: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: africa: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: middle_east_india: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: southeast_asia: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: east_asia: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: americas_north_central: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: americas_caribbean: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: americas_south: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: americas_pacific_transition: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_north: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_west: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_melanesia: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_polynesia: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_new_zealand: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: pacific_open_ocean_encounter: missing catalogue selector companionRelationships
+- catalogues [census-mismatch]: companion-relationships: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: companion-relationships: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: companion-relationships: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: research-branches: europe_west: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: europe_central_east: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: africa: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: middle_east_india: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: southeast_asia: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: east_asia: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: americas_north_central: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: americas_caribbean: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: americas_south: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: americas_pacific_transition: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_north: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_west: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_melanesia: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_polynesia: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_new_zealand: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: pacific_open_ocean_encounter: missing catalogue selector researchBranches
+- catalogues [census-mismatch]: research-branches: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: research-branches: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: research-branches: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: polity-research-state: europe_west: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: europe_central_east: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: africa: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: middle_east_india: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: southeast_asia: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: east_asia: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: americas_north_central: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: americas_caribbean: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: americas_south: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: americas_pacific_transition: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_north: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_west: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_melanesia: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_polynesia: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_new_zealand: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: pacific_open_ocean_encounter: missing catalogue selector polityResearchStates
+- catalogues [census-mismatch]: polity-research-state: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: polity-research-state: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: polity-research-state: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: province-adoption-state: europe_west: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: europe_central_east: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: africa: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: middle_east_india: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: southeast_asia: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: east_asia: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: americas_north_central: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: americas_caribbean: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: americas_south: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: americas_pacific_transition: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_north: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_west: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_melanesia: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_polynesia: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_new_zealand: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: pacific_open_ocean_encounter: missing catalogue selector provinceAdoptionStates
+- catalogues [census-mismatch]: province-adoption-state: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: province-adoption-state: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: province-adoption-state: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: title-grants: europe_west: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: europe_central_east: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: africa: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: middle_east_india: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: southeast_asia: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: east_asia: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: americas_north_central: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: americas_caribbean: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: americas_south: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: americas_pacific_transition: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_north: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_west: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_melanesia: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_polynesia: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_new_zealand: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: pacific_open_ocean_encounter: missing catalogue selector titleGrants
+- catalogues [census-mismatch]: title-grants: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: title-grants: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: title-grants: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: territorial-holdings: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: territorial-holdings: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: allegiances: europe_west: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: europe_central_east: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: africa: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: middle_east_india: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: southeast_asia: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: east_asia: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: americas_north_central: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: americas_caribbean: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: americas_south: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: americas_pacific_transition: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_north: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_west: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_melanesia: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_polynesia: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_new_zealand: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: pacific_open_ocean_encounter: missing catalogue selector allegiances
+- catalogues [census-mismatch]: allegiances: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: allegiances: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: allegiances: campaign-wide catalogue identity/count mismatch
+- catalogues [census-mismatch]: geographic-areas: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-areas: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: geographic-anchors: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: logical-boundaries: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: europe_west: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: europe_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: europe_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: europe_central_east: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: europe_central_east: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: europe_central_east: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: africa: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: africa: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: africa: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: middle_east_india: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: middle_east_india: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: middle_east_india: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: southeast_asia: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: southeast_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: southeast_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: east_asia: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: east_asia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: east_asia: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: americas_north_central: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: americas_north_central: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: americas_north_central: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: americas_caribbean: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: americas_caribbean: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: americas_caribbean: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: americas_south: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: americas_south: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: americas_south: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: americas_pacific_transition: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: americas_pacific_transition: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: americas_pacific_transition: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_north: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_north: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_north: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_west: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_west: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_west: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_melanesia: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_melanesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_melanesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_polynesia: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_polynesia: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_polynesia: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_new_zealand: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_new_zealand: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_new_zealand: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: pacific_open_ocean_encounter: missing catalogue selector questLocations
+- catalogues [census-mismatch]: quest-locations: pacific_open_ocean_encounter: compiled catalogue registration mapping absent
+- catalogues [census-mismatch]: quest-locations: pacific_open_ocean_encounter: source-to-artifact mismatch
+- catalogues [census-mismatch]: quest-locations: campaign-wide catalogue identity/count mismatch
