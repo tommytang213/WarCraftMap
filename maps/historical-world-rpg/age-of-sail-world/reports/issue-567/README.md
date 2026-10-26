@@ -9,7 +9,7 @@ It does not implement the other missing research consumers.
 
 The pinned `frotty/wurstscript` image with digest
 `sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a`
-executed the complete 741/741 scenario suite. The six new survey tests and
+executed the complete 741/741 scenario suite. The five new survey tests and
 late-load rollback test passed. Their matched control observed the real
 `administrative_collect` probe after registered research, 100 payment, and
 90 campaign days, with annual collection 9450 versus 9000. The same pinned
