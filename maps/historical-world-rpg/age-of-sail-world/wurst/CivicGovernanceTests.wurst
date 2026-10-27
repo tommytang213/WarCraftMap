@@ -561,6 +561,49 @@ class CivicFixture
 	// Archives can resume after funding; municipality still fails current eligibility.
 	f.military.civic.states[0].taxesCollected.assertEquals(9000 + 9225)
 
+// #567: isolate paid survey collection from archives, municipal policy and
+// sibling civic effects. Research without the local action is a control.
+@test function civicSurveyMatchedControlProvesPaidCompletionAndConservedAnnualCollection()
+	let base = new CivicFixture()
+	let optional = new CivicFixture()
+	let surveyed = new CivicFixture()
+	base.military.civic.districts[0].annualTax = 10000
+	optional.military.civic.districts[0].annualTax = 10000
+	surveyed.military.civic.districts[0].annualTax = 10000
+	optional.prerequisites()
+	surveyed.prerequisites()
+	optional.unlock("cadastral_survey")
+	surveyed.unlock("cadastral_survey")
+	surveyed.research.rate("player", "land_tax_collection_efficiency").assertEquals(500)
+	surveyed.action("survey")
+	surveyed.campaign.countries.treasury[0].assertEquals(9900)
+	surveyed.military.civic.states[0].surveyReady.assertEquals(surveyed.day + 90)
+	surveyed.advance(89)
+	surveyed.military.civic.states[0].surveyed.assertFalse()
+	surveyed.military.civic.states[0].taxesCollected.assertEquals(0)
+	surveyed.advance(90)
+	surveyed.military.civic.states[0].surveyed.assertTrue()
+	surveyed.campaign.countries.treasury[0].assertEquals(9900)
+	let taxDay = 365 - (base.day mod 365)
+	base.advance(taxDay)
+	optional.advance(taxDay)
+	surveyed.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9000)
+	optional.military.civic.states[0].taxesCollected.assertEquals(9000)
+	optional.military.civic.states[0].surveyed.assertFalse()
+	surveyed.military.civic.states[0].taxesCollected.assertEquals(9450)
+	base.campaign.countries.treasury[0].assertEquals(19000)
+	optional.campaign.countries.treasury[0].assertEquals(19000)
+	surveyed.campaign.countries.treasury[0].assertEquals(19350)
+	base.trade.findMarket("district", "cloth").money.assertEquals(91000)
+	surveyed.trade.findMarket("district", "cloth").money.assertEquals(90550)
+	surveyed.trade.findMarket("district", "grain").money.assertEquals(100000)
+	let saved = surveyed.military.snapshot()
+	surveyed.advance(taxDay)
+	surveyed.military.snapshot().assertEquals(saved)
+	surveyed.campaign.countries.treasury[0].assertEquals(19350)
+	surveyed.trade.findMarket("district", "cloth").money.assertEquals(90550)
+
 // Research alone remains optional. Compare actual local meters and persisted
 // government bills at the transition, first operating day and annual renewal.
 @test function civicPolicyMatchedControlProvesOptionalTransitionFundedDiffusionAndRenewal()
@@ -740,3 +783,160 @@ class CivicFixture
 	f.advance(100)
 	f.military.settlements[0].manpower.assertEquals(9600)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(0)
+
+
+@test function civicSurveyRejectsUnknownOccupationJurisdictionAndInsufficientFundsWithoutMutation()
+	let f = new CivicFixture()
+	f.military.civic.districts[0].annualTax = 10000
+	f.prerequisites()
+	f.unlock("cadastral_survey")
+	let original = f.military.snapshot()
+	f.runtime.act("player", "survey", "unknown").contains("known, lawfully controlled").assertTrue()
+	f.military.snapshot().assertEquals(original)
+	f.campaign.countries.treasury[0] = 99
+	f.commands.dispatch(Player(0), "/civic survey district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(99)
+	f.military.snapshot().assertEquals(original)
+	f.campaign.countries.treasury[0] = 10000
+	for invalid = 1 to 4
+		f.military.administrators[0].jurisdiction = "district"
+		f.military.administrators[0].capacity = 1
+		f.military.settlements[0].legalOwnerId = "player"
+		f.military.settlements[0].occupationConflictId = ""
+		if invalid == 1
+			f.military.administrators[0].jurisdiction = "foreign"
+		else if invalid == 2
+			f.military.administrators[0].capacity = 0
+		else if invalid == 3
+			f.military.settlements[0].legalOwnerId = "foreign"
+		else
+			f.military.settlements[0].occupationConflictId = "occupation"
+		let before = f.military.snapshot()
+		f.commands.dispatch(Player(0), "/civic survey district").assertTrue()
+		f.resources.output.contains("lawfully controlled").assertTrue()
+		f.military.snapshot().assertEquals(before)
+		f.campaign.countries.treasury[0].assertEquals(10000)
+		f.trade.findMarket("district", "cloth").money.assertEquals(100000)
+
+@test function civicSurveyUnfinishedLiquidityAndCapacityBoundsUseActualCollection()
+	let unfinished = new CivicFixture()
+	let liquid = new CivicFixture()
+	let capped = new CivicFixture()
+	unfinished.military.civic.districts[0].annualTax = 10000
+	liquid.military.civic.districts[0].annualTax = 10000
+	capped.military.civic.districts[0].annualTax = 10000
+	unfinished.prerequisites()
+	liquid.prerequisites()
+	capped.prerequisites()
+	unfinished.unlock("cadastral_survey")
+	liquid.unlock("cadastral_survey")
+	capped.unlock("cadastral_survey")
+	let taxDay = 365 - (unfinished.day mod 365)
+	unfinished.advance(taxDay - 89)
+	unfinished.action("survey")
+	liquid.action("survey")
+	capped.action("survey")
+	liquid.trade.findMarket("district", "cloth").money = 1
+	liquid.trade.findMarket("district", "grain").money = 1
+	capped.military.civic.baseTaxBasisPoints = 10000
+	unfinished.advance(taxDay)
+	liquid.advance(taxDay)
+	capped.advance(taxDay)
+	unfinished.military.civic.states[0].surveyed.assertFalse()
+	unfinished.military.civic.states[0].taxesCollected.assertEquals(9000)
+	unfinished.campaign.countries.treasury[0].assertEquals(18900)
+	liquid.military.civic.states[0].surveyed.assertTrue()
+	liquid.military.civic.states[0].taxesCollected.assertEquals(2)
+	liquid.campaign.countries.treasury[0].assertEquals(9902)
+	liquid.trade.findMarket("district", "cloth").money.assertEquals(0)
+	liquid.trade.findMarket("district", "grain").money.assertEquals(0)
+	capped.military.civic.states[0].taxesCollected.assertEquals(10000)
+	capped.campaign.countries.treasury[0].assertEquals(19900)
+	capped.trade.findMarket("district", "cloth").money.assertEquals(90000)
+	unfinished.advance(taxDay + 1)
+	unfinished.military.civic.states[0].surveyed.assertTrue()
+	unfinished.military.civic.states[0].taxesCollected.assertEquals(9000)
+
+@test function civicSurveyCompletedRecordsNeedCurrentControllerEntitlementAndLocalJurisdiction()
+	let captured = new CivicFixture()
+	let entitled = new CivicFixture()
+	captured.military.civic.districts[0].annualTax = 10000
+	entitled.military.civic.districts[0].annualTax = 10000
+	captured.prerequisites()
+	entitled.prerequisites()
+	captured.unlock("cadastral_survey")
+	entitled.unlock("cadastral_survey")
+	captured.action("survey")
+	entitled.action("survey")
+	captured.advance(90)
+	entitled.advance(90)
+	captured.military.transferSettlement("district", "ai")
+	entitled.military.transferSettlement("district", "ai")
+	captured.military.settlements[0].legalOwnerId = "ai"
+	entitled.military.settlements[0].legalOwnerId = "ai"
+	captured.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "europe", "district", 50, 50, 40, 1))
+	entitled.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "europe", "district", 50, 50, 40, 1))
+	captured.military.civic.states[0].surveyed.assertTrue()
+	entitled.military.civic.states[0].surveyed.assertTrue()
+	captured.research.rate("ai", "land_tax_collection_efficiency").assertEquals(0)
+	entitled.resources.owner = "ai"
+	entitled.prerequisites()
+	entitled.unlock("cadastral_survey")
+	entitled.research.rate("ai", "land_tax_collection_efficiency").assertEquals(500)
+	let taxDay = 365 - (captured.day mod 365)
+	captured.advance(taxDay)
+	entitled.advance(taxDay)
+	captured.military.civic.states[0].taxesCollected.assertEquals(9000)
+	entitled.military.civic.states[0].taxesCollected.assertEquals(9450)
+	captured.campaign.countries.treasury[1].assertEquals(19000)
+	entitled.campaign.countries.treasury[1].assertEquals(19450)
+	captured.military.transferSettlement("district", "player")
+	captured.military.settlements[0].legalOwnerId = "player"
+	captured.military.appoint("district", new AdministratorState("clerk", "Clerk", "Administrator", "player", "europe", "district", 50, 50, 40, 1))
+	captured.advance(taxDay + 365)
+	captured.military.civic.states[0].surveyed.assertTrue()
+	captured.military.civic.states[0].taxesCollected.assertEquals(9000 + 9450)
+	captured.campaign.countries.treasury[0].assertEquals(9900 + 9450)
+	// A complete record alone never bypasses the current local office.
+	captured.military.administrators[0].jurisdiction = "foreign"
+	captured.advance(taxDay + 730)
+	captured.military.civic.states[0].taxesCollected.assertEquals(9000 + 9450)
+	captured.campaign.countries.treasury[0].assertEquals(9900 + 9450)
+	captured.military.administrators[0].jurisdiction = "district"
+	captured.military.settlements[0].occupationConflictId = "occupation"
+	captured.advance(taxDay + 1095)
+	captured.military.civic.states[0].taxesCollected.assertEquals(9000 + 9450)
+	captured.campaign.countries.treasury[0].assertEquals(9900 + 9450)
+
+@test function civicSurveyActiveAbstractReplayAndReloadPreservePaidCollectionWithoutReplay()
+	let active = new CivicFixture()
+	let inactive = new CivicFixture()
+	active.military.civic.districts[0].annualTax = 10000
+	inactive.military.civic.districts[0].annualTax = 10000
+	active.prerequisites()
+	inactive.prerequisites()
+	active.unlock("cadastral_survey")
+	inactive.unlock("cadastral_survey")
+	active.action("survey")
+	inactive.action("survey")
+	active.military.activeRegionId = "europe"
+	inactive.military.activeRegionId = "unloaded"
+	inactive.military.settlements[0].projectMilitary = false
+	let taxDay = 365 - (active.day mod 365)
+	for elapsed = 1 to taxDay
+		active.advance(elapsed)
+	inactive.advance(taxDay)
+	active.military.civic.states[0].taxesCollected.assertEquals(9450)
+	inactive.military.civic.states[0].taxesCollected.assertEquals(9450)
+	active.campaign.countries.treasury[0].assertEquals(19350)
+	inactive.campaign.countries.treasury[0].assertEquals(19350)
+	active.trade.findMarket("district", "cloth").money.assertEquals(90550)
+	inactive.trade.findMarket("district", "cloth").money.assertEquals(90550)
+	let saved = inactive.military.snapshot()
+	for repeat = 1 to 3
+		inactive.military.restore(saved, false).assertTrue()
+		inactive.advance(taxDay)
+		inactive.military.snapshot().assertEquals(saved)
+		inactive.campaign.countries.treasury[0].assertEquals(19350)
+		inactive.trade.findMarket("district", "cloth").money.assertEquals(90550)

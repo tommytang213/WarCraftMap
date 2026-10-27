@@ -1219,3 +1219,42 @@ function legacyPirateFounding() returns string
 		f.military.civic.states[0].discussion.assertEquals(100)
 		f.military.civic.states[0].diseaseAvoided.assertEquals(2)
 		f.military.civic.states[0].tradedUnits.assertEquals(1)
+
+
+@test function lateLoadFailureRestoresSurveyDeadlineCollectionAndMarketLiquidityAtomically()
+	let f = new LoadFixture()
+	f.military.civic.register(new CivicDistrict("port", "province", 1000, true, 1, 20, 1, 365, 4, "grain", 4, 1000), f.clock.currentDay)
+	let state = f.military.civic.states[0]
+	state.surveyOwner = "england"
+	state.surveyReady = f.clock.currentDay + 90
+	let original = f.military.snapshot()
+	// Candidate represents a completed paid survey and a conserved collection.
+	// This fixture tests load atomicity, not action/clock execution (covered by
+	// CivicGovernanceTests' registered-research matched control).
+	state.surveyReady = f.clock.currentDay
+	state.surveyed = true
+	state.taxesCollected = 945
+	f.campaign.countries.treasury[0] = 1945
+	f.extension.trade.findMarket("port", "grain").money = 55
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	f.military.restore(original, false).assertTrue()
+	f.campaign.countries.treasury[0] = 1000
+	f.extension.trade.findMarket("port", "grain").money = 1000
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.civic.states[0].surveyed.assertFalse()
+	f.military.civic.states[0].surveyReady.assertEquals(f.clock.currentDay + 90)
+	f.military.civic.states[0].taxesCollected.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(1000)
+	f.extension.trade.findMarket("port", "grain").money.assertEquals(1000)
+	f.extension.fail = false
+	for repeat = 1 to 3
+		f.store(candidate)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.military.civic.states[0].surveyed.assertTrue()
+		f.military.civic.states[0].surveyReady.assertEquals(f.clock.currentDay)
+		f.military.civic.states[0].taxesCollected.assertEquals(945)
+		f.campaign.countries.treasury[0].assertEquals(1945)
+		f.extension.trade.findMarket("port", "grain").money.assertEquals(55)
