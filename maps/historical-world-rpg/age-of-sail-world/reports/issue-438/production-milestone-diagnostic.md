@@ -37,3 +37,21 @@ Wurst/campaign gates, staged as a versioned W3N with source and archive hashes,
 and independently inspected. The main-only launch-smoke workflow is not a
 reason to merge the draft PR. Release gates and the 188 research-consumer gaps
 remain untouched.
+
+## 2026-10-27 local execution
+
+The isolated source commit is `3c14048a6e663d563947a8b2693ea4bc0be58adb`.
+`python3 -m unittest tests.test_launch_diagnostics` passed all 18 tests,
+including marker-removal negative controls. `git diff --check` passed.
+
+The pinned Docker image was present, but three local package attempts stopped
+at `grill install`, before Wurst compilation or campaign packaging. The first
+could not connect to `github.com`; the next two supplied the workspace proxy
+and CA certificate, and the third also supplied Java proxy properties. JGit
+still timed out resolving `https://github.com/wurstscript/wurstStdlib2`.
+The third terminal log is retained locally as
+`/workspace/WarCraftMap-438-diagnostic-build-proxy.log`, SHA-256
+`7e8265ca718eebaa582896623fd36fd019be55cea663d57155fb1075858d1aaa`.
+No compiled marker, versioned W3N, artifact-gate pass, independent review or
+native result is claimed from these attempts. The separate clone and branch
+remain clean; the shared PR branch was not changed.
