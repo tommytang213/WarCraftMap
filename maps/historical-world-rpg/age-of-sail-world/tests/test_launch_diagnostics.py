@@ -187,12 +187,15 @@ end
         with self.assertRaisesRegex(ValueError, "root-basename"):
             smoke.inspect_root_basename_handoff(self.config, self.LUA)
 
-    def test_profile_stages_accurate_receipt_without_granting_native_acceptance(self):
+    def stage_profile(self, profile=None):
         identity = {"sourceRevision": "a" * 40, "sourceTreeSha256": "b" * 64}
         members = {}
         for physical in self.config.maps:
             nested = self.root / physical.package_path
-            write_mpq(nested, {"war3map.lua": self.LUA, "war3map.w3i": b"fixture",
+            lua = self.LUA
+            if physical.id == "europe_central_east":
+                lua += b"\nISSUE438-DIAGNOSTIC " + b" ".join(stage.encode() for stage in smoke.MILESTONES)
+            write_mpq(nested, {"war3map.lua": lua, "war3map.w3i": b"fixture",
                                "runtime/build-identity.json": json.dumps(identity).encode()})
             members[physical.package_path] = nested.read_bytes()
         campaign = self.root / "candidate.w3n"
@@ -210,7 +213,12 @@ end
                 patch.object(smoke, "inspect_campaign"), patch.object(smoke, "_inspect"), \
                 patch.object(smoke, "_inspect_physical_map"), \
                 patch.object(smoke, "parse_w3i", return_value={"format": 33, "gameVersion": [3, 0, 0, 24268]}):
-            result = smoke.stage(campaign, execution, output, "a" * 40, profile=smoke.HANDOFF_PROFILE)
+            result = smoke.stage(campaign, execution, output, "a" * 40,
+                                 **({} if profile is None else {"profile": profile}))
+        return result, campaign, output
+
+    def test_profile_stages_accurate_receipt_without_granting_native_acceptance(self):
+        result, campaign, output = self.stage_profile(smoke.HANDOFF_PROFILE)
         self.assertEqual(result["origin_to_region_native"], "not_run")
         self.assertEqual(result["campaign_native"], "not_run")
         self.assertEqual(result["nativeClient"]["revisedArtifact"], "not_run")
@@ -241,6 +249,33 @@ end
         self.assertIn("No player retest is requested", instructions)
         self.assertNotIn("WGC", instructions + result["remainingDiscriminator"])
         self.assertIn("unconfirmed", instructions)
+
+    def test_milestone_profile_inspects_destination_and_stays_nonrelease(self):
+        result, campaign, output = self.stage_profile(smoke.MILESTONE_PROFILE)
+        self.assertEqual(result["diagnosticProfile"], smoke.MILESTONE_PROFILE)
+        self.assertEqual(result["staticValidation"]["productionMilestones"]["status"], "pass")
+        self.assertEqual(result["origin_to_region_native"], "not_run")
+        self.assertEqual(result["campaign_native"], "not_run")
+        self.assertFalse(result["releaseCandidate"])
+        self.assertFalse(result["playerTestRequested"])
+        self.assertEqual((output / result["installedCampaignPath"]).read_bytes(), campaign.read_bytes())
+        self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
+        self.assertIn("black screen with no marker is inconclusive",
+                      (output / "LAUNCH-SMOKE-ONLY.txt").read_text().lower())
+
+    def test_default_profile_remains_launch(self):
+        result, _, output = self.stage_profile()
+        self.assertEqual(result["diagnosticProfile"], smoke.LAUNCH_PROFILE)
+        self.assertNotIn("productionMilestones", result["staticValidation"])
+        self.assertNotIn("transitionPath", result["staticValidation"])
+        self.assertFalse(result["releaseCandidate"])
+        self.assertEqual(smoke.verify_staged(output, "a" * 40), result)
+
+    def test_unknown_profile_rejected_before_build_inspection(self):
+        with self.assertRaisesRegex(ValueError, "unknown diagnostic profile"):
+            smoke.stage(self.root / "missing.w3n", self.root / "missing-execution",
+                        self.root / "rejected", "a" * 40, profile="unreviewed-profile")
+        self.assertFalse((self.root / "rejected").exists())
 
 
 class NativeDiagnosticTests(unittest.TestCase):

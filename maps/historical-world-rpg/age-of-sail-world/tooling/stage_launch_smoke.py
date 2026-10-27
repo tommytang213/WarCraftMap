@@ -209,7 +209,7 @@ def verify_staged(output: Path, revision: str) -> dict:
 
 def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_id=None, attempt=None,
           profile=LAUNCH_PROFILE) -> dict:
-    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE):
+    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE, MILESTONE_PROFILE):
         raise ValueError("unknown diagnostic profile")
     digest = hashlib.sha256(campaign.read_bytes()).hexdigest()
     reject_failed_digest(digest)
