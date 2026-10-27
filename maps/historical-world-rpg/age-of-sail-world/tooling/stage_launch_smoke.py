@@ -31,6 +31,22 @@ FAILED_TRANSITION_ARTIFACTS = {
 }
 LAUNCH_PROFILE = "launch"
 HANDOFF_PROFILE = "root-basename-handoff"
+MILESTONE_PROFILE = "production-milestones-438"
+MILESTONES = ("destination-entry", "startup-returned-success",
+              "startup-returned-failure", "initializer-complete", "recovery-callback-1s")
+
+
+def inspect_production_milestones(destination_lua: bytes) -> dict:
+    if not destination_lua:
+        raise ValueError("Austria destination Lua is missing")
+    # Literal presence is a fail-closed build check, not proof of control flow.
+    missing = [stage for stage in MILESTONES if stage.encode() not in destination_lua]
+    if missing or b"ISSUE438-DIAGNOSTIC " not in destination_lua:
+        raise ValueError("compiled Austria milestone missing: " + ", ".join(missing))
+    return {"status": "pass", "evidenceLevel": "compiled_text_static_heuristic",
+            "destinationLuaSha256": hashlib.sha256(destination_lua).hexdigest(),
+            "stages": list(MILESTONES),
+            "scope": "real destination Lua contains marker literals; native entry and callback delivery unverified"}
 
 
 def reject_failed_digest(digest: str) -> None:
@@ -94,7 +110,7 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
     digest = result["campaignSha256"]
     reject_failed_digest(digest)
     profile = result.get("diagnosticProfile", LAUNCH_PROFILE)
-    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE):
+    if profile not in (LAUNCH_PROFILE, HANDOFF_PROFILE, MILESTONE_PROFILE):
         raise ValueError("unknown diagnostic profile")
     if result["diagnosticId"] != build_id(result["sourceIdentity"], digest,
                                          result["buildRun"]["id"], result["buildRun"]["attempt"]):
@@ -126,6 +142,14 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
         "The duplicate-selector control shared internal map identity, so\n"
         "its failure did not conclusively exclude regional initialization.\n"
         if profile == HANDOFF_PROFILE else
+        "On the real Austria path, record any visible ISSUE438-DIAGNOSTIC markers\n"
+        "in order: destination-entry, startup-returned-success/failure,\n"
+        "initializer-complete, recovery-callback-1s. The callback is the\n"
+        "existing recovery timer at one second, not the earliest engine timer.\n"
+        "A black screen with no marker is inconclusive: display/log delivery\n"
+        "itself may have failed. A marker alone is not terrain or movement success.\n"
+        "Keep the exact W3N hash and client build with any observation.\n"
+        if profile == MILESTONE_PROFILE else
         "Record the exact client build and whether origin selection opens. A process or\n"
         "a War3Log Played entry is not gameplay success. Keep the hash with the result.\n"
     )
@@ -199,6 +223,7 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
     reader = MpqReader(campaign)
     entries = []
     bootstrap_lua = b""
+    destination_lua = b""
     with tempfile.TemporaryDirectory(prefix="launch-smoke-", dir=campaign.parent) as directory:
         for physical in config.maps:
             payload = reader.read(physical.package_path)
@@ -214,6 +239,8 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
             lua = nested.read("war3map.lua")
             if physical.bootstrap:
                 bootstrap_lua = lua
+            if physical.id == "europe_central_east":
+                destination_lua = lua
             entries.append({"id": physical.id, "path": physical.package_path,
                             "sha256": hashlib.sha256(payload).hexdigest(),
                             "luaSha256": hashlib.sha256(lua).hexdigest(),
@@ -271,6 +298,12 @@ def stage(campaign: Path, execution: Path, output: Path, revision: str, *, run_i
         result["purpose"] = "Check root-basename consistency for a materially changed diagnostic; the prior root-basename candidate failed and this check does not establish a repair."
         result["remainingDiscriminator"] = "After review, one manual /origin choose austria transition must load destination terrain AND a player-controlled unit; Victory/Continue alone is not success."
         result["origin_to_region_native"] = "not_run"
+    if profile == MILESTONE_PROFILE:
+        result["staticValidation"]["productionMilestones"] = inspect_production_milestones(destination_lua)
+        result["changes"] = ["Issue #438 markers around real Austria destination startup and the existing recovery timer callback"]
+        result["purpose"] = "Distinguish positive native destination entry, startup return, initializer completion and recovery callback observations."
+        result["remainingDiscriminator"] = "A black screen with no visible marker is inconclusive; real-client log/trace and gameplay remain required."
+        result["origin_to_region_native"] = "not_run"
     publish(campaign, output, result)
     for name in ("results.json", "execution.log"):
         shutil.copyfile(execution / name, output / ("wurst-" + name))
@@ -287,7 +320,7 @@ if __name__ == "__main__":
     parser.add_argument("--run-id", default=os.environ.get("GITHUB_RUN_ID"))
     parser.add_argument("--run-attempt", default=os.environ.get("GITHUB_RUN_ATTEMPT"))
     parser.add_argument("--verify-only", action="store_true")
-    parser.add_argument("--profile", choices=(LAUNCH_PROFILE, HANDOFF_PROFILE), default=LAUNCH_PROFILE)
+    parser.add_argument("--profile", choices=(LAUNCH_PROFILE, HANDOFF_PROFILE, MILESTONE_PROFILE), default=LAUNCH_PROFILE)
     args = parser.parse_args()
     result = (verify_staged(args.output, args.source_revision) if args.verify_only else
               stage(args.campaign, args.execution, args.output, args.source_revision,

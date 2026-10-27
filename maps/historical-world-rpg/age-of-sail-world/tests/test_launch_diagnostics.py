@@ -132,6 +132,21 @@ class LaunchIdentityTests(unittest.TestCase):
             smoke.publish(self.campaign, self.root / "new", self.result())
 
 
+class ProductionMilestoneTests(unittest.TestCase):
+    def test_compiled_destination_requires_each_marker_and_binds_lua_hash(self):
+        compiled = b"ISSUE438-DIAGNOSTIC " + b" ".join(stage.encode() for stage in smoke.MILESTONES)
+        result = smoke.inspect_production_milestones(compiled)
+        self.assertEqual(result["destinationLuaSha256"], sha(compiled))
+        self.assertEqual(result["evidenceLevel"], "compiled_text_static_heuristic")
+        for stage in smoke.MILESTONES:
+            with self.subTest(stage=stage), self.assertRaisesRegex(ValueError, "milestone missing"):
+                smoke.inspect_production_milestones(compiled.replace(stage.encode(), b"removed"))
+        with self.assertRaisesRegex(ValueError, "milestone missing"):
+            smoke.inspect_production_milestones(compiled.replace(b"ISSUE438-DIAGNOSTIC ", b""))
+        with self.assertRaisesRegex(ValueError, "destination Lua is missing"):
+            smoke.inspect_production_milestones(b"")
+
+
 class RootBasenameHandoffTests(unittest.TestCase):
     # Static Lua fixture only; no Warcraft or real compiler execution is claimed.
     LUA = b'''function config() end

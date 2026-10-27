@@ -39,6 +39,13 @@ constant int SAVE_SCHEMA_VERSION = 2
 // ScenarioData is localized by the campaign packager. PHYSICAL_MAP_ID is the
 // sole runtime identity of this particular packaged map.
 NewCampaignOriginController bootstrapOriginSelection = null
+// Issue #438 diagnostic only. These messages are positive milestones: an
+// absent message on a black display cannot establish that Lua was not entered.
+boolean issue438RecoveryCallbackSeen = false
+
+function issue438Milestone(string stage)
+	if PHYSICAL_MAP_ID == "europe_central_east"
+		print("ISSUE438-DIAGNOSTIC " + stage)
 
 function openBootstrapOriginSelection()
 	DestroyTimer(GetExpiredTimer())
@@ -67,10 +74,14 @@ public ReligionRuntime religionRuntime = new ReligionRuntime(new WarcraftReligio
 
 
 function sampleRecoveryPositions()
+	if not issue438RecoveryCallbackSeen
+		issue438RecoveryCallbackSeen = true
+		issue438Milestone("recovery-callback-1s")
 	if recoveryService.lifecycle != null
 		recoveryService.lifecycle.refresh()
 
 function initializeRegionalCampaign()
+	issue438Milestone("destination-entry")
 	requireWC3Compatibility()
 	initializeManagementScreenPauseController()
 	let clock = configureCampaignTimeline()
@@ -87,15 +98,21 @@ function initializeRegionalCampaign()
 		bootstrapOriginSelection.setObserver(new CampaignHandoff(new WarcraftCampaignSaveStorage(CAMPAIGN_CACHE_FILE, "bootstrap"), new WarcraftPhysicalMapLoader()))
 		configureGeneratedOrigins(bootstrapOriginSelection)
 		registerOriginSelection(commands, bootstrapOriginSelection)
-	else if not campaign.startup()
-		print("Campaign startup stopped: " + campaign.diagnostic() + " Existing recovery saves have been retained.")
-		// Keep a recovery entry even when gameplay activation failed. A retry
-		// reloads through the normal registration/startup path before timers or
-		// gameplay commands become available.
-		let recoveryCommands = createCommandRegistry(false)
-		registerCampaignSaveCommands(recoveryCommands, campaign)
-		installCommandRegistry(recoveryCommands)
-		return
+	else
+		let startupSucceeded = campaign.startup()
+		if startupSucceeded
+			issue438Milestone("startup-returned-success")
+		else
+			issue438Milestone("startup-returned-failure")
+		if not startupSucceeded
+			print("Campaign startup stopped: " + campaign.diagnostic() + " Existing recovery saves have been retained.")
+			// Keep a recovery entry even when gameplay activation failed. A retry
+			// reloads through the normal registration/startup path before timers or
+			// gameplay commands become available.
+			let recoveryCommands = createCommandRegistry(false)
+			registerCampaignSaveCommands(recoveryCommands, campaign)
+			installCommandRegistry(recoveryCommands)
+			return
 	if campaign.started
 		militarySettlementRuntime.activateRegion(PHYSICAL_MAP_ID)
 		installMilitaryCombatEvents(campaign, new WarcraftMilitaryCombatNatives())
@@ -137,6 +154,7 @@ function initializeRegionalCampaign()
 	if SCENARIO_SCHEMA_VERSION <= 0
 		print("Scenario data failed to load.")
 	print(SCENARIO_BOOTSTRAP_MESSAGE)
+	issue438Milestone("initializer-complete")
 
 init
 	initializeRegionalCampaign()
