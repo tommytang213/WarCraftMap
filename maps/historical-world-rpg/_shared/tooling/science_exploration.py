@@ -228,7 +228,7 @@ def _calculus_authored(project):
     effect = effects[0]
     world = json.loads((project / 'scenario/world/world.json').read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'calculus_methods']
-    sites = [s for s in data['sites'] if s['id'] == 'london_scholarly_work']
+    sites = [s for s in data['sites'] if s['metric'] == 'research_generation_efficiency']
     return (effect['nodeId'] == 'calculus_methods'
             and effect['unlock'] == CALCULUS_UNLOCK
             and effect['metric'] == 'research_generation_efficiency'
