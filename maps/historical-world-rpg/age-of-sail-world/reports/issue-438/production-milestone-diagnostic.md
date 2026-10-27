@@ -84,3 +84,11 @@ Age of Sail content in the shared engine. The framework boundary audit passes.
 The original Wurst run `40508178727` is still tied to an older diagnostic head
 and must be treated separately from any final-head result. None of these
 preflight corrections grants campaign publication or native acceptance.
+
+Final-head World run `40508857057` later executed 1,215 Python tests and
+failed exactly the checked-in release-blocker report freshness test. The
+source-only report was regenerated at its recorded revision without changing
+its **238 unresolved campaign blockers**. The formerly failing freshness test
+then passed locally. The complete 1,215-test suite has not yet been rerun on
+this report-only correction. Campaign run `40508871216` remains independently
+in progress on the same authored-source digest.
