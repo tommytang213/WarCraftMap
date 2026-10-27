@@ -378,9 +378,25 @@ function calculusSetup(ScienceFixture f, boolean earned)
 	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertFalse()
 	treatment.campaign.countries.treasury[0].assertEquals(treatmentFunds - 86)
 	control.campaign.countries.treasury[0].assertEquals(controlFunds - 86)
+	let earnedFunds = treatment.resources.balance
+	treatment.commands.dispatch(Player(0), "/research printed_observation_tables").assertTrue()
+	treatment.resources.output.assertEquals("Requirements are not met here.")
+	treatment.resources.balance.assertEquals(earnedFunds)
 	control.advance(97)
 	control.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertTrue()
 	control.campaign.countries.treasury[0].assertEquals(controlFunds - 90)
+	// Completion must recheck the target even after its full bill was paid.
+	let changed = new ScienceFixture(false, true)
+	calculusSetup(changed, true)
+	let changedFunds = changed.campaign.countries.treasury[0]
+	changed.advance(92)
+	changed.military.science.states[2].work.assertEquals(8925)
+	changed.rpg.technologies.get("printed_observation_tables").prerequisiteIds[0] = "chemical_classification"
+	changed.advance(93)
+	changed.rpg.technologies.isUnlocked("player", "printed_observation_tables").assertFalse()
+	changed.military.science.states[2].owner.assertEquals("")
+	changed.military.science.states[2].work.assertEquals(0)
+	changed.campaign.countries.treasury[0].assertEquals(changedFunds - 86)
 
 @test function calculusScholarlyWorkRejectsUnpaidInputsAndUnqualifiedTarget()
 	let f = new ScienceFixture(false, true)
