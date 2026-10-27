@@ -44,7 +44,7 @@ The isolated source commit is `3c14048a6e663d563947a8b2693ea4bc0be58adb`.
 `python3 -m unittest tests.test_launch_diagnostics` passed all 18 tests,
 including marker-removal negative controls. `git diff --check` passed.
 
-The pinned Docker image was present, but three local package attempts stopped
+The pinned Docker image was present, but three initial local package attempts stopped
 at `grill install`, before Wurst compilation or campaign packaging. The first
 could not connect to `github.com`; the next two supplied the workspace proxy
 and CA certificate, and the third also supplied Java proxy properties. JGit
@@ -55,3 +55,12 @@ The third terminal log is retained locally as
 No compiled marker, versioned W3N, artifact-gate pass, independent review or
 native result is claimed from these attempts. The separate clone and branch
 remain clean; the shared PR branch was not changed.
+
+A final proxy check installed Git in the ephemeral container and configured
+`http.proxy`. Native Git resolved the standard-library HEAD, but Grill's JGit
+still failed its own dependency clone before compilation. The terminal log is
+`/workspace/WarCraftMap-438-diagnostic-build-gitproxy-fixed.log`, SHA-256
+`b5c61c853c246d774594bc8a55d0baf20c830bf13ce6bcfa9094512d36d82baf`.
+An earlier attempt at that check was stopped
+after discovering that the pinned image did not contain the Git CLI. No source
+or toolchain policy was changed to make the dependency appear installed.
