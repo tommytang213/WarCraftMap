@@ -44,7 +44,7 @@ NewCampaignOriginController bootstrapOriginSelection = null
 boolean issue438RecoveryCallbackSeen = false
 
 function issue438Milestone(string stage)
-	if PHYSICAL_MAP_ID == "europe_central_east"
+	if PHYSICAL_MAP_ID != SCENARIO_BOOTSTRAP_MAP_ID
 		print("ISSUE438-DIAGNOSTIC " + stage)
 
 function openBootstrapOriginSelection()

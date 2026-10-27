@@ -6,7 +6,9 @@ This is an isolated, nonrelease diagnostic. It does not establish a repair.
 
 The destination retains the normal registration, synchronous
 `campaign.startup()`, save/cache writes, gameplay activation, and timer setup.
-Only the real Europe Central East map emits these positive display milestones:
+Regional maps emit these positive display milestones; the Austria handoff
+targets the real Europe Central East map. The shared bootstrap compares map
+identity with the authored selector ID, keeping scenario names in content:
 
 1. `destination-entry`: the destination's Wurst `init` function entered.
 2. `startup-returned-success` or `startup-returned-failure`: the normal
@@ -64,3 +66,21 @@ still failed its own dependency clone before compilation. The terminal log is
 An earlier attempt at that check was stopped
 after discovering that the pinned image did not contain the Git CLI. No source
 or toolchain policy was changed to make the dependency appear installed.
+
+## Cloud preflight correction
+
+The first isolated-head campaign run `40508212156` stopped before compilation
+because source traceability was stale. Its report was regenerated with the
+recorded revision label; `--check` passes while retaining 7,004 blockers.
+The next campaign run `40508333094` passed source validation but stopped at
+the stale runtime-acceptance source report. That report was regenerated and
+independently compared with the recomputed audit; its 30 runtime failures are
+still reported. The source-only release preflight now passes.
+
+World-contract run `40508365257` caught a scenario ID literal in the shared
+bootstrap. The diagnostic now compares the current map ID to the authored
+selector ID, so all regional maps expose the same markers without embedding
+Age of Sail content in the shared engine. The framework boundary audit passes.
+The original Wurst run `40508178727` is still tied to an older diagnostic head
+and must be treated separately from any final-head result. None of these
+preflight corrections grants campaign publication or native acceptance.
