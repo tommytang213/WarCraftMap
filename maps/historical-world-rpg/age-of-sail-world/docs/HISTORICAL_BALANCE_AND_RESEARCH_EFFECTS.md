@@ -278,6 +278,20 @@ control, physical map and station position. Player and AI use the same action AP
   authored cost and prerequisites. There is no firearm/artillery effect, generic
   treasury yield or transferable invented research currency.
 
+Calculus recognition requires the isolated registered-research comparison in
+`ScienceExplorationTests`: both arms share Barometric Measurement (a Calculus
+prerequisite), Scholastic Natural Philosophy, the same London facility and
+Printed Observation Tables target. Only the treatment earns Calculus; Chemical
+Classification is absent. Both pay the 108-unit target bill, 120 treasury and two
+cloth for equipment, then one treasury and one cloth per funded day. The first
+funded day commits 105 versus 100 work; completion takes 86 versus 90 funded days.
+The independent Chemical source adds only for eligible observation targets.
+`calculus_scholarship` requires comparison-local research, command, facility,
+research-bill, daily-payment, committed-work and completion probes, plus all
+Calculus lifecycle tests in complete passing pinned execution for the audited
+revision and source digest. Focused or sibling-only evidence cannot bind Calculus.
+See [issue 568](../reports/issue-568/README.md) for validation and integration.
+
 Insufficient daily materials, money or provisions produce no work or avoided
 loss and make no partial payment. Missing days are never replayed for free after
 resupply. Compatible sources add once per typed identity in their metric bucket;

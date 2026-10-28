@@ -87,6 +87,12 @@ public class ScienceState
 	int remainder = 0
 	int avoided = 0
 	int lost = 0
+	function commitWork(int dailyWork, int rate)
+		// Only funded scholarly days reach this exact, fractional work commit.
+		let output = exactNaturalAdd(exactNaturalMultiply(I2S(dailyWork), 10000 + rate), I2S(remainder))
+		let whole = exactNaturalNativeInt(exactNaturalDivide(output, 10000))
+		work += whole
+		remainder = S2I(SubString(output, IMaxBJ(0, StringLength(output) - 4), StringLength(output)))
 	function commitHazard(int hazard, int avoided, int fraction)
 		// Called only after the real daily bill and supply mutation succeed.
 		remainder = fraction
@@ -216,10 +222,7 @@ public class ScienceLedger
 						skip
 					else
 						if d.scholarly()
-							let output = exactNaturalAdd(exactNaturalMultiply(I2S(d.dailyWork), 10000 + rate), I2S(s.remainder))
-							let whole = exactNaturalNativeInt(exactNaturalDivide(output, 10000))
-							s.work += whole
-							s.remainder = S2I(SubString(output, IMaxBJ(0, StringLength(output) - 4), StringLength(output)))
+							s.commitWork(d.dailyWork, rate)
 						else
 							s.work += d.dailyWork
 							s.commitHazard(hazard, avoided, credit mod 10000)

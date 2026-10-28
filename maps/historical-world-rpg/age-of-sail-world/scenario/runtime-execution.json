@@ -573,6 +573,14 @@
     "naval_payment": {
       "path": "wurst/NavalCampaignRuntime.wurst",
       "signature": "private function charge(int polity, int money)"
+    },
+    "science_work_commit": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function commitWork(int dailyWork, int rate)"
+    },
+    "science_research_bill": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function researchCost(string owner, string target) returns int"
     }
   },
   "systems": {
@@ -928,6 +936,17 @@
       "naval_repair",
       "naval_snapshot",
       "naval_restore"
+    ],
+    "calculus_scholarship": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_research_bill",
+      "science_work_commit",
+      "science_complete"
     ]
   }
 }
