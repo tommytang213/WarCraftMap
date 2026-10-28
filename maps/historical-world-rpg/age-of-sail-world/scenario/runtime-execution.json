@@ -570,6 +570,10 @@
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function restore(string candidate, boolean project) returns boolean"
     },
+    "naval_payment": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "private function charge(int polity, int money)"
+    },
     "science_work_commit": {
       "path": "wurst/ScienceExploration.wurst",
       "signature": "function commitWork(int dailyWork, int rate)"
@@ -924,6 +928,18 @@
       "administrative_pay",
       "civic_clock",
       "administrative_collect"
+    ],
+    "naval_repair": [
+      "research",
+      "dispatch",
+      "naval_registration",
+      "naval_action",
+      "naval_pay",
+      "naval_payment",
+      "naval_advance",
+      "naval_repair",
+      "naval_snapshot",
+      "naval_restore"
     ],
     "calculus_scholarship": [
       "research",

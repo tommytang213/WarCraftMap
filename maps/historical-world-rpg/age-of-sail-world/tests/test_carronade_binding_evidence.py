@@ -37,7 +37,8 @@ class CarronadeBindingEvidenceTests(unittest.TestCase):
         for name in ('wurst.build', 'wurst_run.args'):
             cls.inputs[name] = evidence.digest((PROJECT / name).read_bytes())
 
-    def transcript(self, omit_probe=None, fail_test=None, omitted_test=None, comparison=True, include_commissioning=False):
+    def transcript(self, omit_probe=None, fail_test=None, omitted_test=None, comparison=True,
+                   include_commissioning=False, include_repairs=False):
         comparative = COMPARISON
         expected = [row for row in self.expected if row['id'] != omitted_test]
         lines = ['Running tests']
@@ -49,6 +50,10 @@ class CarronadeBindingEvidenceTests(unittest.TestCase):
                 import naval_commissioning
                 if row['id'] == PREFIX + naval_commissioning.COMPARISON:
                     probes = naval_commissioning.PROBES
+            if include_repairs:
+                import naval_repair
+                if row['id'] == PREFIX + naval_repair.COMPARISON:
+                    probes = naval_repair.PROBES
             # A sibling test exercising every probe cannot replace the comparison.
             if row['id'] == PREFIX + 'navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision':
                 probes = verifier.PROBES
@@ -134,6 +139,23 @@ class CarronadeBindingEvidenceTests(unittest.TestCase):
         self.assertEqual({BINDING, ('unit', 'ship_of_the_line')}, self.bindings(report, log))
         report, log = self.transcript(include_commissioning=True, comparison=False)
         self.assertEqual({('unit', 'ship_of_the_line')}, self.bindings(report, log))
+
+    def test_integrated_naval_consumers_require_their_own_comparisons(self):
+        for carronades in (False, True):
+            for commissioning in (False, True):
+                for repairs in (False, True):
+                    with self.subTest(carronades=carronades, commissioning=commissioning, repairs=repairs):
+                        report, log = self.transcript(comparison=carronades,
+                                                      include_commissioning=commissioning,
+                                                      include_repairs=repairs)
+                        expected = set()
+                        if carronades:
+                            expected.add(BINDING)
+                        if commissioning:
+                            expected.add(('unit', 'ship_of_the_line'))
+                        if repairs:
+                            expected.add(('modifier', 'progression_careening_stations'))
+                        self.assertEqual(expected, self.bindings(report, log))
 
     def test_missing_contract_fields_reject(self):
         data, _ = naval.build(PROJECT)

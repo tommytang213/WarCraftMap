@@ -120,6 +120,45 @@ public class NavalFixture
 		commands.dispatch(Player(0), "/naval build london").assertTrue()
 		(resources.output != "Naval action completed.").assertTrue()
 		authority().assertEquals(before)
+	function rejectedRepair()
+		let before = authority()
+		commands.dispatch(Player(0), "/naval repair london ship").assertTrue()
+		(resources.output != "Naval action completed.").assertTrue()
+		authority().assertEquals(before)
+	function recipient() returns RuntimeForce
+		return military.forces[military.forceIndex("ship")]
+	function beginRepair()
+		let money = campaign.countries.treasury[0]
+		let wood = trade.markets[0].stock
+		let food = trade.markets[2].stock
+		let supply = military.settlements[0].supply
+		let integrity = recipient().hull.integrity
+		action("repair", " ship")
+		campaign.countries.treasury[0].assertEquals(money - 2)
+		trade.markets[0].stock.assertEquals(wood - 1)
+		trade.markets[2].stock.assertEquals(food - 1)
+		military.settlements[0].supply.assertEquals(supply - 1)
+		recipient().hull.integrity.assertEquals(integrity)
+	function repairDay(int gain, boolean prepaid)
+		let ship = recipient()
+		let integrity = ship.hull.integrity
+		let money = campaign.countries.treasury[0]
+		let maintenance = (ship.hull.upkeepCredit + military.naval.yards[0].upkeep) div 30
+		let provisions = ship.supply
+		let wood = trade.markets[0].stock
+		let food = trade.markets[2].stock
+		let supply = military.settlements[0].supply
+		var bill = 1
+		if prepaid
+			bill = 0
+		clock.advanceTo(clock.currentDay + 1).assertTrue()
+		ship.hull.integrity.assertEquals(integrity + gain)
+		campaign.countries.treasury[0].assertEquals(money - maintenance - 2 * bill)
+		ship.supply.assertEquals(provisions - 1)
+		ship.hull.maintained.assertTrue()
+		trade.markets[0].stock.assertEquals(wood - bill)
+		trade.markets[2].stock.assertEquals(food - bill)
+		military.settlements[0].supply.assertEquals(supply - bill)
 	function hit(boolean weapon) returns string
 		let h = new CombatHit("naval_gunfire", new ExactRational("100", "1", "1"))
 		military.applyCombatHit(h, military.forceIndex("ship"), military.forceIndex("enemy"), resources.owner, "enemy", weapon)
@@ -128,6 +167,280 @@ public class NavalFixture
 		h.damage.display().assertEquals(result)
 		destroy h
 		return result
+
+@test function careeningOnlyRegisteredRepairsChargeEachDayAgainstMatchedControl()
+	let f = new NavalFixture(false, true)
+	let control = new NavalFixture(false, true)
+	f.authority().assertEquals(control.authority())
+	f.dock()
+	control.dock()
+	f.authority().assertEquals(control.authority())
+	f.unlock("careening_stations")
+	f.effects.rate("player", "hull_repair_throughput").assertEquals(1500)
+	control.effects.rate("player", "hull_repair_throughput").assertEquals(0)
+	f.effects.entitled("player", "ship_of_the_line").assertFalse()
+	f.effects.earned("player", "close_range_naval_gunfire_damage").assertFalse()
+	f.effects.earned("player", "voyage_hull_weather_resilience").assertFalse()
+	f.recipient().hull.integrity = 5000
+	control.recipient().hull.integrity = 5000
+	f.beginRepair()
+	control.beginRepair()
+	for day = 0 to 9
+		f.repairDay(115, day == 0)
+		control.repairDay(100, day == 0)
+		// Reconstruct and restore in the isolated comparison itself. Repeated
+		// calendar delivery must preserve both output and the complete bill.
+		let saved = f.military.snapshot()
+		f.military.restore(saved).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.rpg.technologies.reconstructAll()
+		let before = f.authority()
+		f.runtime.advance(f.clock.currentDay)
+		f.runtime.advance(f.clock.currentDay)
+		f.authority().assertEquals(before)
+	f.recipient().hull.integrity.assertEquals(6150)
+	control.recipient().hull.integrity.assertEquals(6000)
+	f.trade.capture().assertEquals(control.trade.capture())
+	f.campaign.countries.treasury[0].assertEquals(control.campaign.countries.treasury[0])
+	f.military.forceCount.assertEquals(control.military.forceCount)
+
+@test function careeningRepairsBoundFullHullAndPreserveLegacyHullFractions()
+	let f = new NavalFixture(false, false)
+	f.unlock("careening_stations")
+	f.dock()
+	f.rejectedRepair() // Full hull cannot prepay another day.
+	f.recipient().hull.integrity = 9999
+	f.recipient().hull.repairCredit = 9999
+	f.beginRepair()
+	f.repairDay(1, true)
+	f.recipient().hull.repairCredit.assertEquals(0)
+	f.military.naval.states[0].job.assertEquals("")
+	let saved = f.military.snapshot()
+	f.military.restore(saved).assertTrue()
+	f.repairDay(0, true) // Only independent maintenance is charged now.
+	f.rejectedRepair()
+	// A supported Warcraft hull with unknown legacy armament stays repairable.
+	// Lower base output only here to expose fractional accounting every day.
+	f.recipient().combatProfileId = ""
+	f.recipient().hull.integrity = 5000
+	f.military.naval.repairOutput = 1
+	f.beginRepair()
+	f.clock.advanceTo(f.clock.currentDay + 3).assertTrue()
+	f.recipient().hull.integrity.assertEquals(5003)
+	f.recipient().hull.repairCredit.assertEquals(4500)
+	let fractional = f.military.snapshot()
+	f.military.restore(fractional).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.runtime.advance(f.clock.currentDay)
+	f.military.snapshot().assertEquals(fractional)
+	f.clock.advanceTo(f.clock.currentDay + 7).assertTrue()
+	f.recipient().hull.integrity.assertEquals(5011)
+	f.recipient().hull.repairCredit.assertEquals(5000)
+	f.recipient().combatProfileId.assertEquals("")
+	f.recipient().hull.carronades.assertFalse()
+
+@test function careeningRepairsRejectMissingInputsAndInaccessibleRecipientsWithoutMutation()
+	let f = new NavalFixture(false, false)
+	f.unlock("careening_stations")
+	f.recipient().hull.integrity = 5000
+	f.rejectedRepair() // No free dock from research.
+	f.dock()
+	let state = f.military.naval.states[0]
+	let ready = state.ready
+	state.ready = f.clock.currentDay + 1
+	f.rejectedRepair()
+	state.ready = ready
+	let money = f.campaign.countries.treasury[0]
+	f.campaign.countries.treasury[0] = 1
+	f.rejectedRepair()
+	f.campaign.countries.treasury[0] = money
+	let supply = f.military.settlements[0].supply
+	f.military.settlements[0].supply = 0
+	f.rejectedRepair()
+	f.military.settlements[0].supply = supply
+	for i = 0 to 2
+		if i != 1 // Iron is access infrastructure, not a repair input.
+			let stock = f.trade.markets[i].stock
+			f.trade.markets[i].stock = 0
+			f.rejectedRepair()
+			f.trade.markets[i].stock = stock
+		f.trade.markets[i].blockaded = true
+		f.rejectedRepair()
+		f.trade.markets[i].blockaded = false
+		f.trade.markets[i].occupiedByHostile = true
+		f.rejectedRepair()
+		f.trade.markets[i].occupiedByHostile = false
+	f.military.settlements[0].underAttack = true
+	f.rejectedRepair()
+	f.military.settlements[0].underAttack = false
+	f.military.settlements[0].occupationConflictId = "hostile"
+	f.rejectedRepair()
+	f.military.settlements[0].occupationConflictId = ""
+	let ship = f.recipient()
+	ship.controllerId = "ai"
+	f.rejectedRepair()
+	ship.controllerId = "player"
+	ship.x += 129.
+	f.rejectedRepair()
+	ship.x -= 129.
+	ship.regionId = "africa"
+	f.rejectedRepair()
+	ship.regionId = f.military.naval.yards[0].mapId
+	ship.active = false
+	f.rejectedRepair()
+	ship.active = true
+	ship.unitTypeId = 'hfoo'
+	f.rejectedRepair()
+	ship.unitTypeId = f.military.naval.yards[0].unitTypeId
+	f.military.startVoyage("ship", f.military.voyages.routes.id, "player", f.clock.currentDay, true).assertTrue()
+	f.rejectedRepair()
+
+@test function careeningRepairsSuspendUnfundedDaysAndCancelOnLostAccess()
+	for condition = 0 to 4
+		let f = new NavalFixture(false, false)
+		f.unlock("careening_stations")
+		f.dock()
+		f.recipient().hull.integrity = 5000
+		f.beginRepair()
+		f.repairDay(115, true)
+		if condition == 0
+			f.campaign.countries.treasury[0] = 0
+		else if condition == 1
+			f.trade.markets[0].stock = 0
+		else if condition == 2
+			f.trade.markets[2].stock = 0
+		else if condition == 3
+			f.military.settlements[0].supply = 0
+		else
+			f.trade.markets[0].blockaded = true
+		let stock = f.trade.capture()
+		let supply = f.military.settlements[0].supply
+		let treasury = f.campaign.countries.treasury[0]
+		let maintenance = (f.recipient().hull.upkeepCredit + 2 * f.military.naval.yards[0].upkeep) div 30
+		f.clock.advanceTo(f.clock.currentDay + 2).assertTrue()
+		f.recipient().hull.integrity.assertEquals(5115)
+		f.trade.capture().assertEquals(stock)
+		f.military.settlements[0].supply.assertEquals(supply)
+		if condition == 0
+			f.campaign.countries.treasury[0].assertEquals(0)
+		else
+			f.campaign.countries.treasury[0].assertEquals(treasury - maintenance)
+		if condition == 4
+			f.military.naval.states[0].job.assertEquals("")
+		else
+			f.military.naval.states[0].job.assertEquals("repair")
+		f.campaign.countries.treasury[0] = 10000
+		f.trade.markets[0].stock = 10000
+		f.trade.markets[2].stock = 10000
+		f.military.settlements[0].supply = 10000
+		f.trade.markets[0].blockaded = false
+		if condition == 4
+			f.beginRepair()
+		f.repairDay(115, condition == 4) // No catch-up for unfunded days.
+
+@test function careeningRepairsCaptureAndControllerTransferCancelPaidWork()
+	let f = new NavalFixture(false, false)
+	f.unlock("careening_stations")
+	f.dock()
+	f.recipient().hull.integrity = 5000
+	f.recipient().hull.repairCredit = 4500
+	f.beginRepair()
+	let stocks = f.trade.capture()
+	f.military.transferControl("ship", "ai", f.clock.currentDay)
+	f.military.naval.states[0].job.assertEquals("")
+	f.recipient().hull.repairCredit.assertEquals(0)
+	f.effects.rate("ai", "hull_repair_throughput").assertEquals(0)
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.recipient().hull.integrity.assertEquals(5000)
+	f.trade.capture().assertEquals(stocks)
+	f.military.transferControl("ship", "player", f.clock.currentDay)
+	f.beginRepair()
+	f.military.transferSettlement("london", "ai")
+	f.military.naval.states[0].job.assertEquals("")
+	(f.military.naval.states[0].ready > 0).assertTrue()
+	let captured = f.military.snapshot()
+	f.military.restore(captured).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.recipient().hull.integrity.assertEquals(5000)
+	f.rejectedRepair()
+
+@test function careeningRepairsPlayerAiAndActiveInactiveUseIdenticalAuthority()
+	var expected = ""
+	for variant = 0 to 3
+		let f = new NavalFixture(variant >= 2, variant mod 2 == 0)
+		f.unlock("careening_stations")
+		f.dock()
+		f.recipient().hull.integrity = 5000
+		f.beginRepair()
+		for day = 0 to 9
+			f.repairDay(115, day == 0)
+		let saved = f.military.snapshot()
+		f.military.restore(saved).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.runtime.advance(f.clock.currentDay)
+		f.military.snapshot().assertEquals(saved)
+		let outcome = I2S(f.campaign.countries.treasury[0]) + "#" + I2S(f.military.settlements[0].supply) + "#" + f.trade.capture() + "#" + f.recipient().hull.record()
+		if variant == 0
+			expected = outcome
+		else
+			outcome.assertEquals(expected)
+
+@test function careeningRepairsLateLoadRollbackRestoresPaidWorkAndResources()
+	let f = new LoadFixture()
+	let effects = new NavalResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	f.military.setRpgRuntime(f.rpg)
+	f.military.navalResearch = effects
+	configureGeneratedNaval(f.military.naval, effects)
+	let d = f.military.naval.yards[0]
+	d.id = "port"
+	d.mapId = "europe_west"
+	d.x = 40.
+	d.y = 50.
+	d.prerequisite = "careening_stations"
+	f.military.naval.states[0].ready = 1
+	f.military.naval.states[0].lastDay = f.clock.currentDay
+	f.military.forces[f.military.forceIndex("fleet")].unitTypeId = d.unitTypeId
+	f.military.forces[f.military.forceIndex("fleet")].hull.integrity = 5000
+	f.military.forces[f.military.forceIndex("fleet")].hull.repairCredit = 4500
+	f.military.forces[f.military.forceIndex("fleet")].hull.lastDay = f.clock.currentDay
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	for i = 0 to 2
+		var good = "timber"
+		if i == 1
+			good = "iron"
+		else if i == 2
+			good = "ship_provisions"
+		f.extension.trade.registerMarket(new RuntimeMarket("port", good, 10000, 100000, 10, 10))
+	let technology = new RuntimeTechnology("careening_stations", "Careening Stations", 1, 1)
+	technology.addUnlock("careening_stations", "modifier", "progression_careening_stations")
+	f.rpg.technologies.register(technology).assertTrue()
+	let runtime = new NavalCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.navalRuntime = runtime
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before careening").assertTrue()
+	f.rpg.research("england", "careening_stations", 1, 1).assertTrue()
+	runtime.act("england", "repair", "port", "fleet").assertEquals("")
+	f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+	f.military.forces[f.military.forceIndex("fleet")].hull.integrity.assertEquals(5115)
+	// Keep a prepaid day in the live state, as well as repaired hull/fractions.
+	runtime.act("england", "stop", "port", "").assertEquals("")
+	runtime.act("england", "repair", "port", "fleet").assertEquals("")
+	let before = f.military.snapshot()
+	let research = f.rpg.captureState()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(before)
+	f.rpg.captureState().assertEquals(research)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.rate("england", "hull_repair_throughput").assertEquals(1500)
+	runtime.advance(f.clock.currentDay)
+	f.military.snapshot().assertEquals(before)
 
 @test function doctrineOnlyRegisteredCommissioningRequiresPaidWorkAgainstMatchedControl()
 	let f = new NavalFixture(false, true)
