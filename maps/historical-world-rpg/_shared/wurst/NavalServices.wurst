@@ -35,6 +35,9 @@ public class NavalHull
 	int weatherCredit = 0
 	int upkeepCredit = 0
 	boolean restored = false
+	/** Paid mounting completion boundary, shared by active and abstract fleets. */
+	function installCarronades()
+		carronades = true
 	function record() returns string
 		return I2S(integrity) + "," + navalBool(carronades) + "," + navalBool(carvel) + "," + navalBool(maintained) + "," + I2S(lastDay) + "," + I2S(repairCredit) + "," + I2S(weatherCredit) + "," + I2S(upkeepCredit)
 	/** Returns actual repair, with no overflow and no output beyond real damage. */
