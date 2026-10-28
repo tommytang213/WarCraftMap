@@ -11,7 +11,9 @@ permissions:
 
 jobs:
   build-launch-smoke:
-    if: github.ref == 'refs/heads/main'
+    # This task-branch copy is manual and scoped to the reviewed #438 diagnostic.
+    # The main branch workflow remains unchanged and main-only.
+    if: github.ref == 'refs/heads/diagnostic/438-production-milestones-20261027'
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
@@ -58,7 +60,7 @@ jobs:
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
               su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && PATH=/home/wurstuser/.wurst:/usr/local/bin:/usr/bin:/bin ./tooling/package_campaign.sh"
-              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && python3 tooling/stage_launch_smoke.py --source-revision $SOURCE_REVISION --output /tmp/launch-smoke"
+              su -s /bin/sh wurstuser -c "cd /tmp/workspace/$MAP_PROJECT && python3 tooling/stage_launch_smoke.py --source-revision $SOURCE_REVISION --profile production-milestones-438 --output /tmp/launch-smoke"
               cp -R /tmp/launch-smoke/. /out/
             '
           python3 "$MAP_PROJECT/tooling/stage_launch_smoke.py" \
