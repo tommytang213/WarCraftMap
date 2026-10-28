@@ -569,6 +569,14 @@
     "naval_restore": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function restore(string candidate, boolean project) returns boolean"
+    },
+    "science_work_commit": {
+      "path": "wurst/ScienceExploration.wurst",
+      "signature": "function commitWork(int dailyWork, int rate)"
+    },
+    "science_research_bill": {
+      "path": "wurst/ScienceCampaignRuntime.wurst",
+      "signature": "override function researchCost(string owner, string target) returns int"
     }
   },
   "systems": {
@@ -912,6 +920,17 @@
       "administrative_pay",
       "civic_clock",
       "administrative_collect"
+    ],
+    "calculus_scholarship": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_research_bill",
+      "science_work_commit",
+      "science_complete"
     ]
   }
 }
