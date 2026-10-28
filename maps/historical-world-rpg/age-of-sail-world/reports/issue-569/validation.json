@@ -1,0 +1,170 @@
+{
+  "closureEvidence": false,
+  "executionScope": "NavalServicesTests only; all production and sibling test functions remain compiled",
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "fullSuiteExecuted": false,
+  "generationAndProvenance": "pass",
+  "integratedMainGate": "Controller must run complete pinned suite and regenerate all three audits for integrated revision/source digest; focused results cannot remove the finding.",
+  "pinnedCompilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "pinnedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "python": {
+    "finalRegression": {
+      "passed": 22,
+      "scope": "18 naval checks plus four refreshed audit checks"
+    },
+    "naval": {
+      "passed": 18
+    },
+    "related": {
+      "executed": 113,
+      "note": "109 passed initially; all four report-freshness checks passed after source-only audit regeneration.",
+      "passed": 113
+    }
+  },
+  "sourceIdentity": {
+    "sourceRevision": "71f83179d8e59968949f1409a68325e14d7a8d8a",
+    "sourceTreeSha256": "7c68e6718426a540f0329f248a71bcaf757656055c200a2e4732bf13869c2d31"
+  },
+  "sourceOnlyAuditBlockers": {
+    "release": 238,
+    "runtime": 30,
+    "traceability": 7004
+  },
+  "wurst": {
+    "assembledInputSetSha256": "0c94a070321be8ca5834e736bc9c8e09126c5dc7f99c2cff6daf114df83d46d4",
+    "comparisonProbes": [
+      "agriculture_clock",
+      "appoint",
+      "dispatch",
+      "land_equipment",
+      "naval_action",
+      "naval_advance",
+      "naval_pay",
+      "naval_payment",
+      "naval_registration",
+      "naval_repair",
+      "naval_restore",
+      "naval_snapshot",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_resolve"
+    ],
+    "passed": 22,
+    "tests": [
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningOnlyRegisteredRepairsChargeEachDayAgainstMatchedControl",
+        "line": 170,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsBoundFullHullAndPreserveLegacyHullFractions",
+        "line": 206,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsRejectMissingInputsAndInaccessibleRecipientsWithoutMutation",
+        "line": 241,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsSuspendUnfundedDaysAndCancelOnLostAccess",
+        "line": 297,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsCaptureAndControllerTransferCancelPaidWork",
+        "line": 340,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 367,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsLateLoadRollbackRestoresPaidWorkAndResources",
+        "line": 388,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineOnlyRegisteredCommissioningRequiresPaidWorkAgainstMatchedControl",
+        "line": 444,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningRejectsEachMissingConditionWithoutMutation",
+        "line": 506,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningCaptureCancelsAndReconstructionNeverRepeatsCompletion",
+        "line": 561,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 583,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningLateLoadRollbackRestoresPaidWorkAndResources",
+        "line": 612,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs",
+        "line": 667,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesOnlyModifyCloseVerifiedCannonHitsAndPreserveOtherRatingsOnCaptureAndReload",
+        "line": 706,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity",
+        "line": 733,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic",
+        "line": 751,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesUseInstalledProductionWeaponCallbacksAndRejectStaleAndIncompatibleHits",
+        "line": 795,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalSourcesReconstructOnceAndLongCampaignFractionsConserveActualHullInputs",
+        "line": 819,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalHistoryInfrastructureGearAndResourceNegativesSuspendWithoutInventedOutput",
+        "line": 844,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision",
+        "line": 877,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:combinedNavalAndLandSnapshotsPreserveBothHRecordsAndMigrateEitherVersion13Branch",
+        "line": 903,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/WC3CompatibilityCompileFixture.wurst:compatibilityTargetAndCapabilitiesArePinned",
+        "line": 5,
+        "status": "pass"
+      }
+    ],
+    "transcriptSha256": "24cbc7f960263fe536091b62acc4e9b61713612a88d6bfc9d5686c57d3266fbe"
+  }
+}
