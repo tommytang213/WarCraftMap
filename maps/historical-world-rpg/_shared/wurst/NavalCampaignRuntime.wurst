@@ -85,7 +85,7 @@ public class NavalCampaignRuntime
 			return false
 		if not spend
 			return true
-		campaign.countries.treasury[p] -= money
+		charge(p, money)
 		s.manpower -= crew
 		s.supply -= provisions
 		if wood > 0
@@ -95,6 +95,9 @@ public class NavalCampaignRuntime
 		if provisions > 0
 			food.stock -= provisions
 		return true
+	/** Successful payment boundary, after every component of the bill validates. */
+	private function charge(int polity, int money)
+		campaign.countries.treasury[polity] -= money
 	function buildFingerprint(string owner, string id, string blueprint) returns string
 		let p = campaign.countries.polityIndex(owner)
 		var result = owner + "|" + id + "|" + blueprint + "|" + I2S(campaign.clock.currentDay) + "|" + I2S(campaign.countries.treasury[p]) + "|" + campaign.militarySettlements.snapshot() + "|" + campaign.rpg.captureState()

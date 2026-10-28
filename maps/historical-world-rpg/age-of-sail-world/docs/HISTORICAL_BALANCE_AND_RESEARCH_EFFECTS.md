@@ -474,6 +474,27 @@ Sibling naval effects remain separately blocked. The verifier reuses the existin
 execution-evidence path; integrated-main audit regeneration remains the controller's
 gate. See `reports/issue-562/README.md` for focused validation and closure steps.
 
+The #569 repair verifier independently recognizes `careening_stations` →
+`modifier:progression_careening_stations` → `hull_repair_throughput` at exactly
+1500 basis points. Its generated consumer describes the scenario's daily bill,
+operational dock and owned dockside recipient, missing-hull bound and independent
+maintenance. The matched registered comparison earns only Careening Stations:
+ten funded days restore 1150 versus 1000 integrity, paying two currency, one
+timber and one local provision/supply per day in both arms. It also executes
+snapshot/restore and repeated reconstruction/delivery. Separate tests cover full
+hulls, legacy recipients without armament profiles, fractional credits, missing
+inputs, access loss, capture, controller transfer, player/AI active/inactive
+parity, migration and late-load rollback.
+
+Repair recognition requires the complete passing pinned suite for the exact
+audited revision/source digest, with successful payment, actual repair and restore
+probes in that isolated comparison. Commissioning and combined naval traces cannot
+replace it. Battlefleet recognition remains independent; carronade and carvel
+findings retain their separate gates. Focused results are developer validation
+only. After integration, the controller must run the complete suite and regenerate
+release-blocker, runtime-acceptance and requirement-traceability audits with that
+revision's fresh execution evidence before closing the exact repair finding.
+
 ## Army food and canal freight consumers (#519)
 
 `ArmyFoodLogistics.wurst` consumes the two approved logistics modifiers through
