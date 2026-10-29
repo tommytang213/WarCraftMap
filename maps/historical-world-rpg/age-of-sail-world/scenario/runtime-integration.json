@@ -502,6 +502,13 @@
             "remote_survey_dispatch_time_reduction",
             "relayLinks"
           ]
+        },
+        {
+          "path": "scenario/progression/medical-care.json",
+          "contains": [
+            "isolation_care_losses_avoided",
+            "case_records_losses_avoided"
+          ]
         }
       ],
       "headlessVerification": [
@@ -522,6 +529,13 @@
           "contains": [
             "test_generated_dispatch_keeps_exact_research_identity_and_historical_costs"
           ]
+        },
+        {
+          "path": "tests/test_medical_care.py",
+          "contains": [
+            "test_each_identity_requires_its_own_comparison",
+            "test_resealed_generated_metadata_or_registration_cannot_substitute_consumers"
+          ]
         }
       ],
       "runtime": [
@@ -537,6 +551,14 @@
             "function municipalEligible",
             "archive_tax_collection_efficiency",
             "municipal_tax_collection_efficiency"
+          ]
+        },
+        {
+          "path": "../_shared/wurst/CivicGovernance.wurst",
+          "contains": [
+            "isolationCare",
+            "maintainCaseRecords",
+            "diseaseRemainder"
           ]
         }
       ],
@@ -592,6 +614,14 @@
           "contains": [
             "dispatchRegisteredResearchAndSurveyBeatMatchedControlWithExactBills",
             "dispatchFailedCampaignLoadRollsBackPendingOrderResearchAndBills"
+          ]
+        },
+        {
+          "path": "wurst/MedicalCareTests.wurst",
+          "contains": [
+            "pestHospitalsOnlyMatchedPaidCareAvoidsFiveOfOneHundredLosses",
+            "clinicalRecordsOnlyMatchedPaidResponseAvoidsFiveOfOneHundredLosses",
+            "medicalFractionalCompositionDeduplicatesDaysAndSources"
           ]
         }
       ],
@@ -803,6 +833,13 @@
             "reconciliationBasisPoints",
             "upkeepBasisPoints"
           ]
+        },
+        {
+          "path": "scenario/progression/medical-care.json",
+          "contains": [
+            "isolation_care_losses_avoided",
+            "case_records_losses_avoided"
+          ]
         }
       ],
       "headlessVerification": [
@@ -858,6 +895,13 @@
           "contains": [
             "test_real_bank_contracts_and_separate_typed_identities",
             "test_evidence_fails_closed_without_complete_current_production_execution"
+          ]
+        },
+        {
+          "path": "tests/test_medical_care.py",
+          "contains": [
+            "test_each_identity_requires_its_own_comparison",
+            "test_resealed_generated_metadata_or_registration_cannot_substitute_consumers"
           ]
         }
       ],
@@ -1021,7 +1065,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 20",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 21",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages",
             "banking.states[i].record()",
@@ -1118,6 +1162,14 @@
             "bankingRegisteredResearchAdoptionPolicyAndRealLodgementsHaveDistinctBenefits",
             "bankingCaptureSaveMigrationAndFailedLoadRollbackPreserveAuthority",
             "bankingLongCampaignActiveAbstractUpkeepAndConservation"
+          ]
+        },
+        {
+          "path": "wurst/MedicalCareTests.wurst",
+          "contains": [
+            "pestHospitalsOnlyMatchedPaidCareAvoidsFiveOfOneHundredLosses",
+            "clinicalRecordsOnlyMatchedPaidResponseAvoidsFiveOfOneHundredLosses",
+            "medicalFractionalCompositionDeduplicatesDaysAndSources"
           ]
         }
       ],

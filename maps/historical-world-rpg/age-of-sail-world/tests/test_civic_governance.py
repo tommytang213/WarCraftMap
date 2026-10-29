@@ -25,7 +25,7 @@ class CivicGovernanceCompilationTests(unittest.TestCase):
     def test_all_six_typed_identities_compile_from_exact_design_without_1450_grants(self):
         source, catalog, paths = configuration(PROJECT, self.world, self.settlements, self.authored, self.trade)
         self.assertEqual(len(self.settlements), catalog['districtCount'])
-        self.assertEqual(6, len(catalog['effects']))
+        self.assertEqual(8, len(catalog['effects']))
         self.assertIn('new CivicEffect("policy", "progression_abolitionist_public_sphere", "civic_reform_diffusion", 500)', source)
         self.assertIn('new CivicEffect("ability", "epidemic_control", "epidemic_losses_avoided", 2500)', source)
         self.assertIn('new CivicEffect("modifier", "progression_cadastral_survey", "land_tax_collection_efficiency", 500)', source)
@@ -34,7 +34,7 @@ class CivicGovernanceCompilationTests(unittest.TestCase):
         self.assertIn('"barkcloth", 4, 1000)', source)
         self.assertNotIn('unlock(', source)
         self.assertNotIn('treasury', source)
-        self.assertEqual(8, len(paths))
+        self.assertEqual(13, len(paths))
 
     def test_districts_retain_authored_provinces_and_economic_asymmetry(self):
         source, _, _ = configuration(PROJECT, self.world, self.settlements, self.authored, self.trade)

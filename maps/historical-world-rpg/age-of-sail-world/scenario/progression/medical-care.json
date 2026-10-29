@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "catalogSource": "scenario/progression/catalog.json",
+  "rules": {
+    "carePreparationDays": 90,
+    "careCommissionBasisPoints": 100,
+    "careUpkeepBasisPoints": 50,
+    "careDailyMaterials": 1,
+    "recordsDailyMoney": 1,
+    "recordsDailyMaterials": 1
+  },
+  "recordsGood": "cloth",
+  "effects": [
+    {
+      "nodeId": "civic_pest_hospitals",
+      "unlock": {"kind": "modifier", "contentId": "progression_civic_pest_hospitals"},
+      "metric": "isolation_care_losses_avoided",
+      "bonusBasisPoints": 500
+    },
+    {
+      "nodeId": "clinical_case_records",
+      "unlock": {"kind": "modifier", "contentId": "progression_clinical_case_records"},
+      "metric": "case_records_losses_avoided",
+      "bonusBasisPoints": 500
+    }
+  ],
+  "notes": [
+    "Isolation-care staff use the existing serving local administrator and capacity, with the civic minimum administration skill. No workers, research or stocks are granted.",
+    "Commissioning consumes the district's existing medical materials. Annual upkeep is prepaid; actual exposed care consumes one additional medical stock unit per day. Preparation is 90 days.",
+    "Records operate only during paid isolation care or a paid medical response. Clinical research authorizes the existing response action, with its unchanged bill, quarantine, duration and cooldown; only Anatomy supplies its separate 2500 bp contribution.",
+    "Daily records payment is atomic: one minor treasury currency and one existing cloth stock. Absence of an outbreak or exposed manpower consumes no daily treatment inputs."
+  ]
+}
