@@ -1,0 +1,325 @@
+{
+  "closureEvidence": false,
+  "exactGeneratedNavalMetadata": "pass",
+  "executionScope": "NavalServicesTests, NavigationEfficiencyTests and WC3CompatibilityCompileFixture; all production and sibling test functions compiled",
+  "format": "warcraftmap_focused_validation_v1",
+  "frameworkBoundary": "pass",
+  "fullSuiteExecuted": false,
+  "generatedCarvelConsumer": {
+    "action": "voyage",
+    "bonusBasisPoints": 800,
+    "builtProfiles": [
+      "atlantic_carrack_merchant",
+      "atlantic_galleon",
+      "portuguese_oceanic_galleon",
+      "spanish_treasure_galleon",
+      "english_race_built_galleon",
+      "ocean_cruising_frigate",
+      "dutch_style_frigate",
+      "french_frigate",
+      "ship_of_the_line_generic",
+      "british_ship_of_line",
+      "armed_indiaman"
+    ],
+    "combatIndependent": true,
+    "completedCompatibleHullRequired": true,
+    "contentId": "progression_carvel_hull_construction",
+    "currentOwnerResearchRequired": true,
+    "executionSystem": "naval_carvel",
+    "firstDate": "1460-01-01",
+    "fundedMaintenanceRequired": true,
+    "kind": "modifier",
+    "metric": "voyage_hull_weather_resilience",
+    "navigationIndependent": true,
+    "nodeId": "carvel_hull_construction",
+    "outputBound": "actual_voyage_hull_weather_loss",
+    "provisionsIndependent": true,
+    "recipient": "carvel_hulled_or_validly_refitted_vessels",
+    "refit": {
+      "currency": 200,
+      "days": 30,
+      "iron": 2,
+      "timber": 20
+    },
+    "refitProfiles": [
+      "armed_sailing_warship",
+      "ocean_merchantman"
+    ],
+    "weather": {
+      "exposedDays": 2,
+      "exposure": 100,
+      "period": 5
+    }
+  },
+  "generationAndProvenance": "pass",
+  "integratedMainGate": "Controller must run complete repository/framework validation and pinned suite, then regenerate release-blocker, runtime-acceptance and requirement-traceability audits for the integrated revision/source digest and require the exact Carvel finding to disappear. Focused results cannot remove it.",
+  "pinnedCompilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "pinnedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "python": {
+    "execution": {
+      "passed": 23,
+      "status": "pass"
+    },
+    "generated-metadata": {
+      "passed": 1,
+      "status": "pass"
+    },
+    "integration": {
+      "passed": 13,
+      "status": "pass"
+    },
+    "naval": {
+      "passed": 26,
+      "status": "pass"
+    },
+    "navigation": {
+      "passed": 12,
+      "status": "pass"
+    },
+    "note": "The standalone generated-metadata rerun repeats one of the 26 naval tests. Execution-protocol tests use synthetic failures to test fail-closed behavior, never as naval execution evidence.",
+    "uniquePassingTests": 74
+  },
+  "sourceIdentity": {
+    "sourceRevision": "a34ad419757270b22f6fe741a7f8a2fc74d1b3cf",
+    "sourceTreeSha256": "fda7b26c664a9f8b242166aa4879133ed0fb7a0486fad31a3b17f9117eb3f9f6"
+  },
+  "wurst": {
+    "assembledInputSetSha256": "2086140c63a5a2bcf5a73f2040b4fe48802e924da22240135c8d78f48f144056",
+    "comparisonProbes": [
+      "agriculture_clock",
+      "appoint",
+      "combat_rating",
+      "dispatch",
+      "land_damage",
+      "land_equipment",
+      "land_shot",
+      "naval_action",
+      "naval_advance",
+      "naval_combat",
+      "naval_hull_commit",
+      "naval_pay",
+      "naval_payment",
+      "naval_registration",
+      "naval_restore",
+      "naval_snapshot",
+      "naval_voyage_weather",
+      "naval_weather",
+      "research",
+      "rpg_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_registration",
+      "voyage_resolve",
+      "voyage_start"
+    ],
+    "passed": 38,
+    "requiredComparisonProbes": [
+      "dispatch",
+      "naval_advance",
+      "naval_hull_commit",
+      "naval_registration",
+      "naval_restore",
+      "naval_snapshot",
+      "naval_voyage_weather",
+      "naval_weather",
+      "research",
+      "voyage_registration",
+      "voyage_resolve",
+      "voyage_start"
+    ],
+    "status": "pass",
+    "tests": [
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningOnlyRegisteredRepairsChargeEachDayAgainstMatchedControl",
+        "line": 195,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsBoundFullHullAndPreserveLegacyHullFractions",
+        "line": 231,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsRejectMissingInputsAndInaccessibleRecipientsWithoutMutation",
+        "line": 266,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsSuspendUnfundedDaysAndCancelOnLostAccess",
+        "line": 322,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsCaptureAndControllerTransferCancelPaidWork",
+        "line": 365,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 392,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:careeningRepairsLateLoadRollbackRestoresPaidWorkAndResources",
+        "line": 413,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineOnlyRegisteredCommissioningRequiresPaidWorkAgainstMatchedControl",
+        "line": 469,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningRejectsEachMissingConditionWithoutMutation",
+        "line": 531,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningCaptureCancelsAndReconstructionNeverRepeatsCompletion",
+        "line": 586,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 608,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:doctrineCommissioningLateLoadRollbackRestoresPaidWorkAndResources",
+        "line": 637,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:registeredNavalResearchUnlocksPaidHistoricalRosterWithoutFreeShipsAndRepairsConsumeRealInputs",
+        "line": 692,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesOnlyModifyCloseVerifiedCannonHitsAndPreserveOtherRatingsOnCaptureAndReload",
+        "line": 731,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelOnlyRegisteredVoyagesAvoidEightPercentAgainstMatchedControl",
+        "line": 758,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesRequireCompletedResearchCompatibleHullAndHistoricalService",
+        "line": 809,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelRefitsRequirePaidCompletedCompatibleWork",
+        "line": 839,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesCalmUnfundedAndUnprovisionedDaysEarnNoCredit",
+        "line": 887,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesFractionsResumeInterruptAndDestroyWithoutDuplicateLoss",
+        "line": 916,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesCapturePreservesGearWithoutForeignResearch",
+        "line": 977,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesPlayerAiAndActiveInactiveUseIdenticalAuthority",
+        "line": 1005,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelVoyagesLateLoadRollbackRestoresHullGearResearchAndResources",
+        "line": 1020,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity",
+        "line": 1083,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalNegativeConditionsRejectWithoutPaymentAndSaveMigrationAndLateRollbackAreAtomic",
+        "line": 1101,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:paidCarronadesUseInstalledProductionWeaponCallbacksAndRejectStaleAndIncompatibleHits",
+        "line": 1145,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalSourcesReconstructOnceAndLongCampaignFractionsConserveActualHullInputs",
+        "line": 1169,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalHistoryInfrastructureGearAndResourceNegativesSuspendWithoutInventedOutput",
+        "line": 1194,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:navalProductionConsumerTraceExercisesAllFourRegisteredBenefitsOnOneRevision",
+        "line": 1227,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavalServicesTests.wurst:combinedNavalAndLandSnapshotsPreserveBothHRecordsAndMigrateEitherVersion13Branch",
+        "line": 1253,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:registeredCelestialResearchChangesProductionVoyageProvisionsAgainstControl",
+        "line": 58,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:voyageRejectionsKeepProvisionTimeKnowledgeEquipmentAndResearchAuthority",
+        "line": 86,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:voyageEquipmentIsPaidIdempotentAndReevaluatedAtResolution",
+        "line": 124,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:fixedPointVoyageInterruptionsAndControllerChangesPreserveOnlyElapsedBenefit",
+        "line": 145,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:activeAbstractSaveResumeAndRepeatedCallbackHaveExactVoyageParity",
+        "line": 172,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:navigationSaveValidationAndLegacyMigrationAreTransactional",
+        "line": 201,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:rejectedCampaignLoadRestoresVoyageReservationEquipmentAndFractionalCredit",
+        "line": 225,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/NavigationEfficiencyTests.wurst:sharedCelestialEntitlementsAndReconstructionNeverMultiplyTheVoyageBenefit",
+        "line": 247,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/WC3CompatibilityCompileFixture.wurst:compatibilityTargetAndCapabilitiesArePinned",
+        "line": 5,
+        "status": "pass"
+      }
+    ],
+    "transcriptSha256": "77dd1153025c74779fc3600633604a3b1ea6a9b67a2f683cc3acd2e5deb1c71d"
+  }
+}

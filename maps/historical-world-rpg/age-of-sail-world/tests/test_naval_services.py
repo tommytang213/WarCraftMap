@@ -1,5 +1,6 @@
 """Naval source contracts; mutations execute through production Wurst commands."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -10,6 +11,8 @@ import unittest
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / 'tooling'))
 from naval_services_catalog import build
+sys.path.insert(0, str(PROJECT.parent / '_shared/tooling'))
+from package_wurst_map import PackagingError, generate, load_config, verify_generated
 
 
 class NavalServicesCompilationTests(unittest.TestCase):
@@ -73,3 +76,42 @@ class NavalServicesCompilationTests(unittest.TestCase):
             self.assertNotIn(e['unlock']['contentId'], source)
         self.assertNotIn('england', source)
         self.assertNotIn('london', source)
+
+    def test_generated_carvel_consumer_and_metadata_reject_rehashed_tampering(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            generated = Path(tmp)
+            config = load_config(PROJECT / 'package.json')
+            generate(config, generated)
+            verify_generated(config, generated)
+            source = (generated / 'ScenarioData.wurst').read_bytes()
+            data = (generated / 'scenario-runtime.json').read_bytes()
+            provenance = (generated / 'provenance.json').read_bytes()
+            for mutation in ('rate', 'refit', 'duplicate_source', 'metadata', 'metadata_type', 'missing', 'duplicate'):
+                with self.subTest(mutation=mutation):
+                    text = source.decode()
+                    payload = json.loads(data)
+                    consumers = payload['navalServices']['consumers']
+                    carvel = next(c for c in consumers if c['executionSystem'] == 'naval_carvel')
+                    if mutation == 'rate':
+                        text = text.replace('"voyage_hull_weather_resilience", 800',
+                                            '"voyage_hull_weather_resilience", 900')
+                    elif mutation == 'refit':
+                        text = text.replace('ledger.carvelCost = 200', 'ledger.carvelCost = 1')
+                    elif mutation == 'duplicate_source':
+                        text += '\n' + build()[1]
+                    elif mutation == 'metadata':
+                        carvel['refit']['currency'] = 1
+                    elif mutation == 'metadata_type':
+                        carvel['bonusBasisPoints'] = 800.0
+                    elif mutation == 'missing':
+                        consumers.remove(carvel)
+                    else:
+                        consumers.append(copy.deepcopy(carvel))
+                    (generated / 'ScenarioData.wurst').write_text(text)
+                    (generated / 'scenario-runtime.json').write_text(json.dumps(payload))
+                    hashes = json.loads(provenance)
+                    for name in ('ScenarioData.wurst', 'scenario-runtime.json'):
+                        hashes['outputs'][name] = hashlib.sha256((generated / name).read_bytes()).hexdigest()
+                    (generated / 'provenance.json').write_text(json.dumps(hashes))
+                    with self.assertRaisesRegex(PackagingError, 'naval bindings'):
+                        verify_generated(config, generated)
