@@ -72,7 +72,9 @@ def verify_registration(project, world, source, catalog):
         '\tledger.' + key + ' = ' for key in (*RULES, 'recordsGood')))
         or (line.startswith('\tresearch.register(new CivicEffect(')
             and any(json.dumps(v[1]) in line for v in IDENTITIES.values()))]
-    if (actual != expected or catalog.get('medicalCare') != metadata
+    # Campaigns without civic/medical contracts omit this optional catalogue.
+    # Still compare all registrations and effects so unauthored care fails closed.
+    if (actual != expected or catalog.get('medicalCare', {}) != metadata
             or [e for e in catalog.get('effects', []) if e['metric'] in {v[1] for v in IDENTITIES.values()}] != effects):
         raise ValueError('medical care: executable or exact consumer metadata differs from scenario')
 

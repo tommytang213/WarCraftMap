@@ -56,6 +56,28 @@ class MedicalCareContracts(unittest.TestCase):
             with patch.object(Path, 'read_text', read), self.assertRaises(ValueError):
                 medical.configuration(PROJECT, self.world)
 
+    def test_campaign_without_medical_contract_accepts_absence_but_rejects_unauthored_care(self):
+        project = PROJECT.parent / 'conformance-campaign'
+        world = json.loads((project / 'scenario/world/world.json').read_text())
+        source, catalog, _ = civic.configuration(project, world, [], {}, [])
+        self.assertEqual({}, catalog)
+        medical.verify_registration(project, world, source, catalog)
+        medical.verify_registration(project, world, source, {'medicalCare': {}})
+        for metadata in (None, {'consumers': []}, {'consumers': ['unauthored']}):
+            with self.subTest(metadata=metadata), self.assertRaises(ValueError):
+                medical.verify_registration(project, world, source, {'medicalCare': metadata})
+        for effect in self.contract['effects']:
+            with self.subTest(effect=effect['nodeId']):
+                with self.assertRaises(ValueError):
+                    medical.verify_registration(project, world, source, {'effects': [effect]})
+                registration = (f'\tresearch.register(new CivicEffect("modifier", '
+                                f'"{effect["unlock"]["contentId"]}", '
+                                f'"{effect["metric"]}", 500))\n')
+                with self.assertRaises(ValueError):
+                    medical.verify_registration(project, world, source + registration, catalog)
+        with self.assertRaises(ValueError):
+            medical.verify_registration(project, world, source + '\tledger.recordsDailyMoney = 1\n', catalog)
+
     def test_resealed_generated_metadata_or_registration_cannot_substitute_consumers(self):
         source, catalog, _ = civic.configuration(PROJECT, self.world, [], {'hawaii_royal_center': ('pacific', {})}, [])
         for damaged in (source.replace('ledger.recordsDailyMoney = 1', 'ledger.recordsDailyMoney = 0'),
