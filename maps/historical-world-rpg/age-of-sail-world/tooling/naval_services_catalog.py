@@ -71,11 +71,36 @@ def repair_consumers(data):
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     from naval_commissioning import verified_consumers as commissioning
     from naval_repair import verified_consumers as repairs
-    # Keep commissioning's evidence restricted to its original consumer.
+    from naval_carronade import verified_consumers as carronades
+    # Each consumer requires its own isolated execution evidence.
     def candidates(system):
         return lambda: [c for c in build(project)[0]['consumers'] if c['executionSystem'] == system]
     return (commissioning(project, candidates('naval_commissioning'), execution, execution_log, revision)
-            | repairs(project, candidates('naval_repair'), execution, execution_log, revision))
+            | repairs(project, candidates('naval_repair'), execution, execution_log, revision)
+            | carronades(project, lambda: build(project)[0]['combatConsumers'],
+                         execution, execution_log, revision))
+
+def carronade_consumers(data):
+    candidates = [e for e in data['effects'] if e.get('nodeId') == 'carronade_batteries'
+                  or e.get('unlock') == {'kind': 'modifier', 'contentId': 'progression_carronade_batteries'}
+                  or e.get('metric') == 'close_range_naval_gunfire_damage']
+    if len(candidates) != 1:
+        return []
+    effect = candidates[0]
+    if (effect.get('nodeId') != 'carronade_batteries'
+            or effect.get('unlock') != {'kind': 'modifier', 'contentId': 'progression_carronade_batteries'}
+            or effect.get('metric') != 'close_range_naval_gunfire_damage'
+            or type(effect.get('bonusBasisPoints')) is not int or effect.get('bonusBasisPoints') != 1000
+            or effect.get('family') != 'naval' or effect.get('activation') != 'passive_research'
+            or effect.get('recipient') != 'warships_equipped_with_carronade_guns'):
+        return []
+    return [dict(nodeId=effect.get('nodeId'), **effect.get('unlock'), metric=effect.get('metric'),
+                 bonusBasisPoints=effect.get('bonusBasisPoints'), executionSystem='naval_carronade',
+                 profiles=data['carronadeMountProfiles'], firstDate=data['mountFirstDate'],
+                 currency=data['rules']['mountCost'], timber=data['rules']['mountWood'],
+                 iron=data['rules']['mountIron'], mountingDays=data['rules']['mountDays'],
+                 maximumRange=data['rules']['closeRange'], attackId='naval_gunfire',
+                 currentControllerResearch=True, fundedMaintenance=True)]
 
 
 def build(project=ROOT):
@@ -194,6 +219,7 @@ def build(project=ROOT):
     data['rosterBlueprint'] = hull
     data['crewStrength'] = roster.ships[hull['shipId']]['crewStrength']
     data['consumers'] = commissioning_consumers(data) + repair_consumers(data)
+    data['combatConsumers'] = carronade_consumers(data)
     return data, '\n'.join(lines) + '\n'
 
 
