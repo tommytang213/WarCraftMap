@@ -254,6 +254,15 @@ public class NavalCampaignRuntime
 			ship.hull.lastDay = s.lastDay
 			m.recruit(ship)
 		s.stop()
+	/** Called only for an actual exposed day of a pending voyage. */
+	function voyageWeather(RuntimeForce f, NavalProfile profile, int at)
+		let ledger = campaign.militarySettlements.naval
+		var rate = 0
+		if at >= ledger.carvelFirstDay and profile != null and f.hull.maintained and (profile.carvelBuilt or f.hull.carvel)
+			rate = effects.rate(f.controllerId, "voyage_hull_weather_resilience")
+		f.hull.weather(ledger.stormLoss, rate)
+		if f.hull.integrity == 0
+			campaign.militarySettlements.recordLoss(f.id, f.strength)
 	function advance(int day)
 		let m = campaign.militarySettlements
 		let ledger = m.naval
@@ -334,12 +343,7 @@ public class NavalCampaignRuntime
 								campaign.countries.treasury[p] -= bill
 								f.supply--
 						if f.navigation.pending() and m.voyages != null and at >= f.navigation.lastDay and at < f.navigation.lastDay + m.voyages.route(f.navigation.routeId).days - f.navigation.elapsedDays and ledger.weatherPeriod > 0 and at mod ledger.weatherPeriod < ledger.weatherDays
-							var rate = 0
-							if at >= ledger.carvelFirstDay and profile != null and f.hull.maintained and (profile.carvelBuilt or f.hull.carvel)
-								rate = effects.rate(f.controllerId, "voyage_hull_weather_resilience")
-							f.hull.weather(ledger.stormLoss, rate)
-							if f.hull.integrity == 0
-								m.recordLoss(f.id, f.strength)
+							voyageWeather(f, profile, at)
 	function overview(string owner, string id) returns string
 		let ledger = campaign.militarySettlements.naval
 		let i = ledger.index(id)

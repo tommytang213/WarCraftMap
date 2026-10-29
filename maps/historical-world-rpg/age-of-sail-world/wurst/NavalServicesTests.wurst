@@ -22,6 +22,7 @@ import ManagementCommandTests
 import CampaignLoadTransactionTests
 import CampaignSaveManager
 import ScenarioData
+import VoyageCommands
 
 public class NavalTestResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
@@ -84,6 +85,8 @@ public class NavalFixture
 		campaign.navalRuntime = runtime
 		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
 		registerNavalCommands(commands, runtime).assertEquals("")
+		registerVoyageCommands(commands, campaign).assertEquals("")
+		campaign.knowledge.revealRegion("europe")
 		if active
 			military.activateRegion(d.mapId)
 		else
@@ -125,8 +128,30 @@ public class NavalFixture
 		commands.dispatch(Player(0), "/naval repair london ship").assertTrue()
 		(resources.output != "Naval action completed.").assertTrue()
 		authority().assertEquals(before)
+	function rejectedCarvel()
+		let before = authority()
+		commands.dispatch(Player(0), "/naval carvel london ship").assertTrue()
+		(resources.output != "Naval action completed.").assertTrue()
+		authority().assertEquals(before)
 	function recipient() returns RuntimeForce
 		return military.forces[military.forceIndex("ship")]
+	function voyage(boolean success)
+		commands.dispatch(Player(0), "/voyage ship " + military.voyages.routes.id).assertTrue()
+		if success
+			resources.output.assertEquals("Voyage action completed.")
+		else
+			resources.output.assertEquals("Voyage requirements are not met.")
+	/** Select another generated hull in the bounded station fixture. Route,
+	 * provision reservation and maintenance still use production authority. */
+	function useProfile(string id)
+		var profile = military.naval.profiles
+		while profile != null and profile.id != id
+			profile = profile.next
+		(profile != null).assertTrue()
+		recipient().combatProfileId = profile.id
+		recipient().unitTypeId = profile.unitTypeId
+		military.naval.yards[0].profileId = profile.id
+		military.naval.yards[0].unitTypeId = profile.unitTypeId
 	function beginRepair()
 		let money = campaign.countries.treasury[0]
 		let wood = trade.markets[0].stock
@@ -730,6 +755,331 @@ public class NavalFixture
 	f.military.applyCombatHit(h, f.military.forceIndex("ship"), f.military.forceIndex("enemy"), "ai", "enemy", true)
 	h.damage.display().assertEquals("100")
 	f.military.forces[f.military.forceIndex("ship")].hull.carronades.assertTrue()
+
+@test function carvelOnlyRegisteredVoyagesAvoidEightPercentAgainstMatchedControl()
+	let f = new NavalFixture(false, true)
+	let control = new NavalFixture(false, true)
+	f.authority().assertEquals(control.authority())
+	f.dock()
+	control.dock()
+	f.authority().assertEquals(control.authority())
+	f.unlock("carvel_hull_construction")
+	f.effects.rate("player", "voyage_hull_weather_resilience").assertEquals(800)
+	control.effects.rate("player", "voyage_hull_weather_resilience").assertEquals(0)
+	f.effects.entitled("player", "ship_of_the_line").assertFalse()
+	f.effects.earned("player", "hull_repair_throughput").assertFalse()
+	f.effects.earned("player", "close_range_naval_gunfire_damage").assertFalse()
+	f.recipient().hull.carvel.assertFalse() // Authored built hull, no free refit.
+	let provisions = f.recipient().supply
+	let funds = f.campaign.countries.treasury[0]
+	f.voyage(true)
+	control.voyage(true)
+	f.recipient().supply.assertEquals(provisions - 50)
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	var exposures = 0
+	for elapsed = 1 to 10
+		let at = f.clock.currentDay
+		if at mod 5 < 2
+			exposures++
+		f.clock.advanceTo(at + 1).assertTrue()
+		control.clock.advanceTo(at + 1).assertTrue()
+		f.recipient().hull.integrity.assertEquals(10000 - exposures * 92)
+		control.recipient().hull.integrity.assertEquals(10000 - exposures * 100)
+		let saved = f.military.snapshot()
+		f.military.restore(saved).assertTrue()
+		f.rpg.technologies.reconstructAll()
+		f.rpg.technologies.reconstructAll()
+		let before = f.authority()
+		f.runtime.advance(f.clock.currentDay)
+		f.military.resolveVoyages(f.clock.currentDay)
+		f.runtime.advance(f.clock.currentDay)
+		f.authority().assertEquals(before)
+	exposures.assertEquals(4)
+	f.recipient().hull.integrity.assertEquals(9632)
+	control.recipient().hull.integrity.assertEquals(9600)
+	f.recipient().supply.assertEquals(provisions - 50 - 10)
+	f.recipient().supply.assertEquals(control.recipient().supply)
+	f.recipient().navigation.record().assertEquals(control.recipient().navigation.record())
+	f.recipient().navigation.creditBasisPoints.assertEquals(0)
+	f.recipient().navigation.pending().assertFalse()
+	f.trade.capture().assertEquals(control.trade.capture())
+	f.campaign.countries.treasury[0].assertEquals(control.campaign.countries.treasury[0])
+	f.hit(true).assertEquals("100")
+	f.recipient().strength.assertEquals(1050)
+
+@test function carvelVoyagesRequireCompletedResearchCompatibleHullAndHistoricalService()
+	for variant = 0 to 4
+		let f = new NavalFixture(false, false)
+		f.dock()
+		if variant != 0
+			f.unlock("carvel_hull_construction")
+		if variant == 1
+			f.useProfile("indigenous_war_canoe")
+		else if variant == 2
+			f.useProfile("armed_sailing_warship") // Compatible, still unrefitted.
+		else if variant >= 3
+			// Exercise the exact service boundary without replaying centuries.
+			let first = f.military.naval.carvelFirstDay
+			f.clock.currentDay = first - 1
+			if variant == 4
+				f.clock.currentDay = first
+			for i = 0 to f.military.forceCount - 1
+				f.military.forces[i].hull.lastDay = f.clock.currentDay
+		// Supply a single deterministic exposure at the exact service boundary.
+		f.military.naval.weatherPeriod = 1
+		f.military.naval.weatherDays = 1
+		f.voyage(true)
+		f.clock.advanceTo(f.clock.currentDay + 1).assertTrue()
+		var expected = 9900
+		if variant == 4
+			expected = 9908
+		f.recipient().hull.integrity.assertEquals(expected)
+		f.recipient().hull.carvel.assertFalse()
+		f.recipient().hull.weatherCredit.assertEquals(0)
+
+@test function carvelRefitsRequirePaidCompletedCompatibleWork()
+	let f = new NavalFixture(false, true)
+	f.dock()
+	f.useProfile("armed_sailing_warship")
+	let unfunded = f.authority()
+	f.commands.dispatch(Player(0), "/naval carvel london ship").assertTrue()
+	(f.resources.output != "Naval action completed.").assertTrue()
+	f.authority().assertEquals(unfunded)
+	f.unlock("carvel_hull_construction")
+	let money = f.campaign.countries.treasury[0]
+	let wood = f.trade.markets[0].stock
+	let iron = f.trade.markets[1].stock
+	f.campaign.countries.treasury[0] = 199
+	f.rejectedCarvel()
+	f.campaign.countries.treasury[0] = money
+	f.trade.markets[0].stock = 19
+	f.rejectedCarvel()
+	f.trade.markets[0].stock = wood
+	f.trade.markets[1].stock = 1
+	f.rejectedCarvel()
+	f.trade.markets[1].stock = iron
+	let first = f.military.naval.carvelFirstDay
+	f.military.naval.carvelFirstDay = f.clock.currentDay + 1
+	f.rejectedCarvel()
+	f.military.naval.carvelFirstDay = first
+	f.action("carvel", " ship")
+	f.campaign.countries.treasury[0].assertEquals(money - 200)
+	f.trade.markets[0].stock.assertEquals(wood - 20)
+	f.trade.markets[1].stock.assertEquals(iron - 2)
+	f.voyage(false)
+	f.clock.advanceTo(f.day + 119).assertTrue()
+	f.recipient().hull.carvel.assertFalse()
+	let partial = f.military.snapshot()
+	f.military.restore(partial).assertTrue()
+	f.clock.advanceTo(f.day + 120).assertTrue()
+	f.recipient().hull.carvel.assertTrue()
+	f.voyage(true)
+	f.clock.advanceTo(f.day + 130).assertTrue()
+	f.recipient().hull.integrity.assertEquals(9632)
+	let incompatible = new NavalFixture(false, false)
+	incompatible.dock()
+	incompatible.unlock("carvel_hull_construction")
+	incompatible.useProfile("indigenous_war_canoe")
+	let before = incompatible.authority()
+	incompatible.commands.dispatch(Player(0), "/naval carvel london ship").assertTrue()
+	(incompatible.resources.output != "Naval action completed.").assertTrue()
+	incompatible.authority().assertEquals(before)
+
+@test function carvelVoyagesCalmUnfundedAndUnprovisionedDaysEarnNoCredit()
+	for variant = 0 to 3
+		let f = new NavalFixture(false, true)
+		f.unlock("carvel_hull_construction")
+		f.dock()
+		if variant == 0
+			f.recipient().supply = 49
+			let before = f.authority()
+			f.voyage(false)
+			f.authority().assertEquals(before)
+		else
+			f.voyage(true)
+			if variant == 1
+				f.campaign.countries.treasury[0] = 0
+			else if variant == 2
+				f.recipient().supply = 0
+			else
+				f.military.naval.weatherDays = 0 // Bounded calm-weather control.
+			f.clock.advanceTo(f.day + 91).assertTrue()
+			if variant != 3
+				f.recipient().hull.maintained.assertFalse()
+				f.recipient().hull.integrity.assertEquals(9900)
+			f.clock.advanceTo(f.day + 100).assertTrue()
+			if variant == 3
+				f.recipient().hull.integrity.assertEquals(10000)
+			else
+				f.recipient().navigation.pending().assertFalse()
+		f.recipient().hull.weatherCredit.assertEquals(0)
+
+@test function carvelVoyagesFractionsResumeInterruptAndDestroyWithoutDuplicateLoss()
+	let f = new NavalFixture(false, false)
+	let control = new NavalFixture(false, false)
+	f.unlock("carvel_hull_construction")
+	control.unlock("carvel_hull_construction")
+	f.dock()
+	control.dock()
+	f.military.naval.stormLoss = 1
+	control.military.naval.stormLoss = 1
+	f.voyage(true)
+	control.voyage(true)
+	f.clock.advanceTo(f.day + 95).assertTrue()
+	control.clock.advanceTo(control.day + 95).assertTrue()
+	f.recipient().hull.weatherCredit.assertEquals(1600)
+	let saved = f.military.snapshot()
+	// Profile follows voyage in existing snapshots. Missing or incompatible
+	// profiles must still reject once deferred support validation runs.
+	f.military.restore(saved.replace("|p,ship,ship_of_the_line_generic", "")).assertFalse()
+	f.military.restore(saved.replace("|p,ship,ship_of_the_line_generic", "|p,ship,indigenous_war_canoe")).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	f.military.restore(saved).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(f.day + 100).assertTrue()
+	control.clock.advanceTo(control.day + 100).assertTrue()
+	f.military.snapshot().assertEquals(control.military.snapshot())
+	f.recipient().hull.weatherCredit.assertEquals(3200)
+	// Cross a whole-integrity avoidance boundary after resuming fractions.
+	for voyage = 1 to 3
+		f.voyage(true)
+		control.voyage(true)
+		f.clock.advanceTo(f.clock.currentDay + 10).assertTrue()
+		control.clock.advanceTo(control.clock.currentDay + 10).assertTrue()
+	f.military.snapshot().assertEquals(control.military.snapshot())
+	f.recipient().hull.integrity.assertEquals(9985)
+	f.recipient().hull.weatherCredit.assertEquals(2800)
+	f.voyage(true)
+	f.clock.advanceTo(f.day + 131).assertTrue()
+	f.commands.dispatch(Player(0), "/voyage-return ship").assertTrue()
+	f.resources.output.assertEquals("Voyage action completed.")
+	f.clock.advanceTo(f.day + 140).assertTrue()
+	f.recipient().hull.integrity.assertEquals(9984)
+	f.recipient().hull.weatherCredit.assertEquals(3600)
+	// A zero-integrity exposure cannot mint fractional avoidance.
+	let empty = new NavalHull()
+	empty.integrity = 3
+	empty.weather(100, 800).assertEquals(3)
+	empty.integrity.assertEquals(0)
+	let credit = empty.weatherCredit
+	empty.weather(100, 800).assertEquals(0)
+	empty.weatherCredit.assertEquals(credit)
+	f.recipient().hull.integrity = 1
+	f.recipient().hull.weatherCredit = 0
+	f.voyage(true)
+	f.clock.advanceTo(f.day + 145).assertTrue()
+	f.recipient().hull.integrity.assertEquals(0)
+	f.recipient().strength.assertEquals(0)
+	f.recipient().active.assertFalse()
+	let dead = f.military.snapshot()
+	f.runtime.advance(f.clock.currentDay)
+	f.military.snapshot().assertEquals(dead)
+
+@test function carvelVoyagesCapturePreservesGearWithoutForeignResearch()
+	let f = new NavalFixture(false, true)
+	f.unlock("carvel_hull_construction")
+	f.dock()
+	f.useProfile("armed_sailing_warship")
+	f.action("carvel", " ship")
+	f.clock.advanceTo(f.day + 120).assertTrue()
+	f.military.naval.stormLoss = 1
+	f.voyage(true)
+	f.clock.advanceTo(f.day + 125).assertTrue()
+	f.recipient().hull.weatherCredit.assertEquals(1600)
+	let integrity = f.recipient().hull.integrity
+	let supply = f.recipient().supply
+	f.military.transferControl("ship", "ai", f.clock.currentDay)
+	f.recipient().hull.carvel.assertTrue()
+	f.recipient().hull.weatherCredit.assertEquals(0)
+	f.recipient().hull.integrity.assertEquals(integrity)
+	f.recipient().supply.assertEquals(supply)
+	f.effects.rate("ai", "voyage_hull_weather_resilience").assertEquals(0)
+	f.campaign.countries.registerPolity("ai", 100000)
+	let captured = f.military.snapshot()
+	f.military.restore(captured).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.clock.advanceTo(f.day + 130).assertTrue()
+	f.recipient().hull.integrity.assertEquals(integrity - 2)
+	f.recipient().hull.weatherCredit.assertEquals(0)
+	f.recipient().hull.carvel.assertTrue()
+
+@test function carvelVoyagesPlayerAiAndActiveInactiveUseIdenticalAuthority()
+	var expected = ""
+	for variant = 0 to 3
+		let f = new NavalFixture(variant >= 2, variant mod 2 == 0)
+		f.unlock("carvel_hull_construction")
+		f.dock()
+		f.voyage(true)
+		f.clock.advanceTo(f.day + 100).assertTrue()
+		f.recipient().hull.integrity.assertEquals(9632)
+		let outcome = f.recipient().hull.record() + "#" + f.recipient().navigation.record() + "#" + I2S(f.recipient().supply) + "#" + I2S(f.campaign.countries.treasury[0]) + "#" + f.trade.capture()
+		if variant == 0
+			expected = outcome
+		else
+			outcome.assertEquals(expected)
+
+@test function carvelVoyagesLateLoadRollbackRestoresHullGearResearchAndResources()
+	let f = new LoadFixture()
+	let effects = new NavalResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	f.military.setRpgRuntime(f.rpg)
+	f.military.navalResearch = effects
+	f.military.combatBindings = createGeneratedCombatBindings()
+	configureGeneratedNaval(f.military.naval, effects)
+	let d = f.military.naval.yards[0]
+	d.id = "port"
+	d.mapId = "europe_west"
+	d.x = 40.
+	d.y = 50.
+	d.prerequisite = "carvel_hull_construction"
+	d.profileId = "armed_sailing_warship"
+	f.military.naval.carvelFirstDay = 1 // Bounded transaction fixture calendar.
+	f.military.naval.states[0].ready = 1
+	f.military.naval.states[0].lastDay = f.clock.currentDay
+	let fleet = f.military.forces[f.military.forceIndex("fleet")]
+	fleet.unitTypeId = d.unitTypeId
+	fleet.combatProfileId = d.profileId
+	fleet.hull.lastDay = f.clock.currentDay
+	fleet.supply = 1000
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	for i = 0 to 2
+		var good = "timber"
+		if i == 1
+			good = "iron"
+		else if i == 2
+			good = "ship_provisions"
+		f.extension.trade.registerMarket(new RuntimeMarket("port", good, 10000, 100000, 10, 10))
+	let technology = new RuntimeTechnology("carvel_hull_construction", "Carvel Hull Construction", 1, 1)
+	technology.addUnlock("carvel_hull_construction", "modifier", "progression_carvel_hull_construction")
+	f.rpg.technologies.register(technology).assertTrue()
+	let runtime = new NavalCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.navalRuntime = runtime
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before carvel").assertTrue()
+	f.rpg.research("england", "carvel_hull_construction", 1, 1).assertTrue()
+	runtime.act("england", "carvel", "port", "fleet").assertEquals("")
+	f.clock.advanceTo(f.clock.currentDay + 30).assertTrue()
+	f.military.voyages = createGeneratedVoyageContract()
+	f.military.naval.stormLoss = 1
+	f.military.startVoyage("fleet", f.military.voyages.routes.id, "england", f.clock.currentDay, true).assertTrue()
+	f.clock.advanceTo(f.clock.currentDay + 5).assertTrue()
+	f.military.forces[f.military.forceIndex("fleet")].hull.carvel.assertTrue()
+	f.military.forces[f.military.forceIndex("fleet")].hull.weatherCredit.assertEquals(1600)
+	let before = f.military.snapshot()
+	let research = f.rpg.captureState()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	f.recordingTimer.expected = f.clock.captureState()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(before)
+	f.rpg.captureState().assertEquals(research)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	effects.rate("england", "voyage_hull_weather_resilience").assertEquals(800)
+	effects.rate("portugal", "voyage_hull_weather_resilience").assertEquals(0)
+	runtime.advance(f.clock.currentDay)
+	f.military.snapshot().assertEquals(before)
 
 @test function carvelResearchAvoidsExactlyEightPercentActualVoyageHullLossWithActiveInactiveParity()
 	let f = new NavalFixture(false, true)
