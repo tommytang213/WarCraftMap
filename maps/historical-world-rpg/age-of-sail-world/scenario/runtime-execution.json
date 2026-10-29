@@ -581,6 +581,14 @@
     "science_research_bill": {
       "path": "wurst/ScienceCampaignRuntime.wurst",
       "signature": "override function researchCost(string owner, string target) returns int"
+    },
+    "naval_voyage_weather": {
+      "path": "wurst/NavalCampaignRuntime.wurst",
+      "signature": "function voyageWeather(RuntimeForce f, NavalProfile profile, int at)"
+    },
+    "naval_hull_commit": {
+      "path": "wurst/NavalServices.wurst",
+      "signature": "function commitWeather(int loss, int remainder)"
     }
   },
   "systems": {
@@ -947,6 +955,20 @@
       "science_research_bill",
       "science_work_commit",
       "science_complete"
+    ],
+    "naval_carvel": [
+      "dispatch",
+      "naval_advance",
+      "naval_hull_commit",
+      "naval_registration",
+      "naval_restore",
+      "naval_snapshot",
+      "naval_voyage_weather",
+      "naval_weather",
+      "research",
+      "voyage_registration",
+      "voyage_resolve",
+      "voyage_start"
     ]
   }
 }

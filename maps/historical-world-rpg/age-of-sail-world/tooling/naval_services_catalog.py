@@ -68,14 +68,44 @@ def repair_consumers(data):
                  outputBound='actual_missing_hull', ordinaryMaintenanceIndependent=True)]
 
 
+def carvel_consumers(data):
+    """Describe actual voyage hull losses, independently of repair and combat."""
+    candidates = [e for e in data['effects'] if e['nodeId'] == 'carvel_hull_construction'
+                  or e['unlock'] == {'kind': 'modifier', 'contentId': 'progression_carvel_hull_construction'}]
+    if len(candidates) != 1:
+        return []
+    effect = candidates[0]
+    if (effect['nodeId'] != 'carvel_hull_construction'
+            or effect['unlock'] != {'kind': 'modifier', 'contentId': 'progression_carvel_hull_construction'}
+            or effect['metric'] != 'voyage_hull_weather_resilience'
+            or type(effect['bonusBasisPoints']) is not int or effect['bonusBasisPoints'] != 800
+            or effect['activation'] != 'passive_research'
+            or effect['recipient'] != 'carvel_hulled_or_validly_refitted_vessels'):
+        return []
+    rules = data['rules']
+    return [dict(nodeId=effect['nodeId'], **effect['unlock'], metric=effect['metric'],
+                 bonusBasisPoints=effect['bonusBasisPoints'], recipient=effect['recipient'],
+                 action='voyage', executionSystem='naval_carvel', firstDate=data['carvelFirstDate'],
+                 builtProfiles=data['carvelBuiltProfiles'], refitProfiles=data['carvelRefitProfiles'],
+                 refit=dict(currency=rules['carvelCost'], timber=rules['carvelWood'],
+                            iron=rules['carvelIron'], days=rules['carvelDays']),
+                 weather=dict(exposure=rules['stormLoss'], period=rules['weatherPeriod'],
+                              exposedDays=rules['weatherDays']),
+                 currentOwnerResearchRequired=True, fundedMaintenanceRequired=True,
+                 completedCompatibleHullRequired=True, outputBound='actual_voyage_hull_weather_loss',
+                 provisionsIndependent=True, navigationIndependent=True, combatIndependent=True)]
+
+
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     from naval_commissioning import verified_consumers as commissioning
     from naval_repair import verified_consumers as repairs
+    from naval_carvel import verified_consumers as carvel
     # Keep commissioning's evidence restricted to its original consumer.
     def candidates(system):
         return lambda: [c for c in build(project)[0]['consumers'] if c['executionSystem'] == system]
     return (commissioning(project, candidates('naval_commissioning'), execution, execution_log, revision)
-            | repairs(project, candidates('naval_repair'), execution, execution_log, revision))
+            | repairs(project, candidates('naval_repair'), execution, execution_log, revision)
+            | carvel(project, candidates('naval_carvel'), execution, execution_log, revision))
 
 
 def build(project=ROOT):
@@ -193,7 +223,7 @@ def build(project=ROOT):
     data['effects'] = effects
     data['rosterBlueprint'] = hull
     data['crewStrength'] = roster.ships[hull['shipId']]['crewStrength']
-    data['consumers'] = commissioning_consumers(data) + repair_consumers(data)
+    data['consumers'] = commissioning_consumers(data) + repair_consumers(data) + carvel_consumers(data)
     return data, '\n'.join(lines) + '\n'
 
 

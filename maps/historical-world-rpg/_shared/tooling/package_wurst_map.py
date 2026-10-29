@@ -1070,6 +1070,19 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
                 or json.loads((generated / GENERATED_DATA).read_text()).get('landArmy') != payload['catalog']):
             raise _fail('land army bindings', 'executable catalogue differs from scenario (release blocker)')
 
+    naval_builder = configuration(config.project)["scenario"].get("navalBuilder")
+    if naval_builder and not selector:
+        payload = json.loads(subprocess.check_output(
+            [sys.executable, str(content_path(config.project, naval_builder))],
+            cwd=config.project, text=True))
+        actual = json.loads((generated / GENERATED_DATA).read_text()).get('navalServices', {})
+        # Additional yards are placed by the packager from authored port/pathing
+        # data. The builder's consumer metadata and executable recipe stay exact.
+        catalogue = {key: value for key, value in actual.items() if key != 'additionalYards'}
+        if (json.dumps(catalogue, sort_keys=True) != json.dumps(payload['catalog'], sort_keys=True)
+                or (generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1):
+            raise _fail('naval bindings', 'executable catalogue or consumer metadata differs from scenario')
+
     voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
     if voyage_builder and not selector:
         result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],

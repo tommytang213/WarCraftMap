@@ -504,10 +504,37 @@ Repair recognition requires the complete passing pinned suite for the exact
 audited revision/source digest, with successful payment, actual repair and restore
 probes in that isolated comparison. Commissioning and combined naval traces cannot
 replace it. Battlefleet recognition remains independent; carronade and carvel
-findings retain their separate gates. Focused results are developer validation
+findings require their own evidence. Focused results are developer validation
 only. After integration, the controller must run the complete suite and regenerate
 release-blocker, runtime-acceptance and requirement-traceability audits with that
 revision's fresh execution evidence before closing the exact repair finding.
+
+The #571 Carvel verifier independently recognizes `carvel_hull_construction` →
+`modifier:progression_carvel_hull_construction` → `voyage_hull_weather_resilience`
+at exactly 800 basis points. Its generated consumer records the authored built
+and refit profiles, 1460 service boundary, 200-currency/20-timber/two-iron/30-day
+refit recipe, actual exposure and independent provisions, maintenance, navigation
+and combat quantities. The isolated registered comparison earns only Carvel:
+equally provisioned compatible hulls take four actual 100-integrity exposures and
+lose 368 versus 400 integrity. It executes weather, hull commits and mid-voyage
+snapshot/restore, including duplicate delivery and research reconstruction.
+
+Separate tests cover incompatible/unrefitted hulls, the exact service boundary,
+unfunded maintenance, missing provisions, calm days, paid refit completion,
+fractional carry through save/resume and interruption, destruction, capture,
+player/AI and active/inactive parity, migration and failed campaign restoration.
+Voyage support is validated after detached snapshot parsing has read all hull
+profiles, so existing saves with voyage records before profile records resume
+without a schema change; missing or incompatible profiles still reject.
+
+Recognition requires the complete passing pinned suite for the audited revision
+and source digest, with voyage-specific exposure, actual hull commit and
+persistence probes in the isolated Carvel comparison. Commissioning, repair and
+combined traces cannot replace it. Prior naval recognition remains independent.
+`reports/issue-571` contains focused developer evidence only; after integration
+the controller must run the complete suite and regenerate release-blocker,
+runtime-acceptance and requirement-traceability audits before the exact Carvel
+finding can disappear. Starting fleets and other research systems are unchanged.
 
 ## Army food and canal freight consumers (#519)
 

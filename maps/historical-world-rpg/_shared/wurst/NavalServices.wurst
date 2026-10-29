@@ -51,9 +51,11 @@ public class NavalHull
 		let credit = IMinBJ(integrity, exposure) * IMinBJ(9999, rate) + weatherCredit
 		let avoided = credit div 10000
 		let loss = IMaxBJ(0, IMinBJ(integrity, exposure) - avoided)
-		weatherCredit = credit mod 10000
-		integrity -= loss
+		commitWeather(loss, credit mod 10000)
 		return loss
+	function commitWeather(int loss, int remainder)
+		weatherCredit = remainder
+		integrity -= loss
 
 public class NavalProfile
 	string id
