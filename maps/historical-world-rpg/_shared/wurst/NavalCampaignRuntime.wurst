@@ -304,7 +304,7 @@ public class NavalCampaignRuntime
 							f.supply += d.supply
 							s.stop()
 						else if s.job == "mount" and s.work >= ledger.mountDays
-							f.hull.carronades = true
+							f.hull.installCarronades()
 							s.stop()
 						else if s.job == "carvel" and s.work >= ledger.carvelDays
 							f.hull.carvel = true

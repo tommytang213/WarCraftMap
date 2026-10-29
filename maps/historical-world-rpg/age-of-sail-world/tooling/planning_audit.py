@@ -27,6 +27,7 @@ REPORTS = {"release": "reports/release-blocker-audit.json",
 # Reconcile these existing consumer findings after shared execution is available.
 # These identities select observations, never grant bindings or waive a verifier.
 COMPARISONS = {
+    "carronade": ("CARRONADE-BATTERIES-MODIFIER-PROGRESSION-CARRONADE-BATTERIES",),
     "calculus": ("CALCULUS-METHODS-MODIFIER-PROGRESSION-CALCULUS-METHODS",),
     "agriculture": (
         "AGRARIAN-IMPROVEMENT-BUILDING-GRANARY",
