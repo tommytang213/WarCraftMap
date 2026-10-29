@@ -39,7 +39,7 @@ import ScenarioData
 	staged.index("DISTRICT").assertEquals(1023)
 	destroy staged
 
-class CivicTestResources implements ResearchCommandResources, CommandOutput
+public class CivicTestResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
 	int balance = 100000
 	string output = ""
@@ -54,7 +54,7 @@ class CivicTestResources implements ResearchCommandResources, CommandOutput
 	override function show(player recipient, string message)
 		output = message
 
-class CivicFixture
+public class CivicFixture
 	int day = 649041 // Arbitrary committed day; fixture discussion/outbreak are explicit.
 	CivicTestResources resources = new CivicTestResources()
 	CivicResearchEffects research = new CivicResearchEffects(new UnboundResearchEffects())
@@ -83,6 +83,13 @@ class CivicFixture
 		military.civic.cooldownDays = definitions.cooldownDays
 		military.civic.tradePenaltyBasisPoints = definitions.tradePenaltyBasisPoints
 		military.civic.baseTaxBasisPoints = definitions.baseTaxBasisPoints
+		military.civic.carePreparationDays = definitions.carePreparationDays
+		military.civic.careCommissionBasisPoints = definitions.careCommissionBasisPoints
+		military.civic.careUpkeepBasisPoints = definitions.careUpkeepBasisPoints
+		military.civic.careDailyMaterials = definitions.careDailyMaterials
+		military.civic.recordsDailyMoney = definitions.recordsDailyMoney
+		military.civic.recordsDailyMaterials = definitions.recordsDailyMaterials
+		military.civic.recordsGood = definitions.recordsGood
 		military.civic.municipalNode = definitions.municipalNode
 		military.civic.municipalMinimumUrbanization = definitions.municipalMinimumUrbanization
 		destroy definitions
@@ -360,7 +367,7 @@ class CivicFixture
 	ship.navigation.elapsedDays.assertEquals(3)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(3)
 	let saved = f.military.snapshot()
-	saved.startsWith("v20|").assertTrue()
+	saved.startsWith("v21|").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
 	let cut = saved.indexOf("|u,")
@@ -517,7 +524,7 @@ class CivicFixture
 	active.military.restore(saved + record, false).assertFalse()
 	active.military.restore(saved.replace(record, "|u,district,foreign,1,1,20"), false).assertFalse()
 	active.military.snapshot().assertEquals(saved)
-	let legacy = saved.replace("v20|", "v17|").replace(record, "")
+	let legacy = saved.replace("v21|", "v17|").replace(record, "")
 	active.military.restore(legacy, false).assertTrue()
 	active.military.civic.states[0].municipalOwner.assertEquals("")
 	active.military.civic.states[0].urbanization.assertEquals(20)

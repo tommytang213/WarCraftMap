@@ -632,7 +632,7 @@ public class LoadFixture
 	f.military.atWar("england", "portugal").assertTrue()
 	f.military.settlements[0].legalOwnerId.assertEquals("free_port")
 	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
-	f.military.snapshot().startsWith("v20|").assertTrue()
+	f.military.snapshot().startsWith("v21|").assertTrue()
 	f.campaign.countries.captureState().startsWith("v2|").assertTrue()
 	let migrated = f.campaign.state.captureAuthoritativeState()
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
@@ -1258,3 +1258,40 @@ function legacyPirateFounding() returns string
 		f.military.civic.states[0].taxesCollected.assertEquals(945)
 		f.campaign.countries.treasury[0].assertEquals(1945)
 		f.extension.trade.findMarket("port", "grain").money.assertEquals(55)
+
+@test function lateLoadFailureRestoresMedicalCareFractionsRecordsAndPaidResources()
+	let f = new LoadFixture()
+	f.military.civic.register(new CivicDistrict("port", "province", 10001, true, 0, 0, 1, 365, 4, "grain", 1, 1000), f.clock.currentDay)
+	let state = f.military.civic.states[0]
+	state.careOwner = "england"
+	state.careReady = f.clock.currentDay
+	state.careThrough = f.clock.currentDay + 365
+	state.diseaseRemainder = 4000
+	state.careDays = 1
+	state.recordsDays = 1
+	let original = f.military.snapshot()
+	state.diseaseRemainder = 8000
+	state.careDays = 2
+	state.recordsDays = 2
+	f.military.settlements[0].manpower = 20
+	f.campaign.countries.treasury[0] = 100
+	f.extension.trade.findMarket("port", "grain").stock = 4
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	f.military.restore(original, false).assertTrue()
+	f.campaign.countries.treasury[0] = 1000
+	f.extension.trade.findMarket("port", "grain").stock = 100
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.civic.states[0].diseaseRemainder.assertEquals(4000)
+	f.military.civic.states[0].careDays.assertEquals(1)
+	f.military.civic.states[0].recordsDays.assertEquals(1)
+	f.campaign.countries.treasury[0].assertEquals(1000)
+	f.extension.trade.findMarket("port", "grain").stock.assertEquals(100)
+	f.extension.fail = false
+	f.store(candidate)
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.civic.states[0].diseaseRemainder.assertEquals(8000)
+	f.military.civic.states[0].recordsDays.assertEquals(2)
+	f.campaign.countries.treasury[0].assertEquals(100)

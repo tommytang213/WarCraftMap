@@ -698,3 +698,52 @@ Independent v18 municipal saves used six-field `b` records; migration recognizes
 their arity and preserves those charters while initializing absent banking inactive.
 V18 banking saves retain bank policies and initialize absent charters inactive.
 V19 requires both complete ledgers; malformed or partial legacy ledgers reject.
+
+## Funded local medical care (#572)
+
+`scenario/progression/medical-care.json` binds the exact Pest Hospitals and
+Clinical Records modifiers at 500 basis points each, retaining their catalogue
+prerequisites and availability. `/civic inspect DISTRICT` opens the existing
+research management context and shows bills, qualification, deadlines, treated
+days and actual disease outcomes. Research creates no infrastructure or stock.
+
+`/civic care DISTRICT` commissions civic isolation care for 1% of normal annual
+district tax, rounded up, plus the district's existing medical-material bill.
+Preparation takes 90 days. Operation prepays 0.5% annual tax for 365 days and
+each actual exposed treatment day consumes one local medical-material stock
+unit. The service needs a lawful civic center, accessible supplies and a serving
+local administrator meeting the existing administration skill/capacity threshold.
+Loss of staff, access, research or supplies suspends treatment without replay.
+
+Clinical Records automatically maintains case records only during funded
+isolation care or the existing paid medical response. Each treated day pays one
+treasury minor unit and one existing `cloth` stock unit in an atomic transaction.
+Clinical research can authorize that ordinary response action; Anatomy alone
+supplies its separate 2500 bp contribution. The response's 2% tax/material bill,
+90-day duration, quarantine trade penalty and 90-day cooldown retain their rules.
+Failed record payment contributes nothing and never partially debits its bill.
+
+All qualified sources add once before one calculation against available exposed
+local manpower: 100 losses become 95 with either modifier, 90 with both, and 65
+with both plus Epidemic Control. Fractional avoided people carry in integer
+ten-thousandths between treated days and survive reload; unpaid or unexposed
+days spend no credit. Combat casualties never enter this authority. Player/AI and
+active/inactive regions share the campaign ledger and resource adapter.
+
+Military snapshot **v21** requires one `r` record per civic district, holding care
+owner, ready/paid-through days, disease fraction and treated/recorded day counts.
+V1–v20 migration initializes absent care inactive and unfunded, retaining existing
+civic state. Staging rejects duplicate, partial, malformed, foreign-owner and
+future-dated ledgers before replacement. Campaign rollback includes these fields,
+treasury, manpower, stocks and research. Capture preserves completed isolation
+infrastructure but clears prepaid authority and fractional credit; unfinished
+preparation is cancelled. A qualified successor pays new operation/materials and
+receives neither research nor free treatment.
+
+Generated exact consumer metadata is checked against the scenario and executable
+registration. `pest_hospitals` and `clinical_records` have separate comparative
+execution gates; neither a sibling trace nor a merged PR establishes closure.
+After integration the controller must run the complete pinned suite and regenerate
+release-blocker, runtime-acceptance and requirement-traceability audits on the new
+main revision. Focused development evidence leaves both findings blocked until
+that production evidence passes. No player QA is required.

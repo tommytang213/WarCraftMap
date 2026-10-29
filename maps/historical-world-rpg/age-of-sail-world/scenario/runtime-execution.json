@@ -585,6 +585,22 @@
     "naval_mount_commit": {
       "path": "wurst/NavalServices.wurst",
       "signature": "function installCarronades()"
+    },
+    "isolation_care": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function isolationCare(int i, string owner, int day, CivicResearchEffects research, CivicEconomyPort economy) returns boolean"
+    },
+    "case_records": {
+      "path": "wurst/CivicGovernance.wurst",
+      "signature": "function maintainCaseRecords(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean"
+    },
+    "medical_snapshot": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function snapshot() returns string"
+    },
+    "medical_restore": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function restore(string candidate, boolean project) returns boolean"
     }
   },
   "systems": {
@@ -966,6 +982,32 @@
       "combat_rating",
       "naval_snapshot",
       "naval_restore"
+    ],
+    "pest_hospitals": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_disease",
+      "medical_snapshot",
+      "medical_restore",
+      "isolation_care"
+    ],
+    "clinical_records": [
+      "civic_registration",
+      "research",
+      "dispatch",
+      "administrative_action",
+      "administrative_advance",
+      "administrative_pay",
+      "civic_clock",
+      "civic_disease",
+      "medical_snapshot",
+      "medical_restore",
+      "case_records"
     ]
   }
 }

@@ -776,7 +776,7 @@ public class NavalFixture
 	f.military.validateSnapshot(saved, f.day + 92).assertFalse()
 	f.military.restore(saved).assertTrue()
 	f.military.snapshot().assertEquals(saved)
-	var legacy = saved.replace("v20|", "v12|")
+	var legacy = saved.replace("v21|", "v12|")
 	for i = 0 to f.military.naval.count - 1
 		legacy = legacy.replace("|y," + f.military.naval.yards[i].id + "," + f.military.naval.states[i].record(), "")
 	f.military.restore(legacy).assertTrue()
@@ -916,7 +916,7 @@ public class NavalFixture
 	let fireRecord = "|h,ship," + clockReal(1.285)
 	let landRecord = "|l,london,,0,0,player,12345,0,1," + I2S(f.day)
 	let saved = f.military.snapshot()
-	saved.startsWith("v20|").assertTrue()
+	saved.startsWith("v21|").assertTrue()
 	saved.contains(hullRecord).assertTrue()
 	saved.contains(fireRecord).assertTrue()
 	saved.contains(landRecord).assertTrue()
@@ -928,7 +928,7 @@ public class NavalFixture
 	f.military.restore(saved.replace(hullRecord, ""), false).assertFalse()
 	f.military.restore(saved.replace(landRecord, ""), false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
-	var main13 = saved.replace("v20|", "v13|")
+	var main13 = saved.replace("v21|", "v13|")
 	for i = 0 to f.military.forceCount - 1
 		let fleet = f.military.forces[i]
 		if fleet.kind == FORCE_FLEET
@@ -940,7 +940,7 @@ public class NavalFixture
 	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(10000)
 	f.military.land.arsenals[0].work.assertEquals(12345)
 	f.military.naval.states[0].ready.assertEquals(0)
-	let naval13 = saved.replace("v20|", "v13|").replace(landRecord, "").replace(fireRecord, "")
+	let naval13 = saved.replace("v21|", "v13|").replace(landRecord, "").replace(fireRecord, "")
 	f.military.restore(naval13, false).assertTrue()
 	f.military.forces[f.military.forceIndex("ship")].hull.integrity.assertEquals(5432)
 	f.military.forces[f.military.forceIndex("ship")].hull.repairCredit.assertEquals(3456)
@@ -1127,7 +1127,7 @@ function installedCarronadeHit(NavalFixture f, string attack, string nativeAttac
 	f.hit(true).assertEquals("110")
 	let current = f.military.snapshot()
 	let record = "|h,ship," + ship.hull.record()
-	var legacy = current.replace("v20|", "v13|")
+	var legacy = current.replace("v21|", "v13|")
 	for i = 0 to f.military.forceCount - 1
 		let fleet = f.military.forces[i]
 		if fleet.kind == FORCE_FLEET
