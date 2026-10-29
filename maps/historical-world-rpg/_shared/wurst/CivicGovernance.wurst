@@ -101,6 +101,13 @@ public class CivicDistrict
 		this.tradeCapacity = tradeCapacity
 
 public class CivicLocalState
+	boolean careRestored = false
+	string careOwner = ""
+	int careReady = 0
+	int careThrough = 0
+	int diseaseRemainder = 0
+	int recordsDays = 0
+	int careDays = 0
 	boolean municipalRestored = false
 	string municipalOwner = ""
 	int municipalReady = 0
@@ -174,6 +181,13 @@ public class CivicLedger
 	int cooldownDays = 90
 	int tradePenaltyBasisPoints = 1000
 	int baseTaxBasisPoints = 9000
+	int carePreparationDays = 90
+	int careCommissionBasisPoints = 100
+	int careUpkeepBasisPoints = 50
+	int careDailyMaterials = 1
+	int recordsDailyMoney = 1
+	int recordsDailyMaterials = 1
+	string recordsGood = ""
 	function fork() returns CivicLedger
 		let copy = new CivicLedger()
 		copy.dispatchRelayKind = dispatchRelayKind
@@ -194,6 +208,13 @@ public class CivicLedger
 		copy.cooldownDays = cooldownDays
 		copy.tradePenaltyBasisPoints = tradePenaltyBasisPoints
 		copy.baseTaxBasisPoints = baseTaxBasisPoints
+		copy.carePreparationDays = carePreparationDays
+		copy.careCommissionBasisPoints = careCommissionBasisPoints
+		copy.careUpkeepBasisPoints = careUpkeepBasisPoints
+		copy.careDailyMaterials = careDailyMaterials
+		copy.recordsDailyMoney = recordsDailyMoney
+		copy.recordsDailyMaterials = recordsDailyMaterials
+		copy.recordsGood = recordsGood
 		for i = 0 to count - 1
 			copy.register(districts[i], 0)
 		return copy
@@ -264,6 +285,12 @@ public class CivicLedger
 		let i = index(id)
 		if i >= 0
 			let s = states[i]
+			// Infrastructure survives capture; prepaid operation and fractions do not.
+			if s.careReady > s.lastDay
+				s.careReady = 0
+			s.careOwner = ""
+			s.careThrough = 0
+			s.diseaseRemainder = 0
 			s.municipalOwner = ""
 			s.municipalReady = 0
 			s.municipalThrough = 0
@@ -335,7 +362,17 @@ public class CivicLedger
 		var cost = 0
 		var good = ""
 		var units = 0
-		if action == "policy"
+		if action == "care"
+			if research.rate(controllerId, "isolation_care_losses_avoided") <= 0 or not d.civicCenter or economy.administration(id) < minimumAdministration or not economy.accessible(id) or s.careOwner != ""
+				return "Requires earned isolation care, a staffed accessible civic center and no commissioned service."
+			// Captured completed infrastructure needs new paid operation, never research transfer.
+			if s.careReady > 0 and s.careReady <= day
+				cost = civicBill(d.annualTax, careUpkeepBasisPoints)
+			else
+				cost = civicBill(d.annualTax, careCommissionBasisPoints)
+			good = d.medicalGood
+			units = d.medicalUnits
+		else if action == "policy"
 			if research.rate(controllerId, "civic_reform_diffusion") <= 0 or not d.civicCenter or day < d.discussionFirstDay or s.policyOwner != ""
 				return "Requires earned civic policy, reform discussion and a lawful civic center; policy already pending/active cannot stack."
 			cost = civicBill(d.annualTax, enactmentBasisPoints)
@@ -344,16 +381,23 @@ public class CivicLedger
 				return "Requires earned survey research and an unsurveyed local district with no pending survey."
 			cost = civicBill(d.annualTax, surveyBasisPoints)
 		else if action == "response"
-			if research.rate(controllerId, "epidemic_losses_avoided") <= 0 or not outbreak(i, day) or day < s.cooldownEnd or not economy.accessible(id)
+			if (research.rate(controllerId, "epidemic_losses_avoided") <= 0 and research.rate(controllerId, "case_records_losses_avoided") <= 0) or not outbreak(i, day) or day < s.cooldownEnd or not economy.accessible(id)
 				return "Requires earned medicine, an active outbreak, medical access and expired cooldown."
 			cost = civicBill(d.annualTax, responseBasisPoints)
 			good = d.medicalGood
 			units = d.medicalUnits
 		else
-			return "Use policy, repeal, survey or response."
+			return "Use care, policy, repeal, survey or response."
 		if not economy.pay(controllerId, id, cost, good, units)
 			return "Treasury or existing local medical supplies are insufficient."
-		if action == "policy"
+		if action == "care"
+			s.careOwner = controllerId
+			if s.careReady > 0 and s.careReady <= day
+				s.careThrough = day + 365
+			else
+				s.careReady = day + carePreparationDays
+				s.careThrough = s.careReady
+		else if action == "policy"
 			s.policyOwner = controllerId
 			s.policyReady = day + transitionDays
 			s.upkeepThrough = s.policyReady
@@ -369,6 +413,26 @@ public class CivicLedger
 	function diffuse(int index, int basisPoints)
 		let s = states[index]
 		s.discussion = IMinBJ(10000, s.discussion + civicScale(districts[index].discussionPerDay, basisPoints))
+	/** A paid service is requalified at each actual exposed day, never an object aura. */
+	function isolationCare(int i, string owner, int day, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
+		let s = states[i]
+		let d = districts[i]
+		if s.careOwner != owner or owner == "" or day < s.careReady or not d.civicCenter or not economy.lawful(d.id) or economy.administration(d.id) < minimumAdministration or not economy.accessible(d.id) or research.rate(owner, "isolation_care_losses_avoided") <= 0
+			return false
+		if day >= s.careThrough
+			return false
+		if not economy.pay(owner, d.id, 0, d.medicalGood, careDailyMaterials)
+			return false
+		s.careDays++
+		return true
+	function maintainCaseRecords(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
+		let d = districts[i]
+		if not economy.lawful(d.id) or economy.administration(d.id) < minimumAdministration or not economy.accessible(d.id) or research.rate(owner, "case_records_losses_avoided") <= 0
+			return false
+		if not economy.pay(owner, d.id, recordsDailyMoney, recordsGood, recordsDailyMaterials)
+			return false
+		states[i].recordsDays++
+		return true
 	/** Replay each committed day for chunk-independent rounding and deadlines.
 	 * No load callback advances this ledger. A legacy ledger anchors on its
 	 * first live day rather than charging centuries of invented back taxes. */
@@ -383,6 +447,17 @@ public class CivicLedger
 				let at = s.lastDay
 				let owner = economy.controller(d.id)
 				let lawful = economy.lawful(d.id)
+				if s.careOwner != "" and s.careOwner != owner
+					if s.careReady > at - 1
+						s.careReady = 0
+					s.careOwner = ""
+					s.careThrough = 0
+					s.diseaseRemainder = 0
+				// Upkeep is prepaid for the next exposed interval; the boundary day
+				// starts service after exactly the authored preparation duration.
+				if owner != "" and s.careOwner == owner and at - 1 >= s.careReady and at - 1 >= s.careThrough and lawful and economy.administration(d.id) >= minimumAdministration and economy.accessible(d.id) and research.rate(owner, "isolation_care_losses_avoided") > 0
+					if economy.pay(owner, d.id, civicBill(d.annualTax, careUpkeepBasisPoints), "", 0)
+						s.careThrough = at - 1 + 365
 				if s.municipalOwner != owner
 					s.municipalOwner = ""
 					s.municipalReady = 0
@@ -436,9 +511,25 @@ public class CivicLedger
 					s.taxesCollected += collected
 				if outbreak(i, at - 1)
 					let exposed = IMinBJ(d.diseaseLossPerDay, economy.diseaseAvailable(d.id))
-					var loss = exposed
-					if responseActive(i, owner, at - 1) and lawful
-						loss -= civicScale(loss, IMinBJ(10000, research.rate(owner, "epidemic_losses_avoided")))
+					var rate = 0
+					let response = responseActive(i, owner, at - 1) and lawful
+					if response
+						rate += research.rate(owner, "epidemic_losses_avoided")
+					var care = false
+					if exposed > 0
+						care = isolationCare(i, owner, at - 1, research, economy)
+						if care
+							rate += research.rate(owner, "isolation_care_losses_avoided")
+						if (care or response) and maintainCaseRecords(i, owner, research, economy)
+							rate += research.rate(owner, "case_records_losses_avoided")
+					// One additive bucket and one rounding. Keep sub-person credit;
+					// zero qualifying activity never spends it or receives a benefit.
+					var avoided = 0
+					if rate > 0 and exposed > 0
+						let scaled = exactNaturalAdd(exactNaturalMultiply(I2S(exposed), IMinBJ(10000, rate)), I2S(s.diseaseRemainder))
+						avoided = exactNaturalNativeInt(exactNaturalDivide(scaled, 10000))
+						s.diseaseRemainder = S2I(SubString(scaled, IMaxBJ(0, StringLength(scaled) - 4), StringLength(scaled)))
+					let loss = exposed - avoided
 					let actual = economy.disease(d.id, loss)
 					s.diseaseLost += actual
 					// The avoided counter excludes unavailable people and is only

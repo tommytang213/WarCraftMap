@@ -1,0 +1,83 @@
+{
+  "auditSnapshots": {
+    "bothMedicalClosureFindingsRetained": true,
+    "mode": "source_only",
+    "releaseBlockers": 238,
+    "runtimeReleaseFailures": 30,
+    "runtimeSourceStatic": "pass",
+    "traceabilityObligations": 643,
+    "traceabilityPublicationBlockers": 7004
+  },
+  "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "completeExecutionEvidence": false,
+  "container": "Default non-root image user; read-only source/dependency mounts; network disabled; container-private /tmp build.",
+  "controllerValidation": "Run complete pinned suite and required repository checks after preflight; regenerate all three audits with fresh integrated-main production evidence before closure.",
+  "focusedWurst": {
+    "civicAndCampaignLoadRun": {
+      "discovered": 95,
+      "passed": 95
+    },
+    "comparisons": {
+      "clinical_records": {
+        "requiredProbesObserved": [
+          "administrative_action",
+          "administrative_advance",
+          "administrative_pay",
+          "case_records",
+          "civic_clock",
+          "civic_disease",
+          "civic_registration",
+          "dispatch",
+          "medical_restore",
+          "medical_snapshot",
+          "research"
+        ],
+        "test": "wurst/MedicalCareTests.wurst:clinicalRecordsOnlyMatchedPaidResponseAvoidsFiveOfOneHundredLosses"
+      },
+      "pest_hospitals": {
+        "requiredProbesObserved": [
+          "administrative_action",
+          "administrative_advance",
+          "administrative_pay",
+          "civic_clock",
+          "civic_disease",
+          "civic_registration",
+          "dispatch",
+          "isolation_care",
+          "medical_restore",
+          "medical_snapshot",
+          "research"
+        ],
+        "test": "wurst/MedicalCareTests.wurst:pestHospitalsOnlyMatchedPaidCareAvoidsFiveOfOneHundredLosses"
+      }
+    },
+    "finalMedicalAndRollbackRun": {
+      "discovered": 8,
+      "passed": 8
+    }
+  },
+  "frameworkBoundary": "pass",
+  "issue": 572,
+  "playerQA": "not_required",
+  "python": {
+    "auditRegressionReruns": {
+      "passed": 7
+    },
+    "broaderRun": {
+      "initialFailures": 8,
+      "initialPassed": 154,
+      "resolution": "One old generated-binding expectation and seven schema/report/source freshness mismatches were repaired; all eight affected tests passed in the retained final/rerun logs.",
+      "run": 162
+    },
+    "finalFocused": {
+      "passed": 27
+    }
+  },
+  "sourceGenerationAndMetadataVerification": "pass",
+  "sourceIdentity": {
+    "sourceRevision": "4331c77a187f181d029e168d0d4e20b6965a0d7d",
+    "sourceTreeSha256": "e1f457c146876f53a2d3b3c2ad0c52f3447260105cf1524b7ea956befa46b3e2"
+  },
+  "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+  "worldValidation": "pass"
+}

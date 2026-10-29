@@ -121,6 +121,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
                 ('modifier', 'progression_civil_service_examinations'),
+                ('modifier', 'progression_civic_pest_hospitals'),
+                ('modifier', 'progression_clinical_case_records'),
                 ('modifier', 'progression_ciphered_dispatches'),
                 ('policy', 'progression_chartered_municipalities'),
                 ('modifier', 'progression_arquebus_volley_drill'),

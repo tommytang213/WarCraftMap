@@ -1,0 +1,291 @@
+package MedicalCareTests
+
+import CivicGovernanceTests
+import CivicGovernance
+import CivicCampaignRuntime
+import ResearchEntitlements
+import MilitarySettlementRuntime
+import PlayableTrade
+import CommandRouter
+
+// Prerequisite completions are fixture inputs, never production grants. The
+// exact two subjects are completed through the registered research command.
+function medicalResearch(CivicFixture f, boolean hospital, boolean records, boolean epidemic)
+	let owner = f.resources.owner
+	f.rpg.restoreState(f.initial + "|u," + owner + ",military_field_hospitals|u," + owner + ",fleet_victualling|u," + owner + ",obstetric_training|u," + owner + ",experimental_method|u," + owner + ",urban_public_health").assertTrue()
+	f.rpg.reconcile(owner)
+	if hospital
+		f.unlock("civic_pest_hospitals")
+	if records
+		f.unlock("clinical_case_records")
+	if epidemic
+		f.unlock("anatomy_and_medicine")
+
+function medicalOutbreak(CivicFixture f, int first, int losses)
+	let d = f.military.civic.districts[0]
+	d.outbreakFirstDay = f.day + first
+	d.outbreakDays = 1000
+	d.diseaseLossPerDay = losses
+
+@test function pestHospitalsOnlyMatchedPaidCareAvoidsFiveOfOneHundredLosses()
+	let control = new CivicFixture()
+	let care = new CivicFixture()
+	medicalResearch(control, true, false, false)
+	medicalResearch(care, true, false, false)
+	medicalOutbreak(control, 90, 4)
+	medicalOutbreak(care, 90, 4)
+	control.action("care")
+	care.action("care")
+	// Identical resources and commissioned infrastructure; only the current
+	// controller's completed subject differs at the actual outcome boundary.
+	medicalResearch(control, false, false, false)
+	control.advance(90)
+	care.advance(90)
+	care.military.civic.states[0].diseaseAvoided.assertEquals(0)
+	control.runtime.economy.pay("player", "district", 51, "cloth", 25).assertTrue()
+	control.advance(115)
+	care.advance(115)
+	control.military.civic.states[0].diseaseLost.assertEquals(100)
+	care.military.civic.states[0].diseaseLost.assertEquals(95)
+	care.military.civic.states[0].diseaseAvoided.assertEquals(5)
+	care.military.civic.states[0].careDays.assertEquals(25)
+	control.campaign.countries.treasury[0].assertEquals(care.campaign.countries.treasury[0])
+	control.trade.findMarket("district", "cloth").stock.assertEquals(care.trade.findMarket("district", "cloth").stock)
+	let saved = care.military.snapshot()
+	care.military.restore(saved, false).assertTrue()
+	care.runtime.advance(care.clock.currentDay)
+	care.military.snapshot().assertEquals(saved)
+	care.runtime.overview("player", "district").contains("treated days 25").assertTrue()
+
+@test function clinicalRecordsOnlyMatchedPaidResponseAvoidsFiveOfOneHundredLosses()
+	let control = new CivicFixture()
+	let records = new CivicFixture()
+	medicalResearch(control, false, true, false)
+	medicalResearch(records, false, true, false)
+	control.action("response")
+	records.action("response")
+	medicalResearch(control, false, false, false)
+	control.runtime.economy.pay("player", "district", 25, "cloth", 25).assertTrue()
+	control.advance(25)
+	records.advance(25)
+	control.military.civic.states[0].diseaseLost.assertEquals(100)
+	records.military.civic.states[0].diseaseLost.assertEquals(95)
+	records.military.civic.states[0].recordsDays.assertEquals(25)
+	records.military.civic.states[0].careDays.assertEquals(0)
+	control.campaign.countries.treasury[0].assertEquals(records.campaign.countries.treasury[0])
+	control.trade.findMarket("district", "cloth").stock.assertEquals(records.trade.findMarket("district", "cloth").stock)
+	records.military.civic.tradeAllowed("district", "player", records.day + 25, 901).assertFalse()
+	let saved = records.military.snapshot()
+	records.military.restore(saved, false).assertTrue()
+	records.runtime.advance(records.clock.currentDay)
+	records.military.snapshot().assertEquals(saved)
+
+@test function medicalFractionalCompositionDeduplicatesDaysAndSources()
+	for epidemic = 0 to 1
+		let f = new CivicFixture()
+		medicalResearch(f, true, true, epidemic == 1)
+		medicalOutbreak(f, 90, 4)
+		f.action("care")
+		f.advance(90)
+		if epidemic == 1
+			f.action("response")
+		// Duplicate provenance and repeated reconciliation are replacement,
+		// not another 500 bp source. Duplicate days never charge or treat twice.
+		let layer = new ResearchEntitlements("player")
+		layer.add(new ResearchUnlock("civic_pest_hospitals", "modifier", "progression_civic_pest_hospitals"))
+		layer.add(new ResearchUnlock("other", "modifier", "progression_civic_pest_hospitals"))
+		layer.add(new ResearchUnlock("clinical_case_records", "modifier", "progression_clinical_case_records"))
+		if epidemic == 1
+			layer.add(new ResearchUnlock("anatomy_and_medicine", "ability", "epidemic_control"))
+		f.research.replaceResearchEntitlements(layer)
+		f.advance(91)
+		f.military.civic.states[0].diseaseRemainder.assertEquals(4000)
+		// With epidemic the first day avoids one person, leaving 4000/10000.
+		let saved = f.military.snapshot()
+		let treasury = f.campaign.countries.treasury[0]
+		let stock = f.trade.findMarket("district", "cloth").stock
+		for repeat = 1 to 3
+			f.runtime.advance(f.day + 91)
+			f.military.restore(saved, false).assertTrue()
+		f.military.snapshot().assertEquals(saved)
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+		f.trade.findMarket("district", "cloth").stock.assertEquals(stock)
+		f.advance(115)
+		f.military.civic.states[0].diseaseLost.assertEquals(90 - epidemic * 25)
+		f.military.civic.states[0].diseaseAvoided.assertEquals(10 + epidemic * 25)
+		f.military.civic.states[0].recordsDays.assertEquals(25)
+		f.military.civic.states[0].diseaseRemainder.assertEquals(0)
+
+@test function medicalConditionsAndAtomicDailyFundingRejectMissingInputs()
+	for missing = 0 to 6
+		let f = new CivicFixture()
+		medicalResearch(f, false, true, false)
+		f.action("response")
+		let cloth = f.trade.findMarket("district", "cloth")
+		if missing == 0
+			f.campaign.countries.treasury[0] = 0
+		else if missing == 1
+			cloth.stock = 0
+		else if missing == 2
+			f.military.administrators[0].capacity = 0
+		else if missing == 3
+			f.military.administrators[0].administration = 39
+		else if missing == 4
+			cloth.blockaded = true
+		else if missing == 5
+			f.military.settlements[0].occupationConflictId = "hostile"
+		else
+			medicalOutbreak(f, 100, 4)
+		let treasury = f.campaign.countries.treasury[0]
+		let stock = cloth.stock
+		f.advance(1)
+		f.military.civic.states[0].recordsDays.assertEquals(0)
+		f.military.civic.states[0].diseaseAvoided.assertEquals(0)
+		f.campaign.countries.treasury[0].assertEquals(treasury)
+		cloth.stock.assertEquals(stock)
+	// Unexposed manpower and isolated record research consume no treatment bill.
+	let idle = new CivicFixture()
+	medicalResearch(idle, true, true, false)
+	idle.military.settlements[0].manpower = 0
+	idle.action("response")
+	let money = idle.campaign.countries.treasury[0]
+	let goods = idle.trade.findMarket("district", "cloth").stock
+	idle.advance(25)
+	idle.campaign.countries.treasury[0].assertEquals(money)
+	idle.trade.findMarket("district", "cloth").stock.assertEquals(goods)
+	idle.military.civic.states[0].diseaseAvoided.assertEquals(0)
+
+@test function medicalPreparationUpkeepCaptureAndMigrationPreserveCivicAuthority()
+	let f = new CivicFixture()
+	medicalResearch(f, true, true, false)
+	medicalOutbreak(f, 90, 4)
+	f.action("care")
+	f.campaign.countries.treasury[0].assertEquals(9899)
+	f.trade.findMarket("district", "cloth").stock.assertEquals(996)
+	let pending = f.military.snapshot()
+	f.runtime.act("player", "care", "district").contains("commissioned").assertTrue()
+	f.military.snapshot().assertEquals(pending)
+	f.advance(90)
+	f.military.civic.states[0].careDays.assertEquals(0)
+	f.campaign.countries.treasury[0] = 50 // upkeep requires 51, never a partial debit
+	f.advance(91)
+	f.military.civic.states[0].careDays.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(50)
+	f.campaign.countries.treasury[0] = 10000
+	f.advance(92)
+	f.military.civic.states[0].careDays.assertEquals(1)
+	f.military.civic.states[0].careThrough.assertEquals(f.day + 91 + 365)
+	let funded = f.military.snapshot()
+	f.military.restore(funded, false).assertTrue()
+	f.military.civic.states[0].diseaseRemainder.assertEquals(4000)
+	// Missing/duplicate/current malformed medical records fail before replacement.
+	let cut = funded.indexOf("|r,")
+	let nextRecord = funded.indexOf("|u,")
+	let record = SubString(funded, cut, nextRecord)
+	let missing = SubString(funded, 0, cut) + SubString(funded, nextRecord, StringLength(funded))
+	f.military.restore(missing, false).assertFalse()
+	f.military.restore(funded + record, false).assertFalse()
+	f.military.restore(funded + "|r,unknown,,0,0,0,0,0", false).assertFalse()
+	f.military.snapshot().assertEquals(funded)
+	// Legacy migration retains all civic authority, initializing care unfunded.
+	let legacy = "v20" + SubString(missing, 3, StringLength(missing))
+	f.military.restore(legacy, false).assertTrue()
+	f.military.civic.states[0].careOwner.assertEquals("")
+	f.military.civic.states[0].careReady.assertEquals(0)
+	f.military.civic.states[0].diseaseLost.assertEquals(8)
+	f.military.restore(funded, false).assertTrue()
+	f.military.transferSettlement("district", "ai")
+	f.military.civic.states[0].careOwner.assertEquals("")
+	f.military.civic.states[0].careReady.assertEquals(f.day + 90)
+	f.military.civic.states[0].careThrough.assertEquals(0)
+	f.military.civic.states[0].diseaseRemainder.assertEquals(0)
+	f.research.rate("ai", "isolation_care_losses_avoided").assertEquals(0)
+	f.runtime.act("ai", "care", "district").contains("Requires").assertTrue()
+	// A separate renewal fixture crosses the precise paid-through boundary.
+	let renewal = new CivicFixture()
+	medicalResearch(renewal, true, false, false)
+	medicalOutbreak(renewal, 90, 1)
+	renewal.action("care")
+	renewal.advance(455)
+	renewal.military.civic.states[0].careDays.assertEquals(365)
+
+	let through = renewal.military.civic.states[0].careThrough
+	renewal.campaign.countries.treasury[0] = 0
+	renewal.advance(456)
+	renewal.military.civic.states[0].careThrough.assertEquals(through)
+	renewal.military.civic.states[0].careDays.assertEquals(365)
+
+@test function medicalHospitalNeedsCommissioningAndDailyInputsAndRecordsNeedActualCare()
+	let idle = new CivicFixture()
+	medicalResearch(idle, true, true, false)
+	let initialMoney = idle.campaign.countries.treasury[0]
+	let initialStock = idle.trade.findMarket("district", "cloth").stock
+	idle.advance(25)
+	idle.military.civic.states[0].diseaseAvoided.assertEquals(0)
+	idle.campaign.countries.treasury[0].assertEquals(initialMoney)
+	idle.trade.findMarket("district", "cloth").stock.assertEquals(initialStock)
+	for missing = 0 to 5
+		let f = new CivicFixture()
+		medicalResearch(f, true, true, false)
+		medicalOutbreak(f, 90, 4)
+		f.action("care")
+		f.advance(91)
+		let state = f.military.civic.states[0]
+		state.careDays.assertEquals(1)
+		let cloth = f.trade.findMarket("district", "cloth")
+		if missing == 0
+			cloth.stock = 0
+		else if missing == 1
+			f.military.administrators[0].capacity = 0
+		else if missing == 2
+			f.military.settlements[0].underAttack = true
+		else if missing == 3
+			medicalResearch(f, false, true, false)
+		else if missing == 4
+			cloth.blockaded = true
+		else
+			f.military.administrators[0].jurisdiction = "foreign"
+		let money = f.campaign.countries.treasury[0]
+		let stock = cloth.stock
+		f.advance(116)
+		state.careDays.assertEquals(1)
+		state.recordsDays.assertEquals(1)
+		state.diseaseAvoided.assertEquals(0)
+		f.campaign.countries.treasury[0].assertEquals(money)
+		cloth.stock.assertEquals(stock)
+	// One available dressing can fund care but cannot partially fund records.
+	let limited = new CivicFixture()
+	medicalResearch(limited, true, true, false)
+	medicalOutbreak(limited, 90, 4)
+	limited.action("care")
+	limited.advance(90)
+	limited.trade.findMarket("district", "cloth").stock = 1
+	let limitedMoney = limited.campaign.countries.treasury[0]
+	limited.advance(91)
+	limited.campaign.countries.treasury[0].assertEquals(limitedMoney - 51)
+	limited.trade.findMarket("district", "cloth").stock.assertEquals(0)
+	limited.military.civic.states[0].careDays.assertEquals(1)
+	limited.military.civic.states[0].recordsDays.assertEquals(0)
+	limited.military.civic.states[0].diseaseRemainder.assertEquals(2000)
+
+@test function medicalPlayerAiAndActiveInactiveCareHaveIdenticalOutcomes()
+	let human = new CivicFixture()
+	let ai = new CivicFixture()
+	medicalResearch(human, true, true, false)
+	ai.resources.owner = "ai"
+	ai.military.transferSettlement("district", "ai")
+	ai.military.settlements[0].legalOwnerId = "ai"
+	medicalResearch(ai, true, true, false)
+	medicalOutbreak(human, 90, 4)
+	medicalOutbreak(ai, 90, 4)
+	human.action("care")
+	ai.runtime.act("ai", "care", "district").assertEquals("")
+	human.military.activeRegionId = "europe"
+	ai.military.activeRegionId = "pacific"
+	for day = 1 to 115
+		human.advance(day)
+	ai.advance(115)
+	human.military.civic.states[0].diseaseLost.assertEquals(90)
+	ai.military.civic.states[0].diseaseLost.assertEquals(90)
+	human.campaign.countries.treasury[0].assertEquals(ai.campaign.countries.treasury[1])
+	human.trade.findMarket("district", "cloth").stock.assertEquals(ai.trade.findMarket("district", "cloth").stock)

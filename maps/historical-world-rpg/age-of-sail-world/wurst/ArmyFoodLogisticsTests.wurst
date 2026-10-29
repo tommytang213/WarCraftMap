@@ -233,7 +233,7 @@ class LogisticsFixture
 	active.f.military.validateSnapshot(full.replace(z, "|z,yangzhou_canal_quay,700000,110"), active.f.clock.currentDay).assertFalse()
 	active.f.military.snapshot().assertEquals(full)
 	// v15 retains paid construction; its absent freight counter migrates empty.
-	active.f.military.restore(full.replace("v20|", "v15|").replace(z, ""), false).assertTrue()
+	active.f.military.restore(full.replace("v21|", "v15|").replace(z, ""), false).assertTrue()
 	active.f.military.finance.states[0].completed.assertTrue()
 	active.f.military.finance.states[0].freightUsed.assertEquals(0)
 	active.f.military.restore(full, false).assertTrue()
