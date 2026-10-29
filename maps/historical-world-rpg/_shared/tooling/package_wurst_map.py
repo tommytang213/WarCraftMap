@@ -923,7 +923,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     if naval_builder:
         bound_research |= {('unit', e['contentId']) for e in naval_payload['catalog'].get('recruitment', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in civic_catalog.get('effects', [])
-                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency', 'remote_survey_dispatch_time_reduction'}}
+                       if e['metric'] in {'archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency', 'records_tax_collection_efficiency', 'remote_survey_dispatch_time_reduction'}}
     bound_research |= {(e['kind'], e['contentId']) for e in runtime.get('landArmy', {}).get('consumers', [])}
     runtime['researchIntegrationBlockers'] = research_integration_blockers(world, bound_research)
     wurst += interaction_configuration(locations)
@@ -1099,7 +1099,11 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
 
     if not selector:
         from dispatch_contract import verify_registration as verify_dispatch
+        from administrative_governance import verify_registration as verify_administration
         try:
+            verify_administration(config.project, json.loads(config.scenario_file.read_text()),
+                                  (generated / GENERATED_WURST).read_text(),
+                                  json.loads((generated / GENERATED_DATA).read_text()).get('civicGovernance', {}))
             verify_dispatch(config.project, json.loads(config.scenario_file.read_text()),
                             (generated / GENERATED_WURST).read_text(),
                             json.loads((generated / GENERATED_DATA).read_text()).get('civicGovernance', {}))

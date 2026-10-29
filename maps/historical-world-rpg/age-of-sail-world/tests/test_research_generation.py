@@ -120,6 +120,7 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('policy', 'progression_central_bank_institution'), ('policy', 'commercial_courts'),
                 ('unit', 'armed_indiaman'),
                 ('modifier', 'progression_chancery_archives'),
+                ('modifier', 'progression_civil_service_examinations'),
                 ('modifier', 'progression_ciphered_dispatches'),
                 ('policy', 'progression_chartered_municipalities'),
                 ('modifier', 'progression_arquebus_volley_drill'),

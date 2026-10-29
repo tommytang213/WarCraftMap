@@ -19,8 +19,8 @@ class AdministrativeContractTests(unittest.TestCase):
 
     def test_exact_typed_effects_and_catalogue_adoption_requirements(self):
         lines, effects, urban, sources = configuration(PROJECT, self.world)
-        self.assertEqual([500, 400], [e['bonusBasisPoints'] for e in effects])
-        self.assertEqual(['modifier', 'policy'], [e['unlock']['kind'] for e in effects])
+        self.assertEqual([500, 400, 500], [e['bonusBasisPoints'] for e in effects])
+        self.assertEqual(['modifier', 'policy', 'modifier'], [e['unlock']['kind'] for e in effects])
         self.assertIn('\tledger.municipalMinimumUrbanization = 11', lines)
         self.assertEqual((20, 5), (urban['urbanPercent'], urban['otherPercent']))
         self.assertEqual(3, len(sources))
@@ -28,7 +28,7 @@ class AdministrativeContractTests(unittest.TestCase):
         self.assertEqual(set(), verified_bindings(PROJECT))
 
     def test_missing_or_changed_research_unlock_and_prerequisite_fail_closed(self):
-        for node_id in ('chancery_archives', 'chartered_municipalities'):
+        for node_id in ('chancery_archives', 'chartered_municipalities', 'civil_service_examinations'):
             with self.subTest(node=node_id):
                 world = copy.deepcopy(self.world)
                 node = next(n for n in world['technologies'] + world['institutions'] if n['id'] == node_id)

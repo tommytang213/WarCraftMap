@@ -2,6 +2,8 @@ package CampaignLoadTransactionTests
 
 import CampaignSaveManager
 import CivicGovernance
+import CivicCampaignRuntime
+import ScenarioData
 import ScienceExploration
 import FrameworkPorts
 import CampaignTimeline
@@ -1258,3 +1260,62 @@ function legacyPirateFounding() returns string
 		f.military.civic.states[0].taxesCollected.assertEquals(945)
 		f.campaign.countries.treasury[0].assertEquals(1945)
 		f.extension.trade.findMarket("port", "grain").money.assertEquals(55)
+
+@test function lateLoadFailureRestoresExaminationsCollectionTreasuryLiquidityAndAnnualAccounting()
+	let f = new LoadFixture()
+	f.clock.endDay = 1000
+	f.clock.advanceTo(364).assertTrue()
+	let effects = new CivicResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new CivicLedger()
+	configureGeneratedCivic(definitions, effects, f.clock.currentDay)
+	destroy definitions
+	let node = new RuntimeTechnology("civil_service_examinations", "Civil Service Examinations", 1650, 255)
+	node.addUnlock("civil_service_examinations", "modifier", "progression_civil_service_examinations")
+	f.rpg.technologies.register(node).assertTrue()
+	f.rpg.technologies.unlock("england", "civil_service_examinations", 1778, 255, 0, 0).assertTrue()
+	f.rpg.reconcile("england")
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	f.military.civic.register(new CivicDistrict("port", "province", 10000, true, 0, 0, 0, 0, 0, "grain", 1, 1000), f.clock.currentDay)
+	let runtime = new CivicCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.civicRuntime = runtime
+	let market = f.extension.trade.findMarket("port", "grain")
+	market.money = 10000
+	let original = f.military.snapshot()
+	let clock = f.clock.captureState()
+	let treasury = f.campaign.countries.treasury[0]
+	// Commit a real funded annual collection, then attempt a late failed load
+	// of that paid state over the earlier uncollected campaign.
+	f.clock.advanceTo(365).assertTrue()
+	f.military.civic.states[0].lastDay.assertEquals(365)
+	f.military.civic.states[0].taxesCollected.assertEquals(9450)
+	f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 9450)
+	market.money.assertEquals(550)
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	f.military.restore(original, false).assertTrue()
+	f.clock.restoreState(clock).assertTrue()
+	f.campaign.countries.treasury[0] = treasury
+	market.money = 10000
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.civic.states[0].lastDay.assertEquals(364)
+	f.military.civic.states[0].taxesCollected.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.extension.trade.findMarket("port", "grain").money.assertEquals(10000)
+	f.clock.currentDay.assertEquals(364)
+	effects.rate("england", "records_tax_collection_efficiency").assertEquals(500)
+	f.extension.fail = false
+	f.recordingTimer.expected = ""
+	for repeat = 1 to 3
+		f.store(candidate)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.military.civic.states[0].lastDay.assertEquals(365)
+		f.military.civic.states[0].taxesCollected.assertEquals(9450)
+		f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 9450)
+		f.extension.trade.findMarket("port", "grain").money.assertEquals(550)
+		f.clock.currentDay.assertEquals(365)
+		runtime.advance(365)
+		f.military.civic.states[0].taxesCollected.assertEquals(9450)
+		f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 9450)
