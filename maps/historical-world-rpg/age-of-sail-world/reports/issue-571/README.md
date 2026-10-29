@@ -45,13 +45,30 @@ The framework boundary check runs from the repository root:
 python3 maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py maps/historical-world-rpg
 ```
 
-These are **focused results, not closure evidence**. As requested, complete
-repository validation and all three integrated-main audit refreshes are left to
-the controller after predecessor/integration preflight. Run the complete pinned
-suite on the integrated revision, regenerate release-blocker, runtime-acceptance
-and requirement-traceability reports with its fresh execution evidence, and
-require this exact finding to disappear:
+These are **focused results, not closure evidence**. After integrating current
+main, the validation repair regenerated all three source-only audits against
+`fd929bcec2a43ac20046931d91fc0ad7c15a74cf` and source digest
+`b9dabb4404a1fdb5fe80beee8d9ae392390dcc6b19169ff3759ec3648ec664f7`.
+The previous release-blocker/runtime freshness failures came from retaining the
+pre-integration revision, digest and execution-contract hash. No gameplay source
+or findings changed in this repair. Source-only reports still retain the Carvel
+blocker because focused execution cannot establish closure.
+
+As requested, complete repository validation remains with the controller. Run
+the complete pinned suite on the integrated revision, regenerate release-blocker,
+runtime-acceptance and requirement-traceability reports with its fresh execution
+evidence, and require this exact finding to disappear:
 
 `RESEARCH-UNBOUND-CARVEL-HULL-CONSTRUCTION-MODIFIER-PROGRESSION-CARVEL-HULL-CONSTRUCTION`
 
 No commits, GitHub changes or incremental player QA were performed.
+
+Integration repair checks passed: all 26 `test_naval*.py` tests, all 12 navigation
+tests, all 13 integration-evidence tests, all 23 execution-protocol tests (synthetic
+fixtures, not gameplay evidence), both previously failing checked-in
+release/runtime report freshness tests, the requirement-traceability `--check`,
+the framework boundary audit and `git diff --check`. The three reports share the
+integrated revision/source digest above. The source-only release/runtime audits
+still return failure for their documented publication blockers; that status is
+independent of report freshness. Grill is unavailable in this environment, so no
+new pinned Wurst execution is claimed for this report-only repair.
