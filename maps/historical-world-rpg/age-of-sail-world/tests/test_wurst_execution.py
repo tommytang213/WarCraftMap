@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -328,6 +329,15 @@ class ReleaseExecutionGateTests(unittest.TestCase):
         # Reuse the real scenario fixture and an otherwise successful packager.
         from test_packaging import PackagingTests
         PackagingTests.setUp(self)
+        # These tests must reach the execution gate even on a busy validation
+        # host. Keep real terrain generation and validation, but isolate its
+        # wall-clock budget; dedicated terrain tests cover that budget. Replace
+        # only this module's clock so execution timeouts retain their real clock.
+        import generate_regional_terrain
+        clock = patch.object(generate_regional_terrain, "time",
+                             SimpleNamespace(perf_counter=lambda: 0.0))
+        clock.start()
+        self.addCleanup(clock.stop)
 
     def test_each_execution_failure_stops_map_and_release_artifact_creation(self):
         for mode in ("assertion", "exception", "timeout", "absent", "truncated", "incomplete", "zero"):

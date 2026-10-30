@@ -30,11 +30,11 @@ public class CampaignSciencePort implements SciencePort
 		let military = campaign.militarySettlements
 		let i = military.forceIndex(d.forceId)
 		let settlement = economy.settlement(d.settlementId)
-		if i < 0 or settlement == null or military.naval.busy(d.forceId)
+		if i < 0 or settlement == null or military.naval.busy(d.forceId) or military.science.otherBusy(d.forceId, d.id)
 			return false
 		let actor = military.forces[i]
 		var kind = FORCE_ARMY
-		if d.metric == "storm_attrition_reduction"
+		if d.metric == "storm_attrition_reduction" or d.commissioningOnly
 			kind = FORCE_FLEET
 		return actor.controllerId == owner and actor.kind == kind and actor.unitTypeId == d.unitTypeId and actor.active and actor.strength > 0 and not actor.navigation.pending() and militaryMapMatches(actor.regionId, settlement.regionId) and (actor.x - d.stationX) * (actor.x - d.stationX) + (actor.y - d.stationY) * (actor.y - d.stationY) <= 128. * 128.
 	override function pay(ScienceSite d, string owner, int money, int units, int provisions) returns boolean
@@ -98,12 +98,14 @@ public class ScienceCampaignRuntime
 		let d = ledger.sites[i]
 		let s = ledger.states[i]
 		var bill = ""
+		if d.commissioningOnly
+			bill = "\nPractical coastal chart/bearing kit: /science equip " + id + ". Paid voyages alone consume this equipment; no scientific journey, precision instrument or geography grant. Eligible navigation research reduces position-finding overhead only; inspect the vessel and research view for source rates."
 		if d.scholarly()
 			let cost = port.researchCost(owner, target)
 			bill = "\nTarget " + target + ": research bill " + I2S(cost) + " treasury currency minor units in advance (-1 means invalid, already earned or prerequisites missing). Choose a target with /science inspect SITE TECHNOLOGY. Paid so far " + I2S(s.paid) + "."
 			if d.observationMetric != ""
 				bill += "\nRepeatable observations require administration of at least " + I2S(d.minimumAdministration) + "; daily bills fund assistants and observation materials. Eligible observation bonus for this target: +" + I2S(effects.workRate(d, owner, target) - IMinBJ(10000, effects.rate(owner, d.metric))) + " bp.\n"
-		return id + ": " + d.metric + " +" + I2S(effects.workRate(d, owner, target)) + " bp; available from campaign day " + I2S(d.firstDay) + ". Requires lawful administered " + d.settlementId + ", local market access, institution/technology " + d.prerequisite + ", compatible owned actor at station " + d.forceId + ".\nCommission equipment: " + I2S(d.equipmentCost) + " treasury currency minor units + " + I2S(d.equipmentUnits) + " " + d.good + "; " + I2S(d.equipmentDays) + " days. No free equipment. Ready day " + I2S(s.equipmentReady) + ". Daily upkeep: " + I2S(d.dailyMoney) + " treasury currency + " + I2S(d.dailyUnits) + " " + d.good + ". Daily journey provisions " + I2S(d.dailyProvisions) + "; exposed hazard provisions up to " + I2S(d.hazardLoss) + ". Storm observations use actual daily weather, never perfect prediction.\nWork " + I2S(s.work) + "/" + I2S(d.workRequired) + "; base output " + I2S(d.dailyWork) + " per funded day. Scholarly work pays the full authored target research cost in advance and consumes daily inputs; earned scholarly sources increase output. Missing inputs suspend output. Journeys are station-return surveys and reveal no map, routes or secrets. Avoided " + I2S(s.avoided) + ", lost " + I2S(s.lost) + " supply." + bill + " Capture cancels work and unfinished commissioning; completed equipment survives but research never transfers. No refund. Use /science <inspect|equip|start|stop> SITE [TECHNOLOGY]."
+		return id + ": " + d.metric + " +" + I2S(effects.workRate(d, owner, target)) + " bp; available from campaign day " + I2S(d.firstDay) + ". Requires lawful administered " + d.settlementId + ", local market access, institution/technology " + d.prerequisite + ", compatible owned actor at station " + d.forceId + ".\nCommission equipment: " + I2S(d.equipmentCost) + " treasury currency minor units + " + I2S(d.equipmentUnits) + " " + d.good + "; " + I2S(d.equipmentDays) + " days. No free equipment. Equipment owner " + s.equipmentOwner + "; ready day " + I2S(s.equipmentReady) + ". Daily upkeep: " + I2S(d.dailyMoney) + " treasury currency + " + I2S(d.dailyUnits) + " " + d.good + ". Daily journey provisions " + I2S(d.dailyProvisions) + "; exposed hazard provisions up to " + I2S(d.hazardLoss) + ". Storm observations use actual daily weather, never perfect prediction.\nWork " + I2S(s.work) + "/" + I2S(d.workRequired) + "; base output " + I2S(d.dailyWork) + " per funded day. Scholarly work pays the full authored target research cost in advance and consumes daily inputs; earned scholarly sources increase output. Missing inputs suspend output. Journeys are station-return surveys and reveal no map, routes or secrets. Avoided " + I2S(s.avoided) + ", lost " + I2S(s.lost) + " supply." + bill + " Capture cancels work and unfinished commissioning; completed equipment survives but research never transfers. No refund. Use /science <inspect|equip|start|stop> SITE [TECHNOLOGY]."
 
 class ScienceCommand implements CommandHandler
 	ScienceCampaignRuntime runtime

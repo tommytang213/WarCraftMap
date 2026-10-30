@@ -29,6 +29,7 @@ public class ScienceSite
 	string prerequisite
 	string good
 	// Immutable scenario qualification; never persisted as a second entitlement.
+	boolean commissioningOnly = false
 	string observationMetric = ""
 	string observationTargets = ""
 	int minimumAdministration = 0
@@ -131,8 +132,13 @@ public class ScienceLedger
 	function busy(string forceId) returns boolean
 		if forceId != ""
 			for i = 0 to count - 1
-				if sites[i].forceId == forceId and states[i].owner != ""
+				if sites[i].forceId == forceId and (states[i].owner != "" or states[i].equipmentOwner != "" and states[i].equipmentReady > states[i].lastDay)
 					return true
+		return false
+	function otherBusy(string forceId, string siteId) returns boolean
+		for i = 0 to count - 1
+			if sites[i].id != siteId and sites[i].forceId == forceId and (states[i].owner != "" or states[i].equipmentOwner != "" and states[i].equipmentReady > states[i].lastDay)
+				return true
 		return false
 	function controlChanged(string id, string owner, int day)
 		for i = 0 to count - 1
@@ -175,7 +181,10 @@ public class ScienceLedger
 			s.equipmentOwner = owner
 			s.equipmentReady = day + d.equipmentDays
 			s.lastDay = day
+			port.busyChanged(d)
 			return ""
+		if d.commissioningOnly
+			return "This chart/bearing kit is used by paid voyages; it cannot start scientific work."
 		if action != "start" or s.equipmentOwner != owner or day < s.equipmentReady
 			return "Commission and complete local equipment first; use equip, start or stop."
 		var cost = d.dailyMoney
@@ -232,7 +241,10 @@ public class ScienceLedger
 							s.stop()
 							port.busyChanged(d)
 			if s.owner == "" and s.equipmentOwner != ""
+				let prepared = s.lastDay < s.equipmentReady and day >= s.equipmentReady
 				s.lastDay = IMaxBJ(s.lastDay, day)
+				if prepared
+					port.busyChanged(d)
 	ondestroy
 		for i = 0 to count - 1
 			destroy states[i]

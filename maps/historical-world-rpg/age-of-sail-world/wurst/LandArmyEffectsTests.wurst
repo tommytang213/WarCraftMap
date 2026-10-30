@@ -381,7 +381,7 @@ class LandFixture
 	let scienceRecord = "|j,study," + scienceState
 	let fireRecord = "|h,musket," + clockReal(1.285)
 	let saved = f.military.snapshot()
-	saved.startsWith("v21|").assertTrue()
+	saved.startsWith("v22|").assertTrue()
 	saved.contains(fireRecord).assertTrue()
 	saved.contains(scienceRecord).assertTrue()
 	f.military.restore(saved, false).assertTrue()
@@ -656,7 +656,7 @@ function bayonetDamage(LandFixture f, string attacker, string target, string att
 	f.military.snapshot().assertEquals(saved)
 	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("100")
 	// V8 predates equipment identity. Migration must not infer it from rawcodes.
-	let legacy = saved.replace("v21|", "v8|").replace("|p,foot,european_late_line_infantry", "").replace("|p,horse,sabre_cavalry", "")
+	let legacy = saved.replace("v22|", "v8|").replace("|p,foot,european_late_line_infantry", "").replace("|p,horse,sabre_cavalry", "")
 	f.military.restore(legacy, false).assertTrue()
 	bayonetDamage(f, "horse", "foot", "land_cavalry_melee", true).assertEquals("108")
 	f.military.restore(saved, false).assertTrue()

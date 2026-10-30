@@ -1,0 +1,63 @@
+{
+  "format": "warcraftmap_focused_developer_validation_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosure": false,
+  "sourceIdentity": {
+    "sourceRevision": "06d7032585920fb346e730d7b92fd7de092764db",
+    "sourceTreeSha256": "0e0a5d727f46ada6f50546d636a566c996c996f5f5bb51efd2999461131ecb09"
+  },
+  "repair": "Regenerate the three source-only audit snapshots after integration; preserve implementation and all evidence gates.",
+  "distinctPythonTestsPassed": 162,
+  "runs": [
+    {
+      "command": "python3 -m unittest test_coastal_navigation test_coastal_binding_evidence test_navigation_efficiency test_navigation test_regional_navigation test_science_exploration test_research_generation test_release_save_compatibility -v",
+      "cwd": "maps/historical-world-rpg/age-of-sail-world/tests",
+      "status": "pass",
+      "testsPassed": 73,
+      "seconds": 127.016,
+      "transcript": "audit-freshness-repair-gameplay.log.gz"
+    },
+    {
+      "command": "python3 -m unittest test_runtime_acceptance test_requirement_traceability -v",
+      "cwd": "maps/historical-world-rpg/age-of-sail-world/tests",
+      "status": "pass",
+      "testsPassed": 79,
+      "seconds": 65.633,
+      "transcript": "audit-freshness-repair-acceptance.log.gz"
+    },
+    {
+      "command": "python3 -m unittest test_release_blocker_audit -v",
+      "cwd": "maps/historical-world-rpg/age-of-sail-world/tests",
+      "status": "pass",
+      "testsPassed": 10,
+      "seconds": 76.853,
+      "transcript": "audit-freshness-repair-release.log.gz"
+    }
+  ],
+  "artifacts": {
+    "audit-freshness-repair-gameplay.log.gz": "6c5b2bf1ff7195b63d6ec227bd23d4ec9f534a364e348e3044b5d2659f0a4233",
+    "audit-freshness-repair-acceptance.log.gz": "2821c3c043493a474ddbe52ce3693c7e61c68cc54714d920a4fe8da6f352be09",
+    "audit-freshness-repair-release.log.gz": "3c978f533e4f809561405be2da4292551692142dd6091e82680bce6fa9f028df"
+  },
+  "auditRegeneration": {
+    "release-blocker": {
+      "status": "fail",
+      "unresolvedCampaignBlockers": 238
+    },
+    "runtime-acceptance": {
+      "status": "fail",
+      "failures": 30
+    },
+    "requirement-traceability": {
+      "status": "fail",
+      "blockerCount": 7004
+    },
+    "scope": "Fresh source snapshots; known blockers retained, coastal identity remains unresolved pending complete same-revision pinned evidence."
+  },
+  "deferred": [
+    "Complete repository/framework validation",
+    "Complete pinned Wurst suite",
+    "Integrated-main release-blocker, runtime-acceptance and requirement-traceability evidence"
+  ]
+}

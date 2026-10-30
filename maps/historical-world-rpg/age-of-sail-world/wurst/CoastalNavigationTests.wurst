@@ -1,0 +1,255 @@
+package CoastalNavigationTests
+
+import ScienceExplorationTests
+
+import ScienceExploration
+import ScienceCampaignRuntime
+import VoyageNavigation
+import VoyageCommands
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+import PlayableCampaignRuntime
+import CampaignTimeline
+import CommandRouter
+import ScenarioData
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+
+class CoastalFixture
+	ScienceFixture f
+	construct(boolean coastal, boolean celestial, boolean kit, boolean ai, boolean active)
+		f = new ScienceFixture(ai, active)
+		f.military.voyages = createGeneratedVoyageContract()
+		f.military.setRpgRuntime(f.rpg)
+		f.campaign.knowledge.revealRegion("europe")
+		registerVoyageCommands(f.commands, f.campaign).assertEquals("")
+		f.commands.dispatch(Player(0), "/research pilot_books").assertTrue()
+		f.rpg.technologies.isUnlocked(f.resources.owner, "pilot_books").assertTrue()
+		if coastal
+			f.unlock("coastal_triangulation")
+		if celestial
+			f.unlock("celestial_navigation")
+			voyage("/voyage-kit english_patrol_ship install", true)
+		if kit
+			f.action("equip", 3, "")
+	function ship() returns RuntimeForce
+		return f.military.forces[f.military.forceIndex("english_patrol_ship")]
+	function voyage(string command, boolean accepted)
+		f.commands.dispatch(Player(0), command).assertTrue()
+		if accepted
+			f.resources.output.assertEquals("Voyage action completed.")
+		else
+			f.resources.output.assertEquals("Voyage requirements are not met.")
+	function start()
+		let supply = ship().supply
+		voyage("/voyage english_patrol_ship channel_position_finding_circuit", true)
+		ship().supply.assertEquals(supply - 50)
+
+@test function coastalOnlyRegisteredVoyageCommits92For100OverheadAgainstMatchedControl()
+	let t = new CoastalFixture(true, false, false, false, true)
+	let c = new CoastalFixture(false, false, false, false, true)
+	t.f.rpg.technologies.get("coastal_triangulation").consumerDetails.contains("800 bp").assertTrue()
+	let money = t.f.campaign.countries.treasury[0]
+	let cloth = t.f.trade.markets[0].stock
+	t.f.action("equip", 3, "")
+	c.f.action("equip", 3, "")
+	t.f.campaign.countries.treasury[0].assertEquals(money - 120)
+	t.f.trade.markets[0].stock.assertEquals(cloth - 2)
+	t.voyage("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	t.f.advance(7)
+	c.f.advance(7)
+	let knowledge = t.f.campaign.knowledge.snapshot()
+	for circuit = 0 to 4
+		t.start()
+		c.start()
+		t.f.advance(17 + circuit * 10)
+		c.f.advance(17 + circuit * 10)
+	t.ship().supply.assertEquals(758) // 150 ordinary + 92 of 100 position-finding.
+	c.ship().supply.assertEquals(750)
+	t.ship().navigation.creditBasisPoints.assertEquals(0)
+	t.ship().navigation.fraction("coastal_triangulation").assertEquals(0)
+	t.ship().navigation.equipment.assertFalse() // Practical bearings need no precision instrument.
+	t.ship().strength.assertEquals(c.ship().strength)
+	t.ship().hull.integrity.assertEquals(c.ship().hull.integrity)
+	t.f.campaign.knowledge.snapshot().assertEquals(knowledge)
+	let saved = t.f.military.snapshot()
+	t.f.advance(57)
+	t.f.military.resolveVoyages(t.f.clock.currentDay)
+	t.f.military.snapshot().assertEquals(saved)
+
+@test function coastalAndCelestialComposeOnceInCommonBucketAcrossResumeAndDuplicateGrants()
+	let t = new CoastalFixture(true, true, true, false, true)
+	t.f.advance(7)
+	t.start()
+	t.f.advance(10)
+	t.ship().navigation.creditBasisPoints.assertEquals(800) // 3 * 2 * (1000 + 800) = 10800.
+	t.ship().navigation.fraction("celestial_navigation").assertEquals(6000)
+	t.ship().navigation.fraction("coastal_triangulation").assertEquals(4800)
+	t.ship().supply.assertEquals(951)
+	let saved = t.f.military.snapshot()
+	t.f.military.restore(saved).assertTrue()
+	t.f.military.snapshot().assertEquals(saved)
+	t.f.rpg.technologies.reconstructAll()
+	t.f.rpg.technologies.reconstructAll()
+	t.f.commands.dispatch(Player(0), "/research coastal_triangulation").assertTrue()
+	t.f.military.resolveVoyages(t.f.clock.currentDay)
+	t.f.military.snapshot().assertEquals(saved)
+	t.f.advance(17)
+	t.ship().supply.assertEquals(953)
+	t.ship().navigation.creditBasisPoints.assertEquals(6000)
+
+@test function coastalRejectsMissingInputsEquipmentUnsupportedSegmentsAndOverlappingWork()
+	let t = new CoastalFixture(true, false, false, false, true)
+	let money = t.f.campaign.countries.treasury[0]
+	let cloth = t.f.trade.markets[0].stock
+	t.f.trade.markets[0].stock = 1
+	(t.f.runtime.act("player", "equip", "channel_coastal_bearing_kit", "") != "").assertTrue()
+	t.f.campaign.countries.treasury[0].assertEquals(money)
+	t.f.trade.markets[0].stock = cloth
+	t.f.campaign.countries.treasury[0] = 119
+	(t.f.runtime.act("player", "equip", "channel_coastal_bearing_kit", "") != "").assertTrue()
+	t.f.trade.markets[0].stock.assertEquals(cloth)
+	t.f.campaign.countries.treasury[0] = money
+	t.start() // Research without a kit receives no coastal savings.
+	(t.f.runtime.act("player", "equip", "channel_coastal_bearing_kit", "") != "").assertTrue()
+	t.f.advance(10)
+	t.ship().supply.assertEquals(950)
+	t.f.action("equip", 3, "")
+	(t.f.runtime.act("player", "equip", "channel_coastal_bearing_kit", "") != "").assertTrue()
+	(t.f.runtime.act("player", "equip", "channel_weather_survey", "") != "").assertTrue()
+	t.f.advance(17)
+	(t.f.runtime.act("player", "start", "channel_coastal_bearing_kit", "") != "").assertTrue()
+	t.ship().supply = 49
+	t.voyage("/voyage english_patrol_ship channel_position_finding_circuit", false)
+	t.ship().supply = 950
+	let route = t.f.military.voyages.route("channel_position_finding_circuit")
+	route.coastalBearingDays = "1000000000" // Open water earns nothing.
+	t.start()
+	t.f.advance(27)
+	t.ship().supply.assertEquals(900)
+	t.ship().navigation.creditBasisPoints.assertEquals(1600)
+	t.f.military.voyages.ship("english_patrol_ship").coastalBearingCapable = false
+	route.coastalBearingDays = "1111111111"
+	t.start()
+	t.f.advance(37)
+	t.ship().supply.assertEquals(850)
+	t.ship().navigation.creditBasisPoints.assertEquals(1600)
+
+@test function coastalPlayerAiActiveInactiveCaptureInterruptAndDestructionConserveProvisions()
+	let human = new CoastalFixture(true, true, true, false, true)
+	let ai = new CoastalFixture(true, true, true, true, false)
+	human.f.advance(7)
+	ai.f.advance(7)
+	human.start()
+	ai.start()
+	human.f.advance(10)
+	ai.f.advance(10)
+	human.ship().navigation.record().assertEquals(ai.ship().navigation.record())
+	human.ship().supply.assertEquals(ai.ship().supply)
+	human.f.military.transferControl("english_patrol_ship", "other", human.f.clock.currentDay)
+	ai.f.military.transferControl("english_patrol_ship", "other", ai.f.clock.currentDay)
+	human.f.advance(17)
+	ai.f.advance(17)
+	human.ship().supply.assertEquals(951)
+	ai.ship().supply.assertEquals(951)
+	human.f.military.transferControl("english_patrol_ship", "player", human.f.clock.currentDay)
+	human.start()
+	human.f.advance(20)
+	human.voyage("/voyage-return english_patrol_ship", true)
+	human.ship().supply.assertEquals(937) // 951 - 15 + one whole shared credit.
+	human.start()
+	human.ship().active = false
+	human.ship().strength = 0
+	let before = human.ship().supply + human.ship().navigation.reserved
+	human.f.advance(30)
+	human.ship().supply.assertEquals(before)
+	human.ship().navigation.pending().assertFalse()
+	let preparing = new CoastalFixture(true, false, true, false, true)
+	let paidMoney = preparing.f.campaign.countries.treasury[0]
+	let paidCloth = preparing.f.trade.markets[0].stock
+	preparing.f.military.transferControl("english_patrol_ship", "other", preparing.f.clock.currentDay)
+	preparing.f.military.science.states[3].equipmentOwner.assertEquals("")
+	preparing.f.military.science.states[3].equipmentReady.assertEquals(0)
+	preparing.f.campaign.countries.treasury[0].assertEquals(paidMoney)
+	preparing.f.trade.markets[0].stock.assertEquals(paidCloth)
+
+@test function coastalLegacyMigrationAndMalformedSourceRecordsPreserveCelestialReservation()
+	let t = new CoastalFixture(true, true, true, false, true)
+	t.f.advance(7)
+	t.start()
+	t.f.advance(10)
+	let saved = t.f.military.snapshot()
+	let coastal = "|x,english_patrol_ship,coastal_triangulation,4800"
+	let celestial = "|x,english_patrol_ship,celestial_navigation,6000"
+	t.f.military.restore(saved.replace(coastal, "")).assertFalse()
+	t.f.military.restore(saved + coastal).assertFalse()
+	t.f.military.restore(saved.replace(coastal, coastal.replace("4800", "4801"))).assertFalse()
+	t.f.military.snapshot().assertEquals(saved)
+	// A real v21 input contained celestial fraction only and no new site record.
+	let kit = "|j,channel_coastal_bearing_kit," + t.f.military.science.states[3].record()
+	let legacy = saved.replace("v22|", "v21|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(t.f.clock.currentDay) + ",35,800", ",3," + I2S(t.f.clock.currentDay) + ",35,6000")
+	t.f.military.restore(legacy).assertTrue()
+	t.ship().navigation.equipment.assertTrue()
+	t.ship().navigation.reserved.assertEquals(35)
+	t.ship().navigation.creditBasisPoints.assertEquals(6000)
+	t.ship().navigation.fraction("celestial_navigation").assertEquals(6000)
+	t.ship().navigation.fraction("coastal_triangulation").assertEquals(0)
+	t.f.military.science.states[3].equipmentOwner.assertEquals("")
+
+@test function coastalFailedCampaignLoadRollsBackEquipmentPaymentsProvisionsAndFractions()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new ScienceLedger()
+	configureGeneratedScience(definitions, effects)
+	let kit = definitions.sites[3]
+	kit.settlementId = "port"
+	kit.good = "grain"
+	kit.firstDay = 0
+	kit.prerequisite = "pilot_books"
+	f.military.science.register(kit)
+	f.military.voyages = createGeneratedVoyageContract()
+	f.military.setRpgRuntime(f.rpg)
+	let vessel = new RuntimeForce("english_patrol_ship", "england", "europe_west", "sailing_naval", FORCE_FLEET, 'hbot', 10, 1000, 4160., -6720.)
+	f.military.registerForce(vessel)
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	let prerequisite = new RuntimeTechnology("pilot_books", "Pilot Books", 1, 1)
+	f.rpg.technologies.register(prerequisite).assertTrue()
+	f.rpg.research("england", "pilot_books", 1, 1).assertTrue()
+	let coastal = new RuntimeTechnology("coastal_triangulation", "Coastal Triangulation", 1, 1)
+	coastal.addUnlock("coastal_triangulation", "modifier", "progression_coastal_triangulation")
+	f.rpg.technologies.register(coastal).assertTrue()
+	f.rpg.research("england", "coastal_triangulation", 1, 1).assertTrue()
+	let runtime = new ScienceCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.scienceRuntime = runtime
+	let day = f.clock.currentDay
+	let initialMoney = f.campaign.countries.treasury[0]
+	let initialStock = f.extension.trade.markets[0].stock
+	let savedClock = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "before kit").assertTrue()
+	runtime.act("england", "equip", kit.id, "").assertEquals("")
+	f.clock.advanceTo(day + 7).assertTrue()
+	f.military.startVoyage(vessel.id, "channel_position_finding_circuit", "england", f.clock.currentDay, true).assertTrue()
+	f.clock.advanceTo(day + 10).assertTrue()
+	vessel.navigation.creditBasisPoints.assertEquals(4800)
+	let checkpoint = f.military.snapshot()
+	let money = f.campaign.countries.treasury[0]
+	let stock = f.extension.trade.capture()
+	let research = f.rpg.captureState()
+	let time = f.clock.captureState()
+	f.recordingTimer.expected = time
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(checkpoint)
+	f.campaign.countries.treasury[0].assertEquals(money)
+	f.extension.trade.capture().assertEquals(stock)
+	f.rpg.captureState().assertEquals(research)
+	f.clock.captureState().assertEquals(time)
+	f.extension.fail = false
+	f.recordingTimer.expected = savedClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].equipmentOwner.assertEquals("")
+	f.military.forces[f.military.forceIndex("english_patrol_ship")].navigation.pending().assertFalse()
+	f.military.forces[f.military.forceIndex("english_patrol_ship")].navigation.creditBasisPoints.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(initialMoney)
+	f.extension.trade.markets[0].stock.assertEquals(initialStock)

@@ -1,0 +1,69 @@
+{
+  "format": "warcraftmap_focused_developer_validation_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosure": false,
+  "sourceIdentity": {
+    "sourceRevision": "9603cb97a5633a2e4a2263bfd4a2a9112f34af8b",
+    "sourceTreeSha256": "0e0a5d727f46ada6f50546d636a566c996c996f5f5bb51efd2999461131ecb09"
+  },
+  "repair": "Isolate the terrain clock in execution-gate fixtures; retain production timing enforcement and add deterministic over-budget rejection coverage.",
+  "distinctPythonTestsPassed": 99,
+  "runs": [
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_coastal*.py' -v",
+      "cwd": ".",
+      "status": "pass",
+      "testsPassed": 13,
+      "seconds": 20.402,
+      "transcript": "execution-gate-repair-coastal.log.gz"
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*navigation*.py' -v",
+      "cwd": ".",
+      "status": "pass",
+      "testsPassed": 48,
+      "seconds": 45.382,
+      "transcript": "execution-gate-repair-navigation.log.gz"
+    },
+    {
+      "command": "python3 -m unittest test_europe_terrain test_science_exploration test_research_generation -v",
+      "cwd": "maps/historical-world-rpg/age-of-sail-world/tests",
+      "status": "pass",
+      "testsPassed": 22,
+      "seconds": 54.425,
+      "transcript": "execution-gate-repair-related.log.gz"
+    },
+    {
+      "command": "python3 -m unittest test_europe_terrain -v",
+      "cwd": "maps/historical-world-rpg/age-of-sail-world/tests",
+      "status": "pass",
+      "testsPassed": 7,
+      "seconds": 1.476,
+      "transcript": "execution-gate-repair-terrain.log.gz"
+    },
+    {
+      "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_wurst_execution.py' -v",
+      "cwd": ".",
+      "status": "pass",
+      "testsPassed": 23,
+      "seconds": 300.206,
+      "transcript": "execution-gate-repair-execution.log.gz"
+    }
+  ],
+  "artifacts": {
+    "execution-gate-repair-coastal.log.gz": "07f637e8bf658e44fff938950f488522d9faee3a424de678fb4e41b056953b95",
+    "execution-gate-repair-navigation.log.gz": "f7997fb45f2d8da8e093db4d2e184db1cb7c6e443218f1d2883a885dd785365f",
+    "execution-gate-repair-related.log.gz": "3ed6bd45ae990a10b6e1153287a0cf29676aa1d3da0c772b405a1ddd472bd7a4",
+    "execution-gate-repair-terrain.log.gz": "dbf67616d835f7d2e5288e8969c2577b39a061fc8df64d8067a518ddb8d09b7a",
+    "execution-gate-repair-execution.log.gz": "153a38a9efeef6812bffd04010acb611f522f457e76ce57cbfc0cddc9a4eca85"
+  },
+  "executionGateCompiler": "Synthetic protocol fixture only; not pinned Wurst execution evidence.",
+  "deferred": [
+    "Complete repository/framework validation",
+    "Complete pinned Wurst suite",
+    "Integrated-main release-blocker audit",
+    "Integrated-main runtime-acceptance audit",
+    "Integrated-main requirement-traceability audit"
+  ]
+}

@@ -60,7 +60,13 @@ def configuration(project, world, settlements, authored, trade_records):
     zones = {x['id']: x for x in world['navigationZones']}
     nav = json.loads((project / 'scenario/naval/navigation-efficiency.json').read_text())
     for i, d in enumerate(data['sites']):
-        if d['id'] in ids or d['metric'] not in METRICS or d['capability'] != METRICS[d['metric']]:
+        commissioning = d.get('commissioningOnly', False)
+        if type(commissioning) is not bool:
+            raise ValueError('science: invalid commissioning flag')
+        coastal = commissioning is True and d['metric'] == 'coastal_position_finding' and d['capability'] == 'coastal_chart_bearings'
+        if commissioning and not coastal:
+            raise ValueError('science: unsupported commissioning capability')
+        if d['id'] in ids or (not coastal and (d['metric'] not in METRICS or d['capability'] != METRICS[d['metric']])):
             raise ValueError('science: duplicate site or unsupported capability')
         if len(d['id']) > 64 or not re.fullmatch(r'[a-z][a-z0-9]*(?:_[a-z0-9]+)*', d['id']):
             raise ValueError('science: invalid stable site id')
@@ -73,7 +79,7 @@ def configuration(project, world, settlements, authored, trade_records):
         if not any(f'runtime.registerMarketProfile({q(d["settlementId"])},{q(d["good"])},' in x for x in trade_records):
             raise ValueError('science: required real commodity market unavailable')
         for key, maximum in NUMBERS.items():
-            minimum = 0 if key in {'dailyProvisions', 'hazardLoss'} else 1
+            minimum = 0 if key in {'dailyProvisions', 'hazardLoss'} or coastal and key in {'dailyMoney', 'dailyUnits', 'dailyWork'} else 1
             if type(d[key]) is not int or not minimum <= d[key] <= maximum:
                 raise ValueError('science: invalid ' + key)
         if d['weatherDays'] > d['weatherPeriod']:
@@ -81,11 +87,11 @@ def configuration(project, world, settlements, authored, trade_records):
         if (d['metric'] == 'research_generation_efficiency') != (d['forceId'] == ''):
             raise ValueError('science: scholarly facilities and journey actors are distinct')
         if d['forceId']:
-            if d['forceId'] in assigned_forces:
+            if not coastal and d['forceId'] in assigned_forces:
                 raise ValueError('science: actor cannot run overlapping circuits')
             assigned_forces.add(d['forceId'])
             force = forces.get(d['forceId'])
-            expected_kind = 'ship' if d['metric'] == 'storm_attrition_reduction' else 'formation'
+            expected_kind = 'ship' if d['metric'] == 'storm_attrition_reduction' or coastal else 'formation'
             if not force or force['kind'] != expected_kind:
                 raise ValueError('science: incompatible actor')
             if expected_kind == 'ship':
@@ -100,6 +106,10 @@ def configuration(project, world, settlements, authored, trade_records):
         args = [d[k] for k in ('id', 'settlementId', 'forceId', 'metric', 'prerequisite', 'good')] + [first] + [d[k] for k in NUMBERS]
         render = lambda v: q(v) if isinstance(v, str) else str(v)
         lines.append(f'\tlet site{i} = new ScienceSite(' + ', '.join(map(render, args)) + ')')
+        if coastal:
+            if any(d[k] != 0 for k in ('dailyMoney', 'dailyUnits', 'dailyWork', 'dailyProvisions', 'hazardLoss')):
+                raise ValueError('science: commissioning cannot run a second voyage')
+            lines.append(f'\tsite{i}.commissioningOnly = true')
         if d['forceId']:
             lines.append(f"\tsite{i}.unitTypeId = '{templates[forces[d['forceId']]['runtimeInstantiation']['runtimeTemplateId']]}'")
         pos = d['stationPosition'] or [positions[d['settlementId']]['x'], positions[d['settlementId']]['y']]
