@@ -41,6 +41,26 @@ format and cannot satisfy the full-suite closure verifier.
 
 Complete repository/framework validation, the complete pinned Wurst suite, and
 all three integrated-main audits remain with the controller after integration
-preflight. Existing release audit outputs have not been rewritten. Neither this
+preflight. The original focused run did not rewrite release audit outputs. Neither this
 focused report nor a later merged PR establishes release-blocker closure. No
 player QA was requested.
+
+## Post-merge validation repair
+
+The merged worktree retained schema v21 in the release save manifest and the
+runtime integration source marker, while the coastal implementation writes v22.
+Both now advertise v22, including all supported military source schemas 1–22.
+The release-blocker, runtime-acceptance and requirement-traceability source
+snapshots were regenerated for this worktree. Static runtime readiness passes;
+the snapshots retain missing execution/artifact blockers, including the coastal
+identity, pending complete pinned evidence on integrated main.
+
+Fresh focused Python runs pass navigation (48), coastal evidence (5), science
+compilation (5), research generation (11), release save compatibility (6), runtime
+acceptance (25), requirement traceability (54), release-blocker audit (10), and
+sibling barometric (5), botanical (6) and calculus (6) evidence: 181 tests total.
+Framework boundary, both scenario world validators, Europe geography and map
+source validation also pass.
+The original pinned Wurst transcript above predates this integration repair;
+the controller must obtain fresh complete-suite evidence for the final source
+digest. No commits, remote changes or player QA were performed.
