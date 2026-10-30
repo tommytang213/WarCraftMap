@@ -262,6 +262,25 @@ public class CivicLedger
 			states[i].urbanization = urbanization
 	function municipalEligible(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
 		return owner != "" and economy.controller(districts[i].id) == owner and economy.lawful(districts[i].id) and economy.administration(districts[i].id) >= minimumAdministration and states[i].urbanization >= municipalMinimumUrbanization and research.rate(owner, "archive_tax_collection_efficiency") > 0 and research.rate(owner, "municipal_tax_collection_efficiency") > 0
+	/** One operational records service, shared by distinct research sources.
+	 * Re-read current office qualification; appointment never grants revenue. */
+	function recordsBonus(string id, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns int
+		if owner == "" or economy.controller(id) != owner or not economy.lawful(id)
+			return 0
+		let skill = economy.administration(id)
+		if skill < minimumAdministration
+			return 0
+		return civicScale(research.rate(owner, "archive_tax_collection_efficiency"), skill * 100) + research.rate(owner, "records_tax_collection_efficiency")
+	function collectionBonus(int i, string owner, int day, CivicResearchEffects research, CivicEconomyPort economy, boolean recordsFunded) returns int
+		var bonus = 0
+		if states[i].surveyed
+			bonus += research.rate(owner, "land_tax_collection_efficiency")
+		if recordsFunded
+			bonus += recordsBonus(districts[i].id, owner, research, economy)
+		let s = states[i]
+		if s.municipalOwner == owner and owner != "" and day >= s.municipalReady and day < s.municipalThrough and municipalEligible(i, owner, research, economy)
+			bonus += research.rate(owner, "municipal_tax_collection_efficiency")
+		return bonus
 	function controlChanged(string id)
 		let i = index(id)
 		if i >= 0
@@ -482,17 +501,12 @@ public class CivicLedger
 				// Tax is a transfer from existing economic liquidity, bounded by
 				// normal taxable capacity. Survey modifies collection efficiency.
 				if lawful and at mod 365 == 0
-					var bonus = 0
-					if s.surveyed
-						bonus = research.rate(owner, "land_tax_collection_efficiency")
-					// Archives operate before the separately elected charter. Distinct
-					// sources add once to the survey layer before a single tax rounding.
-					let skill = economy.administration(d.id)
-					if skill >= minimumAdministration and research.rate(owner, "archive_tax_collection_efficiency") > 0
-						if economy.pay(owner, d.id, civicBill(d.annualTax, archiveUpkeepBasisPoints), "", 0)
-							bonus += civicScale(research.rate(owner, "archive_tax_collection_efficiency"), skill * 100)
-					if s.municipalOwner == owner and owner != "" and at >= s.municipalReady and at < s.municipalThrough and municipalEligible(i, owner, research, economy)
-						bonus += research.rate(owner, "municipal_tax_collection_efficiency")
+					var funded = false
+					if recordsBonus(d.id, owner, research, economy) > 0
+						funded = economy.pay(owner, d.id, civicBill(d.annualTax, archiveUpkeepBasisPoints), "", 0)
+					// Charge records operation once, then add each source once before
+					// the existing single rounding and actual liquidity withdrawal.
+					let bonus = collectionBonus(i, owner, at, research, economy, funded)
 					let collected = economy.collect(owner, d.id, civicTax(d.annualTax, baseTaxBasisPoints, bonus))
 					s.taxesCollected += collected
 				if outbreak(i, at - 1)

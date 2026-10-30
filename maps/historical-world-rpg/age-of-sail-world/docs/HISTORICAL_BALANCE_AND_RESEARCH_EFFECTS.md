@@ -726,6 +726,55 @@ their arity and preserves those charters while initializing absent banking inact
 V18 banking saves retain bank policies and initialize absent charters inactive.
 V19 requires both complete ledgers; malformed or partial legacy ledgers reject.
 
+## Civil Service Examinations local records administration (#573)
+
+`administrative-contracts.json` adds the exact completed research identity
+`civil_service_examinations` → `modifier:progression_civil_service_examinations`
+as a fixed **500 basis point** collection-efficiency source. Its existing
+1650 preferred year and Provincial Audits/Fleet Victualling prerequisites remain
+authoritative. It changes no 1450 officials, wealth, forces or starting research.
+
+The current district must be lawfully controlled, with a serving official of
+that controller, matching jurisdiction, positive capacity and Administration at
+least 40. At each annual collection, the existing records service must pay
+`ceil(annual taxable capacity * 25 / 10000)` (minimum one currency unit) from the
+existing government treasury before receipts arrive. Archives and Examinations
+share this bill once; Archives retain their independently skill-scaled rate.
+No new office, treasury, construction project or persisted service is introduced.
+
+The fixed Examinations source adds once to Archives, completed survey and any
+operational municipal charter before the existing final rounding. For taxable
+capacity 10000 at base collection 9000 bp, isolated funded Examinations collect
+9450 versus the matched control's 9000, with a 25-unit bill. Every receipt
+withdraws actual local market liquidity and is capped by taxable capacity.
+Failed funding contributes nothing for that year; later receipts never fund an
+earlier missed bill. Repeated research provenance, reconciliation or annual
+callbacks cannot multiply sources or repeat a bill. Replacement, capture and
+recapture re-read current authority, entitlement and qualification. Research and
+appointment produce no receipts and change no ownership, sovereignty or loyalty.
+
+`/civic inspect DISTRICT` reports qualification, the shared bill, affordability,
+and expected funded collection with current survey/municipal layers and local
+liquidity. The annual boundary rechecks all conditions. Existing research views
+show the exact typed identity and binding through the civic effect adapter.
+Examinations adds no fields to the integrated military v21 or campaign/RPG schemas: annual service accounting
+uses the existing committed civic day, treasury, liquidity and collected counter.
+Legacy saves without civic history anchor on their first live day without
+fabricating past service or receipts. Late failed-load tests restore these
+resources and the annual cursor atomically after a real funded collection.
+
+The exact release finding closes only when complete pinned execution, raw
+transcript, source revision/digest and instrumented input hashes verify together.
+Its own matched comparison must observe registration, registered research and
+dispatch, current skill, campaign clock, annual advance, payment and collection.
+Archives/municipal coverage cannot substitute. Focused, stale, incomplete,
+failed or tampered evidence cannot establish closure. After integration, the
+controller must run the complete pinned suite and repository/framework checks,
+then regenerate release-blocker, runtime-acceptance and requirement-traceability
+audits on the same new main revision. The planning audit tracks
+`release:RESEARCH-UNBOUND-CIVIL-SERVICE-EXAMINATIONS-MODIFIER-PROGRESSION-CIVIL-SERVICE-EXAMINATIONS`.
+No player QA is required.
+
 ## Funded local medical care (#572)
 
 `scenario/progression/medical-care.json` binds the exact Pest Hospitals and
