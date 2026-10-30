@@ -384,12 +384,19 @@ public class CivicFixture
 	f.military.restore(SubString(saved, 0, cut), false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
 	// Main's v10 voyage saves migrate with their paid kit/reservation intact.
-	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
+	// Source attribution records were introduced in v22 and never existed in v10.
+	let mixedVersion = "v10" + SubString(saved, saved.indexOf("|"), cut)
+	f.military.restore(mixedVersion, false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	let legacy = mixedVersion.replace("|x,english_patrol_ship,celestial_navigation,0", "").replace("|x,english_patrol_ship,coastal_triangulation,0", "")
 	f.military.restore(legacy, false).assertTrue()
 	let restored = f.military.forces[f.military.forceIndex("english_patrol_ship")]
 	restored.navigation.equipment.assertTrue()
 	restored.navigation.elapsedDays.assertEquals(3)
 	restored.navigation.reserved.assertEquals(35)
+	restored.navigation.creditBasisPoints.assertEquals(0)
+	restored.navigation.fraction("celestial_navigation").assertEquals(0)
+	restored.navigation.fraction("coastal_triangulation").assertEquals(0)
 	f.military.civic.states[0].surveyed.assertFalse()
 	f.military.civic.states[0].responseOwner.assertEquals("")
 	f.military.restore(saved, false).assertTrue()

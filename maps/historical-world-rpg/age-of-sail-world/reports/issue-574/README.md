@@ -103,3 +103,29 @@ evidence, remain explicit. Complete repository/framework and pinned Wurst
 validation, followed by integrated-main evidence regeneration, remain with the
 controller. No gameplay implementation, gate, or player validation requirement
 changed during this repair.
+
+## Civic/voyage legacy-fixture integration repair
+
+The controller's next pinned run failed the combined civic/voyage migration
+test. Its synthetic v10 save retained the new v22 `x` source-attribution records;
+the production parser correctly rejected that mixed-format input. The fixture
+now removes both source records when constructing the legacy save, explicitly
+checks rejection and rollback for the mixed-format input, and checks that the
+genuine legacy save preserves celestial equipment, elapsed days and reserved
+provisions with zero unearned source fractions. Production behavior is unchanged.
+
+Fresh focused validation passes **72 pinned Wurst tests** across civic, coastal,
+celestial, science and framework suites, including the previously failing test.
+The complete source assembly remains present; other suites' test annotations
+were disabled only in the disposable assembly. The pinned compiler ran offline
+with read-only inputs and all build writes in container-private `/tmp`.
+Generated-output verification and the framework boundary audit also pass.
+**173 focused Python tests** pass, including all three audit regressions.
+
+All three source-only audit snapshots were regenerated at integrated revision
+`368f4a74999b9a3b21ab6b9777e832b86cfd7917` with source digest
+`5cd4bac03a053a73bc3362c4bc35b0b6c50c4a8e98c5a9a99efde071b9b04234`.
+They retain existing release blockers. Commands, counts and compressed transcript
+hashes are recorded in `civic-migration-repair-validation.json`. These focused
+results do not establish release closure; complete repository validation, the
+complete pinned suite and integrated-main evidence remain with the controller.
