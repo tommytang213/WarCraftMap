@@ -127,6 +127,15 @@ public class CivicFixture
 		unlock("abolitionist_public_sphere")
 		unlock("anatomy_and_medicine")
 		unlock("cadastral_survey")
+	function examinationsPrerequisites()
+		// Matched controls retain exactly the same earned prerequisites, with
+		// Archives absent so its independent collection source cannot confound.
+		rpg.restoreState(initial + "|u," + resources.owner + ",provincial_audits|u," + resources.owner + ",fleet_victualling").assertTrue()
+		rpg.reconcile(resources.owner)
+		military.civic.districts[0].annualTax = 10000
+	function examinations()
+		examinationsPrerequisites()
+		unlock("civil_service_examinations")
 
 @test function civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills()
 	let f = new CivicFixture()
@@ -947,3 +956,204 @@ public class CivicFixture
 		inactive.military.snapshot().assertEquals(saved)
 		inactive.campaign.countries.treasury[0].assertEquals(19350)
 		inactive.trade.findMarket("district", "cloth").money.assertEquals(90550)
+
+// #573: isolate completed Examinations from its historical prerequisite grants
+// and from Archives; both arms use the same existing official and liquidity.
+@test function examinationsRegisteredResearchMatchedControlCollectsFundedLocalRevenue()
+	let base = new CivicFixture()
+	let earned = new CivicFixture()
+	let before = earned.rpg.captureState()
+	earned.commands.dispatch(Player(0), "/research civil_service_examinations").assertTrue()
+	earned.resources.output.assertEquals("Requirements are not met here.")
+	earned.rpg.captureState().assertEquals(before)
+	base.examinationsPrerequisites()
+	earned.examinationsPrerequisites()
+	let control = earned.military.snapshot()
+	earned.unlock("civil_service_examinations")
+	earned.resources.balance.assertEquals(100000 - 255)
+	earned.military.snapshot().assertEquals(control)
+	earned.campaign.countries.treasury[0].assertEquals(10000)
+	earned.trade.findMarket("district", "cloth").money.assertEquals(100000)
+	earned.research.rate("player", "archive_tax_collection_efficiency").assertEquals(0)
+	earned.research.rate("player", "records_tax_collection_efficiency").assertEquals(500)
+	let view = earned.runtime.overview("player", "district")
+	view.contains("Records service: qualified").assertTrue()
+	view.contains("bill 25 currency, charged once with Archives").assertTrue()
+	view.contains("layers 9450").assertTrue()
+	let taxDay = 365 - (base.day mod 365)
+	base.advance(taxDay - 1)
+	earned.advance(taxDay - 1)
+	earned.military.civic.states[0].taxesCollected.assertEquals(0)
+	earned.campaign.countries.treasury[0].assertEquals(10000)
+	base.advance(taxDay)
+	earned.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9000)
+	earned.military.civic.states[0].taxesCollected.assertEquals(9450)
+	base.campaign.countries.treasury[0].assertEquals(19000)
+	earned.campaign.countries.treasury[0].assertEquals(10000 - 25 + 9450)
+	base.trade.findMarket("district", "cloth").money.assertEquals(91000)
+	earned.trade.findMarket("district", "cloth").money.assertEquals(90550)
+	earned.trade.findMarket("district", "grain").money.assertEquals(100000)
+	let saved = earned.military.snapshot()
+	earned.advance(taxDay)
+	earned.rpg.reconcile("player")
+	earned.military.snapshot().assertEquals(saved)
+	earned.campaign.countries.treasury[0].assertEquals(19425)
+	earned.military.administrators[0].administration.assertEquals(50)
+	earned.military.administrators[0].loyalty.assertEquals(50)
+	earned.military.settlements[0].legalOwnerId.assertEquals("player")
+	earned.military.settlements[0].controllerId.assertEquals("player")
+
+@test function examinationsSharedBillAdditiveLayersAndDuplicateGrantsStayBounded()
+	let f = new CivicFixture()
+	f.examinations()
+	let duplicate = new RuntimeTechnology("exam_peer", "Exam peer", 1450, 1)
+	duplicate.addUnlock("exam_peer", "modifier", "progression_civil_service_examinations")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("exam_peer")
+	f.rpg.reconcile("player")
+	f.research.rate("player", "records_tax_collection_efficiency").assertEquals(500)
+	f.unlock("professional_bureaucracy")
+	f.unlock("chancery_archives")
+	let taxDay = 365 - (f.day mod 365)
+	f.advance(taxDay)
+	// 500 Examinations + 250 Archives; one shared 25-unit bill.
+	f.military.civic.states[0].taxesCollected.assertEquals(9675)
+	f.campaign.countries.treasury[0].assertEquals(10000 - 25 + 9675)
+	f.unlock("cadastral_survey")
+	f.action("survey")
+	f.advance(taxDay + 365)
+	// All three add before rounding; capped by the same taxable capacity.
+	f.military.civic.states[0].taxesCollected.assertEquals(9675 + 10000)
+	f.campaign.countries.treasury[0].assertEquals(10000 - 25 + 9675 - 100 - 25 + 10000)
+	f.unlock("chartered_municipalities")
+	f.action("municipal")
+	// Lower the base rate to expose all four additive sources below the cap.
+	f.military.civic.baseTaxBasisPoints = 5000
+	f.advance(taxDay + 730)
+	f.military.civic.states[0].taxesCollected.assertEquals(9675 + 10000 + 5825)
+	// Distinct municipal bills remain separate; records still charge once.
+	f.campaign.countries.treasury[0].assertEquals(10000 - 75 + 25500 - 100 - 100 - 50)
+	f.trade.findMarket("district", "cloth").money.assertEquals(100000 - 25500)
+	civicTax(101, 9000, 250 + 500 + 100).assertEquals(98)
+
+@test function examinationsCurrentQualificationFundingAndLiquidityGateCollection()
+	let f = new CivicFixture()
+	f.examinations()
+	let taxDay = 365 - (f.day mod 365)
+	var total = 0
+	for condition = 0 to 9
+		let office = f.military.administrators[0]
+		office.administration = 40
+		office.capacity = 1
+		office.controllerId = "player"
+		office.jurisdiction = "district"
+		f.military.administratorCount = 1
+		f.military.settlements[0].occupationConflictId = ""
+		f.military.settlements[0].underAttack = false
+		f.campaign.countries.treasury[0] = 25
+		f.trade.findMarket("district", "cloth").money = 10000
+		f.trade.findMarket("district", "grain").money = 0
+		var collected = 0
+		var bill = 0
+		if condition == 0
+			office.administration = 39
+			collected = 9000
+		else if condition == 1
+			office.capacity = 0
+		else if condition == 2
+			office.controllerId = "ai"
+		else if condition == 3
+			office.jurisdiction = "foreign"
+		else if condition == 4
+			f.military.administratorCount = 0
+		else if condition == 5
+			f.military.settlements[0].occupationConflictId = "hostile"
+		else if condition == 6
+			f.military.settlements[0].underAttack = true
+		else if condition == 7
+			f.campaign.countries.treasury[0] = 24
+			collected = 9000
+		else if condition == 8
+			// Bills are paid before receipts: only actual local liquidity moves.
+			f.trade.findMarket("district", "cloth").money = 77
+			f.trade.findMarket("district", "grain").money = 23
+			collected = 100
+			bill = 25
+		else
+			collected = 9450
+			bill = 25
+		let money = f.campaign.countries.treasury[0]
+		let liquid = f.trade.findMarket("district", "cloth").money + f.trade.findMarket("district", "grain").money
+		f.advance(taxDay + 365 * condition)
+		total += collected
+		f.military.civic.states[0].taxesCollected.assertEquals(total)
+		f.campaign.countries.treasury[0].assertEquals(money - bill + collected)
+		(f.trade.findMarket("district", "cloth").money + f.trade.findMarket("district", "grain").money).assertEquals(liquid - collected)
+
+@test function examinationsReplacementCaptureAndRecaptureReevaluateCurrentAuthority()
+	let f = new CivicFixture()
+	f.examinations()
+	let taxDay = 365 - (f.day mod 365)
+	f.advance(taxDay)
+	f.military.appoint("district", new AdministratorState("novice", "Novice", "Administrator", "player", "europe", "district", 39, 39, 40, 1)).assertEquals("Administrator appointed.")
+	f.advance(taxDay + 365)
+	f.military.civic.states[0].taxesCollected.assertEquals(9450 + 9000)
+	f.military.transferSettlement("district", "ai")
+	f.military.settlements[0].legalOwnerId = "ai"
+	f.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "europe", "district", 50, 100, 40, 1))
+	f.research.rate("ai", "records_tax_collection_efficiency").assertEquals(0)
+	f.advance(taxDay + 730)
+	f.military.civic.states[0].taxesCollected.assertEquals(9450 + 18000)
+	f.campaign.countries.treasury[1].assertEquals(19000)
+	f.military.transferSettlement("district", "player")
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.appoint("district", new AdministratorState("remote", "Remote", "Administrator", "player", "unloaded", "district", 50, 40, 40, 1))
+	let treasury = f.campaign.countries.treasury[0]
+	f.advance(taxDay + 1095)
+	f.military.civic.states[0].taxesCollected.assertEquals(18900 + 18000)
+	f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 9450)
+
+@test function examinationsPlayerAiActiveAbstractSaveMigrationAndAnnualIdempotency()
+	let active = new CivicFixture()
+	let inactive = new CivicFixture()
+	inactive.military.transferSettlement("district", "ai")
+	inactive.military.settlements[0].legalOwnerId = "ai"
+	inactive.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "unloaded", "district", 50, 50, 40, 1))
+	inactive.resources.owner = "ai"
+	active.examinations()
+	inactive.examinations()
+	active.military.activeRegionId = "europe"
+	inactive.military.activeRegionId = "unloaded"
+	inactive.military.settlements[0].projectMilitary = false
+	let taxDay = 365 - (active.day mod 365)
+	for elapsed = 1 to taxDay
+		active.advance(elapsed)
+	inactive.advance(taxDay)
+	active.military.civic.states[0].taxesCollected.assertEquals(9450)
+	inactive.military.civic.states[0].taxesCollected.assertEquals(9450)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[1])
+	active.trade.findMarket("district", "cloth").money.assertEquals(inactive.trade.findMarket("district", "cloth").money)
+	let saved = active.military.snapshot()
+	let treasury = active.campaign.countries.treasury[0]
+	let liquid = active.trade.findMarket("district", "cloth").money
+	active.military.restore(saved, false).assertTrue()
+	active.advance(taxDay)
+	active.military.snapshot().assertEquals(saved)
+	active.campaign.countries.treasury[0].assertEquals(treasury)
+	active.trade.findMarket("district", "cloth").money.assertEquals(liquid)
+	// Pre-civic saves have no annual history. First live day anchors them;
+	// restoration must never invent past operation or collection.
+	let cut = saved.indexOf("|u,")
+	(cut > 0).assertTrue()
+	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
+	active.military.restore(legacy, false).assertTrue()
+	active.military.civic.states[0].taxesCollected.assertEquals(0)
+	active.military.civic.states[0].lastDay.assertEquals(0)
+	active.runtime.advance(active.clock.currentDay)
+	active.military.civic.states[0].lastDay.assertEquals(active.clock.currentDay)
+	active.campaign.countries.treasury[0].assertEquals(treasury)
+	active.trade.findMarket("district", "cloth").money.assertEquals(liquid)
+	active.advance(taxDay + 365)
+	active.military.civic.states[0].taxesCollected.assertEquals(9450)
+	active.campaign.countries.treasury[0].assertEquals(treasury - 25 + 9450)

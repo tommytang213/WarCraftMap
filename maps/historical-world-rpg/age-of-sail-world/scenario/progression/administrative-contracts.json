@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "archiveNode": "chancery_archives",
   "municipalNode": "chartered_municipalities",
+  "examinationsNode": "civil_service_examinations",
   "rules": {
     "archiveUpkeepBasisPoints": 25,
     "minimumAdministration": 40
@@ -34,6 +35,15 @@
       },
       "metric": "municipal_tax_collection_efficiency",
       "bonusBasisPoints": 400
+    },
+    {
+      "nodeId": "civil_service_examinations",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_civil_service_examinations"
+      },
+      "metric": "records_tax_collection_efficiency",
+      "bonusBasisPoints": 500
     }
   ],
   "catalogSource": "scenario/progression/catalog.json"

@@ -1,0 +1,56 @@
+{
+  "format": "issue_573_focused_validation_v1",
+  "status": "pass",
+  "scope": "Uncommitted implementation in isolated issue-573 worktree; focused development checks only, not complete same-revision release evidence.",
+  "pinnedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "isolation": "Read-only inputs, network disabled, container-private build; cached standard-library source only, no predecessor execution evidence.",
+  "wurst": {
+    "initialCivicRegressionRun": {
+      "passed": 28,
+      "total": 28,
+      "log": "wurst.log.gz",
+      "note": "27 civic tests and an initial rollback fixture. The stronger real funded-collection rollback and final four-source below-cap assertions were re-executed in the final focused run."
+    },
+    "finalExaminationsRun": {
+      "passed": 6,
+      "total": 6,
+      "log": "examinations-final.log.gz",
+      "allRequiredComparisonProbesObserved": true
+    }
+  },
+  "python": {
+    "finalExaminationsGenerationEvidenceAndAdministrativeCivicPlanner": {
+      "passed": 27,
+      "total": 27,
+      "log": "final-python.log.gz"
+    },
+    "researchGeneration": {
+      "passed": 11,
+      "total": 11,
+      "log": "research-generation.log.gz"
+    },
+    "civicEvidenceProtocol": {
+      "passed": 5,
+      "total": 5,
+      "log": "civic-evidence.log.gz"
+    },
+    "surveyEvidenceProtocol": {
+      "passed": 5,
+      "total": 5,
+      "log": "survey-evidence.log.gz"
+    }
+  },
+  "additionalChecks": [
+    "Generated executable/runtime/provenance verification, including resealed-tamper rejection",
+    "Framework content and implementation boundary",
+    "git diff --check"
+  ],
+  "saveSchemaChange": false,
+  "releaseClosureEstablished": false,
+  "controllerRequired": [
+    "Complete pinned scenario suite on integrated main",
+    "Complete repository and framework validation",
+    "Regenerate release-blocker, runtime-acceptance and requirement-traceability audits using complete same-revision pinned evidence"
+  ],
+  "playerQaRequired": false
+}

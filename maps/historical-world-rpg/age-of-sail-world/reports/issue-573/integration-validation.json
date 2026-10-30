@@ -1,0 +1,133 @@
+{
+  "auditRefresh": {
+    "examinationsClosureFindingRetained": true,
+    "mode": "source_only",
+    "runtimeSourceStatic": "pass",
+    "sameSourceIdentity": true
+  },
+  "committed": false,
+  "completeExecutionEvidence": false,
+  "controllerRequired": [
+    "Complete repository/framework validation and pinned suite",
+    "Regenerate all three audits with complete same-revision evidence on integrated main"
+  ],
+  "diffChecks": "pass",
+  "format": "issue_573_integration_validation_v1",
+  "frameworkBoundary": "pass",
+  "generatedSourceAndMetadataVerification": "pass",
+  "pinnedWurst": {
+    "comparisonProbes": {
+      "civil_service_examinations": [
+        "administrative_adoption",
+        "administrative_advance",
+        "administrative_collect",
+        "administrative_pay",
+        "administrative_skill",
+        "agriculture_clock",
+        "appoint",
+        "civic_clock",
+        "civic_diffusion",
+        "civic_disease",
+        "civic_registration",
+        "dispatch",
+        "dispatch_completion",
+        "isolation_care",
+        "land_pay",
+        "medical_snapshot",
+        "naval_snapshot",
+        "research",
+        "rpg_registration",
+        "treasure_definitions",
+        "voyage_resolve"
+      ],
+      "clinical_records": [
+        "administrative_action",
+        "administrative_adoption",
+        "administrative_advance",
+        "administrative_pay",
+        "administrative_skill",
+        "agriculture_clock",
+        "appoint",
+        "case_records",
+        "civic_clock",
+        "civic_diffusion",
+        "civic_disease",
+        "civic_registration",
+        "civic_trade_budget",
+        "dispatch",
+        "dispatch_completion",
+        "isolation_care",
+        "land_pay",
+        "medical_restore",
+        "medical_snapshot",
+        "naval_restore",
+        "naval_snapshot",
+        "research",
+        "rpg_registration",
+        "treasure_definitions",
+        "voyage_resolve"
+      ],
+      "pest_hospitals": [
+        "administrative_action",
+        "administrative_adoption",
+        "administrative_advance",
+        "administrative_pay",
+        "administrative_skill",
+        "agriculture_clock",
+        "appoint",
+        "case_records",
+        "civic_clock",
+        "civic_diffusion",
+        "civic_disease",
+        "civic_registration",
+        "dispatch",
+        "dispatch_completion",
+        "isolation_care",
+        "land_pay",
+        "medical_restore",
+        "medical_snapshot",
+        "naval_restore",
+        "naval_snapshot",
+        "research",
+        "rpg_registration",
+        "treasure_definitions",
+        "voyage_resolve"
+      ]
+    },
+    "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "discovered": 64,
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "isolation": "Default non-root user; network disabled; inputs mounted read-only; compilation in container-private /tmp. Cached standard-library source only; no predecessor compiled output or execution evidence.",
+    "log": "integration-wurst.log.gz",
+    "passed": 64,
+    "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+    "suites": [
+      "CivicGovernanceTests",
+      "MedicalCareTests",
+      "CampaignLoadTransactionTests"
+    ]
+  },
+  "playerQARequired": false,
+  "preservedStreams": [
+    "Civil Service Examinations local records administration",
+    "Funded local isolation care and clinical records"
+  ],
+  "python": {
+    "finalPassingTests": 133,
+    "focusedConsumerGenerationAndEvidence": 44,
+    "releaseBlockerAudit": 10,
+    "repair": "The release and runtime suites each initially reported one stale checked-in audit. All three source-only reports were regenerated; both affected freshness tests then passed. All other tests passed on the initial run.",
+    "requirementTraceability": 54,
+    "runtimeAcceptance": 25,
+    "traceabilityLog": "integration-traceability-tests.log.gz"
+  },
+  "releaseClosureEstablished": false,
+  "resolvedConflictPaths": 7,
+  "scope": "Conflict repair after the supplied main merge; current worktree sources, focused validation only.",
+  "sourceIdentity": {
+    "sourceRevision": "10a2c93d298f183a13f9a6e4782695aa66ea82a9",
+    "sourceTreeSha256": "55c5f43339d8a0a7238d2714ca925c64e888b106cc8ef7c659b5c6adfc3fe8d8"
+  },
+  "status": "pass",
+  "unmergedPaths": 0
+}

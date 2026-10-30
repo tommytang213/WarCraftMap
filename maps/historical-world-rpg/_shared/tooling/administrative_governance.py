@@ -11,11 +11,12 @@ def configuration(project, world):
     catalogue = json.loads(source.read_text())
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     authored = {n['id']: n for n in catalogue['technologies'] + catalogue['institutions']}
-    if data['schemaVersion'] != 1 or len(data['effects']) != 2:
+    if data['schemaVersion'] != 1 or len(data['effects']) != 3:
         raise ValueError('administrative contracts: invalid schema/effects')
-    for effect, node_key, kind, metric in zip(data['effects'], ('archiveNode', 'municipalNode'),
-                                           ('modifier', 'policy'),
-                                           ('archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency')):
+    for effect, node_key, kind, metric in zip(data['effects'], ('archiveNode', 'municipalNode', 'examinationsNode'),
+                                           ('modifier', 'policy', 'modifier'),
+                                           ('archive_tax_collection_efficiency', 'municipal_tax_collection_efficiency',
+                                            'records_tax_collection_efficiency')):
         node = nodes[data[node_key]]
         if (effect['nodeId'] != node['id'] or effect['unlock'] not in node['unlocks']
                 or effect['unlock']['kind'] != kind or effect['metric'] != metric
@@ -69,6 +70,56 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     if (not REQUIRED_TESTS <= passed or comparative not in coverage.get('administrative_contracts', [])
             or not any(r['id'] == rollback and r['status'] == 'pass' for r in execution['tests'])):
         return set()
-    world = json.loads((project / 'scenario/world/world.json').read_text())
-    _, effects, _, _ = configuration(project, world)
-    return {(e['unlock']['kind'], e['unlock']['contentId']) for e in effects}
+    try:
+        world = json.loads((project / 'scenario/world/world.json').read_text())
+        lines, effects, _, _ = configuration(project, world)
+    except (ValueError, OSError, KeyError, TypeError):
+        return set()
+    # Examinations has its own exact comparison and probe requirements below.
+    result = {(e['unlock']['kind'], e['unlock']['contentId']) for e in effects[:2]}
+    observed = execution['productionCoverage']['tests']
+    examination = effects[2]
+    comparison = prefix + EXAMINATIONS_COMPARISON
+    if (EXAMINATIONS_REQUIRED_TESTS <= passed
+            and comparison in coverage.get('civil_service_examinations', [])
+            and EXAMINATIONS_PROBES <= set(observed.get(comparison, []))
+            and any(r['id'] == EXAMINATIONS_ROLLBACK and r['status'] == 'pass' for r in execution['tests'])
+            and examination == EXAMINATIONS_EFFECT
+            and {'\tledger.archiveUpkeepBasisPoints = 25', '\tledger.minimumAdministration = 40'} <= set(lines)):
+        result.add(('modifier', 'progression_civil_service_examinations'))
+    return result
+
+
+EXAMINATIONS_EFFECT = {
+    'nodeId': 'civil_service_examinations',
+    'unlock': {'kind': 'modifier', 'contentId': 'progression_civil_service_examinations'},
+    'metric': 'records_tax_collection_efficiency', 'bonusBasisPoints': 500,
+}
+EXAMINATIONS_COMPARISON = 'examinationsRegisteredResearchMatchedControlCollectsFundedLocalRevenue'
+EXAMINATIONS_REQUIRED_TESTS = {
+    EXAMINATIONS_COMPARISON,
+    'examinationsSharedBillAdditiveLayersAndDuplicateGrantsStayBounded',
+    'examinationsCurrentQualificationFundingAndLiquidityGateCollection',
+    'examinationsReplacementCaptureAndRecaptureReevaluateCurrentAuthority',
+    'examinationsPlayerAiActiveAbstractSaveMigrationAndAnnualIdempotency',
+}
+EXAMINATIONS_ROLLBACK = 'wurst/CampaignLoadTransactionTests.wurst:lateLoadFailureRestoresExaminationsCollectionTreasuryLiquidityAndAnnualAccounting'
+EXAMINATIONS_PROBES = {'civic_registration', 'research', 'dispatch', 'administrative_skill',
+                       'administrative_advance', 'administrative_pay', 'administrative_collect', 'civic_clock'}
+
+
+def verify_registration(project, world, source, catalog):
+    """Executable rules and typed metadata must match the scenario, even if resealed."""
+    lines, effects, _, _ = configuration(project, world)
+    registrations = [f'\tresearch.register(new CivicEffect({json.dumps(e["unlock"]["kind"])}, '
+                     f'{json.dumps(e["unlock"]["contentId"])}, {json.dumps(e["metric"])}, '
+                     f'{e["bonusBasisPoints"]}))' for e in effects]
+    metrics = {e['metric'] for e in effects}
+    actual = [line for line in source.splitlines()
+              if line.startswith(('\tledger.archiveUpkeepBasisPoints =', '\tledger.minimumAdministration =',
+                                  '\tledger.municipalNode =', '\tledger.municipalMinimumUrbanization ='))
+              or (line.startswith('\tresearch.register(new CivicEffect(')
+                  and any(json.dumps(metric) in line for metric in metrics))]
+    if (actual != lines + registrations
+            or [e for e in catalog.get('effects', []) if e['metric'] in metrics] != effects):
+        raise ValueError('administrative contracts: executable or runtime registration differs from scenario')
