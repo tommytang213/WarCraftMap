@@ -823,3 +823,60 @@ After integration the controller must run the complete pinned suite and regenera
 release-blocker, runtime-acceptance and requirement-traceability audits on the new
 main revision. Focused development evidence leaves both findings blocked until
 that production evidence passes. No player QA is required.
+
+## Codified Law and Overseas Colonial Councils local revenue (#585)
+
+`scenario/progression/local-revenue-contracts.json` owns two distinct consumers.
+Completed `codified_law` → `modifier:progression_codified_law` contributes 500 bp
+through the existing funded records service. Current lawful control, a serving
+local official of the controller, matching district jurisdiction, positive capacity
+and Administration ≥40 are required. Law, Archives and Examinations share one
+annual 25 bp records-operation bill, paid before annual collection.
+
+Completed `colonial_councils` → `policy:progression_colonial_councils` enables an
+explicit `/civic council DISTRICT` choice. It retains Archives and the catalogue's
+16% adoption urbanization requirement. Adoption and operation require a qualified
+overseas administrative district. The scenario authors directed Lisbon–Goa and
+Goa–Malacca maritime connections using the existing port and Indian Ocean/strait
+geography evidence. These are possible administrative connections, not claims of
+1450 colonial ownership. Both endpoints must currently have the same lawful
+controller, serving local offices and accessible stocked, unblocked markets;
+the recipient must have Administration ≥40. Regional separation, a visit,
+occupation or an authored connection by itself cannot grant colonial authority.
+Other overseas districts remain unsupported until their connections are authored.
+
+Enactment atomically charges ceil(1% of normal annual district tax) plus
+ceil(0.5%) prepaid annual upkeep. A 90-day transition precedes the first funded
+365-day interval. Renewals prepay the next interval; a failed renewal contributes
+zero until a later successful payment buys future operation. Access, authority,
+research and urbanization are checked again at collection. `/civic council-repeal`
+clears the choice without a refund. Research never enacts a council, changes
+sovereignty or ownership, grants allegiance, or appoints/replaces an official.
+Capture/recapture clears council choice, transition and prepaid funding. Official
+replacement rechecks the new official without duplicating the bill or policy.
+
+All compatible sources add once to the existing relative collection-efficiency
+bucket before final rounding. At capacity 10,000 and 9,000 bp base collection,
+isolated operating Law collects 9,450 and isolated operating Councils 9,360,
+before service expenses. Council operation can remain prepaid while the separate
+records bill is unaffordable; this does not grant a records contribution. Actual
+receipts are capped at normal taxable capacity and withdrawn from existing local
+market money. Research, command and civic inspection views expose entitlements,
+requirements, bills, deadlines, funding and actual cumulative receipts.
+
+Military/settlement snapshot v22 adds mandatory `C` records keyed by stable
+district and controller IDs. Each record stores council choice, ready day and
+funded-through day. v1–v21 saves migrate missing councils inactive while retaining
+existing civic, municipal, medical, administrator and economic state. Duplicate,
+unknown, foreign-controller, missing v22 or impossible deadline records reject
+before mutation. Staged ledger forks preserve immutable connection definitions;
+late campaign-load failure rolls back council funding, annual accounting, actual
+money and research together. Object representations never own these records.
+
+Each identity has its own registered-research production comparison and minimum
+observed-call requirements. Focused development runs cannot close release
+findings. The controller must run complete pinned execution and repository and
+framework validation after integration, then regenerate release-blocker,
+runtime-acceptance and requirement-traceability reports on the new main revision.
+Each finding closes only with its own current verified evidence; no player QA
+is required.

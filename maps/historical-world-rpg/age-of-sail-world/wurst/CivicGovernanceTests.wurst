@@ -90,6 +90,8 @@ public class CivicFixture
 		military.civic.recordsDailyMoney = definitions.recordsDailyMoney
 		military.civic.recordsDailyMaterials = definitions.recordsDailyMaterials
 		military.civic.recordsGood = definitions.recordsGood
+		military.civic.councilNode = definitions.councilNode
+		military.civic.councilMinimumUrbanization = definitions.councilMinimumUrbanization
 		military.civic.municipalNode = definitions.municipalNode
 		military.civic.municipalMinimumUrbanization = definitions.municipalMinimumUrbanization
 		destroy definitions
@@ -136,6 +138,22 @@ public class CivicFixture
 	function examinations()
 		examinationsPrerequisites()
 		unlock("civil_service_examinations")
+
+	function lawPrerequisites()
+		rpg.restoreState(initial + "|u," + resources.owner + ",municipal_charters").assertTrue()
+		rpg.reconcile(resources.owner)
+		military.civic.districts[0].annualTax = 10000
+	function councilNetwork()
+		military.civic.districts[0].annualTax = 10000
+		military.civic.addCouncilLink("home", "district")
+		military.settlements[0].regionId = "overseas"
+		military.registerSettlement(new SettlementRuntimeState("home", resources.owner, "europe", 'htow', 'hfoo', 30, 20, 10000, 50, 0., 0.))
+		military.appoint("home", new AdministratorState("home_clerk", "Clerk", "Administrator", resources.owner, "europe", "home", 50, 50, 40, 1))
+		trade.registerMarket(new RuntimeMarket("home", "cloth", 1000, 100000, 10, 10))
+	function councilsPrerequisites()
+		councilNetwork()
+		unlock("professional_bureaucracy")
+		unlock("chancery_archives")
 
 @test function civicRegisteredResearchAndActionsChargeOnlyTheExactAuthoritativeBills()
 	let f = new CivicFixture()
@@ -282,7 +300,7 @@ public class CivicFixture
 	f.military.transferSettlement("district", "player")
 	f.military.civic.states[0].policyOwner.assertEquals("")
 	// v1-v10 contain no civic ledger; migration never grants completed projects.
-	let cut = saved.indexOf("|u,")
+	let cut = saved.indexOf("|C,")
 	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
 	f.military.restore(legacy, false).assertTrue()
 	f.military.civic.states[0].surveyed.assertFalse()
@@ -376,10 +394,10 @@ public class CivicFixture
 	ship.navigation.elapsedDays.assertEquals(3)
 	f.military.civic.states[0].diseaseAvoided.assertEquals(3)
 	let saved = f.military.snapshot()
-	saved.startsWith("v21|").assertTrue()
+	saved.startsWith("v22|").assertTrue()
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
-	let cut = saved.indexOf("|u,")
+	let cut = saved.indexOf("|C,")
 	// Truncated current saves cannot silently discard paid civic projects.
 	f.military.restore(SubString(saved, 0, cut), false).assertFalse()
 	f.military.snapshot().assertEquals(saved)
@@ -533,7 +551,7 @@ public class CivicFixture
 	active.military.restore(saved + record, false).assertFalse()
 	active.military.restore(saved.replace(record, "|u,district,foreign,1,1,20"), false).assertFalse()
 	active.military.snapshot().assertEquals(saved)
-	let legacy = saved.replace("v21|", "v17|").replace(record, "")
+	let legacy = saved.replace("v22|", "v17|").replace(record, "")
 	active.military.restore(legacy, false).assertTrue()
 	active.military.civic.states[0].municipalOwner.assertEquals("")
 	active.military.civic.states[0].urbanization.assertEquals(20)
@@ -1144,7 +1162,7 @@ public class CivicFixture
 	active.trade.findMarket("district", "cloth").money.assertEquals(liquid)
 	// Pre-civic saves have no annual history. First live day anchors them;
 	// restoration must never invent past operation or collection.
-	let cut = saved.indexOf("|u,")
+	let cut = saved.indexOf("|C,")
 	(cut > 0).assertTrue()
 	let legacy = "v10" + SubString(saved, saved.indexOf("|"), cut)
 	active.military.restore(legacy, false).assertTrue()
