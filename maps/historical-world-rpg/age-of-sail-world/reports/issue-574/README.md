@@ -64,3 +64,20 @@ source validation also pass.
 The original pinned Wurst transcript above predates this integration repair;
 the controller must obtain fresh complete-suite evidence for the final source
 digest. No commits, remote changes or player QA were performed.
+
+## Execution-gate timing repair
+
+The controller's complete Python run reached 1,260 tests with one failure: a
+host-dependent terrain generation timeout preempted the execution-failure
+packaging regression. The execution-gate fixture now supplies a deterministic
+clock only to the terrain generator while retaining real generation, validation,
+typechecking and the execution gate. Execution timeouts use their normal clock.
+Production terrain budgets are unchanged; a new deterministic terrain regression
+also verifies that an over-budget generation still fails.
+
+Fresh focused runs pass **99 distinct Python tests**, including all 23 execution
+tests and all seven Europe terrain tests. Results and compressed transcripts are
+recorded in `execution-gate-repair-validation.json`. The execution-gate tests use
+the synthetic compiler protocol; these developer checks are not pinned Wurst
+execution or release closure evidence. Complete repository validation, pinned
+Wurst execution and all three integrated-main audits remain with the controller.
