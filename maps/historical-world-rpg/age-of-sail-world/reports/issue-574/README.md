@@ -81,3 +81,25 @@ recorded in `execution-gate-repair-validation.json`. The execution-gate tests us
 the synthetic compiler protocol; these developer checks are not pinned Wurst
 execution or release closure evidence. Complete repository validation, pinned
 Wurst execution and all three integrated-main audits remain with the controller.
+
+## Integrated audit freshness repair
+
+The next complete validation passed 1,259 of 1,261 Python tests; its two failures
+identified stale release-blocker and runtime-acceptance source snapshots. All
+three audit snapshots now record integrated revision
+`06d7032585920fb346e730d7b92fd7de092764db` and source digest
+`0e0a5d727f46ada6f50546d636a566c996c996f5f5bb51efd2999461131ecb09`.
+Only source identity fields changed. Their existing human reports remain current.
+
+Fresh focused validation passes **162 Python tests**: 73 navigation, coastal
+evidence, science, research generation and save-compatibility tests; 79 runtime
+acceptance and requirement-traceability tests; and ten release-blocker tests.
+Both previously failing freshness checks pass. Commands, compressed transcripts
+and hashes are in `audit-freshness-repair-validation.json`.
+
+These are source-only audit snapshots and focused developer checks. Existing
+release blockers, including Coastal Triangulation pending complete pinned
+evidence, remain explicit. Complete repository/framework and pinned Wurst
+validation, followed by integrated-main evidence regeneration, remain with the
+controller. No gameplay implementation, gate, or player validation requirement
+changed during this repair.
