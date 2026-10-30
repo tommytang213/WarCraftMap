@@ -1,0 +1,70 @@
+{
+  "format": "warcraftmap_focused_developer_validation_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosure": false,
+  "sourceIdentity": {
+    "sourceRevision": "368f4a74999b9a3b21ab6b9777e832b86cfd7917",
+    "sourceTreeSha256": "5cd4bac03a053a73bc3362c4bc35b0b6c50c4a8e98c5a9a99efde071b9b04234"
+  },
+  "repair": "Construct a genuine v10 civic/voyage fixture without v22 source records; retain mixed-version rejection and rollback checks. Production code unchanged.",
+  "wurst": {
+    "toolchainImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+    "command": "/home/wurstuser/.wurst/grill test",
+    "testsPassed": 72,
+    "suites": {
+      "CivicGovernanceTests": 27,
+      "CoastalNavigationTests": 6,
+      "NavigationEfficiencyTests": 8,
+      "ScienceExplorationTests": 29,
+      "FrameworkConformanceTests": 2
+    },
+    "network": "none",
+    "inputs": "Read-only fresh source assembly and existing /tmp standard-library cache; compilation in container-private /tmp.",
+    "productionProbes": "Not instrumented; focused execution is not release closure evidence."
+  },
+  "python": {
+    "distinctTestsPassed": 173,
+    "command": "python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p PATTERN",
+    "patterns": {
+      "test_*navigation*.py": 48,
+      "test_coastal_binding_evidence.py": 5,
+      "test_science_exploration.py": 5,
+      "test_release_save_compatibility.py": 6,
+      "test_civic_governance.py": 4,
+      "test_civic_binding_evidence.py": 5,
+      "test_research_generation.py": 11,
+      "test_runtime_acceptance.py": 25,
+      "test_release_blocker_audit.py": 10,
+      "test_requirement_traceability.py": 54
+    }
+  },
+  "generatedVerification": "pass",
+  "frameworkBoundary": "pass",
+  "diffChecks": "pass",
+  "artifacts": {
+    "civic-migration-repair-wurst.log.gz": {
+      "sha256": "d4cca9a29edccf69954441af1286cf41f9dae1aa7c2dea09ad657d03088c7e0f",
+      "transcriptSha256": "145c9b24269c97942704b384adf124f78e00074651456d632d1418f84697f276"
+    },
+    "civic-migration-repair-runtime.log.gz": {
+      "sha256": "dc33881087a626c280a1a61a1b14aaf6d3f6a9beca8cda82fec9fe4e510ae659",
+      "transcriptSha256": "8b42cb83d4dfb68e524ffd6070da746c71101e4dc6c955785eddaa51486df332"
+    },
+    "civic-migration-repair-release.log.gz": {
+      "sha256": "4712f8cde4c19c1f22cb35c367ba177e841d5c015d8e75a51ca79869933edbb2",
+      "transcriptSha256": "5a091337c19c2ed3ace737bbb4b5f02f43c474563b416da74dd4621e71d9b7d4"
+    },
+    "civic-migration-repair-traceability.log.gz": {
+      "sha256": "7fab95aa89aba1d18a3adc8ee02a72585d2cefd57bfcfcee39be1b704f2cbd96",
+      "transcriptSha256": "612cb8aa0ffd19de42bcbfb410c92c0ecf93d36f7e7ca3273c206be4efb4765c"
+    }
+  },
+  "auditRegeneration": "All three source-only audit snapshots refreshed; existing blockers retained.",
+  "deferred": [
+    "Complete repository/framework validation",
+    "Complete pinned Wurst suite",
+    "Integrated-main release-blocker, runtime-acceptance and requirement-traceability evidence"
+  ]
+}

@@ -303,7 +303,7 @@ import WarcraftRpgRuntime
 		active.campaign.countries.treasury[0].assertEquals(treasury)
 	let state = active.military.civic.states[0]
 	let record = "|C,district,player," + I2S(state.councilReady) + "," + I2S(state.councilThrough)
-	let legacy = saved.replace("v22|", "v21|").replace(record, "")
+	let legacy = saved.replace("v23|", "v21|").replace(record, "")
 	active.military.restore(legacy, false).assertTrue()
 	active.military.civic.states[0].councilOwner.assertEquals("")
 	active.military.civic.states[0].councilThrough.assertEquals(0)

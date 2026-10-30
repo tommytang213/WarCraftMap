@@ -1,0 +1,221 @@
+{
+  "format": "issue_585_integration_validation_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosureEstablished": false,
+  "sourceIdentity": {
+    "sourceRevision": "7ffd7568911df63d25869cfa1cf49ab23ba38907",
+    "sourceTreeSha256": "dccae4dd8ef7d23917c74d28aa7a3d35e8bd694394534aec8ade899962816b73"
+  },
+  "repair": "Resolve five merge conflicts preserving revenue and coastal navigation. Military v23 requires both domains; independent v22 layouts preserve existing state and migrate the absent domain inactive. Update current-schema fixtures and add a combined migration regression.",
+  "saveSchema": {
+    "current": 23,
+    "supportedLegacySources": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ]
+  },
+  "wurst": {
+    "passed": 121,
+    "total": 121,
+    "suites": {
+      "wurst/CampaignLoadTransactionTests.wurst": 1,
+      "wurst/CivicGovernanceTests.wurst": 27,
+      "wurst/CoastalNavigationTests.wurst": 7,
+      "wurst/FrameworkConformanceTests.wurst": 2,
+      "wurst/LocalRevenueTests.wurst": 8,
+      "wurst/NavigationEfficiencyTests.wurst": 8,
+      "wurst/ScienceExplorationTests.wurst": 29,
+      "wurst/TreasureResolutionTests.wurst": 10,
+      "wurst/TreasureVectorsTests.wurst": 28,
+      "wurst/WC3CompatibilityCompileFixture.wurst": 1
+    },
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "verifiedCompilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+    "isolation": "Offline pinned container with read-only fresh source assembly and cached standard-library inputs. Compilation in container-private /tmp. No predecessor execution artifacts reused.",
+    "productionComparisons": {
+      "codified_law": {
+        "comparison": "lawRegisteredResearchMatchedControlCollectsPaidRevenue",
+        "requiredProbes": [
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_advance"
+        ],
+        "allRequiredObserved": true
+      },
+      "colonial_councils": {
+        "comparison": "councilsRegisteredResearchMatchedControlRequiresPaidElection",
+        "requiredProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_advance"
+        ],
+        "allRequiredObserved": true
+      }
+    }
+  },
+  "python": {
+    "uniqueSelectedTestsPassed": 202,
+    "patterns": {
+      "test_local_revenue.py": {
+        "passed": 7,
+        "status": "pass"
+      },
+      "test_release_save_compatibility.py": {
+        "passed": 6,
+        "status": "pass"
+      },
+      "test_civic_binding_evidence.py": {
+        "passed": 5,
+        "status": "pass"
+      },
+      "test_research_generation.py": {
+        "passed": 11,
+        "status": "pass"
+      },
+      "test_administrative_contracts.py": {
+        "passed": 4,
+        "status": "pass"
+      },
+      "test_wurst_execution.py": {
+        "passed": 23,
+        "status": "pass"
+      },
+      "test_*navigation*.py": {
+        "passed": 48,
+        "status": "pass"
+      },
+      "test_coastal_binding_evidence.py": {
+        "passed": 5,
+        "status": "pass"
+      },
+      "test_civic_governance.py": {
+        "passed": 4,
+        "status": "pass"
+      },
+      "test_release_blocker_audit.py": {
+        "passed": 10,
+        "status": "pass"
+      },
+      "test_runtime_acceptance.py": {
+        "passed": 25,
+        "status": "pass"
+      },
+      "test_requirement_traceability.py": {
+        "passed": 54,
+        "status": "pass"
+      }
+    },
+    "syntheticFixtureNote": "Python execution-protocol tests use deliberately failing synthetic compilers to verify evidence rejection and packaging gates; they do not establish pinned gameplay execution."
+  },
+  "generatedVerification": "Fresh generate/verify_generated passed for scenario, executable and exact consumer metadata.",
+  "frameworkBoundary": "pass",
+  "audits": {
+    "kind": "source-only",
+    "refreshed": [
+      "release-blocker",
+      "runtime-acceptance",
+      "requirement-traceability"
+    ],
+    "codifiedLawFindingRetained": true,
+    "colonialCouncilsFindingRetained": true,
+    "releaseClosure": false
+  },
+  "controllerRequired": [
+    "Complete repository/framework validation and pinned Wurst execution after integration",
+    "Regenerate all three audits on the new main revision using its own verified complete evidence"
+  ],
+  "playerQaRequired": false,
+  "artifacts": {
+    "integration-wurst.log.gz": {
+      "sha256": "53b0530a227249622865e5a6c010e216f31b54470855fc3162ca697b0360e85e",
+      "uncompressedSha256": "408ec0b893d810394eabdc644a801f60ebd885a76b0c9c61b11bda3fc6385b72"
+    },
+    "integration-python.log.gz": {
+      "sha256": "8e95dc7cc030601d37fb0216edfe3a069ac55f0d48dbeeaacd0284d2da9654c3",
+      "uncompressedSha256": "8f1bda9445748f3824417162dc4431217a004a4bfd063d3ef1a2dbeadd1b5521"
+    }
+  }
+}

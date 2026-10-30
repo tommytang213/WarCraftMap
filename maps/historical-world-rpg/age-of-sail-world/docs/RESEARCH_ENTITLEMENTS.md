@@ -101,3 +101,11 @@ Issue #522 binds `(modifier, progression_cast_cannon)` to qualified heavy
 shipboard gunfire through combat catalogue v3. See
 [the Cast Cannon contract](CAST_CANNON_COMBAT.md) for its exact rating, weapon
 whitelist, activation, stacking and save compatibility rules.
+
+Issue #574 binds `(modifier, progression_coastal_triangulation)` to qualified
+paid coastal position finding in the existing voyage authority. Its 800 bp source
+requires a separately commissioned chart/bearing kit and explicitly usable coastal
+circuit days. See [Coastal Triangulation](COASTAL_TRIANGULATION.md). Release closure
+requires complete passing current-revision pinned evidence, including an isolated
+registered coastal-only comparison; generated binding metadata alone cannot close
+the release finding.

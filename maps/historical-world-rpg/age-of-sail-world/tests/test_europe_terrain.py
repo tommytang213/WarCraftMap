@@ -5,6 +5,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
 SHARED = PROJECT.parent / "_shared"
@@ -84,6 +85,14 @@ class EuropeTerrainTests(unittest.TestCase):
         broken["budgets"]["maximumCells"] = 1
         with self.assertRaisesRegex(terrain_generator.TerrainGenerationError, "budget exceeded: cellCount"):
             terrain_generator.generate(broken, self.regional)
+
+    def test_generation_time_budget_rejects_slow_builds(self):
+        with patch.object(terrain_generator, "time") as clock:
+            clock.perf_counter.side_effect = [
+                0.0, self.source["budgets"]["maximumGenerationMilliseconds"] / 1000 + 1.0]
+            with self.assertRaisesRegex(terrain_generator.TerrainGenerationError,
+                                        "budget exceeded: generation time"):
+                self.generate()
 
     def test_anchor_drift_and_undeclared_connection_are_rejected(self):
         broken = copy.deepcopy(self.source)

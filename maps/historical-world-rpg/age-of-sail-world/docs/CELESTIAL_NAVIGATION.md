@@ -88,3 +88,9 @@ actual campaign-day callbacks, active and unloaded authority, same-condition
 controls, interrupted travel, save/resume, old-save migration and late load
 failure. Pinned interpreter validation is developer evidence, not native-client
 launch evidence. Remaining release blockers stay open; no player QA is needed.
+
+Issue #574 extends this original single-source contract with typed source
+composition, coastal chart/bearing commissioning and military snapshot v22. See
+[Coastal Triangulation](COASTAL_TRIANGULATION.md) for the current composition,
+source-fraction persistence and v10–21 migration contract. Existing celestial
+prices, equipment and pending reservations are preserved.

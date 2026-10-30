@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "purpose": "Astronomical observations improve latitude and position finding during bounded station-return sea voyages.",
-  "designAuthority": "Issue #523 delegates routine effect design from the catalogue purpose. This is gameplay tuning, not a historical measurement.",
+  "designAuthority": "Issue #523 delegates routine effect design from the catalogue purpose. This is gameplay tuning, not a historical measurement. Issue #574 delegates coastal tuning to the historical balance authority.",
   "entitlement": {
     "kind": "modifier",
     "contentId": "progression_celestial_navigation"
@@ -21,7 +21,20 @@
       ],
       "days": 10,
       "dailyProvisions": 5,
-      "dailyPositionFindingProvisions": 2
+      "dailyPositionFindingProvisions": 2,
+      "coastalBearingDays": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "coastalBearings": "Charted Channel and adjacent North Sea shoreline bearings; each authored day remains within usable shoreline sight lines. No open-ocean observations."
     }
   ],
   "ships": [
@@ -37,7 +50,30 @@
       "stationPosition": [
         4160,
         -6720
-      ]
+      ],
+      "coastalBearingCapable": true
+    }
+  ],
+  "sources": [
+    {
+      "id": "celestial_navigation",
+      "entitlement": {
+        "kind": "modifier",
+        "contentId": "progression_celestial_navigation"
+      },
+      "reductionBasisPoints": 1000,
+      "equipmentSiteId": "",
+      "qualification": "astronomical_observation"
+    },
+    {
+      "id": "coastal_triangulation",
+      "entitlement": {
+        "kind": "modifier",
+        "contentId": "progression_coastal_triangulation"
+      },
+      "reductionBasisPoints": 800,
+      "equipmentSiteId": "channel_coastal_bearing_kit",
+      "qualification": "coastal_bearings"
     }
   ]
 }

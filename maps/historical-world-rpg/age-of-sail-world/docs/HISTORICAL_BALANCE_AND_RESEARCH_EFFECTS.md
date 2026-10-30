@@ -864,11 +864,14 @@ receipts are capped at normal taxable capacity and withdrawn from existing local
 market money. Research, command and civic inspection views expose entitlements,
 requirements, bills, deadlines, funding and actual cumulative receipts.
 
-Military/settlement snapshot v22 adds mandatory `C` records keyed by stable
+Military/settlement snapshot v23 combines navigation source attribution with mandatory `C` records keyed by stable
 district and controller IDs. Each record stores council choice, ready day and
-funded-through day. v1–v21 saves migrate missing councils inactive while retaining
-existing civic, municipal, medical, administrator and economic state. Duplicate,
-unknown, foreign-controller, missing v22 or impossible deadline records reject
+funded-through day. v1–v22 saves migrate missing councils inactive while retaining
+existing civic, municipal, medical, administrator and economic state. The independent
+v22 council layout retains councils and migrates missing coastal equipment and
+source attribution; the v22 navigation layout retains equipment and source
+fractions and migrates councils inactive. Duplicate,
+unknown, foreign-controller, missing v23 or impossible deadline records reject
 before mutation. Staged ledger forks preserve immutable connection definitions;
 late campaign-load failure rolls back council funding, annual accounting, actual
 money and research together. Object representations never own these records.
@@ -880,3 +883,13 @@ framework validation after integration, then regenerate release-blocker,
 runtime-acceptance and requirement-traceability reports on the new main revision.
 Each finding closes only with its own current verified evidence; no player QA
 is required.
+
+## Coastal position-finding tuning (issue #574)
+
+The delegated coastal consumer uses 800 bp of actual position-finding overhead,
+only on authored circuit days with usable shoreline bearings/charts and a
+compatible owned vessel. Its paid practical chart/bearing kit costs 120 treasury
+minor units, two existing cloth stock units and seven preparation days. This
+does not require later precision instruments or alter authored research gates.
+See [Coastal Triangulation](COASTAL_TRIANGULATION.md) for source composition,
+commissioning, persistence and the complete-evidence closure contract.

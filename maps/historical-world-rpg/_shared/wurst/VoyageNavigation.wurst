@@ -24,6 +24,32 @@ public class NavigationResearchEffects implements TechnologyEffectPort
 		else
 			destroy result
 
+/** Per-source fractions are attribution only. Only the common bucket refunds. */
+public class VoyageCredit
+	string sourceId
+	int remainder = 0
+	boolean restored = false
+	VoyageCredit next = null
+	construct(string sourceId)
+		this.sourceId = sourceId
+
+public class VoyageSource
+	string id
+	string kind
+	string contentId
+	int reductionBasisPoints
+	string equipmentSiteId
+	string qualification
+	string inspection = ""
+	VoyageSource next = null
+	construct(string id, string kind, string contentId, int reductionBasisPoints, string equipmentSiteId, string qualification)
+		this.id = id
+		this.kind = kind
+		this.contentId = contentId
+		this.reductionBasisPoints = reductionBasisPoints
+		this.equipmentSiteId = equipmentSiteId
+		this.qualification = qualification
+
 public class VoyageProgress
 	boolean equipment = false
 	string routeId = ""
@@ -31,6 +57,43 @@ public class VoyageProgress
 	int lastDay = 0
 	int reserved = 0
 	int creditBasisPoints = 0
+	VoyageCredit credits = null
+	function credit(string sourceId) returns VoyageCredit
+		var entry = credits
+		while entry != null
+			if entry.sourceId == sourceId
+				return entry
+			entry = entry.next
+		entry = new VoyageCredit(sourceId)
+		entry.next = credits
+		credits = entry
+		return entry
+	function fraction(string sourceId) returns int
+		var entry = credits
+		while entry != null
+			if entry.sourceId == sourceId
+				return entry.remainder
+			entry = entry.next
+		return 0
+	function sourceFractional() returns boolean
+		var entry = credits
+		while entry != null
+			if entry.remainder > 0
+				return true
+			entry = entry.next
+		return false
+	function sourceRecords(string forceId, VoyageSource first) returns string
+		var source = first
+		var result = ""
+		while source != null
+			result += "|x," + forceId + "," + source.id + "," + I2S(fraction(source.id))
+			source = source.next
+		return result
+	ondestroy
+		while credits != null
+			let following = credits.next
+			destroy credits
+			credits = following
 	boolean saved = false
 	function pending() returns boolean
 		return routeId != ""
@@ -54,6 +117,7 @@ public class VoyageRoute
 	int days
 	int dailyProvisions
 	int dailyPositionFindingProvisions
+	string coastalBearingDays = ""
 	VoyageRoute next = null
 	construct(string id, string mapId, string knownRegionId, int days, int dailyProvisions, int dailyPositionFindingProvisions)
 		this.id = id
@@ -70,6 +134,7 @@ public class VoyageShip
 	real stationX
 	real stationY
 	string routeIds
+	boolean coastalBearingCapable = false
 	VoyageShip next = null
 	construct(string forceId, int unitTypeId, string mapId, real stationX, real stationY, string routeIds)
 		this.forceId = forceId
@@ -84,6 +149,7 @@ public class VoyageContract
 	string contentId
 	int reductionBasisPoints
 	int equipmentMoneyCost
+	VoyageSource sources = null
 	VoyageRoute routes = null
 	VoyageShip ships = null
 	construct(string kind, string contentId, int reductionBasisPoints, int equipmentMoneyCost)
@@ -91,6 +157,16 @@ public class VoyageContract
 		this.contentId = contentId
 		this.reductionBasisPoints = reductionBasisPoints
 		this.equipmentMoneyCost = equipmentMoneyCost
+	function addSource(VoyageSource source)
+		source.next = sources
+		sources = source
+	function source(string id) returns VoyageSource
+		var source = sources
+		while source != null
+			if source.id == id
+				return source
+			source = source.next
+		return null
 	function addRoute(VoyageRoute route)
 		route.next = routes
 		routes = route
@@ -139,22 +215,44 @@ public class VoyageContract
 	/** Exact fixed point. Fractions survive interruption and repeated voyages;
 	 * no floating arithmetic, floor-per-callback loss or repeated-day credits. */
 	function resolve(VoyageProgress state, int day, boolean eligible) returns int
+		var qualified = ""
+		if eligible and state.equipment
+			var source = sources
+			while source != null
+				if source.qualification == "astronomical_observation"
+					qualified += "|" + source.id + "|"
+				source = source.next
+		return resolveSources(state, day, qualified)
+	function commitSource(VoyageProgress state, VoyageSource source, int amount)
+		let entry = state.credit(source.id)
+		entry.remainder = (entry.remainder + amount) mod 10000
+	function resolveSources(VoyageProgress state, int day, string qualified) returns int
 		if not state.pending() or day < state.lastDay
 			return 0
 		let route = route(state.routeId)
 		let elapsed = IMinBJ(day - state.lastDay, route.days - state.elapsedDays)
+		var credit = state.creditBasisPoints
+		for offset = 0 to elapsed - 1
+			var source = sources
+			while source != null
+				if qualified.contains("|" + source.id + "|") and (source.qualification != "coastal_bearings" or SubString(route.coastalBearingDays, state.elapsedDays + offset, state.elapsedDays + offset + 1) == "1")
+					let amount = route.dailyPositionFindingProvisions * source.reductionBasisPoints
+					commitSource(state, source, amount)
+					credit += amount
+				source = source.next
 		state.reserved -= elapsed * route.dailyProvisions
 		state.elapsedDays += elapsed
 		state.lastDay += elapsed
-		var credit = state.creditBasisPoints
-		if eligible and state.equipment
-			credit += elapsed * route.dailyPositionFindingProvisions * reductionBasisPoints
 		let released = credit div 10000
 		state.creditBasisPoints = credit mod 10000
 		if state.elapsedDays == route.days
 			state.interrupt()
 		return released
 	ondestroy
+		while sources != null
+			let following = sources.next
+			destroy sources
+			sources = following
 		while routes != null
 			let following = routes.next
 			destroy routes

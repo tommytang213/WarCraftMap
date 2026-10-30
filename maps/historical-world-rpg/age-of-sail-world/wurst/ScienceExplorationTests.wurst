@@ -18,7 +18,7 @@ import CampaignLoadTransactionTests
 import CampaignSaveManager
 import ScenarioData
 
-class ScienceTestResources implements ResearchCommandResources, CommandOutput
+public class ScienceTestResources implements ResearchCommandResources, CommandOutput
 	string owner = "player"
 	int balance = 100000
 	int researchYear = 1778
@@ -34,7 +34,7 @@ class ScienceTestResources implements ResearchCommandResources, CommandOutput
 	override function show(player recipient, string message)
 		output = message
 
-class ScienceFixture
+public class ScienceFixture
 	int day = 649041
 	ScienceTestResources resources = new ScienceTestResources()
 	ScienceResearchEffects effects = new ScienceResearchEffects(new UnboundResearchEffects())
@@ -268,8 +268,8 @@ class ScienceFixture
 	active.military.restore(saved).assertTrue()
 	active.military.snapshot().assertEquals(saved)
 	active.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
-	saved.startsWith("v22|").assertTrue()
-	active.military.restore(saved.replace("v22|", "v999|")).assertFalse()
+	saved.startsWith("v23|").assertTrue()
+	active.military.restore(saved.replace("v23|", "v999|")).assertFalse()
 	active.military.snapshot().assertEquals(saved)
 	active.military.validateSnapshot(saved, active.day + 9).assertFalse()
 	active.advance(17)
@@ -289,7 +289,7 @@ class ScienceFixture
 	var legacy = inactive.military.snapshot()
 	for i = 0 to inactive.military.science.count - 1
 		legacy = legacy.replace("|j," + inactive.military.science.sites[i].id + "," + inactive.military.science.states[i].record(), "")
-	legacy = legacy.replace("v22|", "v11|")
+	legacy = legacy.replace("v23|", "v11|")
 	inactive.military.restore(legacy).assertTrue()
 	for i = 0 to inactive.military.science.count - 1
 		inactive.military.science.states[i].equipmentOwner.assertEquals("")
