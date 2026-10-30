@@ -557,6 +557,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
             if component <= 0:
                 raise _fail("voyage station", "station is not a legal naval position")
         runtime["voyageNavigation"] = voyage_payload["catalog"]
+        runtime["voyageNavigationConsumers"] = voyage_payload["consumers"]
         combat_sources += [content_path(config.project, p) for p in voyage_payload["sources"]]
         combat_sources.append(Path(__file__).resolve().parents[1] / "engine/voyage_navigation.py")
         combat_sources.append(Path(__file__).resolve().parents[1] / "engine/navigation.py")
@@ -909,7 +910,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
                       for row in combat_payload['catalog']['researchEffects']} if combat_payload else set()
     if voyage_payload:
         entitlement = voyage_payload['catalog']['entitlement']
-        bound_research.add((entitlement['kind'], entitlement['contentId']))
+        bound_research.update((s['entitlement']['kind'], s['entitlement']['contentId']) for s in voyage_payload['catalog']['sources'])
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
@@ -1089,11 +1090,12 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
                                 cwd=config.project, text=True, capture_output=True, check=True)
         payload = json.loads(result.stdout)
         expected = payload["wurst"]
-        if json.loads((generated / GENERATED_DATA).read_text()).get("voyageNavigation") != payload["catalog"]:
+        if (json.loads((generated / GENERATED_DATA).read_text()).get("voyageNavigation") != payload["catalog"]
+                or json.loads((generated / GENERATED_DATA).read_text()).get("voyageNavigationConsumers") != payload["consumers"]):
             raise _fail("voyage bindings", "runtime payload differs from scenario")
         source = (generated / GENERATED_WURST).read_text()
         calls = lambda text: [line for line in text.splitlines() if
-            'new VoyageContract(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line]
+            'new VoyageContract(' in line or 'new VoyageSource(' in line or 'new VoyageRoute(' in line or 'contract.addRoute(' in line or 'contract.addShip(' in line or '.coastalBearingDays =' in line or '.coastalBearingCapable =' in line or ').inspection =' in line]
         if source.count(expected) != 1 or calls(source) != calls(expected):
             raise _fail("voyage bindings", "executable catalogue differs from scenario")
 

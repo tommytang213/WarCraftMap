@@ -222,7 +222,7 @@ class NavigationEfficiencyTests(unittest.TestCase):
             generate(config,generated)
             original_source=(generated/'ScenarioData.wurst').read_bytes()
             original_data=(generated/'scenario-runtime.json').read_bytes()
-            for mutation in ('magnitude','duplicate','payload'):
+            for mutation in ('magnitude','duplicate','payload','coastal_rate','coastal_identity','bearing_days','consumer_metadata'):
                 (generated/'ScenarioData.wurst').write_bytes(original_source)
                 (generated/'scenario-runtime.json').write_bytes(original_data)
                 source=original_source.decode()
@@ -230,7 +230,16 @@ class NavigationEfficiencyTests(unittest.TestCase):
                     source=source.replace('"progression_celestial_navigation", 1000, 120','"progression_celestial_navigation", 5000, 120')
                 if mutation=='duplicate':
                     source += '\npublic function badVoyageGrant()\n\tlet contract = new VoyageContract("modifier", "progression_celestial_navigation", 1000, 120)\n'
+                if mutation=='coastal_rate':
+                    source=source.replace('"progression_coastal_triangulation", 800', '"progression_coastal_triangulation", 801')
+                if mutation=='coastal_identity':
+                    source=source.replace('"progression_coastal_triangulation", 800', '"progression_pilot_books", 800')
+                if mutation=='bearing_days':
+                    source=source.replace('route0.coastalBearingDays = "1111111111"', 'route0.coastalBearingDays = "0000000000"')
                 (generated/'ScenarioData.wurst').write_text(source)
+                if mutation=='consumer_metadata':
+                    payload=json.loads(original_data); payload['voyageNavigationConsumers'][1]['reductionBasisPoints']=801
+                    (generated/'scenario-runtime.json').write_text(json.dumps(payload))
                 if mutation=='payload':
                     payload=json.loads(original_data); payload['voyageNavigation']['positionFindingReductionBasisPoints']=5000
                     (generated/'scenario-runtime.json').write_text(json.dumps(payload))

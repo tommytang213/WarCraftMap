@@ -774,3 +774,13 @@ After integration the controller must run the complete pinned suite and regenera
 release-blocker, runtime-acceptance and requirement-traceability audits on the new
 main revision. Focused development evidence leaves both findings blocked until
 that production evidence passes. No player QA is required.
+
+## Coastal position-finding tuning (issue #574)
+
+The delegated coastal consumer uses 800 bp of actual position-finding overhead,
+only on authored circuit days with usable shoreline bearings/charts and a
+compatible owned vessel. Its paid practical chart/bearing kit costs 120 treasury
+minor units, two existing cloth stock units and seven preparation days. This
+does not require later precision instruments or alter authored research gates.
+See [Coastal Triangulation](COASTAL_TRIANGULATION.md) for source composition,
+commissioning, persistence and the complete-evidence closure contract.

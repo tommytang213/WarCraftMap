@@ -1,0 +1,85 @@
+{
+  "format": "warcraftmap_focused_developer_validation_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosure": false,
+  "sourceIdentity": {
+    "sourceRevision": "5d19f04b18bec7f8707c6b4e076bc463aaeee2e2",
+    "sourceTreeSha256": "ea791442417169f7ff8b5a3424c6757b9b7b957617d8e329e0d8ad790c084391"
+  },
+  "toolchainImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "wurst": {
+    "testsPassed": 44,
+    "compilationErrors": 0,
+    "comparison": "wurst/CoastalNavigationTests.wurst:coastalOnlyRegisteredVoyageCommits92For100OverheadAgainstMatchedControl",
+    "requiredProbes": [
+      "dispatch",
+      "research",
+      "science_action",
+      "science_pay",
+      "science_registration",
+      "voyage_advance",
+      "voyage_commit",
+      "voyage_qualify",
+      "voyage_registration",
+      "voyage_resolve",
+      "voyage_start"
+    ],
+    "observedProbes": [
+      "administrative_pay",
+      "agriculture_clock",
+      "appoint",
+      "dispatch",
+      "land_equipment",
+      "land_pay",
+      "medical_snapshot",
+      "naval_snapshot",
+      "research",
+      "rpg_registration",
+      "science_action",
+      "science_advance",
+      "science_pay",
+      "science_registration",
+      "tradition_reconcile",
+      "treasure_definitions",
+      "voyage_advance",
+      "voyage_commit",
+      "voyage_qualify",
+      "voyage_registration",
+      "voyage_resolve",
+      "voyage_start"
+    ],
+    "logSha256": "098e4599d2d324fcb65d58340c8b70884335b44e890a905a120344ce883d1246"
+  },
+  "python": {
+    "distinctTestsPassed": 86,
+    "navigation": 48,
+    "scienceCompilation": 5,
+    "researchGeneration": 11,
+    "coastalEvidence": 5,
+    "barometricEvidence": 5,
+    "botanicalEvidence": 6,
+    "calculusEvidence": 6
+  },
+  "generatedVerification": "pass",
+  "deferred": [
+    "Complete pinned Wurst suite",
+    "Repository/framework validation",
+    "Integrated-main release-blocker audit",
+    "Integrated-main runtime-acceptance audit",
+    "Integrated-main requirement-traceability audit"
+  ],
+  "artifacts": {
+    "focused-wurst.log.gz": "e4eeddb927e057697a7b37e98bfd39d5d11c6bdb34e090d6f28603868b999c8b",
+    "python-navigation.log.gz": "911e52b5a0c8cce1f769439bf0a81f54a14c79ab1904daf775721510c84504e5",
+    "python-navigation-generation-final.log.gz": "16517def03f46d2222bae381a9acffd402f94083f7435fe5496d3cbac109c9c7",
+    "python-coastal-arithmetic.log.gz": "b6b9666c4c625b261ae9ae776624b6a0184e4c8382c3029f4fa505bde34210da",
+    "python-coastal-evidence.log.gz": "789becbf93084e1d2b9e1a436387ef966a479e1c07c6c563e75a3780a49e61ec",
+    "python-barometric-evidence.log.gz": "12707bc9526d635f13e1a564089fb77a109fde5b26d290d7873f7c0cd8f668e0",
+    "python-botanical-evidence.log.gz": "91ea86fcd52a09266e1e2f80212ffc8c8532a75dca7e5a00fcdc5ba3ee057e65",
+    "python-calculus-evidence.log.gz": "66b16fcd0a82bf619eccc14a3c2341636b359b610216b7a0396c466f5a0be533",
+    "python-science-compilation.log.gz": "7b09d3eb34728cfce285c1e5dd84f9f11b5af8ea73ba970b62b13db466198e0e",
+    "python-research-generation.log.gz": "757b93a4aca621f8f3597496a35203c0100efc374aceb802e76a10efd7cb7645",
+    "generated-verification.log.gz": "696c282482b91b9925e0ab9d523f251d02eb3377ea11d3ea79fb11285994264a"
+  }
+}

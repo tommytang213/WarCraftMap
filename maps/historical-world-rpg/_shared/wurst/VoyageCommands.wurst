@@ -54,7 +54,7 @@ public class VoyageCommand implements CommandHandler
 			output.show(sender, "Voyage requirements are not met.")
 
 public function registerVoyageCommands(CommandRegistry commands, PlayableCampaignState state) returns string
-	var problem = commands.register("voyage", "", "voyage FORCE ROUTE", "Begin a provisioned station-return sea voyage.", "Requires an owned supported ship, a known legal circuit and the full undiscounted provisions. Travel uses campaign days. Navigation research with purchased observation equipment reduces position-finding provisions only.", 2, 2, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "start"))
+	var problem = commands.register("voyage", "", "voyage FORCE ROUTE", "Begin a provisioned station-return sea voyage.", "Requires an owned supported ship, a known legal circuit and the full undiscounted provisions. Travel uses campaign days. Celestial observations and practical coastal bearings compose once in position-finding provisions only. Coastal research requires a paid chart/bearing kit: /science equip SITE. Inspect the vessel and science site for eligibility and savings.", 2, 2, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "start"))
 	if problem != ""
 		return problem
 	problem = commands.register("voyage-kit", "", "voyage-kit FORCE install|remove", "Purchase or remove astronomical observation equipment.", "Installation costs the authored price, requires an idle supported vessel and never follows from research. Removal grants no refund.", 2, 2, COMMAND_RELEASE, new VoyageCommand(state, commands.output, "kit"))

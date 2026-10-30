@@ -231,8 +231,8 @@
       "signature": "function startVoyage(string forceId, string routeId, string controllerId, int day, boolean destinationKnown) returns boolean"
     },
     "voyage_resolve": {
-      "path": "wurst/MilitarySettlementRuntime.wurst",
-      "signature": "function resolveVoyages(int day)"
+      "path": "wurst/VoyageNavigation.wurst",
+      "signature": "function resolveSources(VoyageProgress state, int day, string qualified) returns int"
     },
     "science_registration": {
       "path": "wurst/ScienceCampaignRuntime.wurst",
@@ -609,6 +609,18 @@
     "medical_restore": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function restore(string candidate, boolean project) returns boolean"
+    },
+    "voyage_qualify": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function qualifiedNavigationSources(RuntimeForce vessel, int day) returns string"
+    },
+    "voyage_advance": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function resolveVoyages(int day)"
+    },
+    "voyage_commit": {
+      "path": "wurst/VoyageNavigation.wurst",
+      "signature": "function commitSource(VoyageProgress state, VoyageSource source, int amount)"
     }
   },
   "systems": {
@@ -1030,6 +1042,19 @@
       "medical_snapshot",
       "medical_restore",
       "case_records"
+    ],
+    "coastal_navigation": [
+      "research",
+      "dispatch",
+      "science_registration",
+      "science_action",
+      "science_pay",
+      "voyage_registration",
+      "voyage_start",
+      "voyage_qualify",
+      "voyage_advance",
+      "voyage_resolve",
+      "voyage_commit"
     ]
   }
 }
