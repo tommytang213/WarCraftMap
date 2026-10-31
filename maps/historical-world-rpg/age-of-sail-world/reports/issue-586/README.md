@@ -67,3 +67,19 @@ research generation, goods and coastal navigation. Generation/verification and
 the shared boundary audit passed. See `integration-repair.json` and its compressed
 logs. These focused results do not replace the controller's complete validation
 or fresh main-revision closure audits.
+
+The subsequent validation repair updates the technology runtime manifest's
+industrial yield evidence from the old metric-only `rateAt` call to the actual
+fuel-compatible `rateFor` call. This removes the spurious static-readiness failure
+without changing production or relaxing the executable evidence gate. All three
+source-only audits were regenerated at integrated revision
+`8a120d5422bbba33c09e0f3613dcdebace6074e2`; their publication blockers remain
+explicit pending complete controller execution and artifact validation.
+
+Fresh Python checks passed: Coke discovery (19 tests, including imported Industry
+generation cases), Industry (16), runtime acceptance (25), requirement traceability
+(54), release-save compatibility (6), and release-blocker audit (10). The shared
+framework boundary audit and `git diff --check` passed. The `retry-*.log.gz` files
+record this repair's checks. Production Wurst code is unchanged by this repair;
+complete pinned Wurst and repository validation remain controller-owned. No
+predecessor artifacts were used to establish evidence for this source tree.
