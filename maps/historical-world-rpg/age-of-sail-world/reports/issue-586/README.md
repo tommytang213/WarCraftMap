@@ -102,3 +102,23 @@ boundary audit and `git diff --check` passed. See
 were read-only; the pinned container built in private `/tmp` as `wurstuser`.
 These are focused development results. Complete repository validation and fresh
 integrated-main closure audits remain assigned to the controller.
+
+The subsequent report-freshness repair preserves the integrated implementation
+and recovery fixture. The controller's complete Python run reported only two
+failures: release-blocker and runtime-acceptance snapshots still hashed the sources
+before the recovery repair. All three source-only audits have now been regenerated
+at `ec4776dd74ced62d7bdce8096fffe58442bfaf73`, with source hash
+`218ced8288766d261a27830533b44547bdfca1243775a49afb71bf4d43018409`.
+The runtime and release reports change only their recorded identity; traceability
+changes only its revision. Human report content and publication findings are
+unchanged. In particular, source-only regeneration does not claim Coke closure.
+Complete pinned execution, repository validation and post-merge closure audits
+remain controller-owned.
+
+Fresh focused validation passed **124 tests** across Coke/evidence (19, including
+imported Industry generation cases), Industry (16), runtime acceptance (25),
+release-blocker audit (10), and requirement traceability (54). Both reported
+freshness regressions also passed in a separate two-test rerun. The framework
+boundary audit and `git diff --check` passed. See `audit-freshness-repair.json`
+and `audit-freshness-*.log.gz`. This repair changes only audit/report outputs;
+production sources, tests and evidence gates remain intact.
