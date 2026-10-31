@@ -634,7 +634,7 @@ public class LoadFixture
 	f.military.atWar("england", "portugal").assertTrue()
 	f.military.settlements[0].legalOwnerId.assertEquals("free_port")
 	f.campaign.countries.treasury[f.campaign.countries.polityIndex("free_port")].assertEquals(777)
-	f.military.snapshot().startsWith("v22|").assertTrue()
+	f.military.snapshot().startsWith("v23|").assertTrue()
 	f.campaign.countries.captureState().startsWith("v2|").assertTrue()
 	let migrated = f.campaign.state.captureAuthoritativeState()
 	f.campaign.saves.save(SAVE_SLOT_MANUAL, 2, "migrated").assertTrue()
@@ -1357,3 +1357,76 @@ function legacyPirateFounding() returns string
 	f.military.civic.states[0].diseaseRemainder.assertEquals(8000)
 	f.military.civic.states[0].recordsDays.assertEquals(2)
 	f.campaign.countries.treasury[0].assertEquals(100)
+
+@test function lateLoadFailureRestoresLawCouncilFundingAndActualRevenue()
+	let f = new LoadFixture()
+	f.clock.endDay = 1000
+	f.clock.advanceTo(274).assertTrue()
+	let effects = new CivicResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new CivicLedger()
+	configureGeneratedCivic(definitions, effects, f.clock.currentDay)
+	f.military.civic.councilNode = definitions.councilNode
+	f.military.civic.councilMinimumUrbanization = definitions.councilMinimumUrbanization
+	destroy definitions
+	let law = new RuntimeTechnology("codified_law", "Codified Law", 1450, 1)
+	law.addUnlock("codified_law", "modifier", "progression_codified_law")
+	let archives = new RuntimeTechnology("chancery_archives", "Archives", 1450, 1)
+	archives.addUnlock("chancery_archives", "modifier", "progression_chancery_archives")
+	let councils = new RuntimeTechnology("colonial_councils", "Councils", 1450, 1)
+	councils.addUnlock("colonial_councils", "policy", "progression_colonial_councils")
+	f.rpg.technologies.register(law).assertTrue()
+	f.rpg.technologies.register(archives).assertTrue()
+	f.rpg.technologies.register(councils).assertTrue()
+	f.rpg.technologies.unlock("england", "codified_law", 1778, 1, 0, 0).assertTrue()
+	f.rpg.technologies.unlock("england", "chancery_archives", 1778, 1, 0, 0).assertTrue()
+	f.rpg.technologies.unlock("england", "colonial_councils", 1778, 1, 0, 0).assertTrue()
+	f.rpg.reconcile("england")
+	f.military.registerSettlement(new SettlementRuntimeState("home", "england", "overseas", 'htow', 'hfoo', 30, 20, 50, 50, 0., 0.))
+	f.military.appoint("home", new AdministratorState("home_clerk", "Clerk", "Administrator", "england", "overseas", "home", 50, 50, 40, 1))
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	f.extension.trade.registerMarket(new RuntimeMarket("home", "grain", 1000, 10000, 10, 10))
+	f.military.civic.register(new CivicDistrict("port", "province", 10000, true, 0, 0, 0, 0, 0, "grain", 1, 1000), f.clock.currentDay)
+	f.military.civic.configureAdministration("port", 16)
+	f.military.civic.addCouncilLink("home", "port")
+	let runtime = new CivicCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.civicRuntime = runtime
+	let market = f.extension.trade.findMarket("port", "grain")
+	market.money = 20000
+	runtime.act("england", "council", "port").assertEquals("")
+	let original = f.military.snapshot()
+	let clock = f.clock.captureState()
+	let treasury = f.campaign.countries.treasury[0]
+	f.clock.advanceTo(365).assertTrue()
+	f.military.civic.states[0].taxesCollected.assertEquals(10000)
+	f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 10000)
+	market.money.assertEquals(10000)
+	runtime.act("england", "council-repeal", "port").assertEquals("")
+	runtime.act("england", "council", "port").assertEquals("")
+	let candidate = f.campaign.state.captureAuthoritativeState()
+	f.military.restore(original, false).assertTrue()
+	f.clock.restoreState(clock).assertTrue()
+	f.campaign.countries.treasury[0] = treasury
+	market.money = 20000
+	f.extension.fail = true
+	f.rejectAndVerify(candidate)
+	f.extension.applications.assertEquals(1)
+	f.military.snapshot().assertEquals(original)
+	f.military.civic.states[0].councilOwner.assertEquals("england")
+	f.military.civic.states[0].councilReady.assertEquals(364)
+	f.military.civic.states[0].councilThrough.assertEquals(729)
+	f.military.civic.states[0].taxesCollected.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.extension.trade.findMarket("port", "grain").money.assertEquals(20000)
+	f.extension.fail = false
+	f.recordingTimer.expected = ""
+	for repeat = 1 to 3
+		f.store(candidate)
+		f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.military.civic.states[0].taxesCollected.assertEquals(10000)
+		f.military.civic.states[0].councilReady.assertEquals(455)
+		f.military.civic.states[0].councilThrough.assertEquals(820)
+		f.campaign.countries.treasury[0].assertEquals(treasury - 25 + 10000 - 150)
+		f.extension.trade.findMarket("port", "grain").money.assertEquals(10000)
+		runtime.advance(365)
+		f.military.civic.states[0].taxesCollected.assertEquals(10000)

@@ -1,0 +1,200 @@
+{
+  "format": "issue_585_focused_validation_v1",
+  "status": "pass",
+  "baseRevision": "94fe1cdb81c7664fc6c48c7777f1250165e7b5e7",
+  "scope": "Uncommitted isolated implementation; focused development checks only, not complete same-revision release evidence.",
+  "isolation": "Network-disabled pinned container; read-only inputs copied into container-private /tmp; cached standard-library source only; no predecessor execution artifacts reused.",
+  "wurst": {
+    "passed": 75,
+    "total": 75,
+    "log": "pinned-civic.log.gz",
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "verifiedCompilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "currentWurstSourceMatchesFocusedAssembly": true,
+    "productionComparisons": {
+      "codified_law": {
+        "comparison": "lawRegisteredResearchMatchedControlCollectsPaidRevenue",
+        "requiredProbes": [
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_resolve"
+        ],
+        "allRequiredObserved": true
+      },
+      "colonial_councils": {
+        "comparison": "councilsRegisteredResearchMatchedControlRequiresPaidElection",
+        "requiredProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_resolve"
+        ],
+        "allRequiredObserved": true
+      }
+    }
+  },
+  "python": {
+    "uniqueSelectedTestsPassed": 68,
+    "uniqueSelectedTestsTotal": 68,
+    "civicResearchEvidenceAndFrameworkRegressions": {
+      "passed": 49,
+      "total": 49,
+      "log": "python-regressions.log.gz"
+    },
+    "finalLocalRevenueGenerationAndEvidenceRecheck": {
+      "passed": 7,
+      "total": 7,
+      "log": "local-revenue-final.log.gz",
+      "includedInUniqueCount": true
+    },
+    "administrativeContracts": {
+      "passed": 4,
+      "total": 4,
+      "log": "administrative-contracts.log.gz"
+    },
+    "releaseSaveCompatibility": {
+      "passed": 6,
+      "total": 6,
+      "log": "save-compatibility.log.gz"
+    },
+    "releaseAuditRegressionsExcludingPostIntegrationReportFreshness": {
+      "passed": 9,
+      "total": 9,
+      "log": "release-regressions.log.gz"
+    },
+    "frameworkFixtureNote": "Python framework packaging/execution-protocol tests use explicitly synthetic compiler fixtures; their interpreter-style output does not establish pinned game execution."
+  },
+  "additionalChecks": [
+    "Exact executable/runtime metadata and resealed-tamper rejection",
+    "Framework content and implementation boundary",
+    "git diff --check"
+  ],
+  "saveSchema": {
+    "militarySettlementsCurrent": 22,
+    "supportedLegacySources": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "migration": "Missing legacy councils remain inactive; existing administrative state is retained."
+  },
+  "deferredCheck": {
+    "test": "test_checked_in_machine_and_human_reports_are_current",
+    "reason": "Existing audit reports are stale for changed sources. Regenerate after integration on the new main revision as instructed; no audit PASS or blocker closure is claimed."
+  },
+  "releaseClosureEstablished": false,
+  "controllerRequired": [
+    "Complete pinned Wurst execution on integrated main",
+    "Complete repository and framework validation",
+    "Regenerate release-blocker, runtime-acceptance and requirement-traceability reports on new main using its own verified evidence"
+  ],
+  "playerQaRequired": false,
+  "artifacts": {
+    "pinned-civic.log.gz": {
+      "sha256": "9b53539d6178613f49a8a9e38ca031b6b5a3f39cc5e7aeca659451e95f8a8990",
+      "uncompressedSha256": "5e013a45e44cdde2bfa910178b8db4167da31a7b5af33c00ccfdb6fddc635718"
+    },
+    "python-regressions.log.gz": {
+      "sha256": "b79dbc0440900ef58c376b1735f2a3c36c7acf67ee6d67b5771d9cafa6b70a36",
+      "uncompressedSha256": "8e3b4c569052bd1c04055453c89ec61f2caf1168d2e767d404e297f3e2d755c7"
+    },
+    "local-revenue-final.log.gz": {
+      "sha256": "d741df6affb020085c1f0c9cdf3957f0ca558273a5d41d2b2d2f6bc0e9976715",
+      "uncompressedSha256": "4d1f25c4f24c8a3ba4e1d77cb3990eb71c555c1cd5bfe3d72898bbd714004018"
+    },
+    "administrative-contracts.log.gz": {
+      "sha256": "623d8594c1f25a68a6e0d119db55afbb25d5ab9ab1b01f78746f75d9c62d2c90",
+      "uncompressedSha256": "659ce80af7134437576ff2457af5cf641a63a87c193fe7337c5f1640f9d959de"
+    },
+    "save-compatibility.log.gz": {
+      "sha256": "612a22eb1acc3258a4739b15fe93dad52dd96a0825a6e2b5c0488f2bbfae85b8",
+      "uncompressedSha256": "8924f05e1ae6ee8ff22fafeb9af8e3e3c40c116f802f09710ae7b5214c18dc0c"
+    },
+    "release-regressions.log.gz": {
+      "sha256": "06101912e3f21a7be1738e4629bec699b4cee41fa8c1bc12acd01e6895578e00",
+      "uncompressedSha256": "02a581074495684bda3aef947ed828b6063cbfa9f05af1645421fab81befd576"
+    },
+    "framework-boundary.log.gz": {
+      "sha256": "822ceeb970b5d99b6d108a1be28438d8bc7604fb0e92177ed8315a73ae9942f5",
+      "uncompressedSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    }
+  }
+}

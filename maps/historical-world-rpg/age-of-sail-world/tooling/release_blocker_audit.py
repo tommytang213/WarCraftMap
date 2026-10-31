@@ -139,6 +139,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= verified_medical(PROJECT, execution, execution_log, revision)
     from dispatch_contract import verified_bindings as verified_dispatch
     bound |= verified_dispatch(PROJECT, execution, execution_log, revision)
+    from local_revenue import verified_bindings as verified_revenue
+    bound |= verified_revenue(PROJECT, execution, execution_log, revision)
     from administrative_governance import verified_bindings as verified_administration
     bound |= verified_administration(PROJECT, execution, execution_log, revision)
     from trade_finance import verified_bindings

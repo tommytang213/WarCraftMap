@@ -14,6 +14,7 @@ import CommandRouter
 import ScenarioData
 import CampaignLoadTransactionTests
 import CampaignSaveManager
+import CivicGovernance
 
 class CoastalFixture
 	ScienceFixture f
@@ -187,7 +188,7 @@ class CoastalFixture
 	t.f.military.snapshot().assertEquals(saved)
 	// A real v21 input contained celestial fraction only and no new site record.
 	let kit = "|j,channel_coastal_bearing_kit," + t.f.military.science.states[3].record()
-	let legacy = saved.replace("v22|", "v21|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(t.f.clock.currentDay) + ",35,800", ",3," + I2S(t.f.clock.currentDay) + ",35,6000")
+	let legacy = saved.replace("v23|", "v21|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(t.f.clock.currentDay) + ",35,800", ",3," + I2S(t.f.clock.currentDay) + ",35,6000")
 	t.f.military.restore(legacy).assertTrue()
 	t.ship().navigation.equipment.assertTrue()
 	t.ship().navigation.reserved.assertEquals(35)
@@ -195,6 +196,59 @@ class CoastalFixture
 	t.ship().navigation.fraction("celestial_navigation").assertEquals(6000)
 	t.ship().navigation.fraction("coastal_triangulation").assertEquals(0)
 	t.f.military.science.states[3].equipmentOwner.assertEquals("")
+
+@test function integratedV23PreservesBothIndependentV22SaveLayouts()
+	let t = new CoastalFixture(true, true, true, false, true)
+	t.f.advance(7)
+	t.start()
+	t.f.advance(10)
+	let day = t.f.clock.currentDay
+	t.f.military.civic.register(new CivicDistrict("london", "province", 10000, true, day, 20, day, 365, 4, "cloth", 4, 1000), day)
+	let state = t.f.military.civic.states[0]
+	state.councilOwner = "player"
+	state.councilReady = day
+	state.councilThrough = day + 365
+	state.taxesCollected = 9360
+	state.recordsDays = 9
+	let saved = t.f.military.snapshot()
+	saved.startsWith("v23|").assertTrue()
+	let council = "|C,london,player," + I2S(day) + "," + I2S(day + 365)
+	let coastal = "|x,english_patrol_ship,coastal_triangulation,4800"
+	let celestial = "|x,english_patrol_ship,celestial_navigation,6000"
+	let kit = "|j,channel_coastal_bearing_kit," + t.f.military.science.states[3].record()
+	t.f.military.restore(saved).assertTrue()
+	t.f.military.snapshot().assertEquals(saved)
+	// Current saves require both domains, including every source and kit record.
+	t.f.military.restore(saved.replace(council, "")).assertFalse()
+	t.f.military.restore(saved.replace(coastal, "")).assertFalse()
+	t.f.military.restore(saved.replace(kit, "")).assertFalse()
+	t.f.military.snapshot().assertEquals(saved)
+	// Navigation v22 predates councils but must retain its own complete records.
+	let navigation22 = saved.replace("v23|", "v22|").replace(council, "")
+	t.f.military.restore(navigation22.replace(coastal, "")).assertFalse()
+	t.f.military.restore(navigation22).assertTrue()
+	t.f.military.civic.states[0].councilOwner.assertEquals("")
+	t.f.military.civic.states[0].councilThrough.assertEquals(0)
+	t.f.military.civic.states[0].taxesCollected.assertEquals(9360)
+	t.f.military.civic.states[0].recordsDays.assertEquals(9)
+	t.ship().navigation.fraction("coastal_triangulation").assertEquals(4800)
+	t.ship().navigation.fraction("celestial_navigation").assertEquals(6000)
+	t.f.military.science.states[3].equipmentOwner.assertEquals("player")
+	// Council v22 predates coastal equipment and source attribution.
+	let councils22 = saved.replace("v23|", "v22|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(day) + ",35,800", ",3," + I2S(day) + ",35,6000")
+	t.f.military.restore(councils22 + council).assertFalse()
+	t.f.military.restore(councils22).assertTrue()
+	t.f.military.civic.states[0].councilOwner.assertEquals("player")
+	t.f.military.civic.states[0].councilThrough.assertEquals(day + 365)
+	t.f.military.civic.states[0].taxesCollected.assertEquals(9360)
+	t.f.military.civic.states[0].recordsDays.assertEquals(9)
+	t.ship().navigation.reserved.assertEquals(35)
+	t.ship().navigation.fraction("celestial_navigation").assertEquals(6000)
+	t.ship().navigation.fraction("coastal_triangulation").assertEquals(0)
+	t.f.military.science.states[3].equipmentOwner.assertEquals("")
+	t.f.military.administrators[0].characterId.assertEquals("clerk")
+	t.f.military.restore(saved).assertTrue()
+	t.f.military.snapshot().assertEquals(saved)
 
 @test function coastalFailedCampaignLoadRollsBackEquipmentPaymentsProvisionsAndFractions()
 	let f = new LoadFixture()

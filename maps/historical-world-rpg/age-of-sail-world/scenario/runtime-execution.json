@@ -610,6 +610,10 @@
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function restore(string candidate, boolean project) returns boolean"
     },
+    "council_authority": {
+      "path": "wurst/CivicCampaignRuntime.wurst",
+      "signature": "override function overseasAccess(string originId, string recipientId) returns boolean"
+    },
     "voyage_qualify": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function qualifiedNavigationSources(RuntimeForce vessel, int day) returns string"
@@ -1052,6 +1056,29 @@
       "medical_snapshot",
       "medical_restore",
       "case_records"
+    ],
+    "codified_law": [
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "civic_clock",
+      "civic_registration",
+      "dispatch",
+      "research"
+    ],
+    "colonial_councils": [
+      "administrative_action",
+      "administrative_adoption",
+      "administrative_advance",
+      "administrative_collect",
+      "administrative_pay",
+      "administrative_skill",
+      "civic_clock",
+      "civic_registration",
+      "council_authority",
+      "dispatch",
+      "research"
     ],
     "coastal_navigation": [
       "research",

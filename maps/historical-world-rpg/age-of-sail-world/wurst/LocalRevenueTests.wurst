@@ -1,0 +1,336 @@
+package LocalRevenueTests
+
+import CivicGovernanceTests
+import CivicGovernance
+import MilitarySettlementRuntime
+import WarcraftRpgRuntime
+
+@test function lawRegisteredResearchMatchedControlCollectsPaidRevenue()
+	let base = new CivicFixture()
+	let law = new CivicFixture()
+	base.lawPrerequisites()
+	law.lawPrerequisites()
+	let before = law.military.snapshot()
+	law.unlock("codified_law")
+	law.military.snapshot().assertEquals(before)
+	law.research.rate("player", "law_tax_collection_efficiency").assertEquals(500)
+	law.runtime.overview("player", "district").contains("Codified Law: +500 bp").assertTrue()
+	let taxDay = 365 - law.day mod 365
+	base.advance(taxDay)
+	law.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9000)
+	law.military.civic.states[0].taxesCollected.assertEquals(9450)
+	base.campaign.countries.treasury[0].assertEquals(19000)
+	law.campaign.countries.treasury[0].assertEquals(10000 - 25 + 9450)
+	law.trade.findMarket("district", "cloth").money.assertEquals(90550)
+	let saved = law.military.snapshot()
+	law.advance(taxDay)
+	law.rpg.reconcile("player")
+	law.military.snapshot().assertEquals(saved)
+
+@test function councilsRegisteredResearchMatchedControlRequiresPaidElection()
+	let base = new CivicFixture()
+	let council = new CivicFixture()
+	base.councilsPrerequisites()
+	council.councilsPrerequisites()
+	let original = council.military.snapshot()
+	council.unlock("colonial_councils")
+	council.military.snapshot().assertEquals(original)
+	council.military.civic.states[0].councilOwner.assertEquals("")
+	council.action("council")
+	council.campaign.countries.treasury[0].assertEquals(9850)
+	council.military.civic.states[0].councilReady.assertEquals(council.day + 90)
+	council.military.civic.states[0].councilThrough.assertEquals(council.day + 455)
+	council.advance(89)
+	council.military.civic.collectionBonus(0, "player", council.day + 89, council.research, council.runtime.economy, false).assertEquals(0)
+	council.advance(90)
+	council.military.civic.collectionBonus(0, "player", council.day + 90, council.research, council.runtime.economy, false).assertEquals(400)
+	let taxDay = 365 - council.day mod 365
+	base.advance(taxDay)
+	council.advance(taxDay)
+	base.military.civic.states[0].taxesCollected.assertEquals(9225)
+	council.military.civic.states[0].taxesCollected.assertEquals(9585)
+	base.campaign.countries.treasury[0].assertEquals(10000 - 25 + 9225)
+	council.campaign.countries.treasury[0].assertEquals(10000 - 150 - 25 + 9585)
+	council.trade.findMarket("district", "cloth").money.assertEquals(90415)
+	council.military.settlements[0].controllerId.assertEquals("player")
+	council.military.settlements[0].legalOwnerId.assertEquals("player")
+	council.military.administrators[0].characterId.assertEquals("clerk")
+	council.military.administrators[0].loyalty.assertEquals(50)
+	let saved = council.military.snapshot()
+	council.advance(taxDay)
+	council.military.snapshot().assertEquals(saved)
+	council.runtime.overview("player", "district").contains("funded through").assertTrue()
+
+@test function revenueSharedRecordsAndCouncilSourcesRoundOnceWithinCapacityAndLiquidity()
+	let f = new CivicFixture()
+	f.lawPrerequisites()
+	f.unlock("codified_law")
+	f.councilsPrerequisites()
+	f.unlock("colonial_councils")
+	f.action("council")
+	f.rpg.restoreState(f.rpg.captureState() + "|u,player,provincial_audits|u,player,fleet_victualling").assertTrue()
+	f.rpg.reconcile("player")
+	f.unlock("civil_service_examinations")
+	let duplicate = new RuntimeTechnology("law_peer", "Peer", 1450, 1)
+	duplicate.addUnlock("law_peer", "modifier", "progression_codified_law")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("law_peer")
+	f.research.rate("player", "law_tax_collection_efficiency").assertEquals(500)
+	f.military.civic.baseTaxBasisPoints = 5000
+	let taxDay = 365 - f.day mod 365
+	f.advance(taxDay)
+	// 500 Law + 500 Examinations + 250 Archives + 400 Council, one records bill.
+	f.military.civic.states[0].taxesCollected.assertEquals(5825)
+	f.campaign.countries.treasury[0].assertEquals(10000 - 150 - 25 + 5825)
+	f.unlock("cadastral_survey")
+	f.unlock("chartered_municipalities")
+	f.action("survey")
+	f.action("municipal")
+	f.advance(taxDay + 90)
+	// Law, Councils, Archives, Examinations, survey and charter all add once.
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(2550)
+	f.advance(taxDay + 365)
+	f.military.civic.states[0].taxesCollected.assertEquals(5825 + 6275)
+	f.military.civic.baseTaxBasisPoints = 9000
+	f.advance(taxDay + 730)
+	f.military.civic.states[0].taxesCollected.assertEquals(22100)
+	f.trade.findMarket("district", "cloth").money = 37
+	f.trade.findMarket("district", "grain").money = 0
+	f.advance(taxDay + 1095)
+	f.military.civic.states[0].taxesCollected.assertEquals(22137)
+	f.trade.findMarket("district", "cloth").money.assertEquals(0)
+	civicTax(101, 9000, 500 + 400).assertEquals(99)
+	// Isolate operating councils by refusing the separate records-service bill.
+	let isolated = new CivicFixture()
+	isolated.councilsPrerequisites()
+	isolated.unlock("colonial_councils")
+	isolated.action("council")
+	isolated.campaign.countries.treasury[0] = 0
+	isolated.advance(taxDay)
+	isolated.military.civic.states[0].taxesCollected.assertEquals(9360)
+	isolated.campaign.countries.treasury[0].assertEquals(9360)
+
+@test function revenueQualificationFundingAndOverseasAuthorityFailClosed()
+	let f = new CivicFixture()
+	f.lawPrerequisites()
+	f.unlock("codified_law")
+	f.councilsPrerequisites()
+	f.unlock("colonial_councils")
+	f.action("council")
+	let taxDay = 365 - f.day mod 365
+	var total = 0
+	for condition = 0 to 10
+		let office = f.military.administrators[0]
+		office.administration = 40
+		office.capacity = 1
+		office.jurisdiction = "district"
+		office.controllerId = "player"
+		f.military.settlements[0].occupationConflictId = ""
+		f.military.settlements[0].regionId = "overseas"
+		f.military.settlements[1].legalOwnerId = "player"
+		f.trade.findMarket("home", "cloth").blockaded = false
+		f.campaign.countries.treasury[0] = 10000
+		var collected = 9990 // 200 Archives + 500 Law + 400 councils
+		if condition == 0
+			office.administration = 39
+			collected = 9000
+		else if condition == 1
+			office.capacity = 0
+			collected = 0
+		else if condition == 2
+			office.jurisdiction = "foreign"
+			collected = 0
+		else if condition == 3
+			office.controllerId = "ai"
+			collected = 0
+		else if condition == 4
+			f.military.settlements[0].occupationConflictId = "occupation"
+			collected = 0
+		else if condition == 5
+			f.military.settlements[0].regionId = "europe"
+			collected = 9630
+		else if condition == 6
+			f.military.settlements[1].legalOwnerId = "foreign"
+			collected = 9630
+		else if condition == 7
+			f.trade.findMarket("home", "cloth").blockaded = true
+			collected = 9630
+		else if condition == 8
+			// No upkeep can renew and no records can operate; earlier credit expired.
+			f.campaign.countries.treasury[0] = 0
+			collected = 9000
+		else if condition == 9
+			// Restored resources can purchase the next interval, without back pay.
+			collected = 9990
+		f.advance(taxDay + 365 * condition)
+		total += collected
+		f.military.civic.states[0].taxesCollected.assertEquals(total)
+	let researchState = f.rpg.captureState()
+	f.rpg.restoreState(researchState.replace("|u,player,codified_law", "")).assertTrue()
+	f.rpg.reconcile("player")
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(600)
+	f.rpg.restoreState(researchState.replace("|u,player,chancery_archives", "")).assertTrue()
+	f.rpg.reconcile("player")
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(500)
+	f.rpg.restoreState(researchState).assertTrue()
+	f.rpg.reconcile("player")
+	// Unsupported overseas district has no authored authority even with research.
+	f.military.civic.councilLinks[0].recipientId = "other"
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, false).assertEquals(0)
+
+@test function revenueAdoptionPrerequisitesUrbanizationAndAtomicBills()
+	let f = new CivicFixture()
+	f.commands.dispatch(Player(0), "/research colonial_councils").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	f.councilsPrerequisites()
+	for invalid = 0 to 3
+		f.military.civic.states[0].urbanization = 16
+		f.military.settlements[0].regionId = "overseas"
+		f.trade.findMarket("home", "cloth").blockaded = false
+		f.military.settlements[1].legalOwnerId = "player"
+		if invalid == 0
+			f.military.civic.states[0].urbanization = 15
+		else if invalid == 1
+			f.military.settlements[0].regionId = "europe"
+		else if invalid == 2
+			f.trade.findMarket("home", "cloth").blockaded = true
+		else
+			f.military.settlements[1].legalOwnerId = "foreign"
+		let balance = f.resources.balance
+		f.commands.dispatch(Player(0), "/research colonial_councils").assertTrue()
+		f.resources.output.assertEquals("Requirements are not met here.")
+		f.resources.balance.assertEquals(balance)
+	f.military.settlements[1].legalOwnerId = "player"
+	f.unlock("colonial_councils")
+	f.campaign.countries.treasury[0] = 149
+	let saved = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic council district").assertTrue()
+	f.resources.output.contains("insufficient").assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.campaign.countries.treasury[0].assertEquals(149)
+	f.campaign.countries.treasury[0] = 150
+	f.action("council")
+	f.campaign.countries.treasury[0].assertEquals(0)
+	let paid = f.military.snapshot()
+	f.commands.dispatch(Player(0), "/civic council district").assertTrue()
+	f.resources.output.contains("cannot stack").assertTrue()
+	f.military.snapshot().assertEquals(paid)
+	f.action("council-repeal")
+	f.military.civic.states[0].councilOwner.assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(0)
+
+@test function revenueReplacementCaptureAndRecapturePreservePoliticalAuthority()
+	let f = new CivicFixture()
+	f.lawPrerequisites()
+	f.unlock("codified_law")
+	f.councilsPrerequisites()
+	f.unlock("colonial_councils")
+	f.action("council")
+	f.advance(90)
+	let through = f.military.civic.states[0].councilThrough
+	f.military.appoint("district", new AdministratorState("novice", "Novice", "Administrator", "player", "overseas", "district", 50, 39, 40, 1))
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(0)
+	f.military.appoint("district", new AdministratorState("replacement", "Replacement", "Administrator", "player", "unloaded", "district", 50, 40, 40, 1))
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(1100)
+	f.military.civic.states[0].councilThrough.assertEquals(through)
+	f.military.transferSettlement("district", "ai")
+	f.military.civic.states[0].councilOwner.assertEquals("")
+	f.military.civic.states[0].councilThrough.assertEquals(0)
+	f.research.rate("ai", "law_tax_collection_efficiency").assertEquals(0)
+	f.military.transferSettlement("district", "player")
+	f.military.settlements[0].legalOwnerId = "player"
+	f.military.appoint("district", new AdministratorState("return", "Return", "Administrator", "player", "unloaded", "district", 50, 40, 40, 1))
+	f.military.civic.collectionBonus(0, "player", f.clock.currentDay, f.research, f.runtime.economy, true).assertEquals(700)
+	f.action("council")
+	f.military.civic.states[0].councilReady.assertEquals(f.clock.currentDay + 90)
+
+@test function revenuePlayerAiActiveInactiveSaveResumeAndLegacyMigration()
+	let active = new CivicFixture()
+	let inactive = new CivicFixture()
+	inactive.military.transferSettlement("district", "ai")
+	inactive.military.settlements[0].legalOwnerId = "ai"
+	inactive.military.appoint("district", new AdministratorState("ai_clerk", "Clerk", "Administrator", "ai", "unloaded", "district", 50, 50, 40, 1))
+	inactive.resources.owner = "ai"
+	active.lawPrerequisites()
+	inactive.lawPrerequisites()
+	active.unlock("codified_law")
+	inactive.unlock("codified_law")
+	active.councilsPrerequisites()
+	inactive.councilsPrerequisites()
+	active.unlock("colonial_councils")
+	inactive.unlock("colonial_councils")
+	active.action("council")
+	inactive.action("council")
+	active.military.activeRegionId = "overseas"
+	inactive.military.activeRegionId = "unloaded"
+	inactive.military.settlements[0].projectMilitary = false
+	inactive.military.adapter.removeRepresentation("district")
+	active.advance(45)
+	let pending = active.military.snapshot()
+	active.military.restore(pending, false).assertTrue()
+	active.military.civic.states[0].councilReady.assertEquals(active.day + 90)
+	let taxDay = 365 - active.day mod 365
+	for elapsed = 46 to taxDay
+		active.advance(elapsed)
+	inactive.advance(taxDay)
+	active.military.civic.states[0].taxesCollected.assertEquals(10000)
+	inactive.military.civic.states[0].taxesCollected.assertEquals(10000)
+	active.campaign.countries.treasury[0].assertEquals(inactive.campaign.countries.treasury[1])
+	active.trade.findMarket("district", "cloth").money.assertEquals(inactive.trade.findMarket("district", "cloth").money)
+	// Legacy council migration must retain the other independent civic records.
+	let prior = active.military.civic.states[0]
+	prior.municipalOwner = "player"
+	prior.municipalReady = active.clock.currentDay
+	prior.municipalThrough = active.clock.currentDay + 365
+	prior.policyOwner = "player"
+	prior.policyReady = active.clock.currentDay
+	prior.upkeepThrough = active.clock.currentDay + 365
+	prior.surveyOwner = "player"
+	prior.surveyReady = active.clock.currentDay
+	prior.surveyed = true
+	prior.careOwner = "player"
+	prior.careReady = active.clock.currentDay
+	prior.careThrough = active.clock.currentDay + 365
+	prior.diseaseRemainder = 17
+	prior.recordsDays = 9
+	let saved = active.military.snapshot()
+	let treasury = active.campaign.countries.treasury[0]
+	for repeat = 1 to 3
+		active.military.restore(saved, false).assertTrue()
+		active.advance(taxDay)
+		active.military.snapshot().assertEquals(saved)
+		active.campaign.countries.treasury[0].assertEquals(treasury)
+	let state = active.military.civic.states[0]
+	let record = "|C,district,player," + I2S(state.councilReady) + "," + I2S(state.councilThrough)
+	let legacy = saved.replace("v23|", "v21|").replace(record, "")
+	active.military.restore(legacy, false).assertTrue()
+	active.military.civic.states[0].councilOwner.assertEquals("")
+	active.military.civic.states[0].councilThrough.assertEquals(0)
+	active.military.civic.states[0].taxesCollected.assertEquals(10000)
+	active.military.civic.states[0].urbanization.assertEquals(20)
+	active.military.civic.states[0].municipalOwner.assertEquals("player")
+	active.military.civic.states[0].municipalThrough.assertEquals(active.clock.currentDay + 365)
+	active.military.civic.states[0].policyOwner.assertEquals("player")
+	active.military.civic.states[0].surveyed.assertTrue()
+	active.military.civic.states[0].careOwner.assertEquals("player")
+	active.military.civic.states[0].diseaseRemainder.assertEquals(17)
+	active.military.civic.states[0].recordsDays.assertEquals(9)
+	active.military.administrators[0].characterId.assertEquals("clerk")
+	active.advance(taxDay)
+	active.campaign.countries.treasury[0].assertEquals(treasury)
+
+@test function revenueMalformedCouncilRecordsRejectAtomically()
+	let f = new CivicFixture()
+	f.councilsPrerequisites()
+	f.unlock("colonial_councils")
+	f.action("council")
+	let saved = f.military.snapshot()
+	let record = "|C,district,player," + I2S(f.day + 90) + "," + I2S(f.day + 455)
+	f.military.restore(saved.replace(record, ""), false).assertFalse()
+	f.military.restore(saved + record, false).assertFalse()
+	f.military.restore(saved.replace(record, "|C,unknown,player,1,366"), false).assertFalse()
+	f.military.restore(saved.replace(record, "|C,district,foreign,1,366"), false).assertFalse()
+	f.military.restore(saved.replace(record, "|C,district,player,999999,1000000"), false).assertFalse()
+	f.military.restore(saved.replace(record, "|C,district,,1,366"), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)

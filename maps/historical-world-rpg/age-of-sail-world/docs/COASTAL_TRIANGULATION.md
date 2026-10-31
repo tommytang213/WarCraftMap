@@ -45,13 +45,17 @@ remainder. Three combined eligible days earn 10,800 units: one provision release
 Repeated callbacks cannot replay a day. Interruption or destruction returns only
 unused reserved provisions; earned fractions remain durable campaign state.
 
-Military snapshots advance from v21 to **v22**. Existing `v` records preserve
+Military snapshots use **v23**, combining the independent v22 navigation and
+council layouts. Existing `v` records preserve
 celestial equipment, pending routes, elapsed days, last day, reservations and
 common credit. New `x,FORCE,SOURCE,REMAINDER` records identify each source by stable
 ID. The chart/bearing kit uses the existing stable-ID science `j` equipment record.
 Versions 10–21 assign their existing fraction to the celestial source; earlier
 versions retain their existing empty-voyage migration. Missing legacy kit records
-migrate empty and never copy live equipment. Current saves require complete source
+migrate empty and never copy live equipment. Council-bearing v22 snapshots also
+migrate their celestial fraction and missing coastal equipment; navigation-only
+v22 snapshots retain all source fractions and initialize councils inactive.
+Current saves require complete source
 records with valid conservation and complete kit records. Detached parsing rejects
 duplicates, unknown IDs, inconsistent reserves/fractions, overlapping reservations
 and unsupported work. Campaign load rollback includes equipment, provisions,

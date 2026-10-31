@@ -166,7 +166,20 @@ class FrameworkConformanceTests(unittest.TestCase):
                 validate(source / "scenario/world/world.json")
                 fake = source / "fake-grill"
                 # Include generated settings, as the real compiler does.
-                fake.write_text(FAKE_GRILL.replace("generated + bootstrap", "generated + bootstrap + (root / 'wurst/ScenarioSettings.wurst').read_text()"))
+                # Only the fresh suite installs. Each map must independently
+                # compile/build using a copy of those exact library inputs.
+                dependency_check = '''
+dependency = root / "_build/dependencies/library/input.txt"
+if sys.argv[1] == "install":
+    assert root.parent.name == "wurst-tests", "unexpected repeated remote install"
+    dependency.parent.mkdir(parents=True)
+    dependency.write_text("fresh library input")
+if sys.argv[1] in ("typecheck", "build"):
+    assert dependency.read_text() == "fresh library input"
+'''
+                fake.write_text(FAKE_GRILL.replace('if sys.argv[1] == "build":',
+                                                  dependency_check + '\nif sys.argv[1] == "build":')
+                                .replace("generated + bootstrap", "generated + bootstrap + (root / 'wurst/ScenarioSettings.wurst').read_text()"))
                 fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
                 allow_synthetic_compiler(self, fake)
                 output = build_campaign(source / "physical-maps.json", grill=str(fake))
@@ -182,7 +195,9 @@ class FrameworkConformanceTests(unittest.TestCase):
                 self.assertIn(f"CONTRACT_GOOD_BASE_PRICE = {expected_price}\n", contract)
                 self.assertIn("test", (source / "_build/wurst-tests/commands.txt").read_text().splitlines())
                 for physical in load_campaign_config(source / "physical-maps.json").maps:
-                    self.assertIn("typecheck", (source / "_build/maps" / physical.id / "commands.txt").read_text().splitlines())
+                    commands = (source / "_build/maps" / physical.id / "commands.txt").read_text().splitlines()
+                    self.assertIn("typecheck", commands)
+                    self.assertNotIn("install", commands)
             self.assertNotEqual(outputs[0], outputs[1])
             self.assertIn('"reed_runner"', outputs[0])
             self.assertIn('"marsh_runner"', outputs[1])
