@@ -83,3 +83,22 @@ framework boundary audit and `git diff --check` passed. The `retry-*.log.gz` fil
 record this repair's checks. Production Wurst code is unchanged by this repair;
 complete pinned Wurst and repository validation remain controller-owned. No
 predecessor artifacts were used to establish evidence for this source tree.
+
+The recovery validation repair reproduces the reported
+`liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords` failure in isolation.
+Its synthesized v3 fixture retained the new `I` records, which the production
+loader correctly rejects in that schema. The fixture now removes those records
+before legacy restoration, verifies atomic rejection while they are present,
+and checks that migration grants no retrofit, active work, fractional yield or
+extracted fuel. Production code and loader validation are unchanged.
+
+Fresh focused validation passed **32/32 pinned Wurst tests** across Industry,
+live recovery and military persistence, with all production sources typechecked.
+The isolated original test failed before the repair. Python Coke/evidence,
+Industry, release-save and recovery checks passed **43 test executions** (including
+Industry generation cases imported into Coke discovery). The shared framework
+boundary audit and `git diff --check` passed. See
+`recovery-validation-repair.json` and `recovery-repair-*.log.gz`. Source mounts
+were read-only; the pinned container built in private `/tmp` as `wurstuser`.
+These are focused development results. Complete repository validation and fresh
+integrated-main closure audits remain assigned to the controller.

@@ -443,8 +443,22 @@ function legacyRecoveryRpg(string current) returns string
 	(hint > 0).assertTrue()
 	let rest = SubString(current, hint + 1, StringLength(current))
 	let next = rest.indexOf("|")
-	let legacy = withoutMilitarySettlementPolicy("v3" + SubString(current, current.indexOf("|"), hint) + SubString(rest, next, StringLength(rest)))
+	var legacy = withoutMilitarySettlementPolicy("v3" + SubString(current, current.indexOf("|"), hint) + SubString(rest, next, StringLength(rest)))
+	// Mineral records did not exist in v3. A current payload with only its
+	// version changed must reject atomically, rather than grant a retrofit.
+	military.restore(legacy).assertFalse()
+	military.snapshot().assertEquals(current)
+	for i = 0 to military.industry.count - 1
+		if military.industry.sites[i].recordVersion == 2
+			legacy = legacy.replace("|I," + military.industry.sites[i].id + "," + military.industry.states[i].mineralRecord(), "")
 	military.restore(legacy).assertTrue()
+	for i = 0 to military.industry.count - 1
+		if military.industry.sites[i].recordVersion == 2
+			military.industry.states[i].equipmentOwner.assertEquals("")
+			military.industry.states[i].owner.assertEquals("")
+			military.industry.states[i].work.assertEquals(0)
+			military.industry.states[i].yieldRemainder.assertEquals(0)
+			military.industry.states[i].extractedUnits.assertEquals(0)
 	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("")
 	state.recovery.refresh()
 	military.forces[military.forceIndex("migrating")].recoveryMap.assertEquals("europe_west")
