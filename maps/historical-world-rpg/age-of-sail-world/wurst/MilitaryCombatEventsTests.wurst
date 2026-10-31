@@ -683,6 +683,32 @@ function traditionReceipt(string caseName)
 	resolvedTraditionReceipt("replay")
 	traditionReceiptFor("REQ-0158.01", "replay")
 
+/** Pre-mineral schemas cannot contain current I records. Keep the loader's
+ * rejection check, then restore an actual legacy layout for combat assertions. */
+function restoreLegacyCombatSnapshot(CombatFixture f, string candidate)
+	let before = f.runtime.snapshot()
+	candidate.contains("|I,").assertTrue()
+	f.runtime.restore(candidate).assertFalse()
+	f.runtime.snapshot().assertEquals(before)
+	var legacy = candidate
+	var start = legacy.indexOf("|I,")
+	while start >= 0
+		var finish = legacy.indexOf("|", start + 1)
+		if finish < 0
+			finish = StringLength(legacy)
+		legacy = SubString(legacy, 0, start) + SubString(legacy, finish, StringLength(legacy))
+		start = legacy.indexOf("|I,")
+	f.runtime.restore(legacy).assertTrue()
+	for i = 0 to f.runtime.industry.count - 1
+		if f.runtime.industry.sites[i].recordVersion == 2
+			let state = f.runtime.industry.states[i]
+			state.equipmentOwner.assertEquals("")
+			state.ready.assertEquals(0)
+			state.owner.assertEquals("")
+			state.work.assertEquals(0)
+			state.yieldRemainder.assertEquals(0)
+			state.extractedUnits.assertEquals(0)
+
 @test function traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves()
 	let f = traditionCombatFixture()
 	f.natives.death(f.token("enemy"), f.token("player_army"))
@@ -702,7 +728,7 @@ function traditionReceipt(string caseName)
 		f.runtime.snapshot().assertEquals(saved)
 	// v6 retains force orders and XP; absent player tracks begin at authored XP.
 	let legacy = ("v6" + SubString(saved, saved.indexOf("|"), StringLength(saved))).replace(playerLand, "").replace(playerSea, "").replace("|t,england,land_formation,0,", "|t,england,land_formation,73,")
-	f.runtime.restore(legacy).assertTrue()
+	restoreLegacyCombatSnapshot(f, legacy)
 	traditionXp(f, "england", "land_formation").assertEquals("73")
 	traditionXp(f, "player", "land_formation").assertEquals("0")
 	f.runtime.forces[f.runtime.forceIndex("enemy")].active.assertFalse()
@@ -1473,7 +1499,7 @@ function milestoneDamageVector(CombatFixture f, string category, string xp, stri
 		let combatForce = f.runtime.forces[i]
 		if combatForce.combatProfileId != ""
 			legacy = legacy.replace("|p," + combatForce.id + "," + combatForce.combatProfileId, "")
-	f.runtime.restore(legacy).assertTrue()
+	restoreLegacyCombatSnapshot(f, legacy)
 	f.runtime.forces[f.runtime.forceIndex("player_army")].combatProfileId.assertEquals("")
 	deliveredMilestoneDamage(f, "player_army", "enemy", "firearm_volley", "normal").assertEquals("100")
 	traditionXp(f, "player", "land_formation").assertEquals("3000")
@@ -1709,7 +1735,7 @@ function disciplineVector(CombatFixture f, string xp, string expected)
 		let savedForce = f.runtime.forces[i]
 		if savedForce.combatProfileId != ""
 			legacy = legacy.replace("|p," + savedForce.id + "," + savedForce.combatProfileId, "")
-	f.runtime.restore(legacy).assertTrue()
+	restoreLegacyCombatSnapshot(f, legacy)
 	deliveredMilestoneDamage(f, "enemy", "player_army", "melee", "normal").assertEquals("20000/213")
 	traditionXp(f, "player", "land_formation").assertEquals("3000")
 	f.close()
@@ -2057,7 +2083,7 @@ function deliveredBayonetDamage(CombatFixture f) returns string
 		let savedForce = f.runtime.forces[i]
 		if savedForce.combatProfileId != ""
 			legacy = legacy.replace("|p," + savedForce.id + "," + savedForce.combatProfileId, "")
-	f.runtime.restore(legacy).assertTrue()
+	restoreLegacyCombatSnapshot(f, legacy)
 	deliveredBayonetDamage(f).assertEquals("108")
 	f.runtime.restore(savedMilitary).assertTrue()
 	f.runtime.activateRegion("europe_central_east")

@@ -122,3 +122,25 @@ freshness regressions also passed in a separate two-test rerun. The framework
 boundary audit and `git diff --check` passed. See `audit-freshness-repair.json`
 and `audit-freshness-*.log.gz`. This repair changes only audit/report outputs;
 production sources, tests and evidence gates remain intact.
+
+The combat validation repair reproduces all four reported failures in isolation
+(0/4 passing before repair). Their synthesized v6/v8 snapshots retained mineral
+`I` records absent from those schemas. The fixtures now verify atomic rejection
+of those mislabeled current records, remove the mineral records, then exercise
+the intended combat migration. Each migration also verifies that mineral
+equipment, setup completion, active work, fractional recovery and extraction
+remain absent. Production behavior and loader validation are unchanged.
+
+Fresh focused validation passed **89/89 pinned Wurst tests** across the complete
+combat, Industry, live-recovery and military-persistence test files, with all
+production sources typechecked. The standard transcript parser verified every
+discovered focused test and the passing summary. **49 Python test executions**
+passed across Coke/evidence, Industry, release-save compatibility, live military
+tradition and both audit-freshness regressions. Generation/verification, the
+framework boundary audit and `git diff --check` passed. All three source-only
+audits were refreshed at `e4a72c459d416aff1a079aa7f7636c555fb0c8cd`; their
+publication findings remain explicit. See `combat-validation-repair.json` and
+`combat-repair-*.log.gz` for this worktree's results. Builds used read-only mounts
+and container-private temporary storage as `wurstuser`, without network access.
+Complete repository validation and fresh post-merge closure audits remain
+controller-owned; these focused results do not establish blocker closure.
