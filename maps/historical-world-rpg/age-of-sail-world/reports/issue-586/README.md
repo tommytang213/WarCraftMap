@@ -144,3 +144,14 @@ publication findings remain explicit. See `combat-validation-repair.json` and
 and container-private temporary storage as `wurstuser`, without network access.
 Complete repository validation and fresh post-merge closure audits remain
 controller-owned; these focused results do not establish blocker closure.
+
+Fresh checkpoint revalidation at `5fe7dd44c4cbc3e0c4965bfb57b2d8c72dfab4cb`
+confirmed that the existing combat fixture repair resolves all four failures in
+the supplied controller transcript. No additional production or test changes were
+needed. **89/89 pinned Wurst tests and 49 Python test executions passed**; the
+standard transcript parser verified complete focused discovery. Current generated
+scenario verification, all 205 assembled source comparisons, both audit-freshness
+regressions and the framework boundary audit passed. See
+`checkpoint-revalidation.json` and `checkpoint-revalidation-*.log.gz` for fresh
+results. Complete repository validation and post-merge closure audits remain
+controller-owned.
