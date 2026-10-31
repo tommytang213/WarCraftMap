@@ -54,9 +54,11 @@ def configuration(project, world, settlements, authored, trade_records):
     dispatch_lines, dispatch_effects, dispatch_sources = dispatch_configuration(project, world)
     from medical_care import configuration as medical_configuration
     medical_lines, medical_effects, medical_metadata, medical_sources = medical_configuration(project, world)
-    definitions += admin_effects + dispatch_effects + medical_effects
+    from local_revenue import configuration as revenue_configuration
+    revenue_lines, revenue_effects, connections, revenue_sources = revenue_configuration(project, world)
+    definitions += admin_effects + dispatch_effects + medical_effects + revenue_effects
     q = json.dumps
-    lines = [header, *admin_lines, *dispatch_lines, *medical_lines]
+    lines = [header, *admin_lines, *dispatch_lines, *medical_lines, *revenue_lines]
     for key, value in data['rules'].items():
         lines.append(f'\tledger.{key} = {value}')
     for effect in definitions:
@@ -102,7 +104,7 @@ def configuration(project, world, settlements, authored, trade_records):
         lines.append(f'\tconfigureCivicDistricts{start}(ledger, day)')
     for start in range(0, len(records), 40):
         lines.extend([f'\nfunction configureCivicDistricts{start}(CivicLedger ledger, int day)', *records[start:start + 40]])
-    return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records), 'medicalCare': medical_metadata}, [path, design_path, __import__('pathlib').Path(__file__), *admin_sources, *dispatch_sources, *medical_sources]
+    return '\n'.join(lines) + '\n', {'rules': data['rules'], 'effects': definitions, 'districtCount': len(records), 'medicalCare': medical_metadata, 'councilConnections': connections}, [path, design_path, __import__('pathlib').Path(__file__), *admin_sources, *dispatch_sources, *medical_sources, *revenue_sources]
 
 
 # Exact, independently exercised consumers only. Administrative bindings retain

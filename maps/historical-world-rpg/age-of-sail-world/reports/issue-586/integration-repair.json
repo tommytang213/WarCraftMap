@@ -1,0 +1,73 @@
+{
+  "format": "warcraftmap_issue_586_integration_repair_v1",
+  "scope": "Resolve the two reported conflicts without discarding main council/navigation or issue mineral-industry work. Military v24 requires all domains, migrates both independent v23 layouts, and advertises the complete source-version range. Current-schema fixture substitutions and integration source anchor follow v24.",
+  "checks": {
+    "industry": {
+      "status": "pass",
+      "tests": 16,
+      "log": "integration-industry-python.log.gz"
+    },
+    "coke": {
+      "status": "pass",
+      "tests": 13,
+      "log": "integration-coke-python.log.gz"
+    },
+    "evidence": {
+      "status": "pass",
+      "tests": 6,
+      "log": "integration-evidence-python.log.gz"
+    },
+    "save": {
+      "status": "pass",
+      "tests": 6,
+      "log": "integration-save-python.log.gz"
+    },
+    "revenue": {
+      "status": "pass",
+      "tests": 7,
+      "log": "integration-revenue-python.log.gz"
+    },
+    "research": {
+      "status": "pass",
+      "tests": 11,
+      "log": "integration-research-python.log.gz"
+    },
+    "goods": {
+      "status": "pass",
+      "tests": 4,
+      "log": "integration-goods-python.log.gz"
+    },
+    "navigation": {
+      "status": "pass",
+      "tests": 8,
+      "log": "integration-navigation-python.log.gz"
+    },
+    "pinned-wurst": {
+      "status": "pass",
+      "log": "integration-pinned-wurst.log.gz",
+      "tests": 95,
+      "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+      "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56"
+    },
+    "boundary": {
+      "status": "pass",
+      "log": "integration-boundary.log.gz"
+    },
+    "generated": {
+      "status": "pass",
+      "log": "integration-generated.log.gz"
+    },
+    "broad-framework-python": {
+      "status": "interrupted",
+      "log": "integration-framework-python-interrupted.log.gz",
+      "reason": "Stopped the additional broad run during repeated boundary fault injection; complete framework/repository validation remains assigned to the controller. The direct boundary audit and focused Wurst framework production tests passed."
+    }
+  },
+  "sources": {
+    "maps/historical-world-rpg/_shared/wurst/MilitarySettlementRuntime.wurst": "5c67d014c6ac506bda58cf5db3e6f4774ec4eeed676ec8f24cfffcb28999fa6a",
+    "maps/historical-world-rpg/age-of-sail-world/wurst/IndustryTests.wurst": "062e0dc479d17c1d687b7421a7f00edcda2452b6903e2591222d4c8122b0cf02",
+    "maps/historical-world-rpg/age-of-sail-world/scenario/compatibility/release-save-v1.json": "60cffe7e9a61acf8a4d15864c8a387f374c20029266bd7e99a67d704da6db693"
+  },
+  "evidenceLimit": "Focused development execution only. Complete pinned execution, repository/framework validation, and all three fresh main-revision audits remain controller-owned. Existing main reports are preserved, not claimed as evidence for this repair.",
+  "safety": "No commits, pushes, GitHub changes, service installation, or worktree bind mounts with write access. Source assembly and cached standard-library source were mounted read-only and copied into container-private /tmp as wurstuser."
+}

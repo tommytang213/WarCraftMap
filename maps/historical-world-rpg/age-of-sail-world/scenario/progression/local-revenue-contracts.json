@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "catalogSource": "scenario/progression/catalog.json",
+  "councilNode": "colonial_councils",
+  "archiveNode": "chancery_archives",
+  "rules": {
+    "councilTransitionDays": 90,
+    "councilEnactmentBasisPoints": 100,
+    "councilUpkeepBasisPoints": 50
+  },
+  "effects": [
+    {
+      "nodeId": "codified_law",
+      "unlock": {"kind": "modifier", "contentId": "progression_codified_law"},
+      "metric": "law_tax_collection_efficiency",
+      "bonusBasisPoints": 500
+    },
+    {
+      "nodeId": "colonial_councils",
+      "unlock": {"kind": "policy", "contentId": "progression_colonial_councils"},
+      "metric": "council_tax_collection_efficiency",
+      "bonusBasisPoints": 400
+    }
+  ],
+  "connections": [
+    {"originId": "lisbon", "recipientId": "goa", "evidenceIds": ["europe_ports_routes", "indian_ocean"]},
+    {"originId": "goa", "recipientId": "malacca", "evidenceIds": ["indian_ocean", "sea_maritime"]}
+  ],
+  "authority": "Directed overseas maritime administrative connections follow documented port geography. Both endpoints must currently be lawfully administered by the same controller and have accessible markets. No initial owner, discovery, occupation or map separation grants colonial authority. No council is active in 1450; lawful subsequent territorial change must come from existing campaign mechanisms.",
+  "operation": "Law shares the Archives/Examinations annual records bill of 25 bp, once. Councils require explicit local choice, Archives, 16% urbanization and Administration 40 with positive capacity and matching jurisdiction. Enactment and first annual upkeep are prepaid atomically; renewals buy a future year only. Lost authority/access suspends contribution and capture clears choice, transition and funding."
+}

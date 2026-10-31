@@ -12,13 +12,15 @@ and both give 113. Recovery is capped by consumed feedstock. Charcoal and barrel
 production retain their own recipes. Industry and research views expose bills,
 conditions and yields, including upstream fuel preparation.
 
-Military v23 adds complete stable-ID I records for new facilities, paid setup,
+Military v24 adds complete stable-ID I records for new facilities, paid setup,
 batch work, fractional recovery and consumed geological reserves. Existing i
-records remain compatible; v1–v22 initialize new facilities uncommissioned. Capture
+records remain compatible; v1–v22 and council/navigation v23 initialize new
+facilities uncommissioned. Mineral-only v23 preserves its industrial records
+and migrates absent councils inactive. Capture
 retains completed infrastructure while rechecking successor authority and research.
 The headless ledger advances its own schema to v2 with a v1 migration. Trade's
 existing stable commodity/cargo codec needs no new schema. The release compatibility
-manifest advertises all military source versions through v23.
+manifest advertises all military source versions through v24.
 
 Focused developer validation passed:
 
@@ -46,3 +48,22 @@ and requirement-traceability audits on the new main revision. The release findin
 remains accountable until that revision supplies verified production evidence and
 the fresh audit omits this exact identity. No player QA was requested. No commits,
 GitHub writes, predecessor merges, or predecessor artifacts were used.
+
+Integration repair resolved both reported conflict paths while retaining main's
+council/navigation loader and this issue's mineral-industry loader. Both branches
+used v23 independently, so the combined writer now emits v24. Council/navigation
+v23 preserves council and navigation state and migrates mineral facilities
+uncommissioned; mineral-only v23 preserves paid industrial work and migrates
+absent councils inactive. Current v24 rejects missing records in either domain.
+The Industry save regression executes both migrations and verifies conserved
+trade accounts, retained council revenue, retained mineral work and atomic failure.
+
+Fresh integration validation: **95/95 focused pinned Wurst tests passed**, with
+all production sources typechecked. The selected suites cover Industry, councils,
+civic governance, coastal/celestial navigation, science, framework production
+contracts and late revenue rollback. **71 Python tests passed** across industry,
+Coke/headless conservation, exact evidence, save compatibility, local revenue,
+research generation, goods and coastal navigation. Generation/verification and
+the shared boundary audit passed. See `integration-repair.json` and its compressed
+logs. These focused results do not replace the controller's complete validation
+or fresh main-revision closure audits.

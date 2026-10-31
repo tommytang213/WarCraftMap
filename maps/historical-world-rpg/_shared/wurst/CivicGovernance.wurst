@@ -101,6 +101,10 @@ public class CivicDistrict
 		this.tradeCapacity = tradeCapacity
 
 public class CivicLocalState
+	boolean councilRestored = false
+	string councilOwner = ""
+	int councilReady = 0
+	int councilThrough = 0
 	boolean careRestored = false
 	string careOwner = ""
 	int careReady = 0
@@ -140,6 +144,7 @@ public interface CivicEconomyPort
 	function controller(string id) returns string
 	function lawful(string id) returns boolean
 	function known(string controllerId, string id) returns boolean
+	function overseasAccess(string originId, string recipientId) returns boolean
 	function dispatchAccess(string originId, string recipientId) returns boolean
 	function accessible(string id) returns boolean
 	function pay(string controllerId, string id, int money, string good, int units) returns boolean
@@ -168,6 +173,13 @@ public class CivicLedger
 	// catalogue size without treating a hash as an authoritative identity.
 	hashtable districtIndex = InitHashtable()
 	int array[1024] previousDistrict
+	DispatchRelayLink array[64] councilLinks
+	int councilLinkCount = 0
+	string councilNode = ""
+	int councilMinimumUrbanization = 101
+	int councilTransitionDays = 90
+	int councilEnactmentBasisPoints = 100
+	int councilUpkeepBasisPoints = 50
 	string municipalNode = ""
 	int municipalMinimumUrbanization = 101
 	int archiveUpkeepBasisPoints = 25
@@ -195,6 +207,13 @@ public class CivicLedger
 		copy.dispatchOperatingBasisPoints = dispatchOperatingBasisPoints
 		for i = 0 to dispatchLinkCount - 1
 			copy.addDispatchLink(dispatchLinks[i].originId, dispatchLinks[i].recipientId)
+		copy.councilNode = councilNode
+		copy.councilMinimumUrbanization = councilMinimumUrbanization
+		copy.councilTransitionDays = councilTransitionDays
+		copy.councilEnactmentBasisPoints = councilEnactmentBasisPoints
+		copy.councilUpkeepBasisPoints = councilUpkeepBasisPoints
+		for i = 0 to councilLinkCount - 1
+			copy.addCouncilLink(councilLinks[i].originId, councilLinks[i].recipientId)
 		copy.municipalNode = municipalNode
 		copy.municipalMinimumUrbanization = municipalMinimumUrbanization
 		copy.archiveUpkeepBasisPoints = archiveUpkeepBasisPoints
@@ -260,6 +279,25 @@ public class CivicLedger
 		if i >= 0
 			districts[i].urbanization = urbanization
 			states[i].urbanization = urbanization
+	function addCouncilLink(string originId, string recipientId)
+		for i = 0 to councilLinkCount - 1
+			if councilLinks[i].originId == originId and councilLinks[i].recipientId == recipientId
+				return
+		if councilLinkCount < 64
+			councilLinks[councilLinkCount] = new DispatchRelayLink(originId, recipientId)
+			councilLinkCount++
+	/** Authored connections alone never grant political authority. The port
+	 * rechecks current lawful common control and access at each outcome. */
+	function councilDistrictEligible(int i, string owner, CivicEconomyPort economy) returns boolean
+		let id = districts[i].id
+		if districts[i].annualTax <= 0 or owner == "" or economy.controller(id) != owner or not economy.lawful(id) or economy.administration(id) < minimumAdministration or states[i].urbanization < councilMinimumUrbanization
+			return false
+		for link = 0 to councilLinkCount - 1
+			if councilLinks[link].recipientId == id and economy.overseasAccess(councilLinks[link].originId, id)
+				return true
+		return false
+	function councilEligible(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
+		return councilDistrictEligible(i, owner, economy) and research.rate(owner, "archive_tax_collection_efficiency") > 0 and research.rate(owner, "council_tax_collection_efficiency") > 0
 	function municipalEligible(int i, string owner, CivicResearchEffects research, CivicEconomyPort economy) returns boolean
 		return owner != "" and economy.controller(districts[i].id) == owner and economy.lawful(districts[i].id) and economy.administration(districts[i].id) >= minimumAdministration and states[i].urbanization >= municipalMinimumUrbanization and research.rate(owner, "archive_tax_collection_efficiency") > 0 and research.rate(owner, "municipal_tax_collection_efficiency") > 0
 	/** One operational records service, shared by distinct research sources.
@@ -270,7 +308,7 @@ public class CivicLedger
 		let skill = economy.administration(id)
 		if skill < minimumAdministration
 			return 0
-		return civicScale(research.rate(owner, "archive_tax_collection_efficiency"), skill * 100) + research.rate(owner, "records_tax_collection_efficiency")
+		return civicScale(research.rate(owner, "archive_tax_collection_efficiency"), skill * 100) + research.rate(owner, "records_tax_collection_efficiency") + research.rate(owner, "law_tax_collection_efficiency")
 	function collectionBonus(int i, string owner, int day, CivicResearchEffects research, CivicEconomyPort economy, boolean recordsFunded) returns int
 		var bonus = 0
 		if states[i].surveyed
@@ -280,6 +318,8 @@ public class CivicLedger
 		let s = states[i]
 		if s.municipalOwner == owner and owner != "" and day >= s.municipalReady and day < s.municipalThrough and municipalEligible(i, owner, research, economy)
 			bonus += research.rate(owner, "municipal_tax_collection_efficiency")
+		if s.councilOwner == owner and owner != "" and day >= s.councilReady and day < s.councilThrough and councilEligible(i, owner, research, economy)
+			bonus += research.rate(owner, "council_tax_collection_efficiency")
 		return bonus
 	function controlChanged(string id)
 		let i = index(id)
@@ -291,6 +331,9 @@ public class CivicLedger
 			s.careOwner = ""
 			s.careThrough = 0
 			s.diseaseRemainder = 0
+			s.councilOwner = ""
+			s.councilReady = 0
+			s.councilThrough = 0
 			s.municipalOwner = ""
 			s.municipalReady = 0
 			s.municipalThrough = 0
@@ -336,6 +379,23 @@ public class CivicLedger
 		let s = states[i]
 		if day < s.lastDay or d.annualTax <= 0
 			return "Local tax assessment or campaign date is unavailable."
+		if action == "council-repeal"
+			if s.councilOwner != controllerId
+				return "No council is enacted by this controller."
+			s.councilOwner = ""
+			s.councilReady = 0
+			s.councilThrough = 0
+			return ""
+		if action == "council"
+			if s.councilOwner != "" or not councilEligible(i, controllerId, research, economy)
+				return "Requires Archives, council adoption, qualified overseas authority, accessible authored connections and sufficient urbanization; councils cannot stack."
+			let bill = civicBill(d.annualTax, councilEnactmentBasisPoints) + civicBill(d.annualTax, councilUpkeepBasisPoints)
+			if not economy.pay(controllerId, id, bill, "", 0)
+				return "Treasury resources are insufficient for enactment and prepaid council upkeep."
+			s.councilOwner = controllerId
+			s.councilReady = day + councilTransitionDays
+			s.councilThrough = s.councilReady + 365
+			return ""
 		if action == "municipal-repeal"
 			if s.municipalOwner != controllerId
 				return "No municipal policy is enacted by this controller."
@@ -458,6 +518,13 @@ public class CivicLedger
 				if owner != "" and s.careOwner == owner and at - 1 >= s.careReady and at - 1 >= s.careThrough and lawful and economy.administration(d.id) >= minimumAdministration and economy.accessible(d.id) and research.rate(owner, "isolation_care_losses_avoided") > 0
 					if economy.pay(owner, d.id, civicBill(d.annualTax, careUpkeepBasisPoints), "", 0)
 						s.careThrough = at - 1 + 365
+				if s.councilOwner != owner
+					s.councilOwner = ""
+					s.councilReady = 0
+					s.councilThrough = 0
+				if s.councilOwner == owner and owner != "" and at >= s.councilThrough and councilEligible(i, owner, research, economy)
+					if economy.pay(owner, d.id, civicBill(d.annualTax, councilUpkeepBasisPoints), "", 0)
+						s.councilThrough = at + 365
 				if s.municipalOwner != owner
 					s.municipalOwner = ""
 					s.municipalReady = 0
@@ -500,7 +567,7 @@ public class CivicLedger
 					diffuse(i, diffusionRate)
 				// Tax is a transfer from existing economic liquidity, bounded by
 				// normal taxable capacity. Survey modifies collection efficiency.
-				if lawful and at mod 365 == 0
+				if lawful and d.annualTax > 0 and at mod 365 == 0
 					var funded = false
 					if recordsBonus(d.id, owner, research, economy) > 0
 						funded = economy.pay(owner, d.id, civicBill(d.annualTax, archiveUpkeepBasisPoints), "", 0)
@@ -537,6 +604,8 @@ public class CivicLedger
 					if actual == loss
 						s.diseaseAvoided += exposed - loss
 	ondestroy
+		for i = 0 to councilLinkCount - 1
+			destroy councilLinks[i]
 		for i = 0 to dispatchLinkCount - 1
 			destroy dispatchLinks[i]
 		for i = 0 to count - 1
