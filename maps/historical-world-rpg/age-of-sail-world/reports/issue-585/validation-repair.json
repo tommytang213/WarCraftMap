@@ -1,0 +1,201 @@
+{
+  "format": "issue_585_validation_repair_v1",
+  "status": "pass",
+  "scope": "focused",
+  "releaseClosureEstablished": false,
+  "sourceIdentity": {
+    "sourceRevision": "ef6c84f83df200251f037b713efc0ca87f28bee7",
+    "sourceTreeSha256": "7f950740ce4b2aba06ec3326e27cf0e48ae5af01b11af0c1595d14fdb8ba4044"
+  },
+  "repair": "Preserve integrated Law/Council and navigation implementations. Physical-map builds copy only the library inputs and normalized wurst.build from this campaign build\u2019s fresh passing test assembly, avoiding repeated remote Grill installs and keeping map compilation on the tested library revision. Every physical map still typechecks and builds independently.",
+  "timeoutDiagnosis": {
+    "observationOnly": true,
+    "priorLocalCampaignTestsPassed": 797,
+    "priorLocalCampaignTestsTotal": 797,
+    "stalledStage": "First repeated physical-map Grill dependency installation in framework validation after its tests passed.",
+    "notClosureEvidence": true
+  },
+  "wurst": {
+    "passed": 39,
+    "total": 39,
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "verifiedCompilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+    "libraryInputRevision": "cd059604b85125bd0f6120e77e1306f05905a117",
+    "productionComparisons": {
+      "codified_law": {
+        "comparison": "lawRegisteredResearchMatchedControlCollectsPaidRevenue",
+        "requiredProbes": [
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_advance"
+        ],
+        "allRequiredObserved": true
+      },
+      "colonial_councils": {
+        "comparison": "councilsRegisteredResearchMatchedControlRequiresPaidElection",
+        "requiredProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "civic_clock",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "research"
+        ],
+        "observedProbes": [
+          "administrative_action",
+          "administrative_adoption",
+          "administrative_advance",
+          "administrative_collect",
+          "administrative_pay",
+          "administrative_skill",
+          "agriculture_clock",
+          "appoint",
+          "civic_clock",
+          "civic_diffusion",
+          "civic_disease",
+          "civic_registration",
+          "council_authority",
+          "dispatch",
+          "dispatch_completion",
+          "isolation_care",
+          "land_pay",
+          "medical_snapshot",
+          "naval_snapshot",
+          "research",
+          "rpg_registration",
+          "treasure_definitions",
+          "voyage_advance"
+        ],
+        "allRequiredObserved": true
+      }
+    }
+  },
+  "framework": {
+    "pinnedTypechecksPassed": 2,
+    "pinnedMapBuildsPassed": 2,
+    "maps": [
+      "reed_selector",
+      "reed_west"
+    ],
+    "scope": "Fresh generated fixture selector and regional map, with copied library inputs; network disabled."
+  },
+  "python": {
+    "selectedTestsPassed": 75,
+    "syntheticFixtureNote": "Synthetic compiler fixtures exercise orchestration, dependency reuse and evidence rejection; pinned gameplay results are separately recorded above."
+  },
+  "isolation": "Pinned compiler with network disabled. Read-only host input mounts, copies and all compilation in container-private /tmp. No compiler caches, compiled outputs, or predecessor evidence reused.",
+  "audits": {
+    "kind": "source-only",
+    "releaseClosure": false,
+    "requiredAfterIntegration": "Controller must run complete pinned repository/framework validation, then regenerate release-blocker, runtime-acceptance and requirement-traceability reports on the new main revision. Focused tests cannot close either identity.",
+    "refreshed": [
+      "release-blocker",
+      "runtime-acceptance",
+      "requirement-traceability"
+    ],
+    "sourceOnlyReleaseBlockers": 238,
+    "codifiedLawFindingRetained": true,
+    "colonialCouncilsFindingRetained": true,
+    "traceabilityFreshness": "pass"
+  },
+  "playerQaRequired": false,
+  "artifacts": {
+    "repair-pinned-wurst.log.gz": {
+      "sha256": "6c4b2783ef029392e05902ef98f5b3cb173930224d31bcb6137d7f97bd034b7f",
+      "uncompressedSha256": "94873e0e03f93baaf1f8d8c7ce4d834dad0f63de59b0c7819d984d2096f3d573"
+    },
+    "repair-framework-pinned.log.gz": {
+      "sha256": "ef9364310fee6154b113dcc150b808b0902a47b1521660a4cefa079165dd35bb",
+      "uncompressedSha256": "a229bb114c3e3a9d4a662eee91784fba942b47929b92ee2c10bdb1c66d4ec346"
+    },
+    "repair-python-local-revenue.log.gz": {
+      "sha256": "dd62dc89288593631e0be3f1a9450f5767e79955d26d6bdb529e0a546b2deaf7",
+      "uncompressedSha256": "e0340f6d09ffb2daa49ab68adff93356d427b4145f6c64728b7d684d78f06883"
+    },
+    "repair-python-civic-evidence.log.gz": {
+      "sha256": "996d7cd8fb2fcde752fb8637caa6fe265ed1d1061461a42e96e555cef394397b",
+      "uncompressedSha256": "82b581b30ee4c0f5bc4e8b599d49ad9952ff6cf3c34478b851d507badf09bf24"
+    },
+    "repair-python-dependencies.log.gz": {
+      "sha256": "ece5953fe0d8b3d5df634c447873a5c0f36edf72c970be27fb8dfdd9c745a88a",
+      "uncompressedSha256": "24adda79e21044fef19cdc7f0606a9cd7770fc9a99c705a8622ee923c13bce5d"
+    },
+    "repair-python-framework.log.gz": {
+      "sha256": "0b76f7d866248cbaf14ab19cb378b985f26911120fef37aa1963a5e5aed43127",
+      "uncompressedSha256": "500c47f9e562225dbbdd0afd0d087fd71b2f3bcd02f0004d552e4c6d47bb84ad"
+    },
+    "repair-python-container.log.gz": {
+      "sha256": "d4e6084be741e58522605096ab84197e372c41444ebabf09d397c62c69599dd3",
+      "uncompressedSha256": "e3c9db92e95cda795d0f6ddd95b7e59fb57e1b8256b886144958911e6d66f644"
+    },
+    "repair-python-execution.log.gz": {
+      "sha256": "75425e340309c0a8cc6708b06e587c4f248a05c8b596d0d01ee0e219dc85129a",
+      "uncompressedSha256": "3d8acd31d5aceea6f2548a8578774e602fb6f50169cc1587bb37dcd6e453ea16"
+    },
+    "repair-python-research.log.gz": {
+      "sha256": "b9e886ad6a4a7f33c6e028ec1a13fd31768b42f5ddcb1de69b45a50f89d4e965",
+      "uncompressedSha256": "c9ed18b613241abf5412104761b6d8a9ea2e06cf1babaf419b94723b9a1d7349"
+    },
+    "repair-python-civic.log.gz": {
+      "sha256": "1c14220f77e90990ac0db39fed92df687f02a5dcd8de8a63b569fc4a1dba0b9d",
+      "uncompressedSha256": "b5f6f96802e5c8f9c2d3b6078732b8b6107adf2eb4986e74c98e0dd72c43b3ee"
+    },
+    "repair-python-admin.log.gz": {
+      "sha256": "90a0b31ed5ef771157dbdd847e606a50396bc2bbf8a8a6ca863b4f537cb0a1ec",
+      "uncompressedSha256": "9bb3ce0fccbf6ba768187fdd22e582487dfbf1ab676ddb5480139324c46302e0"
+    },
+    "repair-python-save.log.gz": {
+      "sha256": "a887bbad3cc51e94c259c70fa807d37d42ff33a46229028710677a6bb3b6204a",
+      "uncompressedSha256": "c57bdec5f19166a93690118c71d5c3ee68b3bfc2827da2e950a0cdc421d4bd4f"
+    },
+    "repair-release-audit.log.gz": {
+      "sha256": "0e5421ce818da8ab5f6243c48c24caa7807f86d3d70728e0f790287ce12d4992",
+      "uncompressedSha256": "3197c6f593227afbf2311baa3a2f2ed6f1981d7ba453d30944f4ab5d3a53628f"
+    },
+    "repair-runtime-audit.log.gz": {
+      "sha256": "c57165d89d85be7fd4640e277b901d48bf9b0f9faf4225987439a66142a9a46e",
+      "uncompressedSha256": "80ef4609202503bc2cd36265df9d0b2889fa5e88da0aab9fb851dddda5939371"
+    },
+    "repair-traceability.log.gz": {
+      "sha256": "d00c8d19ebd564a52de7bf08f9d7f77be6e03a9db48375fe7c9ea4dde16896b9",
+      "uncompressedSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c"
+    },
+    "repair-boundary.log.gz": {
+      "sha256": "822ceeb970b5d99b6d108a1be28438d8bc7604fb0e92177ed8315a73ae9942f5",
+      "uncompressedSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    }
+  }
+}

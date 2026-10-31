@@ -807,6 +807,26 @@ def _retain_bootstrap_dependencies(compile_root: Path) -> None:
                 path.unlink()
 
 
+def _install_map_dependencies(executable: str, compile_root: Path, test_compile_root: Path, map_id: str) -> None:
+    """Use the library inputs exercised by this build's fresh complete suite.
+
+    All physical maps share the base wurst.build. Reinstalling for each map can
+    hang on a remote fetch and can compile against a different library revision
+    than the tests. Copy dependencies and Grill's normalized build configuration,
+    never compiler caches or evidence. Grill normalizes dependency URL casing;
+    the compiler derives case-sensitive library folder names from those URLs.
+    The test assembly is recreated by run_execution_tests before this is called.
+    """
+    dependencies = test_compile_root / "_build/dependencies"
+    if dependencies.is_dir():
+        shutil.copytree(dependencies, compile_root / "_build/dependencies")
+        shutil.copy2(test_compile_root / "wurst.build", compile_root / "wurst.build")
+    else:
+        # Dependency-free projects and alternative Grill implementations need
+        # not produce this directory; keep their ordinary installation path.
+        _run(f"Wurst dependency installation [{map_id}]", [executable, "install"], compile_root)
+
+
 def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: bool = True, revision: str | None = None) -> Path:
     config = load_campaign_config(manifest_path)
     base = load_config(config.map_config_path)
@@ -859,7 +879,8 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
                         generated, physical, runtime)
         except (OSError, KeyError, ValueError, MaterializationError) as error:
             raise PackagingError(f"physical map materialization stage failed [{physical.id}]: {error}") from error
-        _run(f"Wurst dependency installation [{physical.id}]", [executable, "install"], compile_root)
+        _install_map_dependencies(executable, compile_root,
+                                  config.project / "_build/wurst-tests/compile", physical.id)
         _run(f"Wurst compilation [{physical.id}]", [executable, "typecheck"], compile_root)
         _run(f"map assembly [{physical.id}]", [executable, "build", str(Path("map") / map_config.source_map.name)], compile_root)
         archive = _find_archive(compile_root / "_build")
