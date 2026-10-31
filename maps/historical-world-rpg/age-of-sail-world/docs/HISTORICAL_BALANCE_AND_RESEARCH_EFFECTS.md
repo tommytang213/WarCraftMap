@@ -833,3 +833,69 @@ minor units, two existing cloth stock units and seven preparation days. This
 does not require later precision instruments or alter authored research gates.
 See [Coastal Triangulation](COASTAL_TRIANGULATION.md) for source composition,
 commissioning, persistence and the complete-evidence closure contract.
+
+Issue #586 adds the owner-delegated Coke-smelted Iron consumer without changing
+its research prerequisites, preferred year (1710), base cost (270), or historical
+cost history. Its typed modifier contributes **600 bp** to `iron_refining_yield`
+only when the recipe actually uses prepared `coke`. Blast Furnace Practice adds
+its independent 700 bp once in that same bucket. The charcoal and gun-barrel
+recipes retain their own bills and effects.
+
+`/industry inspect mineral_iron_refining:stockholm` (also available at Liaoyang's
+existing iron industry) previews the separate mineral-fuel retrofit: 120 treasury
+minor units, 10 tools, 20 timber, 10 assigned workers and 90 days. This is a paid
+compatible furnace installation; a charcoal workshop does not silently become a
+coke furnace. Operating it requires water-powered machinery and experimental
+method, year 1710 or later, current lawful administration, accessible markets and
+warehouse. Each batch reserves 200 ore/feedstock `iron`, 50 prepared `coke`, two
+tools and 20 treasury minor units. Ten funded days each pay one treasury unit and
+one local supply. Base output is 100 `iron_goods`, Coke-smelted Iron alone gives
+106, Blast Furnace alone 107, and both give 113. Recovery is always capped by
+consumed feedstock. Independent bonuses add before rounding. Mineral batches
+carry fractional recovery credit only after successful output, so interrupted or
+storage-blocked callbacks cannot multiply it. Research supplies no workforce,
+equipment, fuel, iron, cash or market liquidity.
+
+The only new upstream commodities are `coal` and `coke`, with existing cargo,
+warehouse and ordinary trade interfaces. `/industry inspect coal_extraction:bristol`
+requires Deep-mine Drainage from 1600, the ordinary paid setup and daily bills,
+two tools and 20 treasury per ten-day batch for 100 coal. It reserves from a
+100,000-unit geological deposit at batch start, including abandoned batches.
+This deposit is not inventory and cannot be traded without paid extraction.
+The [British Geological Survey](https://webapps.bgs.ac.uk/memoirs/docs/B01373.html)
+records Bristol/Kingswood coal working from 1223 and thriving mining after 1594.
+The scenario checks Bristol's authored coordinates against the evidenced
+coalfield hinterland bounds; town count, ownership and timber cannot create a
+coal deposit. No extraction site is granted elsewhere.
+
+`coke_preparation:bristol` uses the same paid setup, two tools, 20 treasury and ten
+funded workdays to turn 100 coal into 50 prepared coke, from 1710 with Experimental
+Method. [English Heritage](https://www.english-heritage.org.uk/visit/places/iron-bridge/history)
+documents Darby's use of coke made from coal in 1709 at Coalbrookdale. Bristol's
+processing recipe represents subsequent paid adoption at an existing coal port;
+it does not claim the invention occurred there. Quantities and geological
+reserves are gameplay tuning, not historical tonnage. Both commodities start
+with zero stock and liquidity. Ordinary purchases and delivered warehouse cargo
+fund transport; industry consumes the cargo's FIFO provenance without merchant
+sale rewards. Coke cannot be substituted by timber or unprepared coal.
+
+Military snapshot **v23** preserves original `i` charcoal/barrel records and adds
+versioned `I` records for new stable facility IDs: equipment owner, ready day,
+batch owner, fixed-point work, last day, fractional yield credit and consumed
+deposit units. Versions 1–22 retain their previous state and initialize all new
+facilities uncommissioned with zero fuel stock; no legacy record can grant a
+mineral retrofit. Current snapshots require every record and reject partial,
+duplicate, malformed, incompatible and controller-inconsistent records before
+mutation. Campaign rollback covers industry together with trade, research,
+treasury and workforce. Capture cancels pending work without refunds, retains
+completed infrastructure and checks the successor's research and administrator.
+Warcraft representation removal/reconstruction never owns industrial authority.
+
+The coke finding has its own exact consumer metadata and evidence verifier.
+Sibling charcoal/barrel execution cannot close it. Closure requires the complete
+passing pinned suite, current source identity, the isolated registered 100/106/
+107/113 comparison's material/payment/labor/output probes, upstream fuel probes,
+and passing lifecycle, negative and rollback cases. Focused developer tests do
+not constitute release closure. After integration, regenerate release-blocker,
+runtime-acceptance and requirement-traceability audits on the new main revision;
+closure additionally requires this identity's absence from that fresh audit.

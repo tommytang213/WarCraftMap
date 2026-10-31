@@ -621,6 +621,14 @@
     "voyage_commit": {
       "path": "wurst/VoyageNavigation.wurst",
       "signature": "function commitSource(VoyageProgress state, VoyageSource source, int amount)"
+    },
+    "industry_material": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "function consume(string id, string good, int units)"
+    },
+    "industry_yield": {
+      "path": "wurst/Industry.wurst",
+      "signature": "function refiningOutput(IndustrySite d, IndustryState s, int rate) returns int"
     }
   },
   "systems": {
@@ -1065,6 +1073,18 @@
       "voyage_advance",
       "voyage_resolve",
       "voyage_commit"
+    ],
+    "mineral_fuel_industry": [
+      "research",
+      "dispatch",
+      "industry_registration",
+      "industry_action",
+      "industry_advance",
+      "industry_pay",
+      "industry_labor",
+      "industry_output",
+      "industry_material",
+      "industry_yield"
     ]
   }
 }

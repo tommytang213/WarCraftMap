@@ -187,7 +187,7 @@ class CoastalFixture
 	t.f.military.snapshot().assertEquals(saved)
 	// A real v21 input contained celestial fraction only and no new site record.
 	let kit = "|j,channel_coastal_bearing_kit," + t.f.military.science.states[3].record()
-	let legacy = saved.replace("v22|", "v21|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(t.f.clock.currentDay) + ",35,800", ",3," + I2S(t.f.clock.currentDay) + ",35,6000")
+	let legacy = saved.replace("v23|", "v21|").replace(coastal, "").replace(celestial, "").replace(kit, "").replace(",3," + I2S(t.f.clock.currentDay) + ",35,800", ",3," + I2S(t.f.clock.currentDay) + ",35,6000")
 	t.f.military.restore(legacy).assertTrue()
 	t.ship().navigation.equipment.assertTrue()
 	t.ship().navigation.reserved.assertEquals(35)

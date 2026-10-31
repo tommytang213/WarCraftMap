@@ -1,0 +1,48 @@
+Issue #586 implements paid mineral-fuel refining and its exact Coke-smelted Iron
+consumer. Scenario authority defines separate coal extraction at evidenced Bristol,
+100-coal → 50-coke preparation, transportable commodities, and compatible mineral
+refineries at the existing iron-producing, market/warehouse-equipped settlements.
+No opening fuel, liquidity, facility, research, or raw iron is granted.
+
+The mineral retrofit costs 120 treasury minor units, 10 tools, 20 timber, 10 assigned
+workers and 90 days. Batches reserve 200 ore/feedstock iron, 50 coke, two tools and
+20 treasury, then pay ten daily treasury/supply bills. Registered isolated research
+produces 106 versus 100 iron_goods; independent Blast Furnace Practice gives 107,
+and both give 113. Recovery is capped by consumed feedstock. Charcoal and barrel
+production retain their own recipes. Industry and research views expose bills,
+conditions and yields, including upstream fuel preparation.
+
+Military v23 adds complete stable-ID I records for new facilities, paid setup,
+batch work, fractional recovery and consumed geological reserves. Existing i
+records remain compatible; v1–v22 initialize new facilities uncommissioned. Capture
+retains completed infrastructure while rechecking successor authority and research.
+The headless ledger advances its own schema to v2 with a v1 migration. Trade's
+existing stable commodity/cargo codec needs no new schema. The release compatibility
+manifest advertises all military source versions through v23.
+
+Focused developer validation passed:
+
+- Pinned Wurst image `frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a`:
+  all production sources typechecked; 13/13 Industry tests passed. Other test
+  annotations were removed only in a temporary assembly. Source was mounted
+  read-only and copied into container-private /tmp as wurstuser. The interpreter's
+  normal per-test deadline was unchanged.
+- Industry/headless/generation tests: 29 passed, including 200 combined batches,
+  fractional resume, depletion, resource rejection and opening-stock safeguards.
+- Coke binding evidence protocol tests: 6 passed.
+- Research generation, design and cost tests: 15 passed.
+- Global goods tests: 4 passed.
+- Release save compatibility tests: 6 passed.
+- Shared framework boundary audit and `git diff --check`: passed.
+
+The compressed logs are focused development results, not full-suite production
+closure evidence. The coke verifier requires its own registered comparison and
+upstream production probes, complete current-source pinned execution and passing
+lifecycle/negative/rollback tests; sibling industry execution cannot close it.
+
+Per the controller handoff, complete repository validation is deferred until
+integration preflight. After merge, regenerate release-blocker, runtime-acceptance
+and requirement-traceability audits on the new main revision. The release finding
+remains accountable until that revision supplies verified production evidence and
+the fresh audit omits this exact identity. No player QA was requested. No commits,
+GitHub writes, predecessor merges, or predecessor artifacts were used.

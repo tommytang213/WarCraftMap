@@ -7,6 +7,8 @@ import ResearchEntitlements
  * Warcraft handles. Active and unloaded settlements use this same consumer. */
 public class IndustryResearchEffects extends CivicResearchEffects
 	int array[32] firstYears
+	string array[32] requiredFuels
+	string array[32] inspections
 	construct(TechnologyEffectPort upstream)
 		super(upstream)
 	function registerIndustrial(CivicEffect binding, int firstYear)
@@ -14,13 +16,27 @@ public class IndustryResearchEffects extends CivicResearchEffects
 		register(binding)
 		if definitionCount > before
 			firstYears[before] = firstYear
+	function registerIndustrialFuel(CivicEffect binding, int firstYear, string fuel)
+		let before = definitionCount
+		registerIndustrial(binding, firstYear)
+		if definitionCount > before
+			requiredFuels[before] = fuel
+	function rateFor(string owner, IndustrySite site, int year) returns int
+		let layer = get(owner)
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i]
+				if d.metric == site.metric and year >= firstYears[i] and layer.has(d.kind, d.contentId) and (requiredFuels[i] == "" or requiredFuels[i] == site.fuelGood)
+					result += d.basisPoints
+		return result
 	function rateAt(string owner, string metric, int year) returns int
 		let layer = get(owner)
 		var result = 0
 		if layer != null
 			for i = 0 to definitionCount - 1
 				let d = definitions[i]
-				if d.metric == metric and year >= firstYears[i] and layer.has(d.kind, d.contentId)
+				if d.metric == metric and requiredFuels[i] == "" and year >= firstYears[i] and layer.has(d.kind, d.contentId)
 					result += d.basisPoints
 		return result
 
@@ -31,6 +47,10 @@ public class IndustrySite
 	string prerequisite
 	string inputGood
 	string outputGood
+	string fuelGood = ""
+	string supportingTechnology = ""
+	int recordVersion = 1
+	int depositUnits = 0
 	int firstYear
 	int inputUnits
 	int fuelUnits
@@ -66,9 +86,13 @@ public class IndustryState
 	string owner = ""
 	int work = 0
 	int lastDay = 0
+	int yieldRemainder = 0
+	int extractedUnits = 0
 	function stop()
 		owner = ""
 		work = 0
+	function mineralRecord() returns string
+		return record() + "," + I2S(yieldRemainder) + "," + I2S(extractedUnits)
 	function record() returns string
 		return equipmentOwner + "," + I2S(ready) + "," + owner + "," + I2S(work) + "," + I2S(lastDay)
 
@@ -155,12 +179,19 @@ public class IndustryLedger
 			return ""
 		if action != "start" or s.equipmentOwner != owner or day < s.ready
 			return "Commission and finish local furnace/foundry machinery first; use equip, start or stop."
+		if d.depositUnits > 0 and s.extractedUnits > d.depositUnits - d.outputUnits
+			return "Geological deposit exhausted; no material can be reserved."
 		if not port.pay(d, owner, false)
 			return "Insufficient treasury, raw materials, fuel or equipment wear stock."
+		if d.depositUnits > 0
+			s.extractedUnits += d.outputUnits
 		s.owner = owner
 		s.work = 0
 		s.lastDay = day
 		return ""
+	function refiningOutput(IndustrySite d, IndustryState s, int rate) returns int
+		let bonus = civicScale(d.outputUnits, rate) + (ModuloInteger(d.outputUnits * rate, 10000) + s.yieldRemainder) div 10000
+		return IMinBJ(d.inputUnits, d.outputUnits + bonus)
 	function advance(int day, IndustryResearchEffects effects, IndustryPort port)
 		for i = 0 to count - 1
 			let d = sites[i]
@@ -171,18 +202,24 @@ public class IndustryLedger
 				if not port.eligible(d, s.owner, at) or s.equipmentOwner != s.owner or at < s.ready
 					s.stop()
 				else
-					let rate = effects.rateAt(s.owner, d.metric, port.year(at))
+					let rate = effects.rateFor(s.owner, d, port.year(at))
 					var output = d.outputUnits
 					var work = d.dailyWork * 10000
+					var remainder = s.yieldRemainder
 					if d.refining()
-						output += civicScale(output, rate)
-					else
+						output = refiningOutput(d, s, rate)
+						if d.recordVersion == 2 and output < d.inputUnits
+							remainder = ModuloInteger(ModuloInteger(d.outputUnits * rate, 10000) + s.yieldRemainder, 10000)
+						else
+							remainder = 0
+					else if d.metric != ""
 						work += d.dailyWork * rate
 					let completed = s.work + work >= d.workRequired * 10000
 					if (not completed or port.room(d, output)) and port.labor(d, s.owner)
 						s.work = IMinBJ(d.workRequired * 10000, s.work + work)
 						if completed
 							port.produce(d, output)
+							s.yieldRemainder = remainder
 							s.stop()
 			if s.owner == ""
 				s.lastDay = IMaxBJ(day, s.lastDay)

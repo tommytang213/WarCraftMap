@@ -17,6 +17,9 @@ class IndustryState:
     work: int = 0
     last_day: int = 0
 
+    yield_remainder: int = 0
+    extracted_units: int = 0
+
     def stop(self):
         self.owner, self.work = '', 0
 
@@ -25,7 +28,7 @@ class IndustryRuntime:
     def __init__(self, catalog, research, economy):
         self.catalog = deepcopy(catalog)
         self.research, self.economy = research, economy
-        self.sites = {s['id']: s for s in catalog['sites']}
+        self.sites = {s['id']: s for s in self.catalog['sites']}
         self.states = {ident: IndustryState() for ident in self.sites}
         self.layers = {}
         self.reconcile()
@@ -34,22 +37,23 @@ class IndustryRuntime:
         self.layers = {p: {(e['kind'], e['contentId']) for e in self.research.entitlements(p)}
                        for p in self.research.polity_ids}
 
-    def rate(self, owner, metric, year):
+    def rate(self, owner, metric, year, fuel=''):
         # One contribution per typed identity, even with multiple source nodes.
         bindings = {(e['unlock']['kind'], e['unlock']['contentId']): e
                     for e in self.catalog['effects']}
         return sum(e['bonusBasisPoints'] for identity, e in bindings.items()
                    if identity in self.layers.get(owner, set()) and e['metric'] == metric
-                   and year >= e['firstYear'])
+                   and year >= e['firstYear'] and (not e.get('requiredFuel') or e['requiredFuel'] == fuel))
 
     def eligible(self, d, owner, day):
         city = self.economy['cities'].get(d['settlementId'])
         return (bool(owner) and city is not None and date.fromordinal(day).year >= d['firstYear']
                 and city['owner'] == owner and city['legal'] and city['administered']
                 and city['accessible'] and city['warehouse_service']
-                and not {d['inputGood'], d['outputGood'], self.catalog['rules']['fuelGood'],
-                         self.catalog['rules']['equipmentGood']} & city['blocked']
-                and d['prerequisite'] in self.research.completed(owner))
+                and not {g for g in (d['inputGood'], d['outputGood'], d['fuelGood'],
+                         self.catalog['rules']['fuelGood'], self.catalog['rules']['equipmentGood']) if g} & city['blocked']
+                and d['prerequisite'] in self.research.completed(owner)
+                and (not d['supportingTechnology'] or d['supportingTechnology'] in self.research.completed(owner)))
 
     def pay(self, d, owner, setup):
         rules = self.catalog['rules']
@@ -57,9 +61,11 @@ class IndustryRuntime:
         treasury = self.economy['treasury']
         money = rules['setup']['money'] if setup else d['money']
         stock = city['stock']
-        inputs = {rules['fuelGood']: rules['setup']['fuel'] if setup else d['fuelUnits'],
-                  rules['equipmentGood']: rules['setup']['equipment'] if setup else d['wearUnits']}
-        if not setup:
+        inputs = {rules['equipmentGood']: rules['setup']['equipment'] if setup else d['wearUnits']}
+        fuel = rules['fuelGood'] if setup else d['fuelGood']
+        if fuel:
+            inputs[fuel] = rules['setup']['fuel'] if setup else d['fuelUnits']
+        if not setup and d['inputGood']:
             inputs[d['inputGood']] = d['inputUnits']
         workers = rules['setup']['workers'] if setup else 0
         if (treasury.get(owner, 0) < money or city['manpower'] < workers
@@ -69,7 +75,7 @@ class IndustryRuntime:
         city['manpower'] -= workers
         for g, n in inputs.items():
             local = min(n, stock.get(g, 0))
-            stock[g] -= local
+            stock[g] = stock.get(g, 0) - local
             if n > local:
                 city['warehouse'][g] -= n - local
         return True
@@ -93,8 +99,11 @@ class IndustryRuntime:
             s.equipment_owner, s.ready, s.last_day = owner, day + self.catalog['rules']['setup']['days'], day
             return True
         if (action != 'start' or s.equipment_owner != owner or day < s.ready
+                or d['depositUnits'] and s.extracted_units + d['outputUnits'] > d['depositUnits']
                 or not self.pay(d, owner, False)):
             return False
+        if d['depositUnits']:
+            s.extracted_units += d['outputUnits']
         s.owner, s.work, s.last_day = owner, 0, day
         return True
 
@@ -108,11 +117,14 @@ class IndustryRuntime:
                 if not self.eligible(d, s.owner, at) or s.equipment_owner != s.owner or at < s.ready:
                     s.stop()
                     continue
-                rate = self.rate(s.owner, d['metric'], date.fromordinal(at).year)
+                rate = self.rate(s.owner, d['metric'], date.fromordinal(at).year, d['fuelGood'])
                 output, work = d['outputUnits'], d['dailyWork'] * 10000
+                remainder = s.yield_remainder
                 if d['mode'] == 'yield':
-                    output += output * rate // 10000
-                else:
+                    credit = output * rate + remainder
+                    output = min(d['inputUnits'], output + credit // 10000)
+                    remainder = credit % 10000 if d['recordVersion'] == 2 and output < d['inputUnits'] else 0
+                elif d['mode'] == 'throughput':
                     work += d['dailyWork'] * rate
                 completed = s.work + work >= d['workRequired'] * 10000
                 city = self.economy['cities'][d['settlementId']]
@@ -127,6 +139,7 @@ class IndustryRuntime:
                 s.work = min(d['workRequired'] * 10000, s.work + work)
                 if completed:
                     stock[d['outputGood']] += output
+                    s.yield_remainder = remainder
                     s.stop()
             if not s.owner:
                 s.last_day = max(day, s.last_day)
@@ -147,19 +160,30 @@ class IndustryRuntime:
             s.last_day = at
 
     def snapshot(self):
-        return dict(schemaVersion=1, states={i: asdict(s) for i, s in self.states.items()})
+        return dict(schemaVersion=2, states={i: asdict(s) for i, s in self.states.items()})
 
     def restore(self, saved, campaign_day):
         if saved is None:  # Old campaigns have no commissioned industry.
             candidate = {i: IndustryState() for i in self.sites}
         else:
-            if not isinstance(saved, dict) or saved.get('schemaVersion') != 1 or set(saved.get('states', {})) != set(self.sites):
+            if (not isinstance(saved, dict) or type(saved.get('schemaVersion')) is not int
+                    or saved['schemaVersion'] not in (1, 2) or not isinstance(saved.get('states'), dict)):
                 raise ValueError('industry: incomplete/unsupported snapshot')
-            candidate = {}
+            legacy = saved['schemaVersion'] == 1
+            required = {i for i, d in self.sites.items() if not legacy or d['recordVersion'] == 1}
+            if set(saved.get('states', {})) != required:
+                raise ValueError('industry: incomplete snapshot')
+            candidate = {i: IndustryState() for i in self.sites}
             for ident, raw in saved['states'].items():
-                if not isinstance(raw, dict) or set(raw) != set(IndustryState.__dataclass_fields__):
+                if not isinstance(raw, dict) or set(raw) != (set(IndustryState.__dataclass_fields__) - ({'yield_remainder', 'extracted_units'} if legacy else set())):
                     raise ValueError('industry: malformed state')
                 s = IndustryState(**raw)
+                d = self.sites[ident]
+                if (type(s.yield_remainder) is not int or not 0 <= s.yield_remainder < 10000
+                        or s.yield_remainder and (d['mode'] != 'yield' or d['recordVersion'] != 2)
+                        or type(s.extracted_units) is not int or not 0 <= s.extracted_units <= d['depositUnits']
+                        or d['depositUnits'] and (s.extracted_units % d['outputUnits'] or s.owner and s.extracted_units < d['outputUnits'])):
+                    raise ValueError('industry: malformed fractional/deposit state')
                 if type(s.owner) is not str or type(s.equipment_owner) is not str:
                     raise ValueError('industry: malformed controller')
                 if any(type(v) is not int or v < 0 or v > 1000000 for v in (s.ready, s.last_day)):

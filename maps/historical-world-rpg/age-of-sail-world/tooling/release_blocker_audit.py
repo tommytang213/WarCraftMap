@@ -119,7 +119,7 @@ def _verified_industry_bindings(execution=None, execution_log=None, revision=Non
     if comparative not in coverage.get('industry', []):
         return set()
     from industry_catalog import build as industry_contract
-    return {(e['unlock']['kind'], e['unlock']['contentId']) for e in industry_contract(PROJECT)['catalog']['effects']}
+    return {(e['unlock']['kind'], e['unlock']['contentId']) for e in industry_contract(PROJECT)['catalog']['effects'] if e['nodeId'] in {'blast_furnace_practice', 'boring_mills'}}
 
 
 def _audit_research_bindings(*, execution=None, execution_log=None, revision=None):
@@ -133,6 +133,8 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     from navigation_efficiency import verified_bindings as verified_navigation
     bound |= verified_navigation(PROJECT, execution, execution_log, revision)
     bound |= _verified_industry_bindings(execution, execution_log, revision)
+    from industry_catalog import verified_coke_bindings
+    bound |= verified_coke_bindings(PROJECT, execution, execution_log, revision)
     from civic_governance import verified_bindings as verified_civic
     bound |= verified_civic(PROJECT, execution, execution_log, revision)
     from medical_care import verified_bindings as verified_medical

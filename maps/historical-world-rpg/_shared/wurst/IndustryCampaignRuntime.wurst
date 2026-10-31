@@ -26,10 +26,10 @@ public class IndustryCampaignRuntime implements IndustryPort
 	override function year(int day) returns int
 		return agricultureYear(day)
 	override function eligible(IndustrySite d, string owner, int day) returns boolean
-		return owner != "" and year(day) >= d.firstYear and economy.controller(d.settlementId) == owner and economy.lawful(d.settlementId) and warehouse(d.settlementId) != null and marketsOpen(d) and campaign.rpg.technologies.isUnlocked(owner, d.prerequisite)
+		return owner != "" and year(day) >= d.firstYear and economy.controller(d.settlementId) == owner and economy.lawful(d.settlementId) and warehouse(d.settlementId) != null and marketsOpen(d) and campaign.rpg.technologies.isUnlocked(owner, d.prerequisite) and (d.supportingTechnology == "" or campaign.rpg.technologies.isUnlocked(owner, d.supportingTechnology))
 	function marketsOpen(IndustrySite d) returns boolean
 		let ledger = campaign.militarySettlements.industry
-		return available(d.settlementId, d.inputGood, 0) and available(d.settlementId, d.outputGood, 0) and available(d.settlementId, ledger.fuelGood, 0) and available(d.settlementId, ledger.equipmentGood, 0)
+		return available(d.settlementId, d.inputGood, 0) and available(d.settlementId, d.outputGood, 0) and available(d.settlementId, ledger.fuelGood, 0) and available(d.settlementId, d.fuelGood, 0) and available(d.settlementId, ledger.equipmentGood, 0)
 	function warehouse(string id) returns TradeStore
 		for i = 0 to trade.storeCount - 1
 			let store = trade.stores[i]
@@ -37,6 +37,8 @@ public class IndustryCampaignRuntime implements IndustryPort
 				return store
 		return null
 	function available(string id, string good, int units) returns boolean
+		if good == ""
+			return units == 0
 		let m = trade.findMarket(id, good)
 		if m == null or m.blockaded or m.occupiedByHostile
 			return false
@@ -45,6 +47,8 @@ public class IndustryCampaignRuntime implements IndustryPort
 		let store = warehouse(id)
 		return store != null and store.quantity(good) >= units - m.stock
 	function consume(string id, string good, int units)
+		if units == 0
+			return
 		let m = trade.findMarket(id, good)
 		let local = IMinBJ(units, m.stock)
 		m.stock -= local
@@ -57,14 +61,16 @@ public class IndustryCampaignRuntime implements IndustryPort
 		let ledger = campaign.militarySettlements.industry
 		let p = campaign.countries.polityIndex(owner)
 		let city = economy.settlement(d.settlementId)
+		var fuelGood = d.fuelGood
 		var bill = d.money
 		var fuel = d.fuelUnits
 		var equipmentUnits = d.wearUnits
 		if setup
+			fuelGood = ledger.fuelGood
 			bill = ledger.setupMoney
 			fuel = ledger.setupFuel
 			equipmentUnits = ledger.setupEquipment
-		if p < 0 or city == null or campaign.countries.treasury[p] < bill or not available(d.settlementId, ledger.fuelGood, fuel) or not available(d.settlementId, ledger.equipmentGood, equipmentUnits)
+		if p < 0 or city == null or campaign.countries.treasury[p] < bill or not available(d.settlementId, fuelGood, fuel) or not available(d.settlementId, ledger.equipmentGood, equipmentUnits)
 			return false
 		if setup
 			if city.manpower < ledger.setupWorkers
@@ -72,7 +78,7 @@ public class IndustryCampaignRuntime implements IndustryPort
 		else if not available(d.settlementId, d.inputGood, d.inputUnits)
 			return false
 		campaign.countries.treasury[p] -= bill
-		consume(d.settlementId, ledger.fuelGood, fuel)
+		consume(d.settlementId, fuelGood, fuel)
 		consume(d.settlementId, ledger.equipmentGood, equipmentUnits)
 		if setup
 			// Workers become the local workshop's permanent assigned workforce.
@@ -109,15 +115,20 @@ public class IndustryCampaignRuntime implements IndustryPort
 			return "Choose a known, administered industrial facility."
 		let d = ledger.sites[i]
 		let s = ledger.states[i]
-		let rate = effects.rateAt(owner, d.metric, campaign.clock.campaignYear())
+		let rate = effects.rateFor(owner, d, campaign.clock.campaignYear())
 		var output = d.outputUnits
 		var work = d.dailyWork * 10000
 		if d.refining()
-			output += civicScale(output, rate)
+			output = ledger.refiningOutput(d, s, rate)
 		else
 			work += d.dailyWork * rate
 		let days = (d.workRequired * 10000 + work - 1) div work
-		return "Industry: " + id + " at " + d.settlementId + ". Requires lawful local administration, existing industrial production, accessible markets, " + d.prerequisite + " and year " + I2S(d.firstYear) + ".\nCommission machinery/workforce: " + I2S(ledger.setupMoney) + " currency minor units, " + I2S(ledger.setupEquipment) + " " + ledger.equipmentGood + ", " + I2S(ledger.setupFuel) + " " + ledger.fuelGood + ", " + I2S(ledger.setupWorkers) + " assigned manpower; " + I2S(ledger.setupDays) + " days. Ready day " + I2S(s.ready) + ".\nBatch reserves " + I2S(d.money) + " currency, " + I2S(d.inputUnits) + " " + d.inputGood + ", " + I2S(d.fuelUnits) + " " + ledger.fuelGood + " fuel and " + I2S(d.wearUnits) + " " + ledger.equipmentGood + " wear stock. Materials use local market stock, then delivered local warehouse cargo. Each funded workday consumes " + I2S(ledger.dailyMoney) + " currency for labor and " + I2S(ledger.dailySupply) + " local supply. Missing labor supplies suspend work.\nExpected output " + I2S(output) + " " + d.outputGood + " after " + I2S(days) + " funded workdays (base " + I2S(d.outputUnits) + " in " + I2S((d.workRequired + d.dailyWork - 1) div d.dailyWork) + " days); research +" + I2S(rate) + " bp " + d.metric + ". Work " + I2S(s.work) + "/" + I2S(d.workRequired * 10000) + ". Capture cancels unfinished work without refund; completed machinery/workforce transfers. Manufactured stock is output, not an immediate artillery unit. Use /industry <inspect|equip|start|stop> SITE."
+		var accounting = ""
+		if d.depositUnits > 0
+			accounting = " Geological extraction remaining " + I2S(d.depositUnits - s.extractedUnits) + " units."
+		if d.refining() and d.recordVersion == 2
+			accounting = " Fractional yield credit " + I2S(s.yieldRemainder) + "/10000."
+		return "Industry: " + id + " at " + d.settlementId + ". Requires lawful local administration, an authored compatible facility, accessible markets and warehouse, " + d.prerequisite + " and supporting technology " + d.supportingTechnology + " and year " + I2S(d.firstYear) + ".\nCommission machinery/workforce: " + I2S(ledger.setupMoney) + " currency minor units, " + I2S(ledger.setupEquipment) + " " + ledger.equipmentGood + ", " + I2S(ledger.setupFuel) + " " + ledger.fuelGood + ", " + I2S(ledger.setupWorkers) + " assigned manpower; " + I2S(ledger.setupDays) + " days. Ready day " + I2S(s.ready) + ".\nBatch reserves " + I2S(d.money) + " currency, " + I2S(d.inputUnits) + " " + d.inputGood + ", " + I2S(d.fuelUnits) + " " + d.fuelGood + " fuel and " + I2S(d.wearUnits) + " " + ledger.equipmentGood + " wear stock. Materials use local market stock, then delivered local warehouse cargo. Each funded workday consumes " + I2S(ledger.dailyMoney) + " currency for labor and " + I2S(ledger.dailySupply) + " local supply. Missing labor supplies suspend work.\nExpected output " + I2S(output) + " " + d.outputGood + " after " + I2S(days) + " funded workdays (base " + I2S(d.outputUnits) + " in " + I2S((d.workRequired + d.dailyWork - 1) div d.dailyWork) + " days); research +" + I2S(rate) + " bp " + d.metric + ". Work " + I2S(s.work) + "/" + I2S(d.workRequired * 10000) + ". Refining output is bounded by reserved feedstock." + accounting + " Capture cancels unfinished work without refund; completed machinery/workforce transfers. Manufactured stock is output, not an immediate artillery unit. Use /industry <inspect|equip|start|stop> SITE."
 
 class IndustryCommand implements CommandHandler
 	IndustryCampaignRuntime runtime
