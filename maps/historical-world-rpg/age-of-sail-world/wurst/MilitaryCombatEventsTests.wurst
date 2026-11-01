@@ -1,5 +1,10 @@
 package MilitaryCombatEventsTests
 
+import WC3Compatibility
+import MilitaryOrderEvents
+import MilitaryOrderEventsTests
+import PartyLocations
+import UnstuckRecovery
 import MilitaryCombatEvents
 import WarcraftRpgRuntime
 import CombatEffects
@@ -2065,4 +2070,202 @@ function deliveredBayonetDamage(CombatFixture f) returns string
 	f.runtime.applyCombatHit(abstractHit, f.runtime.forceIndex("cavalry_horse"), f.runtime.forceIndex("bayonet_foot"), "england", "france", true)
 	abstractHit.damage.display().assertEquals("100")
 	destroy abstractHit
+	f.close()
+
+class ColumnOrderNatives extends RecordingOrderNatives
+	int unavailable = 0
+	real array[256] observedX
+	real array[256] observedY
+	override function x(int token) returns real
+		return observedX[slot(token)]
+	override function y(int token) returns real
+		return observedY[slot(token)]
+	override function ownedBy(int token, player owner) returns boolean
+		let runtime = events.runtime
+		let index = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(token))
+		return token != unavailable and index >= 0 and runtime.forces[index].active and runtime.forces[index].strength > 0 and runtime.adapter.playerForController(runtime.forces[index].controllerId, not runtime.forces[index].mobileForce()) == owner
+	override function movement(int token) returns int
+		let runtime = events.runtime
+		let index = runtime.forceIndex(runtime.adapter.forceIdForRepresentation(token))
+		if index >= 0 and runtime.forces[index].kind == FORCE_FLEET
+			return MOVE_NAVAL
+		return MOVE_LAND
+
+function completeColumns(CombatFixture f)
+	let resources = new BayonetResearchResources()
+	let output = new CannonResearchOutput()
+	f.runtime.rpg.researchResources = resources
+	let commands = new CommandRegistry(false, 6, new CommandText(), output)
+	registerRpgRuntimeCommands(commands, f.runtime.rpg).assertEquals("")
+	let state = f.runtime.rpg.captureState()
+	f.runtime.rpg.restoreState(state + "|u,france,reserve_mobilization|u,france,cast_cannon").assertTrue()
+	f.runtime.rpg.reconcile("france")
+	let before = f.runtime.snapshot()
+	commands.dispatch(null, "/research combined_arms_columns").assertTrue()
+	output.last.assertEquals("Action completed.")
+	f.runtime.snapshot().assertEquals(before)
+	f.runtime.rpg.technologies.bindingStatus(f.runtime.rpg.technologies.get("combined_arms_columns").unlocks[0]).assertEquals("bound")
+
+function columnNativeFixture() returns CombatFixture
+	let f = landWeaponCombatFixture()
+	completeColumns(f)
+	for role = 0 to 1
+		var profile = "sabre_cavalry"
+		var id = "column_support_horse"
+		if role == 1
+			profile = "field_artillery_battery"
+			id = "column_support_guns"
+		let kit = f.runtime.land.profile(profile)
+		let formation = new RuntimeForce(id, "france", "europe_west", kit.categoryId, FORCE_ARMY, kit.unitTypeId, 100, 100, 0., 0.)
+		formation.combatProfileId = profile
+		f.runtime.recruit(formation).assertTrue()
+	let grid = new PartyNavigation("europe_west", -4096., -4096., 64, 64)
+	for i = 0 to 63
+		grid.rows[i] = "64:1,"
+	f.runtime.land.battlefields[0] = grid
+	f.runtime.land.battlefieldCount = 1
+	f.runtime.issueOrder("bayonet_foot", "attack-move", 512., 0.).assertTrue()
+	f.runtime.issueOrder("column_support_horse", "attack-move", 512., 0.).assertTrue()
+	f.runtime.issueOrder("column_support_guns", "attack-move", 512., 0.).assertTrue()
+	let navigation = new RecoveryNavigation("europe_west")
+	navigation.movement[MOVE_LAND] = grid
+	let natives = new ColumnOrderNatives()
+	let orders = new MilitaryOrderEvents(f.runtime, f.startup.campaign.identity, navigation, natives)
+	natives.events = orders
+	orders.install()
+	return f
+
+function columnNativeDamage(CombatFixture f, string attack, string nativeWeapon, string amount) returns string
+	f.runtime.gameplaySeconds += 10.
+	var source = "cavalry_horse"
+	if attack == "firearm_volley" or attack == "land_firearm"
+		source = "drill_musket"
+	let hit = new CombatHit(attack, new ExactRational(amount, "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token("bayonet_foot"), f.token(source), nativeWeapon, hit).assertEquals(1)
+	let result = hit.damage.display()
+	f.events.onWeaponDamage(f.events.generation, f.token("bayonet_foot"), f.token(source), nativeWeapon, hit).assertEquals(1)
+	f.runtime.applyCombatHit(hit, f.runtime.forceIndex(source), f.runtime.forceIndex("bayonet_foot"), "england", "france", true)
+	hit.damage.display().assertEquals(result)
+	destroy hit
+	return result
+
+@test function columnsInstalledCallbacksRecheckCompositionAndAuthenticatedWeapons()
+	let f = columnNativeFixture()
+	let orders = f.runtime.orderCallbacks castTo MilitaryOrderEvents
+	let natives = orders.natives castTo ColumnOrderNatives
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	columnNativeDamage(f, "firearm_volley", "normal", "105").assertEquals("100")
+	columnNativeDamage(f, "land_firearm", "normal", "105").assertEquals("100")
+	let earned = f.runtime.rpg.captureState()
+	f.runtime.rpg.restoreState(earned.replace("|u,france,combined_arms_columns", "")).assertTrue()
+	f.runtime.rpg.reconcile("france")
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	f.runtime.rpg.restoreState(earned).assertTrue()
+	f.runtime.rpg.reconcile("france")
+	for i = 0 to 3
+		var nativeWeapon = ""
+		if i == 1
+			nativeWeapon = "siege"
+		else if i == 2
+			nativeWeapon = "pierce"
+		else if i == 3
+			nativeWeapon = "unknown"
+		columnNativeDamage(f, "land_cavalry_melee", nativeWeapon, "105").assertEquals("105")
+		columnNativeDamage(f, "firearm_volley", nativeWeapon, "105").assertEquals("105")
+	columnNativeDamage(f, "siege", "normal", "105").assertEquals("105")
+	columnNativeDamage(f, "spell", "", "105").assertEquals("105")
+	let horse = f.runtime.forces[f.runtime.forceIndex("column_support_horse")]
+	let token = f.token(horse.id)
+	natives.observedX[natives.slot(token)] = 768.
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	natives.observedX[natives.slot(token)] = 768.001
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	natives.observedX[natives.slot(token)] = 0.
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	let guns = f.runtime.forces[f.runtime.forceIndex("column_support_guns")]
+	guns.supply = 0
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	guns.supply = 100
+	let cavalry = f.runtime.forces[f.runtime.forceIndex("cavalry_horse")]
+	let kit = cavalry.combatProfileId
+	cavalry.combatProfileId = ""
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	cavalry.combatProfileId = kit
+	// Changing the current native order must revoke an earlier shared command.
+	natives.remember(token, COMPAT_ORDER_MOVE, 512., 0., 0)
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	f.runtime.issueOrder(horse.id, "attack-move", 512., 0.).assertTrue()
+	orders.reconstruct()
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	// Friendly, unrelated and non-infantry recipients cannot claim the source.
+	let friendly = new CombatHit("land_cavalry_melee", new ExactRational("105", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, f.token("bayonet_foot"), f.token(guns.id), "normal", friendly).assertEquals(-1)
+	friendly.damage.display().assertEquals("105")
+	friendly.modified.assertFalse()
+	destroy friendly
+	let unrelated = new CombatHit("land_cavalry_melee", new ExactRational("105", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, 999999, f.token(cavalry.id), "normal", unrelated).assertEquals(0)
+	unrelated.damage.display().assertEquals("105")
+	destroy unrelated
+	let mounted = new CombatHit("land_cavalry_melee", new ExactRational("105", "1", "1"))
+	f.events.onWeaponDamage(f.events.generation, token, f.token(cavalry.id), "normal", mounted).assertEquals(1)
+	mounted.damage.display().assertEquals("105")
+	destroy mounted
+	// A native death or owner change preceding the authority event cancels
+	// cooperation during the impact capture instead of using stale positions.
+	natives.unavailable = token
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	natives.unavailable = 0
+	f.runtime.issueOrder(horse.id, "attack-move", 512., 0.).assertTrue()
+	orders.reconstruct()
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	horse.strength = 0
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	horse.strength = 100
+	f.runtime.transferControl(horse.id, "england")
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	orders.stop()
+	f.close()
+
+@test function columnsSaveResumeLegacyAndFailedLoadRollbackDeriveCurrentComposition()
+	let f = columnNativeFixture()
+	let orders = f.runtime.orderCallbacks castTo MilitaryOrderEvents
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	// Save a legal late-era clock checkpoint, as in the Bayonet regression.
+	var cursor = 0
+	while cursor < f.startup.clock.occurrenceCount and f.startup.clock.occurrences[cursor].day <= 649041
+		cursor++
+	f.startup.clock.restoreState(2, 649041, cursor, 0., 1.).assertTrue()
+	f.runtime.landYear = f.startup.clock.campaignYear()
+	f.startup.trade.agriculture.reset(649041, f.runtime.landYear)
+	f.startup.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "columns").assertTrue()
+	let completed = f.runtime.rpg.captureState()
+	let military = f.runtime.snapshot()
+	military.contains("progression_combined_arms_columns").assertFalse()
+	f.runtime.rpg.restoreState(completed.replace("|u,france,combined_arms_columns", "")).assertTrue()
+	f.runtime.rpg.reconcile("france")
+	let before = f.runtime.snapshot()
+	let beforeRpg = f.runtime.rpg.captureState()
+	f.startup.ports.failAfterFirstMember = true
+	f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.startup.ports.failAfterFirstMember = false
+	f.runtime.snapshot().assertEquals(before)
+	f.runtime.rpg.captureState().assertEquals(beforeRpg)
+	columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("105")
+	for repeat = 0 to 1
+		f.startup.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+		f.runtime.rpg.technologies.reconstructAll()
+		columnNativeDamage(f, "land_cavalry_melee", "normal", "105").assertEquals("100")
+	orders.stop()
+	// Literal legacy weapon-less authority remains unknown; research cannot
+	// manufacture kit or resurrect a coordinated order after migration.
+	var legacy = military.replace("v23|", "v8|")
+	for i = 0 to f.runtime.forceCount - 1
+		let formation = f.runtime.forces[i]
+		if formation.combatProfileId != ""
+			legacy = legacy.replace("|p," + formation.id + "," + formation.combatProfileId, "")
+		if formation.nextFireAt > 0.
+			legacy = legacy.replace("|h," + formation.id + "," + R2S(formation.nextFireAt), "")
+	f.runtime.restore(legacy).assertTrue()
+	f.runtime.managementSummary("bayonet_foot").contains("inactive: requires compatible firearm infantry").assertTrue()
 	f.close()

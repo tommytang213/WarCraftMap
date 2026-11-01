@@ -2011,6 +2011,8 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 					let binding = land.definitions[k]
 					if entry.kind == binding.kind and entry.contentId == binding.contentId
 						rows += "\n    +" + I2S(binding.basisPoints) + " bp " + binding.metric + "; requires current control, historical availability and actual compatible equipment/supply. Use /land inspect ARSENAL for costs, conditions, duration and upkeep."
+						if binding.metric == "coordinated_infantry_defense"
+							rows += "\n    " + land.columnInspection
 				port = land.upstream
 			if port instanceof CivicResearchEffects
 				let civic = port castTo CivicResearchEffects

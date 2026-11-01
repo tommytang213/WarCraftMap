@@ -131,7 +131,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_arquebus_volley_drill'),
                 ('policy', 'progression_artillery_offices'),
                 ('modifier', 'progression_artillery_train'),
-                ('modifier', 'progression_bayonet_system')}])
+                ('modifier', 'progression_bayonet_system'),
+                ('modifier', 'progression_combined_arms_columns')}])
         self.assertNotIn('effectMagnitude', self.source)
 
     def test_dispatch_registration_keeps_scenario_network_and_bounded_consumer(self):
