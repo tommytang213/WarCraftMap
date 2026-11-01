@@ -954,7 +954,7 @@
           "contains": [
             "class IndustryLedger",
             "port.produce(d, output)",
-            "effects.rateAt(s.owner, d.metric, port.year(at))"
+            "effects.rateFor(s.owner, d, port.year(at))"
           ]
         },
         {
@@ -1065,7 +1065,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 23",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 24",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages",
             "banking.states[i].record()",
@@ -1129,7 +1129,10 @@
           "path": "wurst/IndustryTests.wurst",
           "contains": [
             "industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl",
-            "industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts"
+            "industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts",
+            "cokeOnlyRegisteredResearchConsumesPaidMineralFuelAndProduces106Against100And113Combined",
+            "cokeUpstreamPaidExtractionPreparationAndTransportConserveResourcesWithoutLiquidityGrants",
+            "cokeLateCampaignFailureRollsBackRetrofitFuelReservationsAndFractionalAccounts"
           ]
         },
         {

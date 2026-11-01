@@ -22,7 +22,7 @@ EXPECTED_NODES = {
     "blast_furnace_practice", "boring_mills", "botanical_collecting",
     "brokerage_houses", "cadastral_survey", "calculus_methods",
     "campaign_bakeries", "canal_logistics", "canal_tolls_finance",
-    "careening_stations", "carronade_batteries", "carvel_hull_construction",
+    "coke_smelted_iron", "careening_stations", "carronade_batteries", "carvel_hull_construction",
 }
 REGIONS = (
     "africa-1450.json", "americas-caribbean-1450.json",
@@ -38,9 +38,9 @@ class ResearchGameplayDesignTests(unittest.TestCase):
         cls.catalog = json.loads(RESEARCH.read_text(encoding="utf-8"))
         cls.design = json.loads(EFFECTS.read_text(encoding="utf-8"))
 
-    def test_all_26_are_valid_and_unique_authored_research_unlocks(self):
+    def test_initial_and_delegated_effects_are_valid_and_unique_authored_research_unlocks(self):
         records = self.design["effects"]
-        self.assertEqual(26, len(records))
+        self.assertEqual(27, len(records))
         self.assertEqual(EXPECTED_NODES, {x["nodeId"] for x in records})
         self.assertEqual(1, self.design["schemaVersion"])
         self.assertEqual("1450-01-01", self.design["baselineDate"])

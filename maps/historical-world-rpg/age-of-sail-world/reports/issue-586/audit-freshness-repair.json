@@ -1,0 +1,55 @@
+{
+  "format": "warcraftmap_issue_586_audit_freshness_repair_v1",
+  "sourceRevision": "ec4776dd74ced62d7bdce8096fffe58442bfaf73",
+  "sourceTreeSha256": "218ced8288766d261a27830533b44547bdfca1243775a49afb71bf4d43018409",
+  "scope": "Regenerate all three source-only audit snapshots after the integrated recovery fixture repair; preserve production implementation and fail-closed evidence gates.",
+  "checks": {
+    "coke": {
+      "status": "pass",
+      "testExecutions": 19,
+      "log": "audit-freshness-coke.log.gz",
+      "logSha256": "70c88d95944540c9cf8e147e0b8c02e3a86c6e1dbaeff1126f1dadeb331d269b",
+      "command": "python3 -m unittest discover -s tests -p 'test_coke*.py' -v"
+    },
+    "industry": {
+      "status": "pass",
+      "testExecutions": 16,
+      "log": "audit-freshness-industry.log.gz",
+      "logSha256": "f0f7e82e6117ac6b3341acd9fb7b9ede80f956b9727bbfa269dff6f9e9987490",
+      "command": "python3 -m unittest discover -s tests -p 'test_industry.py' -v"
+    },
+    "runtime": {
+      "status": "pass",
+      "testExecutions": 25,
+      "log": "audit-freshness-runtime.log.gz",
+      "logSha256": "43eebace559be37332cff552935ea4d14cb72b093cc73d11a731259b49c8f23a",
+      "command": "python3 -m unittest discover -s tests -p 'test_runtime_acceptance.py' -v"
+    },
+    "release": {
+      "status": "pass",
+      "testExecutions": 10,
+      "log": "audit-freshness-release.log.gz",
+      "logSha256": "7650448d3fc2b285a5f24156078b6b057336a91cbd687ff4f90f0d8d8f6a0a2c",
+      "command": "python3 -m unittest discover -s tests -p 'test_release_blocker_audit.py' -v"
+    },
+    "traceability": {
+      "status": "pass",
+      "testExecutions": 54,
+      "log": "audit-freshness-traceability.log.gz",
+      "logSha256": "fa15b5ff70faa4ed337ee05df0831698913b5ab59918b67d6eda5a1ae12d9d5f",
+      "command": "python3 -m unittest discover -s tests -p 'test_requirement_traceability.py' -v"
+    },
+    "regressions": {
+      "status": "pass",
+      "testExecutions": 2,
+      "log": "audit-freshness-regressions.log.gz",
+      "logSha256": "e161d49fcd32f930b503b53172802454d8f510e6abe77e69f01412da2574927b",
+      "command": "python3 -m unittest test_runtime_acceptance.RuntimeAcceptanceTests.test_checked_in_reports_match_current_sources_at_recorded_revision test_release_blocker_audit.ReleaseBlockerAuditTests.test_checked_in_machine_and_human_reports_are_current -v (cwd: tests)"
+    }
+  },
+  "focusedSuiteExecutions": 124,
+  "repeatedReportedRegressionExecutions": 2,
+  "frameworkBoundary": "pass",
+  "diffCheck": "pass",
+  "evidenceLimit": "Focused Python development validation only. Full pinned Wurst and repository validation, exact Coke production evidence and fresh post-merge closure audits remain controller-owned. Source-only publication blockers remain explicit. No predecessor artifacts were used."
+}

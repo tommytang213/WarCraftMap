@@ -62,6 +62,17 @@ def validate_catalog(catalog, settlements, routes):
         for kind, values in row["economyIdentity"].items():
             require(len(values) == len(set(values)), f"{sid}: duplicate {kind} reference")
             for good_id in values: refs[good_id].append((sid, kind))
+    # Paid mineral commodities are reachable through commissioned industry, not
+    # opening settlement baskets (which would seed stock and liquidity).
+    paid = {ident: good['paidProductionRecipe'] for ident, good in goods.items() if 'paidProductionRecipe' in good}
+    if paid:
+        from industry_catalog import build
+        sites = build()['catalog']['sites']
+        for ident, recipe in paid.items():
+            matches = [site for site in sites if site['outputGood'] == ident and site['id'].startswith(recipe + ':')]
+            require(matches and goods[ident]['ordinaryAvailability'] == 0, f"{ident}: invalid paid production path")
+            for site in matches:
+                refs[ident].append((site['settlementId'], 'paid_production'))
     exceptions = {x["id"] for x in catalog.get("abstractExceptions", [])}
     unresolved = set(refs) - set(goods) - exceptions
     require(not unresolved, "unresolved settlement goods: " + ", ".join(sorted(unresolved)))

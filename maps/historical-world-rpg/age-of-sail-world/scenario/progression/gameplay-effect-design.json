@@ -382,6 +382,21 @@
       "bonusBasisPoints": 800,
       "rules": "Only ships with historically compatible carvel construction/refit; no automatic redesign of legacy hulls or combat invulnerability",
       "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "coke_smelted_iron",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_coke_smelted_iron"
+      },
+      "family": "industry",
+      "activation": "passive_research",
+      "recipient": "commissioned_mineral_fuel_iron_refineries",
+      "metric": "iron_refining_yield",
+      "bonusBasisPoints": 600,
+      "requiredFuel": "coke",
+      "rules": "Only compatible commissioned mineral-fuel refining with lawful administration, workers, supporting technology, ore, coke, tools and paid labor. Adds once with Blast Furnace Practice to bounded feedstock recovery; no research grants equipment, fuel or iron.",
+      "designStatus": "approved_unimplemented"
     }
   ]
 }

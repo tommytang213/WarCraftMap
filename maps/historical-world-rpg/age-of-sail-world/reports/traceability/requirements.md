@@ -711,7 +711,7 @@ Counts are unique stable IDs; per-map assignments, missing/extra/changed IDs and
 | settlements | 827 | None | fail |
 | polities | 230 | None | fail |
 | provinces | 281 | None | fail |
-| goods | 90 | None | fail |
+| goods | 92 | None | fail |
 | markets | 827 | None | fail |
 | military-variants | 472 | None | fail |
 | heroes | 107 | None | fail |

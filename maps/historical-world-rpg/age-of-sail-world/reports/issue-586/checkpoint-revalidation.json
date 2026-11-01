@@ -1,0 +1,93 @@
+{
+  "format": "warcraftmap_issue_586_checkpoint_revalidation_v1",
+  "sourceRevision": "5fe7dd44c4cbc3e0c4965bfb57b2d8c72dfab4cb",
+  "sourceTreeSha256": "baf793c527f7fe7fd127918dfda0f0397aa35c29eb76d50f795ab85c4c63859d",
+  "scope": "Fresh focused validation of the current integrated checkpoint. The existing combat migration fixture repair already resolves all four failures in the supplied controller transcript; no further source changes were needed.",
+  "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+  "wurst": {
+    "status": "pass",
+    "tests": 89,
+    "transcriptVerified": true,
+    "selectedSuites": [
+      "IndustryTests.wurst",
+      "LiveRecoveryTests.wurst",
+      "MilitaryCombatEventsTests.wurst",
+      "MilitarySettlementRuntimeTests.wurst"
+    ],
+    "reportedFailures": [
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves",
+        "line": 712,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:combatProfilesMigrateAndLateCampaignRollbackRetainsDamage",
+        "line": 1473,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:disciplineReconstructsOldSavesAndRollsBackLateCampaignLoads",
+        "line": 1702,
+        "status": "pass"
+      },
+      {
+        "id": "wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense",
+        "line": 2031,
+        "status": "pass"
+      }
+    ]
+  },
+  "python": {
+    "status": "pass",
+    "tests": 49,
+    "checks": {
+      "coke": {
+        "status": "pass",
+        "tests": 19
+      },
+      "industry": {
+        "status": "pass",
+        "tests": 16
+      },
+      "save": {
+        "status": "pass",
+        "tests": 6
+      },
+      "tradition": {
+        "status": "pass",
+        "tests": 6
+      },
+      "freshness": {
+        "status": "pass",
+        "tests": 1
+      },
+      "release-freshness": {
+        "status": "pass",
+        "tests": 1
+      }
+    }
+  },
+  "assembly": "Current generated scenario verification passed; 205 current Wurst files match the tested assembly, with only unselected test annotations removed. All production sources typechecked.",
+  "frameworkBoundary": "pass",
+  "logs": {
+    "wurst": {
+      "path": "checkpoint-revalidation-wurst.log.gz",
+      "uncompressedSha256": "0f7a12e6dbcee96f1a0ec00090098cbd5febb7204964c174e75336e62cebfb4d"
+    },
+    "python": {
+      "path": "checkpoint-revalidation-python.log.gz",
+      "uncompressedSha256": "f5e058f1c34872aa4a241d38aabbbd9fe6517a372771e0f4b6b05d9e61ea0be5"
+    },
+    "assembly": {
+      "path": "checkpoint-revalidation-assembly.log.gz",
+      "uncompressedSha256": "b27e5592d0200377781f43537554bfa2635bdd0fd541ecf137e5f8920a2b712a"
+    },
+    "boundary": {
+      "path": "checkpoint-revalidation-boundary.log.gz",
+      "uncompressedSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    }
+  },
+  "evidenceLimit": "Focused developer validation only. Full repository validation and fresh post-merge release-blocker, runtime-acceptance and requirement-traceability audits remain controller-owned. These results do not establish release blocker closure.",
+  "safety": "The pinned container ran as wurstuser with network disabled, read-only source and stdlib mounts, and builds in container-private /tmp. No commits, GitHub writes, predecessor merges, or predecessor artifacts were used."
+}

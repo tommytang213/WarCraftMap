@@ -1,0 +1,536 @@
+{
+  "format": "warcraftmap_issue_586_combat_validation_repair_v1",
+  "baseRevision": "e4a72c459d416aff1a079aa7f7636c555fb0c8cd",
+  "sourceTreeSha256": "baf793c527f7fe7fd127918dfda0f0397aa35c29eb76d50f795ab85c4c63859d",
+  "scope": "Preserve integrated production behavior. Correct four v6/v8 combat migration fixtures to omit mineral records absent from those schemas, retain atomic rejection of relabeled current records, and verify legacy migration grants no mineral retrofit, work, fractional recovery or extracted fuel.",
+  "sources": {
+    "maps/historical-world-rpg/age-of-sail-world/wurst/MilitaryCombatEventsTests.wurst": "ba1a5cb7a9e1d1d2172a5017fa733164b77be49d624288cef9012f14d7fb8ca0"
+  },
+  "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+  "selectedSuites": [
+    "IndustryTests.wurst",
+    "LiveRecoveryTests.wurst",
+    "MilitaryCombatEventsTests.wurst",
+    "MilitarySettlementRuntimeTests.wurst"
+  ],
+  "checks": {
+    "before": {
+      "status": "expected_failure",
+      "log": "combat-repair-before.log.gz",
+      "logSha256": "9dcd3cddf02afeb246ef100037497a9a365459a7da9a8b26f168300042838337",
+      "testExecutions": 4
+    },
+    "after": {
+      "status": "pass",
+      "log": "combat-repair-after.log.gz",
+      "logSha256": "11cef1cc6d43cf88147f5e153433bf4911fe27a4a3a35c74341caa911d54977b",
+      "testExecutions": 89,
+      "results": [
+        {
+          "id": "wurst/IndustryTests.wurst:industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl",
+          "line": 103,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryMissingInfrastructureGearResourcesEraAndControllerNeverManufactureFreeOutput",
+          "line": 143,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industrySourcesRepairOnceAndAbstractTravelRestoreCaptureAndLegacyAreDeterministic",
+          "line": 174,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryTransferWithoutInstalledClockUsesCommittedWorkDayAndNeverRefundsMaterials",
+          "line": 224,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts",
+          "line": 250,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryWarehouseDeliveriesConsumeActualCargoWithoutMintingMarketCashOrMerchantRewards",
+          "line": 274,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryFixedPointYieldFloorsWithoutFloatingPointOrNativeProductOverflow",
+          "line": 299,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeOnlyRegisteredResearchConsumesPaidMineralFuelAndProduces106Against100And113Combined",
+          "line": 315,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeUpstreamPaidExtractionPreparationAndTransportConserveResourcesWithoutLiquidityGrants",
+          "line": 369,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeMissingBillsCompatibilityEraAuthorityStorageAndCancellationFailClosed",
+          "line": 415,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeFractionsDuplicateSourcesPlayerAiInactiveCaptureAndReconstructionRetainPaidState",
+          "line": 493,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeCurrentAndLegacyStableRecordsRejectPartialForgedAndMalformedRetrofitsAtomically",
+          "line": 546,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeLateCampaignFailureRollsBackRetrofitFuelReservationsAndFractionalAccounts",
+          "line": 603,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+          "line": 101,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+          "line": 167,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryUsesPerEntityCandidatesThenLastSafeThenConnectedAnchor",
+          "line": 290,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+          "line": 337,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryTravelRebuildsHintsInDestinationCoordinates",
+          "line": 372,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords",
+          "line": 432,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:nativeHeroDefeatRetiresRecoveryRegistrationAndKeepsPhysicalAuthority",
+          "line": 497,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:productionCombatRegistrationCapturesOnceAndKeepsPeaceAuthority",
+          "line": 211,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:peacefulAlliedUnknownAndObsoleteCombatCannotChangeAuthority",
+          "line": 240,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:attackerAllegianceUsesCampaignIdentityForForcesAndHeroes",
+          "line": 265,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:exactFractionalCaptureDeadlineSurvivesNestedPausesAndLiveSaveLoad",
+          "line": 275,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:combatWavesRemainBoundedAndCasualtiesAndQuietDeadlinesSurviveResume",
+          "line": 309,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:militaryClockVersionMigrationAndMalformedSnapshotsAreAtomic",
+          "line": 340,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:failedCombatLoadRestoresRemainingTimeAndRetiresObsoleteCallbacks",
+          "line": 364,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:freshPhysicalRuntimeKeepsFractionalProtectionAndManualPause",
+          "line": 388,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:delayedTimerDoesNotCatchUpWavesOrSpendAtTheQuietDeadline",
+          "line": 411,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:combatOnMappedTerrainPreservesCaptureAndEarnedTradition",
+          "line": 457,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedCombatEarnsIndependentPlayerAndAiLandAndNavalTradition",
+          "line": 492,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:weightedNativeKillsUseCommittedStrengthAndFloorEachContribution",
+          "line": 532,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:rejectedCombatAndMissingContributionContextCannotEarnTradition",
+          "line": 559,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:duplicateStaleAndRetiredDeathsCannotReplayEarnedTradition",
+          "line": 599,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionAndConsumedLossesSurviveFreshCampaignAndFailedRestore",
+          "line": 637,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:traditionMigrationPreservesEarnedTracksAndRejectsPartialCurrentSaves",
+          "line": 712,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:committedGarrisonAndDefenseLossesEarnOnlyTheirOwnEnemyKillContribution",
+          "line": 743,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:unassignedIneligibleContributionsAndLargeEligibleAwardsRemainSeparate",
+          "line": 761,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:earnedTraditionReconcilesRealLocalObjectsWithoutRevivingDeadAuthority",
+          "line": 786,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:combatEarnedTraditionTravelsInTheProductionCampaignCheckpoint",
+          "line": 819,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedCombatCrossesIntegerBoundaryAndCommitsOnce",
+          "line": 861,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:largeWeightedCallbacksMatchIntegerOracleAcrossControllersAndCategories",
+          "line": 920,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:malformedExactExperienceIsRejectedByCampaignLoadBeforeMutation",
+          "line": 944,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:nativeTraditionProjectionLimitsCannotEraseExperienceOrRejectLoss",
+          "line": 986,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion1MigratesThroughFreshCampaignCodec",
+          "line": 1074,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion2MigratesThroughFreshCampaignCodec",
+          "line": 1077,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion3MigratesThroughFreshCampaignCodec",
+          "line": 1080,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion4MigratesThroughFreshCampaignCodec",
+          "line": 1083,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion5MigratesThroughFreshCampaignCodec",
+          "line": 1086,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion6MigratesThroughFreshCampaignCodec",
+          "line": 1089,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:legacyMilitaryIntegerVersion7MigratesThroughFreshCampaignCodec",
+          "line": 1092,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedLandCallbacksDeliverExactResolvedLayers",
+          "line": 1153,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedNavalCallbacksDeliverExactResolvedLayers",
+          "line": 1156,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:everyMilestoneBoundaryKeepsAdjacentContinuousProgression",
+          "line": 1159,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:resolvedLayersFollowControlCategoriesActivationAndInspection",
+          "line": 1171,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:milestoneReplacementRetainsUnrelatedEarlierEffectsAndExactGrowth",
+          "line": 1224,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:nativeTypedLayerReplacementKeepsUnrelatedModifiersAndLoadCheckpoint",
+          "line": 1249,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:landMilestoneDamageBoundariesAndUnboundedGrowth",
+          "line": 1342,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:navalMilestoneDamageBoundariesAndUnboundedGrowth",
+          "line": 1357,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:gunfireResistanceAndIndependentSourcesUseExactRatings",
+          "line": 1372,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:weaponAndAttackMetadataFailClosedWithoutChangingOtherCombat",
+          "line": 1399,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:milestoneDamageFollowsTransferReconstructionAndLossReceipts",
+          "line": 1439,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:combatProfilesMigrateAndLateCampaignRollbackRetainsDamage",
+          "line": 1473,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:formationInspectionDescribesActiveReplacedAndUnarmedEffects",
+          "line": 1509,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:rosterRecruitmentAndMalformedProfilesCannotInventWeapons",
+          "line": 1524,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:nativeDamageValidationPreservesUnsupportedAndSubprecisionEvents",
+          "line": 1541,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:verifiedMilitaryFireAlsoModifiesHostileCampaignHeroDamage",
+          "line": 1559,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:pikeDisciplineUsesCompletedTypedEntitlementsOnceAndLeavesOtherLayers",
+          "line": 1582,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:disciplineAddsToContinuousExactRatingsBeforeOneDefensiveDivision",
+          "line": 1636,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:disciplineFollowsControllerAndCategoryAndRejectsStaleCombat",
+          "line": 1667,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:disciplineReconstructsOldSavesAndRollsBackLateCampaignLoads",
+          "line": 1702,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonRegisteredResearchChangesQualifiedGameplayExactlyOnce",
+          "line": 1788,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonRejectsWrongWeaponsControllersAndNativeEvents",
+          "line": 1807,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonComposesExactTraditionRefitAndAbstractRatings",
+          "line": 1841,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:castCannonSaveLoadReconstructionAndLateRollbackKeepCurrentContribution",
+          "line": 1867,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:installedLandDrillAndBayonetUseProductionWeaponCallbacks",
+          "line": 1925,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense",
+          "line": 2031,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:abstractMilitaryCaptureAndTransferUseOwningCampaignClock",
+          "line": 101,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:recruitmentLossReinforcementAndTraditionReachRuntimeUnits",
+          "line": 126,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity",
+          "line": 140,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:settlementTransferWithoutInstalledClockWorksForActiveAndAbstractAuthority",
+          "line": 155,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly",
+          "line": 182,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:governorReplacementWarnsAndNeverImpliesPhysicalClone",
+          "line": 204,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority",
+          "line": 226,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:captureStateSurvivesMapRetirementAndReconstruction",
+          "line": 239,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration",
+          "line": 250,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority",
+          "line": 290,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:militarySnapshotRecordBoundariesPreserveRecoveryAndRejectMalformedSuffixes",
+          "line": 310,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:militaryRegistrationIndexesPreserveCollisionsDuplicatesAndReconstruction",
+          "line": 393,
+          "status": "pass"
+        }
+      ]
+    },
+    "coke-python": {
+      "status": "pass",
+      "log": "combat-repair-coke-python.log.gz",
+      "logSha256": "619e4d0061fd4cec54be8410d7d387617fc6ee2dc15edde474f9ec10829e53cc",
+      "testExecutions": 19
+    },
+    "industry-python": {
+      "status": "pass",
+      "log": "combat-repair-industry-python.log.gz",
+      "logSha256": "fc146d2aa596964db3884dc17991151328a56238a0bb512a569b65e87e8457fa",
+      "testExecutions": 16
+    },
+    "save-python": {
+      "status": "pass",
+      "log": "combat-repair-save-python.log.gz",
+      "logSha256": "657bc9f871114092265ba10311375cf2db7d8ab0f10b00b45b772a32aec9105b",
+      "testExecutions": 6
+    },
+    "tradition-python": {
+      "status": "pass",
+      "log": "combat-repair-tradition-python.log.gz",
+      "logSha256": "ac8308c918db8257113bf24e274c61f4aaa85ec476719f5313ec61e9355d6439",
+      "testExecutions": 6
+    },
+    "freshness-python": {
+      "status": "pass",
+      "log": "combat-repair-freshness-python.log.gz",
+      "logSha256": "360b3607cddb9b3d3e2cc261966b90c555a6a253e337383a50a83b362cf9c0a2",
+      "testExecutions": 2
+    },
+    "boundary": {
+      "status": "pass",
+      "log": "combat-repair-boundary.log.gz",
+      "logSha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    },
+    "prepare": {
+      "status": "pass",
+      "log": "combat-repair-prepare.log.gz",
+      "logSha256": "a0bf700292c4c84d49a5a75570906ce4cb71cf71e99ec4b5a420f05369352b20"
+    },
+    "runtime-audit": {
+      "status": "regenerated_with_publication_blockers",
+      "log": "combat-repair-runtime-audit.log.gz",
+      "logSha256": "80ef4609202503bc2cd36265df9d0b2889fa5e88da0aab9fb851dddda5939371"
+    },
+    "release-audit": {
+      "status": "regenerated_with_publication_blockers",
+      "log": "combat-repair-release-audit.log.gz",
+      "logSha256": "3197c6f593227afbf2311baa3a2f2ed6f1981d7ba453d30944f4ab5d3a53628f"
+    },
+    "traceability-audit": {
+      "status": "pass",
+      "log": "combat-repair-traceability-audit.log.gz",
+      "logSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c"
+    }
+  },
+  "evidenceLimit": "Focused development results. Other test annotations were removed only in a temporary assembly, while all production sources were typechecked. This does not establish complete-suite production evidence or blocker closure. Complete repository validation and fresh post-merge integrated-main closure audits remain controller-owned.",
+  "safety": "Pinned container ran as wurstuser with network disabled and source/stdlib mounted read-only. Builds used container-private /tmp. No production loader, evidence gate, compiler pin or interpreter deadline changed. No commits, GitHub writes, predecessor merges or predecessor validation artifacts were used."
+}

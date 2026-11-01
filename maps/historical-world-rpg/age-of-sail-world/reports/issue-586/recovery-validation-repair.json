@@ -1,0 +1,218 @@
+{
+  "format": "warcraftmap_issue_586_recovery_validation_repair_v1",
+  "scope": "Preserve integrated production implementation. Correct the v3 recovery fixture to omit mineral records, assert atomic rejection of relabeled current mineral records, and verify legacy migration grants no retrofit, active work, fractional yield or extraction.",
+  "baseRevision": "389019bc324544e591dbd5e6a4f150f76a7b7fb7",
+  "workingTreeSources": {
+    "maps/historical-world-rpg/age-of-sail-world/wurst/LiveRecoveryTests.wurst": "161be12dd8611667e5f3dff23f9d229a1802968a4c35ed94ade1253894b7368a"
+  },
+  "compilerImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+  "compilerSha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+  "stdlibRevision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+  "checks": {
+    "before-wurst": {
+      "status": "expected_failure",
+      "log": "recovery-repair-before-wurst.log.gz",
+      "sha256": "4261f719653636af527939af7bbeb8a8091d29d33af75cae2d8cd52675e2f953",
+      "testExecutions": 1
+    },
+    "after-wurst": {
+      "status": "pass",
+      "log": "recovery-repair-after-wurst.log.gz",
+      "sha256": "cbb326d6fd3c7447aa6fef9e3caf20f75e58e93ad74fbbd12d6247b3f383ab63",
+      "testExecutions": 32,
+      "results": [
+        {
+          "id": "wurst/IndustryTests.wurst:industryRegisteredResearchAndPaidActionsProduceExactYieldAndFasterBarrelsAgainstControl",
+          "line": 103,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryMissingInfrastructureGearResourcesEraAndControllerNeverManufactureFreeOutput",
+          "line": 143,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industrySourcesRepairOnceAndAbstractTravelRestoreCaptureAndLegacyAreDeterministic",
+          "line": 174,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryTransferWithoutInstalledClockUsesCommittedWorkDayAndNeverRefundsMaterials",
+          "line": 224,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryCampaignLateRestoreFailureRollsBackPendingWorkAndAllMaterialAccounts",
+          "line": 250,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryWarehouseDeliveriesConsumeActualCargoWithoutMintingMarketCashOrMerchantRewards",
+          "line": 274,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:industryFixedPointYieldFloorsWithoutFloatingPointOrNativeProductOverflow",
+          "line": 299,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeOnlyRegisteredResearchConsumesPaidMineralFuelAndProduces106Against100And113Combined",
+          "line": 315,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeUpstreamPaidExtractionPreparationAndTransportConserveResourcesWithoutLiquidityGrants",
+          "line": 369,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeMissingBillsCompatibilityEraAuthorityStorageAndCancellationFailClosed",
+          "line": 415,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeFractionsDuplicateSourcesPlayerAiInactiveCaptureAndReconstructionRetainPaidState",
+          "line": 493,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeCurrentAndLegacyStableRecordsRejectPartialForgedAndMalformedRetrofitsAtomically",
+          "line": 546,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/IndustryTests.wurst:cokeLateCampaignFailureRollsBackRetrofitFuelReservationsAndFractionalAccounts",
+          "line": 603,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoverySelectionAndAllUseOrdinaryRepresentations",
+          "line": 101,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryLastSafeSaveReplacementAndFailureAreTransactional",
+          "line": 167,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryUsesPerEntityCandidatesThenLastSafeThenConnectedAnchor",
+          "line": 290,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryRejectsDisconnectedLandAndDecorativeWaterEvenWhenPathable",
+          "line": 337,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryTravelRebuildsHintsInDestinationCoordinates",
+          "line": 372,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:liveRecoveryMigratesLegacyHintsAndRejectsMalformedRecords",
+          "line": 432,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/LiveRecoveryTests.wurst:nativeHeroDefeatRetiresRecoveryRegistrationAndKeepsPhysicalAuthority",
+          "line": 497,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:abstractMilitaryCaptureAndTransferUseOwningCampaignClock",
+          "line": 101,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:recruitmentLossReinforcementAndTraditionReachRuntimeUnits",
+          "line": 126,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:legalCaptureRebuildsLayoutAndEnforcesExactFiveSecondImmunity",
+          "line": 140,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:settlementTransferWithoutInstalledClockWorksForActiveAndAbstractAuthority",
+          "line": 155,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:garrisonWavesConsumePersistentFiniteResourcesAndDespawnQuietly",
+          "line": 182,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:governorReplacementWarnsAndNeverImpliesPhysicalClone",
+          "line": 204,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:inactiveRegionContinuesAbstractlyAndReconstructsFromAuthority",
+          "line": 226,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:captureStateSurvivesMapRetirementAndReconstruction",
+          "line": 239,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:snapshotRestorePreservesMidWarFleetOrdersSiegeAndAdministration",
+          "line": 250,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:changedControlImmunityAndRepeatedReconstructionNeverDuplicateAuthority",
+          "line": 290,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:militarySnapshotRecordBoundariesPreserveRecoveryAndRejectMalformedSuffixes",
+          "line": 310,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/MilitarySettlementRuntimeTests.wurst:militaryRegistrationIndexesPreserveCollisionsDuplicatesAndReconstruction",
+          "line": 393,
+          "status": "pass"
+        }
+      ]
+    },
+    "coke-python": {
+      "status": "pass",
+      "log": "recovery-repair-coke-python.log.gz",
+      "sha256": "03b1e7b7090adfc7198ac80ef836b0227b7bb9b389bad0ae476323878ece7177",
+      "testExecutions": 19
+    },
+    "industry-python": {
+      "status": "pass",
+      "log": "recovery-repair-industry-python.log.gz",
+      "sha256": "0b14c62bb4b4d3e31d2f5e738265c686cb2f00e5f5d503b777961422ef005f50",
+      "testExecutions": 16
+    },
+    "save-python": {
+      "status": "pass",
+      "log": "recovery-repair-save-python.log.gz",
+      "sha256": "372934866ca170deee66b8d4aa484a88190d0048c05715b67a31d70887b10c89",
+      "testExecutions": 6
+    },
+    "recovery-python": {
+      "status": "pass",
+      "log": "recovery-repair-recovery-python.log.gz",
+      "sha256": "fb3a9b958c703fd3f8bda15375abe4298cb5add2f9cd7d8e9b6572a7a3a5ecda",
+      "testExecutions": 2
+    },
+    "boundary": {
+      "status": "pass",
+      "log": "recovery-repair-boundary.log.gz",
+      "sha256": "f571759be103be9ffc79c2bd7c86df98d43f474a21cb54802587633565ab7d0e"
+    }
+  },
+  "evidenceLimit": "Focused development validation only. Other test annotations were removed only in an ignored assembly. This is not complete-suite or production closure evidence. Complete repository validation and all three fresh integrated-main audits remain controller-owned.",
+  "safety": "Pinned container ran as wurstuser, with source and cached standard library mounted read-only. Compilation used container-private /tmp; network was disabled. No production code, tooling gates, timeout, or loader validation was changed."
+}
