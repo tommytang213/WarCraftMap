@@ -42,6 +42,9 @@ class LandBindingEvidenceTests(unittest.TestCase):
                 if name == comparative:
                     lines.extend('WCM_PROBE:' + probe for probe in self.contract['systems'][system]
                                  if probe != omit_probe or name != omit_from)
+            if row['id'] == land.COLUMN_ADAPTER_TEST:
+                lines.extend('WCM_PROBE:' + probe for probe in self.contract['systems']['land_columns_callback']
+                             if probe != omit_probe or name != omit_from)
             if row['id'] == land.ADAPTER_TEST:
                 lines.extend('WCM_PROBE:' + probe for probe in self.contract['systems']['land_bayonet_callback']
                              if probe != omit_probe or name != omit_from)
@@ -62,7 +65,7 @@ class LandBindingEvidenceTests(unittest.TestCase):
     def bindings(self, report=None, log=None):
         return land.verified_bindings(PROJECT, report, log, self.revision)
 
-    def test_verified_protocol_removes_only_the_four_land_findings(self):
+    def test_verified_protocol_removes_only_the_five_land_findings(self):
         report, log = self.transcript()
         self.assertEqual(set(land.CLOSURE_EFFECTS), self.bindings(report, log))
         before = {row['id'] for row in audit._audit_research_bindings()}
@@ -73,6 +76,7 @@ class LandBindingEvidenceTests(unittest.TestCase):
             'RESEARCH-UNBOUND-ARTILLERY-OFFICES-POLICY-PROGRESSION-ARTILLERY-OFFICES',
             'RESEARCH-UNBOUND-ARTILLERY-TRAIN-MODIFIER-PROGRESSION-ARTILLERY-TRAIN',
             'RESEARCH-UNBOUND-BAYONET-SYSTEM-MODIFIER-PROGRESSION-BAYONET-SYSTEM',
+            'RESEARCH-UNBOUND-COMBINED-ARMS-COLUMNS-MODIFIER-PROGRESSION-COMBINED-ARMS-COLUMNS',
         }, before - after)
         self.assertFalse(after - before)
 
@@ -129,6 +133,16 @@ class LandBindingEvidenceTests(unittest.TestCase):
         report, log = self.transcript()
         self.assertEqual(set(), self.bindings(report, log[:-30]))
 
+    def test_columns_requires_actual_weapon_composition_and_final_callback_probes(self):
+        pair = ('modifier', 'progression_combined_arms_columns')
+        for probe in land.COLUMN_ADAPTER_PROBES:
+            with self.subTest(missing=probe):
+                report, log = self.transcript(omit_probe=probe, omit_from=land.COLUMN_ADAPTER_TEST.split(':')[1])
+                self.assertEqual(set(land.CLOSURE_EFFECTS) - {pair}, self.bindings(report, log))
+        for name in (land.COLUMN_ADAPTER_TEST, land.COLUMN_ROLLBACK_TEST):
+            report, log = self.transcript(fail_test=name)
+            self.assertNotIn(pair, self.bindings(report, log))
+
     def test_bayonet_requires_actual_installed_callback_probes(self):
         pair = ('modifier', 'progression_bayonet_system')
         for probe in land.BAYONET_ADAPTER_PROBES:
@@ -138,7 +152,7 @@ class LandBindingEvidenceTests(unittest.TestCase):
                 report['productionCoverage']['tests'][land.ADAPTER_TEST].append(probe)
                 self.assertEqual(set(), self.bindings(report, log))
 
-    def test_wrong_bayonet_identity_metric_or_coefficient_preserves_three_existing_results(self):
+    def test_wrong_bayonet_identity_metric_or_coefficient_preserves_other_results(self):
         report, log = self.transcript()
         pair = ('modifier', 'progression_bayonet_system')
         for field, value in [('nodeId', 'linear_tactics'), ('metric', 'firearm_reload_efficiency'),
@@ -146,6 +160,21 @@ class LandBindingEvidenceTests(unittest.TestCase):
                              ('kind', 'policy'), ('contentId', 'other_bayonet')]:
             payload = copy.deepcopy(land.build(PROJECT))
             effect = next(e for e in payload['catalog']['effects'] if e['nodeId'] == 'bayonet_system')
+            if field in {'kind', 'contentId'}:
+                effect['unlock'][field] = value
+            else:
+                effect[field] = value
+            with self.subTest(field=field, value=value), patch.object(land, 'build', return_value=payload):
+                self.assertEqual(set(land.CLOSURE_EFFECTS) - {pair}, self.bindings(report, log))
+
+    def test_wrong_columns_identity_metric_or_coefficient_preserves_other_results(self):
+        report, log = self.transcript()
+        pair = ('modifier', 'progression_combined_arms_columns')
+        for field, value in [('nodeId', 'linear_tactics'), ('metric', 'firearm_reload_efficiency'),
+                             ('bonusBasisPoints', 501), ('bonusBasisPoints', '500'),
+                             ('kind', 'policy'), ('contentId', 'other_columns')]:
+            payload = copy.deepcopy(land.build(PROJECT))
+            effect = next(e for e in payload['catalog']['effects'] if e['nodeId'] == 'combined_arms_columns')
             if field in {'kind', 'contentId'}:
                 effect['unlock'][field] = value
             else:

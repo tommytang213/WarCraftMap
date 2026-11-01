@@ -189,11 +189,15 @@ public class MilitaryOrderEvents implements MilitaryOrderCallbacks
 					if movementMatches(f, kind) and locationNumber(px.toString()) and locationNumber(py.toString()) and navigation.zoneAt(kind, px, py) != "" and natives.pathable(kind, px, py)
 						f.x = px
 						f.y = py
+					else
+						f.cancelOrder()
 					// Completion and unsupported/cancelled native activity must not
 					// resurrect an earlier destination on the next load.
 					let current = natives.currentOrder(token)
 					if not validDestination(f, token) or (current != nativeOrder(f) and not (current == COMPAT_ORDER_SMART and (f.orderId == "move" or f.orderId == "attack")))
 						f.cancelOrder()
+				else
+					f.cancelOrder()
 	function apply(RuntimeForce f)
 		if not f.mobileForce() or not f.active or not militaryMapMatches(f.regionId, runtime.activeRegionId)
 			return

@@ -60,6 +60,8 @@ class TradeSelectionGenerationTests(unittest.TestCase):
         self.assertTrue({
             'registeredTradeCommandsCompleteTwoCommodityTwoSettlementCargoJourney',
             'tradeCommandsRejectUnknownHiddenRemoteAndUnauthorizedTargets',
+            'tradeCommandsRejectUnavailableAndUnauthorizedCargoStores',
+            'tradeCommandsRejectMalformedQuantitiesAndPages',
             'tradeCommandsRecheckMovementOwnershipAndCampaignAvailabilityAtCommit',
             'tradeCommitRejectsControlChangesBetweenResolutionAndMutation',
             'tradeSelectionLoadRollbackAndLegacyPersonalStoreMigrationPreserveAuthority',

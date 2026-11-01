@@ -20,7 +20,7 @@ class LandArmyCompilationTests(unittest.TestCase):
         effects = {e['metric']: e for e in payload['catalog']['effects']}
         self.assertEqual({k: v['bonusBasisPoints'] for k, v in effects.items()}, {
             'firearm_reload_efficiency': 500, 'artillery_production_throughput': 800,
-            'artillery_supply_waste_reduction': 800, 'anti_cavalry_melee_defense': 800})
+            'artillery_supply_waste_reduction': 800, 'anti_cavalry_melee_defense': 800, 'coordinated_infantry_defense': 500})
         profiles = {p['id']: p for p in payload['catalog']['profiles']}
         self.assertTrue(profiles['european_late_line_infantry']['bayonet'])
         self.assertFalse(profiles['european_musket_battalion']['bayonet'])
@@ -28,6 +28,11 @@ class LandArmyCompilationTests(unittest.TestCase):
         self.assertFalse(profiles['field_artillery_battery']['firearm'])
         self.assertTrue(profiles['field_artillery_battery']['artillery'])
         self.assertTrue(profiles['sabre_cavalry']['cavalry'])
+        self.assertTrue(profiles['european_musket_battalion']['columnInfantry'])
+        self.assertFalse(profiles['sabre_cavalry']['columnInfantry'])
+        self.assertFalse(profiles['field_artillery_battery']['columnInfantry'])
+        self.assertEqual(768, payload['catalog']['columns']['supportDistance'])
+        self.assertEqual(['cavalry', 'artillery'], payload['catalog']['columns']['supportRoles'])
         self.assertEqual(1730, profiles['european_late_line_infantry']['firstYear'])
         self.assertEqual(',cast_cannon,', profiles['field_artillery_battery']['requiredResearch'])
         consumers = payload['catalog']['consumers']
@@ -35,7 +40,7 @@ class LandArmyCompilationTests(unittest.TestCase):
         self.assertIn(dict(nodeId='bayonet_system', kind='modifier', contentId='progression_bayonet_system',
                            metric='anti_cavalry_melee_defense', bonusBasisPoints=800,
                            executionSystem='land_bayonet'), consumers)
-        self.assertEqual({'land_reload', 'land_procurement', 'land_supply', 'land_bayonet'}, {e['executionSystem'] for e in consumers})
+        self.assertEqual({'land_reload', 'land_procurement', 'land_supply', 'land_bayonet', 'land_columns'}, {e['executionSystem'] for e in consumers})
         self.assertNotIn('unlock(', payload['wurst'])
         self.assertNotIn('treasury', payload['wurst'])
 
@@ -44,7 +49,8 @@ class LandArmyCompilationTests(unittest.TestCase):
         design = json.loads((PROJECT / data['designSource']).read_text())
         world = json.loads((PROJECT / 'scenario/world/world.json').read_text())
         cases = []
-        for change in ('bad_kind', 'duplicate_metric', 'negative_cost', 'fake_stock', 'unknown_kit', 'missing_reload'):
+        for change in ('bad_kind', 'duplicate_metric', 'negative_cost', 'fake_stock', 'unknown_kit', 'missing_reload',
+                       'column_role', 'column_distance', 'column_source', 'column_recipient', 'column_rate'):
             d, e = copy.deepcopy(data), copy.deepcopy(design)
             if change == 'bad_kind':
                 next(x for x in e['effects'] if x['metric'] == 'firearm_reload_efficiency')['unlock']['kind'] = 'ability'
@@ -58,6 +64,16 @@ class LandArmyCompilationTests(unittest.TestCase):
                 d['predicates']['bayonetEquipment'] = ['invented_socket_bayonet']
             elif change == 'missing_reload':
                 d['predicates']['firearmReloadMillisByTemplate'] = {}
+            elif change == 'column_role':
+                d['columns']['supportRoles'] = ['cavalry']
+            elif change == 'column_distance':
+                d['columns']['supportDistance'] = False
+            elif change == 'column_source':
+                d['columns']['sourceId'] = 'invented_columns'
+            elif change == 'column_recipient':
+                d['columns']['recipientCategories'] = ['cavalry']
+            elif change == 'column_rate':
+                d['columns']['bonusBasisPoints'] = '500'
             cases.append((change, d, e))
         for change, d, e in cases:
             with self.subTest(change=change), tempfile.TemporaryDirectory() as tmp:

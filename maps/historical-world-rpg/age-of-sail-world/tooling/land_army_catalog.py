@@ -5,7 +5,7 @@ from validate_unit_roster import load_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 METRICS = {'firearm_reload_efficiency': 'modifier', 'artillery_production_throughput': 'policy',
-           'artillery_supply_waste_reduction': 'modifier', 'anti_cavalry_melee_defense': 'modifier'}
+           'artillery_supply_waste_reduction': 'modifier', 'anti_cavalry_melee_defense': 'modifier', 'coordinated_infantry_defense': 'modifier'}
 RULES = {'transitionDays', 'enactmentBasisPoints', 'upkeepBasisPoints', 'procurementUpkeepBasisPoints',
          'constructionDays', 'armsPerBattery', 'crewPerBattery', 'supplyPerBattery', 'shipmentArms',
          'shipmentWaste', 'supplyRadius'}
@@ -17,9 +17,16 @@ CLOSURE_EFFECTS = {
     ('policy', 'progression_artillery_offices'): ('artillery_offices', 'artillery_production_throughput', 800),
     ('modifier', 'progression_artillery_train'): ('artillery_train', 'artillery_supply_waste_reduction', 800),
     ('modifier', 'progression_bayonet_system'): ('bayonet_system', 'anti_cavalry_melee_defense', 800),
+    ('modifier', 'progression_combined_arms_columns'): ('combined_arms_columns', 'coordinated_infantry_defense', 500),
 }
+COLUMN_ADAPTER_TEST = 'wurst/MilitaryCombatEventsTests.wurst:columnsInstalledCallbacksRecheckCompositionAndAuthenticatedWeapons'
+COLUMN_ROLLBACK_TEST = 'wurst/MilitaryCombatEventsTests.wurst:columnsSaveResumeLegacyAndFailedLoadRollbackDeriveCurrentComposition'
+COLUMN_PROBES = {'column_weapon', 'column_composition', 'column_support', 'land_damage', 'combat_rating'}
+COLUMN_ADAPTER_PROBES = COLUMN_PROBES | {'combat_install', 'land_native_weapon', 'research', 'dispatch', 'land_registration'}
 COMMON_PROBES = {'land_registration', 'research', 'dispatch'}
 COMPARATIVE_PATHS = {
+    ('modifier', 'progression_combined_arms_columns'):
+        ('land_columns', 'columnsMatchedResearchControlResolves105To100', COMMON_PROBES | COLUMN_PROBES),
     ('modifier', 'progression_arquebus_volley_drill'):
         ('land_reload', 'landReloadMatchedControlUsesAbstractDeadlinesAndNativeCooldown',
          COMMON_PROBES | {'land_reload_resolve', 'land_shot', 'land_native_reload'}),
@@ -39,6 +46,10 @@ BAYONET_ADAPTER_PROBES = COMMON_PROBES | {'combat_install', 'land_native_weapon'
                                          'land_cavalry', 'land_equipment', 'land_damage', 'combat_rating'}
 BAYONET_ROLLBACK_TEST = 'wurst/MilitaryCombatEventsTests.wurst:bayonetSaveLoadTransferMigrationAndLateRollbackKeepCurrentDefense'
 REQUIRED_TESTS = {
+    'columnsSharedAttackTargetAndUnknownBattlefieldFailClosed',
+    'columnsEachRoleSupplyEquipmentOrderMapConnectivityAndDistanceAreRequired',
+    'columnsExactBoundariesCurrentCompositionAiAndInactiveAreEquivalent',
+    'columnsDeduplicatedSourceStacksWithBayonetAndExactContinuousTradition',
     'landBayonetRejectsIneligibleRosterWeaponsEraAndControllers',
     'landBayonetReconstructionMigrationAndNamedSourcesRemainIndependent',
     'landRegisteredResearchAndOfficeActionsChargeRealInputsAndTimeline',
@@ -73,6 +84,10 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
                 if authored.get(pair) == CLOSURE_EFFECTS[pair]
                 and prefix + name in coverage.get(system, [])
                 and probes <= set(observed.get(prefix + name, []))
+                and (pair != ('modifier', 'progression_combined_arms_columns')
+                     or (COLUMN_ROLLBACK_TEST in passed
+                         and COLUMN_ADAPTER_TEST in coverage.get('land_columns_callback', [])
+                         and COLUMN_ADAPTER_PROBES <= set(observed.get(COLUMN_ADAPTER_TEST, []))))
                 and (pair != ('modifier', 'progression_bayonet_system')
                      or (BAYONET_ROLLBACK_TEST in passed
                          and ADAPTER_TEST in coverage.get('land_bayonet_callback', [])
@@ -94,8 +109,16 @@ def build(project=ROOT):
     world = json.loads((project / 'scenario/world/world.json').read_text())
     design = json.loads((project / data['designSource']).read_text())
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
-    effects = [e for e in design['effects'] if e['metric'] in METRICS]
-    if len(effects) != 4 or len({e['metric'] for e in effects}) != 4:
+    columns = data['columns']
+    if (columns['sourceId'] != 'research:' + columns['unlock']['kind'] + ':' + columns['unlock']['contentId']
+            or columns['metric'] != 'coordinated_infantry_defense'
+            or not isinstance(columns.get('inspection'), str) or not columns['inspection'].strip()
+            or type(columns['supportDistance']) is not int or not 0 < columns['supportDistance'] <= 10000
+            or columns['recipientCategories'] != ['infantry']
+            or columns['supportRoles'] != ['cavalry', 'artillery']):
+        raise ValueError('land army: invalid coordinated formation contract')
+    effects = [e for e in design['effects'] if e['metric'] in METRICS] + [columns]
+    if len(effects) != 5 or len({e['metric'] for e in effects}) != 5:
         raise ValueError('land army: missing exact approved effect')
     for e in effects:
         if (e['unlock'] not in nodes[e['nodeId']]['unlocks'] or e['unlock']['kind'] != METRICS[e['metric']]
@@ -111,7 +134,13 @@ def build(project=ROOT):
             raise ValueError('land army: unknown equipment')
     q = json.dumps
     lines = ['public function configureGeneratedLandArmy(LandArmyLedger ledger, LandResearchEffects research, int day)']
-    lines += ['\tledger.research = research']
+    lines += ['\tledger.research = research', '\tconfigureGeneratedLandBattlefields(ledger)',
+              '\tresearch.columnInspection = ' + q(columns['inspection']),
+              '\tledger.columnSourceId = ' + q(columns['sourceId']),
+              '\tledger.columnDistance = ' + str(columns['supportDistance'])]
+    for index, role in enumerate(columns['supportRoles']):
+        lines.append(f'\tledger.columnRoles[{index}] = {q(role)}')
+    lines.append('\tledger.columnRoleCount = ' + str(len(columns['supportRoles'])))
     for key, value in data['rules'].items():
         lines.append(f'\tledger.{key} = {value}')
     for key in ('armsGood', 'commissionProfile'):
@@ -137,6 +166,7 @@ def build(project=ROOT):
             category = pred['formationCategory']
         availability = unit.get('availability', {})
         p = dict(id=ident, unitTypeId=roster.templates[unit['runtimeTemplateId']]['warcraftUnitTypeId'],
+                 columnInfantry=firearm and unit['category'] in columns['recipientCategories'],
                  categoryId=category, firearm=firearm, bayonet=bayonet, cavalry=cavalry, artillery=artillery,
                  firstYear=availability.get('historicalStartYear', 1450), lastYear=availability.get('historicalEndYear', 1820),
                  cost=unit['cost'], strength=unit['strategicStrength'],
@@ -171,6 +201,7 @@ def build(project=ROOT):
             values = [q(p['id']), "'" + p['unitTypeId'] + "'", q(p['categoryId'])]
             values += [str(p[k]).lower() for k in ('firearm', 'bayonet', 'cavalry', 'artillery', 'firstYear', 'lastYear', 'cost', 'strength')]
             lines += [f'\tlet profile{index} = new LandProfile(' + ', '.join(values) + ')',
+                      f'\tprofile{index}.columnInfantry = ' + str(p['columnInfantry']).lower(),
                       f'\tprofile{index}.primaryNativeAttack = ' + q(p['primaryNativeAttack']),
                       f'\tprofile{index}.baseReloadMillis = ' + str(p['baseReloadMillis']),
                       f'\tprofile{index}.requiredResearch = ' + q(p['requiredResearch']), f'\tledger.registerProfile(profile{index})']
@@ -184,7 +215,7 @@ def build(project=ROOT):
                  for pair, (node, metric, bonus) in CLOSURE_EFFECTS.items()
                  if authored.get(pair) == (node, metric, bonus)]
     return dict(catalog=dict(rules=data['rules'], effects=effects, consumers=consumers,
-                             profiles=profiles, predicates=pred, arsenalIds=sorted(arsenal_ids)),
+                             profiles=profiles, predicates=pred, columns=columns, arsenalIds=sorted(arsenal_ids)),
                 wurst='\n'.join(lines) + '\n', sources=sources)
 
 

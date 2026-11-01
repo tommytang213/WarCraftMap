@@ -2,7 +2,7 @@
 import json
 
 from boundary_arrival import CELL, MOVEMENTS, components, playable_cells
-from party_locations import navigation
+from party_locations import configure_rows, navigation
 
 
 def recovery_navigation(width, height, cells, bounds):
@@ -54,7 +54,7 @@ def configuration(maps):
         for kind, data in enumerate(kinds):
             lines += [f'function generatedRecoveryNavigation{index}_{kind}(UnstuckRecoveryService service, RecoveryNavigation nav)',
                       f'\tlet grid = new PartyNavigation({json.dumps(map_id)}, {data["minX"]}, {data["minY"]}, {data["width"]}, {data["height"]})']
-            lines += [f'\tgrid.rows[{y}] = {json.dumps(row)}' for y, row in enumerate(data['rows'])]
+            lines += configure_rows('grid', data['rows'])
             lines += [f'\tnav.movement[{kind}] = grid']
             for component, x, y in data['anchors']:
                 zone = f'{map_id}:{kind}:{component}'

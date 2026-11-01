@@ -894,6 +894,39 @@ does not require later precision instruments or alter authored research gates.
 See [Coastal Triangulation](COASTAL_TRIANGULATION.md) for source composition,
 commissioning, persistence and the complete-evidence closure contract.
 
+## Combined-arms Columns consumer (#587)
+
+`scenario/progression/land-army.json` authors the named 500 bp contextual defense
+source, compatible infantry categories, support roles and inclusive 768 map-unit
+support radius. Existing research prerequisites and prices remain unchanged.
+Research only creates an entitlement; it does not create or equip forces, supply,
+orders or victories, and does not limit continuous military-tradition XP.
+
+At impact, the shared combat boundary reads current commissioned roster/equipment,
+controller, living strength, supply, positions and military order authority.
+Firearm infantry must cooperate with living, supplied cavalry and field artillery
+of the same controller. They share an authoritative attack target or attack-move
+destination, one physical map and a connected land component in the packaged
+terrain raster. Hold/stop orders and unknown map cells establish no cooperation.
+Each support force must be within 768 units of the infantry. Native order capture
+refreshes positions and cancels cooperation when the native representation is dead,
+foreign-owned, missing, blocked or executing an incompatible order.
+
+Only authenticated hostile firearm or cavalry melee attacks contribute this named
+source once. It joins independently qualified tradition, equipment, Pike and Shot
+and Bayonet ratings before the existing single exact calculation: with other
+ratings zero, 105 incoming becomes 100; the unresearched or unsupported control
+remains 105. Spells, siege, unsupported native weapon metadata and unrelated
+recipients receive no Columns contribution. Force inspection derives the current
+active/inactive reason; research inspection explains all conditions.
+
+The existing saved order identity and roster records suffice; no save schema or
+migration format changes. Reconstruction and transactional load rollback derive
+composition afresh, including legacy records with unknown equipment. Closure still
+requires complete pinned execution and fresh release-blocker, runtime-acceptance
+and requirement-traceability audits on integrated main. Focused worktree results
+and a merged PR cannot close the identity.
+
 Issue #586 adds the owner-delegated Coke-smelted Iron consumer without changing
 its research prerequisites, preferred year (1710), base cost (270), or historical
 cost history. Its typed modifier contributes **600 bp** to `iron_refining_yield`

@@ -626,6 +626,18 @@
       "path": "wurst/VoyageNavigation.wurst",
       "signature": "function commitSource(VoyageProgress state, VoyageSource source, int amount)"
     },
+    "column_weapon": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function columnWeapon(RuntimeForce source, string attackId) returns boolean"
+    },
+    "column_composition": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function columnStatus(RuntimeForce target) returns string"
+    },
+    "column_support": {
+      "path": "wurst/MilitarySettlementRuntime.wurst",
+      "signature": "function columnSupport(RuntimeForce target, string role) returns boolean"
+    },
     "industry_material": {
       "path": "wurst/IndustryCampaignRuntime.wurst",
       "signature": "function consume(string id, string good, int units)"
@@ -1100,6 +1112,28 @@
       "voyage_advance",
       "voyage_resolve",
       "voyage_commit"
+    ],
+    "land_columns": [
+      "research",
+      "dispatch",
+      "land_registration",
+      "column_weapon",
+      "column_composition",
+      "column_support",
+      "land_damage",
+      "combat_rating"
+    ],
+    "land_columns_callback": [
+      "research",
+      "dispatch",
+      "land_registration",
+      "column_weapon",
+      "column_composition",
+      "column_support",
+      "land_damage",
+      "combat_rating",
+      "combat_install",
+      "land_native_weapon"
     ],
     "mineral_fuel_industry": [
       "research",
