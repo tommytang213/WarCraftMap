@@ -54,10 +54,12 @@ class IndustryFixture
 		rpg.management.pauses = new ManagementScreenPauseController(new RecordingManagementPorts(), false)
 		configureGeneratedIndustry(military.industry, effects)
 		configureGeneratedIndustryMarkets(trade)
-		for i = 0 to 1
+		for i = 0 to 2
 			var id = "stockholm"
 			if i == 1
 				id = "milan"
+			if i == 2
+				id = "bristol"
 			military.registerSettlement(new SettlementRuntimeState(id, resources.owner, "europe_west", 'htow', 'hfoo', 30, 20, 1000, 10000, 0., 0.))
 			trade.registerStore(new TradeStore("warehouse:" + id, 10000, 0).withAccess("warehouse", id, true))
 			military.appoint(id, new AdministratorState("clerk" + I2S(i), "Clerk", "Administrator", resources.owner, "europe_west", id, 50, 50, 40, 1))
@@ -209,9 +211,12 @@ class IndustryFixture
 	active.advance(400)
 	active.trade.findMarket("milan", "arms").stock.assertEquals(10030)
 	// v14 has no industry assets. Migrating cannot grant a furnace or a batch.
-	var legacy = inactive.military.snapshot().replace("v23|", "v14|")
+	var legacy = inactive.military.snapshot().replace("v24|", "v14|")
 	for i = 0 to inactive.military.industry.count - 1
-		legacy = legacy.replace("|i," + inactive.military.industry.sites[i].id + "," + inactive.military.industry.states[i].record(), "")
+		if inactive.military.industry.sites[i].recordVersion == 2
+			legacy = legacy.replace("|I," + inactive.military.industry.sites[i].id + "," + inactive.military.industry.states[i].mineralRecord(), "")
+		else
+			legacy = legacy.replace("|i," + inactive.military.industry.sites[i].id + "," + inactive.military.industry.states[i].record(), "")
 	inactive.military.restore(legacy, false).assertTrue()
 	inactive.state("gun_barrels:milan").equipmentOwner.assertEquals("")
 	inactive.state("gun_barrels:milan").owner.assertEquals("")
@@ -296,3 +301,329 @@ class IndustryFixture
 	civicScale(99, 700).assertEquals(6)
 	civicScale(101, 700).assertEquals(7)
 	civicScale(2147483647, 700).assertEquals(150323855)
+
+/** Supporting research is identical in every comparison arm. Only the named
+ * modifier is earned by the production research command under comparison. */
+function mineralSupport(IndustryFixture f)
+	f.rpg.restoreState(f.rpg.captureState() + "|u," + f.resources.owner + ",experimental_method").assertTrue()
+	f.rpg.technologies.reconstructAll()
+
+function mineralEquip(IndustryFixture f)
+	f.action("equip", "mineral_iron_refining:stockholm")
+	f.advance(90)
+
+@test function cokeOnlyRegisteredResearchConsumesPaidMineralFuelAndProduces106Against100And113Combined()
+	for arm = 0 to 3
+		let f = new IndustryFixture(false, true)
+		mineralSupport(f)
+		if arm == 1 or arm == 3
+			f.unlock("coke_smelted_iron")
+		if arm == 2 or arm == 3
+			f.unlock("blast_furnace_practice")
+		var expected = 100
+		if arm == 1
+			expected = 106
+		if arm == 2
+			expected = 107
+		if arm == 3
+			expected = 113
+		var researchBill = 0
+		if arm == 1 or arm == 3
+			researchBill += 270
+		if arm == 2 or arm == 3
+			researchBill += 116
+		f.resources.balance.assertEquals(100000 - researchBill)
+		mineralEquip(f)
+		f.military.settlements[0].manpower.assertEquals(990)
+		f.campaign.countries.treasury[0].assertEquals(99880)
+		f.trade.findMarket("stockholm", "tools").stock.assertEquals(9990)
+		f.trade.findMarket("stockholm", "timber").stock.assertEquals(9980)
+		f.action("start", "mineral_iron_refining:stockholm")
+		f.runtime.act("player", "start", "mineral_iron_refining:stockholm").contains("already active").assertTrue()
+		f.trade.findMarket("stockholm", "iron").stock.assertEquals(9800)
+		f.trade.findMarket("stockholm", "coke").stock.assertEquals(9950)
+		f.trade.findMarket("stockholm", "tools").stock.assertEquals(9988)
+		f.advance(99)
+		f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10000)
+		f.advance(100)
+		f.runtime.advance(f.day + 100)
+		f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10000 + expected)
+		f.campaign.countries.treasury[0].assertEquals(99850)
+		f.military.settlements[0].supply.assertEquals(9990)
+		// Mineral qualification never leaks to the ordinary charcoal recipe.
+		let charcoal = f.military.industry.sites[f.military.industry.index("iron_refining:stockholm")]
+		var charcoalRate = 0
+		if arm == 2 or arm == 3
+			charcoalRate = 700
+		f.effects.rateFor("player", charcoal, 1778).assertEquals(charcoalRate)
+		f.commands.dispatch(Player(0), "/industry inspect mineral_iron_refining:stockholm").assertTrue()
+		f.resources.output.contains("50 coke").assertTrue()
+		f.resources.output.contains("Expected output " + I2S(expected)).assertTrue()
+		f.resources.output.contains("10 funded workdays").assertTrue()
+		f.commands.dispatch(Player(0), "/technology").assertTrue()
+		f.resources.output.contains("600 bp iron_refining_yield").assertTrue()
+		f.resources.output.contains("required fuel coke").assertTrue()
+		f.resources.output.contains("isolated qualifying output 106; combined qualifying output 113").assertTrue()
+		f.resources.output.contains("100 coal").assertTrue()
+
+@test function cokeUpstreamPaidExtractionPreparationAndTransportConserveResourcesWithoutLiquidityGrants()
+	let definitions = new PlayableTradeRuntime()
+	configureGeneratedIndustryMarkets(definitions)
+	definitions.findMarket("bristol", "coal").stock.assertEquals(0)
+	definitions.findMarket("bristol", "coal").money.assertEquals(0)
+	definitions.findMarket("bristol", "coke").stock.assertEquals(0)
+	definitions.findMarket("stockholm", "coke").stock.assertEquals(0)
+	let f = new IndustryFixture(false, false)
+	mineralSupport(f)
+	f.unlock("coke_smelted_iron")
+	for i = 0 to f.trade.marketCount - 1
+		let m = f.trade.markets[i]
+		if m.goodName == "coal" or m.goodName == "coke"
+			m.stock = 0
+			m.money = 0
+	f.action("equip", "coal_extraction:bristol")
+	f.action("equip", "coke_preparation:bristol")
+	f.action("equip", "mineral_iron_refining:stockholm")
+	f.advance(90)
+	f.action("start", "coal_extraction:bristol")
+	f.advance(100)
+	f.trade.findMarket("bristol", "coal").stock.assertEquals(100)
+	f.state("coal_extraction:bristol").extractedUnits.assertEquals(100)
+	f.action("start", "coke_preparation:bristol")
+	f.trade.findMarket("bristol", "coal").stock.assertEquals(0)
+	f.advance(110)
+	let coke = f.trade.findMarket("bristol", "coke")
+	coke.stock.assertEquals(50)
+	coke.money.assertEquals(0)
+	let hold = new TradeStore("fuel_ship", 1000, 1000)
+	f.trade.registerStore(hold)
+	f.trade.controller.buy("paid-fuel", coke, hold, 50).assertEquals("Bought 50 coke.")
+	(hold.money + coke.money).assertEquals(1000)
+	f.trade.controller.moveCargo("delivered-fuel", hold, f.trade.stores[0], "coke", 50).assertEquals("Cargo moved.")
+	f.trade.stores[0].quantity("coke").assertEquals(50)
+	f.action("start", "mineral_iron_refining:stockholm")
+	f.trade.stores[0].quantity("coke").assertEquals(0)
+	f.trade.controller.provenance.quantityIn(f.trade.stores[0].id, "coke").assertEquals(0)
+	f.advance(120)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10106)
+	f.trade.findMarket("stockholm", "iron").stock.assertEquals(9800)
+	f.trade.findMarket("stockholm", "coke").money.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(100000 - 3 * 120 - 3 * 20 - 30)
+	f.state("coal_extraction:bristol").extractedUnits = 100000
+	f.runtime.act("player", "start", "coal_extraction:bristol").startsWith("Geological").assertTrue()
+
+@test function cokeMissingBillsCompatibilityEraAuthorityStorageAndCancellationFailClosed()
+	let f = new IndustryFixture(false, false)
+	mineralSupport(f)
+	f.unlock("coke_smelted_iron")
+	f.runtime.act("player", "equip", "coal_extraction:stockholm").startsWith("Choose").assertTrue()
+	let mineral = f.military.industry.sites[f.military.industry.index("mineral_iron_refining:stockholm")]
+	f.runtime.eligible(mineral, "player", 624191).assertFalse() // before 1710
+	for missing = 0 to 3
+		var good = "tools"
+		if missing == 1
+			good = "timber"
+		let oldStock = f.trade.findMarket("stockholm", good).stock
+		let workers = f.military.settlements[0].manpower
+		let money = f.campaign.countries.treasury[0]
+		if missing <= 1
+			f.trade.findMarket("stockholm", good).stock = 0
+		if missing == 2
+			f.military.settlements[0].manpower = 9
+		if missing == 3
+			f.campaign.countries.treasury[0] = 119
+		f.runtime.act("player", "equip", mineral.id).startsWith("Equipment").assertTrue()
+		f.state(mineral.id).equipmentOwner.assertEquals("")
+		f.trade.findMarket("stockholm", good).stock = oldStock
+		f.military.settlements[0].manpower = workers
+		f.campaign.countries.treasury[0] = money
+	f.equip()
+	f.runtime.act("player", "start", mineral.id).startsWith("Commission").assertTrue()
+	f.action("equip", mineral.id)
+	f.advance(180)
+	for missing = 0 to 3
+		var good = "iron"
+		if missing == 1
+			good = "coke"
+		if missing == 2
+			good = "tools"
+		let stock = f.trade.findMarket("stockholm", good).stock
+		let money = f.campaign.countries.treasury[0]
+		if missing < 3
+			f.trade.findMarket("stockholm", good).stock = 0
+		else
+			f.campaign.countries.treasury[0] = 0
+		let rejectedAccounts = f.trade.capture()
+		f.runtime.act("player", "start", mineral.id).startsWith("Insufficient").assertTrue()
+		f.trade.capture().assertEquals(rejectedAccounts)
+		f.trade.findMarket("stockholm", good).stock = stock
+		f.campaign.countries.treasury[0] = money
+	f.action("start", mineral.id)
+	f.military.settlements[0].supply = 0
+	f.advance(190)
+	f.state(mineral.id).work.assertEquals(0)
+	f.military.settlements[0].supply = 100
+	f.advance(199)
+	f.trade.findMarket("stockholm", "iron_goods").storageCapacity = 10000
+	f.advance(210)
+	f.state(mineral.id).work.assertEquals(9000000)
+	f.military.settlements[0].supply.assertEquals(91)
+	f.trade.findMarket("stockholm", "iron_goods").storageCapacity = 20000
+	f.advance(211)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10106)
+	f.action("start", mineral.id)
+	let accounts = f.trade.capture()
+	f.action("stop", mineral.id)
+	f.trade.capture().assertEquals(accounts)
+	f.advance(250)
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10106)
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,experimental_method", "")).assertTrue()
+	f.runtime.eligible(mineral, "player", f.clock.currentDay).assertFalse()
+	f.rpg.restoreState(research).assertTrue()
+	f.military.administrators[0].capacity = 0
+	f.runtime.act("player", "start", mineral.id).startsWith("Requires").assertTrue()
+	f.military.administrators[0].capacity = 1
+	f.action("start", mineral.id)
+	f.trade.findMarket("stockholm", "coke").blockaded = true
+	f.advance(251)
+	f.state(mineral.id).owner.assertEquals("")
+	f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10106)
+
+@test function cokeFractionsDuplicateSourcesPlayerAiInactiveCaptureAndReconstructionRetainPaidState()
+	let active = new IndustryFixture(false, true)
+	let inactive = new IndustryFixture(true, false)
+	for arm = 0 to 1
+		var f = active
+		if arm == 1
+			f = inactive
+		mineralSupport(f)
+		f.unlock("coke_smelted_iron")
+		let duplicate = new RuntimeTechnology("duplicate_coke", "Duplicate source", 1710, 1)
+		duplicate.addUnlock("duplicate_coke", "modifier", "progression_coke_smelted_iron")
+		f.rpg.technologies.register(duplicate).assertTrue()
+		f.unlock("duplicate_coke")
+		f.rpg.technologies.reconstructAll()
+		f.rpg.technologies.reconstructAll()
+		let d = f.military.industry.sites[f.military.industry.index("mineral_iron_refining:stockholm")]
+		d.outputUnits = 99
+		f.effects.rateFor(f.resources.owner, d, 1778).assertEquals(600)
+		mineralEquip(f)
+		f.action("start", d.id)
+		f.advance(95)
+		let saved = f.military.snapshot()
+		f.military.restore(saved, false).assertTrue()
+		f.military.snapshot().assertEquals(saved)
+		f.military.adapter.removeRepresentation("core:stockholm")
+		f.military.snapshot().assertEquals(saved)
+		f.military.activateRegion("east_asia")
+		f.military.activateRegion("europe_west")
+		f.advance(100)
+		f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10104)
+		f.state(d.id).yieldRemainder.assertEquals(9400)
+		f.action("start", d.id)
+		f.advance(110)
+		f.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10209)
+		f.state(d.id).yieldRemainder.assertEquals(8800)
+	active.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(inactive.trade.findMarket("stockholm", "iron_goods").stock)
+	active.action("start", "mineral_iron_refining:stockholm")
+	active.military.transferSettlement("stockholm", "ai")
+	active.state("mineral_iron_refining:stockholm").equipmentOwner.assertEquals("ai")
+	active.state("mineral_iron_refining:stockholm").owner.assertEquals("")
+	// Serving administration and successor research are checked again.
+	active.runtime.act("ai", "start", "mineral_iron_refining:stockholm").startsWith("Requires").assertTrue()
+	let capturedSite = active.military.industry.sites[active.military.industry.index("mineral_iron_refining:stockholm")]
+	active.effects.rateFor("ai", capturedSite, 1778).assertEquals(0)
+	active.advance(200)
+	active.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10209)
+	active.military.settlements[0].legalOwnerId = "ai"
+	active.military.appoint("stockholm", new AdministratorState("successor", "Successor", "Administrator", "ai", "europe_west", "stockholm", 50, 50, 40, 1))
+	active.rpg.restoreState(active.rpg.captureState() + "|u,ai,water_powered_machinery|u,ai,experimental_method").assertTrue()
+	active.runtime.act("ai", "start", "mineral_iron_refining:stockholm").assertEquals("")
+	active.advance(210)
+	active.trade.findMarket("stockholm", "iron_goods").stock.assertEquals(10308)
+
+@test function cokeCurrentAndLegacyStableRecordsRejectPartialForgedAndMalformedRetrofitsAtomically()
+	let f = new IndustryFixture(false, false)
+	mineralSupport(f)
+	f.unlock("coke_smelted_iron")
+	mineralEquip(f)
+	f.action("start", "mineral_iron_refining:stockholm")
+	f.advance(95)
+	let day = f.clock.currentDay
+	f.military.civic.register(new CivicDistrict("stockholm", "province", 10000, true, day, 20, day, 365, 4, "cloth", 4, 1000), day)
+	f.military.civic.states[0].councilOwner = "player"
+	f.military.civic.states[0].councilReady = day
+	f.military.civic.states[0].councilThrough = day + 365
+	f.military.civic.states[0].taxesCollected = 9360
+	let saved = f.military.snapshot()
+	saved.startsWith("v24|").assertTrue()
+	let council = "|C,stockholm,player," + I2S(day) + "," + I2S(day + 365)
+	let state = f.state("mineral_iron_refining:stockholm")
+	let record = "|I,mineral_iron_refining:stockholm," + state.mineralRecord()
+	f.military.restore(saved + record, false).assertFalse()
+	f.military.restore(saved.replace(record, ""), false).assertFalse()
+	f.military.restore(saved.replace(record, record + ",0"), false).assertFalse()
+	f.military.restore(saved.replace(record, record.replace(",0,0", ",10000,0")), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	f.military.validateSnapshot(saved, f.day + 94).assertFalse()
+	// Main's council/navigation v23 has no mineral facility records.
+	var legacy = saved.replace("v24|", "v23|")
+	for i = 0 to f.military.industry.count - 1
+		if f.military.industry.sites[i].recordVersion == 2
+			legacy = legacy.replace("|I," + f.military.industry.sites[i].id + "," + f.military.industry.states[i].mineralRecord(), "")
+	let accounts = f.trade.capture()
+	f.military.restore(legacy.replace(council, ""), false).assertFalse()
+	f.military.restore(legacy, false).assertTrue()
+	f.state("mineral_iron_refining:stockholm").equipmentOwner.assertEquals("")
+	f.military.civic.states[0].councilOwner.assertEquals("player")
+	f.military.civic.states[0].councilThrough.assertEquals(day + 365)
+	f.military.civic.states[0].taxesCollected.assertEquals(9360)
+	f.trade.capture().assertEquals(accounts)
+	// The earlier v22 layout likewise grants no retrofit or stock.
+	legacy = legacy.replace("v23|", "v22|")
+	f.military.restore(legacy, false).assertTrue()
+	f.state("mineral_iron_refining:stockholm").equipmentOwner.assertEquals("")
+	f.state("coal_extraction:bristol").extractedUnits.assertEquals(0)
+	f.trade.capture().assertEquals(accounts)
+	// This issue's mineral-only v23 retains paid work; councils migrate inactive.
+	let mineral23 = saved.replace("v24|", "v23|").replace(council, "")
+	f.military.restore(mineral23.replace(record, ""), false).assertFalse()
+	f.military.restore(mineral23, false).assertTrue()
+	f.state("mineral_iron_refining:stockholm").equipmentOwner.assertEquals("player")
+	f.state("mineral_iron_refining:stockholm").work.assertEquals(5000000)
+	f.military.civic.states[0].councilOwner.assertEquals("")
+	f.military.civic.states[0].taxesCollected.assertEquals(9360)
+	f.trade.capture().assertEquals(accounts)
+	f.military.restore(saved.replace(council, ""), false).assertFalse()
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.state("mineral_iron_refining:stockholm").work.assertEquals(5000000)
+
+@test function cokeLateCampaignFailureRollsBackRetrofitFuelReservationsAndFractionalAccounts()
+	let f = new LoadFixture()
+	let site = new IndustrySite("mineral", "port", "iron_refining_yield", "printing", "iron", "iron_goods", 1710, 200, 50, 2, 20, 100, 1000, 100, true)
+	site.recordVersion = 2
+	site.fuelGood = "coke"
+	f.military.industry.register(site)
+	let state = f.military.industry.states[0]
+	state.equipmentOwner = "england"
+	state.ready = 1
+	state.owner = "england"
+	state.work = 5000000
+	state.yieldRemainder = 9400
+	state.lastDay = 11
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "mineral-industry").assertTrue()
+	state.work = 6000000
+	state.yieldRemainder = 8800
+	f.extension.trade.market.stock = 88
+	let before = f.military.snapshot()
+	let trade = f.extension.trade.capture()
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(trade)
+	f.extension.fail = false
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.industry.states[0].work.assertEquals(5000000)
+	f.military.industry.states[0].yieldRemainder.assertEquals(9400)

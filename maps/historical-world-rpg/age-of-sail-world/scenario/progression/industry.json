@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "designSource": "scenario/progression/gameplay-effect-design.json",
   "setup": {
     "days": 90,
@@ -28,7 +28,11 @@
       "outputUnits": 100,
       "workRequired": 1000,
       "dailyWork": 100,
-      "mode": "yield"
+      "mode": "yield",
+      "fuelGood": "timber",
+      "supportingTechnology": "",
+      "recordVersion": 1,
+      "depositUnits": 0
     },
     {
       "id": "gun_barrels",
@@ -45,7 +49,86 @@
       "outputUnits": 30,
       "workRequired": 10000,
       "dailyWork": 100,
-      "mode": "throughput"
+      "mode": "throughput",
+      "fuelGood": "timber",
+      "supportingTechnology": "",
+      "recordVersion": 1,
+      "depositUnits": 0
+    },
+    {
+      "id": "mineral_iron_refining",
+      "productionRef": "iron",
+      "metric": "iron_refining_yield",
+      "prerequisite": "water_powered_machinery",
+      "firstYear": 1710,
+      "inputGood": "iron",
+      "inputUnits": 200,
+      "fuelUnits": 50,
+      "wearUnits": 2,
+      "money": 20,
+      "outputGood": "iron_goods",
+      "outputUnits": 100,
+      "workRequired": 1000,
+      "dailyWork": 100,
+      "mode": "yield",
+      "fuelGood": "coke",
+      "supportingTechnology": "experimental_method",
+      "recordVersion": 2,
+      "depositUnits": 0
+    },
+    {
+      "id": "coal_extraction",
+      "productionRef": "",
+      "metric": "",
+      "prerequisite": "deep_mine_drainage",
+      "firstYear": 1600,
+      "inputGood": "",
+      "inputUnits": 0,
+      "fuelUnits": 0,
+      "wearUnits": 2,
+      "money": 20,
+      "outputGood": "coal",
+      "outputUnits": 100,
+      "workRequired": 1000,
+      "dailyWork": 100,
+      "mode": "batch",
+      "fuelGood": "",
+      "supportingTechnology": "",
+      "recordVersion": 2,
+      "depositUnits": 100000,
+      "settlementIds": [
+        "bristol"
+      ],
+      "evidenceIds": [
+        "bristol_coalfield"
+      ]
+    },
+    {
+      "id": "coke_preparation",
+      "productionRef": "",
+      "metric": "",
+      "prerequisite": "experimental_method",
+      "firstYear": 1710,
+      "inputGood": "coal",
+      "inputUnits": 100,
+      "fuelUnits": 0,
+      "wearUnits": 2,
+      "money": 20,
+      "outputGood": "coke",
+      "outputUnits": 50,
+      "workRequired": 1000,
+      "dailyWork": 100,
+      "mode": "batch",
+      "fuelGood": "",
+      "supportingTechnology": "",
+      "recordVersion": 2,
+      "depositUnits": 0,
+      "settlementIds": [
+        "bristol"
+      ],
+      "evidenceIds": [
+        "coke_process"
+      ]
     }
   ],
   "fuelGood": "timber",
@@ -54,10 +137,40 @@
     "Existing raw-material iron lots aggregate ore/feedstock; refining converts them to iron_goods, never creates raw iron. Timber is consumed as charcoal fuel. Arms output represents finished gun barrels in the existing ordnance supply commodity; no combat statistic or free cannon changes.",
     "Only authored iron-producing or arms-producing settlements qualify. Equipment commissions assign actual manpower to a durable workshop, take 90 days and pay tools, timber and treasury. No starting facility is granted. Daily paid workshop labor consumes actual local supply.",
     "Batches reserve their complete material bill up front, pay labor daily, and deposit output only on completion. Capture cancels work without refund; completed equipment/workforce transfers, unfinished commissioning is lost. New owners need their own prerequisite and research. Missing market definitions start with zero stock and zero liquidity; supplies must arrive through ordinary trade.",
-    "An operating market and warehouse are required to sustain a commissioned facility. Materials consume existing local market stock first, then delivered local warehouse cargo with provenance. This permits normal trade deliveries even where a newly defined import market has zero cash. Ore sites without warehouse infrastructure remain raw-material suppliers."
+    "An operating market and warehouse are required to sustain a commissioned facility. Materials consume existing local market stock first, then delivered local warehouse cargo with provenance. This permits normal trade deliveries even where a newly defined import market has zero cash. Ore sites without warehouse infrastructure remain raw-material suppliers.",
+    "Mineral refining uses a separate paid compatible retrofit and only prepared coke. Bristol coal extraction consumes geological reserves, paid tools and work; preparation consumes 100 coal for 50 coke. No fuel or liquidity is seeded. Ordinary transport moves these commodities.",
+    "New I records retain paid setup, batch work, mineral yield remainder and extracted deposit units. Older i records retain charcoal/barrel infrastructure and initialize all new facilities unfunded."
   ],
   "requiredServices": [
     "market",
     "warehouse"
+  ],
+  "evidence": [
+    {
+      "id": "bristol_coalfield",
+      "url": "https://webapps.bgs.ac.uk/memoirs/docs/B01373.html",
+      "settlementId": "bristol",
+      "bounds": [
+        -2.8,
+        51.3,
+        -2.3,
+        51.7
+      ],
+      "firstYear": 1600,
+      "note": "BGS records Kingswood coal working from 1223 and thriving mining after 1594. Bristol represents only its evidenced coalfield hinterland; not a universal deposit."
+    },
+    {
+      "id": "coke_process",
+      "url": "https://www.english-heritage.org.uk/visit/places/iron-bridge/history",
+      "settlementId": "bristol",
+      "bounds": [
+        -2.8,
+        51.3,
+        -2.3,
+        51.7
+      ],
+      "firstYear": 1710,
+      "note": "Darby used coke made from coal in 1709 at Coalbrookdale. Scenario adoption at the existing Bristol coal-handling port from 1710 is a paid processing capability, not a claim that Bristol was the invention site."
+    }
   ]
 }

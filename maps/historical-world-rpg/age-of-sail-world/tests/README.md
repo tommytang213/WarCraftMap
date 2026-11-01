@@ -456,3 +456,14 @@ and late-load rollback. Unrelated scientific research cannot reduce survey loss.
 complete current-source pinned execution and `botanical_survey` production probes
 inside that comparison. Sibling-only, focused, stale and tampered evidence fails
 closed. See `reports/issue-566/README.md` for integration validation requirements.
+
+The coke cases in `IndustryTests.wurst` compare paid mineral refining through
+registered research and industry actions (100/106/107/113), exercise paid coal
+extraction and coke preparation, ordinary purchase/cargo delivery, authority,
+bills, capacity, replay, cancellation, player/AI and region parity, representation
+reconstruction, capture, fractional recovery, v22/v23→v24 migration and late-load
+rollback. `test_coke_industry.py` adds headless conservation, depletion and
+geographic rejection; `test_coke_binding_evidence.py` rejects sibling-only,
+focused, stale, failed, tampered or disconnected closure evidence. Run these
+focused tests during development; integrated pinned execution and all three fresh
+main-revision audits remain required for release closure.

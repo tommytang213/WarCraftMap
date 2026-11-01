@@ -28,7 +28,7 @@ class Fixture:
     def __init__(self, treatment=False, owner='england', world=None, catalog=None):
         self.owner = owner
         self.research = TechnologyInstitutionRuntime(world or WORLD, '1778-01-01')
-        goods = {g for s in CATALOG['sites'] for g in (s['inputGood'], s['outputGood'], 'timber', 'tools')}
+        goods = {g for s in CATALOG['sites'] for g in (s['inputGood'], s['outputGood'], s['fuelGood'], 'timber', 'tools')}
         self.economy = dict(treasury={p: 1000000 for p in self.research.polity_ids}, cities={
             s['settlementId']: dict(owner=owner, legal=True, administered=True, accessible=True,
                                    manpower=1000, supply=100000, warehouse_service=True, stock={g: 100000 for g in goods},
@@ -60,9 +60,9 @@ class Fixture:
 class IndustryProductionTests(unittest.TestCase):
     def test_exact_approved_rates_recipient_sites_and_no_generated_assets(self):
         payload = build()
-        self.assertEqual({'iron_refining_yield': 700, 'gun_barrel_production_throughput': 600},
-                         {e['metric']: e['bonusBasisPoints'] for e in payload['catalog']['effects']})
-        self.assertEqual({'stockholm', 'milan', 'vienna', 'nuremberg', 'liaoyang'},
+        self.assertEqual({'blast_furnace_practice': 700, 'boring_mills': 600, 'coke_smelted_iron': 600},
+                         {e['nodeId']: e['bonusBasisPoints'] for e in payload['catalog']['effects']})
+        self.assertEqual({'stockholm', 'milan', 'vienna', 'nuremberg', 'liaoyang', 'bristol'},
                          {s['settlementId'] for s in payload['catalog']['sites']})
         self.assertNotIn('.unlock(', payload['wurst'])
         self.assertNotIn('new RuntimeForce', payload['wurst'])
@@ -176,7 +176,7 @@ class IndustryProductionTests(unittest.TestCase):
         self.assertEqual(before, f.economy)
 
     def test_fixed_point_yield_vectors_floor_and_unsupported_runtime_access_cancels(self):
-        for output, expected in ((1, 1), (99, 105), (101, 108), (197, 210)):
+        for output, expected in ((1, 1), (99, 105), (101, 108), (197, 200)):
             catalog = copy.deepcopy(CATALOG)
             site = next(s for s in catalog['sites'] if s['id'] == REFINE)
             site['outputUnits'] = output

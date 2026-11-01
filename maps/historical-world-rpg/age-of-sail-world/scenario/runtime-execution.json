@@ -637,6 +637,14 @@
     "column_support": {
       "path": "wurst/MilitarySettlementRuntime.wurst",
       "signature": "function columnSupport(RuntimeForce target, string role) returns boolean"
+    },
+    "industry_material": {
+      "path": "wurst/IndustryCampaignRuntime.wurst",
+      "signature": "function consume(string id, string good, int units)"
+    },
+    "industry_yield": {
+      "path": "wurst/Industry.wurst",
+      "signature": "function refiningOutput(IndustrySite d, IndustryState s, int rate) returns int"
     }
   },
   "systems": {
@@ -1126,6 +1134,18 @@
       "combat_rating",
       "combat_install",
       "land_native_weapon"
+    ],
+    "mineral_fuel_industry": [
+      "research",
+      "dispatch",
+      "industry_registration",
+      "industry_action",
+      "industry_advance",
+      "industry_pay",
+      "industry_labor",
+      "industry_output",
+      "industry_material",
+      "industry_yield"
     ]
   }
 }
