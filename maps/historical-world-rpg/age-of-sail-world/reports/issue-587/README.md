@@ -51,3 +51,27 @@ framework validation. After merge, regenerate release-blocker, runtime-acceptanc
 and requirement-traceability audits on integrated main with that revision's full
 verified execution bundle. A merged PR or this focused evidence cannot close the
 Columns finding.
+
+The later [CI retry](https://github.com/tommytang213/WarCraftMap/actions/runs/41316755962/job/124878319328)
+passed its first complete 810-test execution, then timed out during a second
+execution in `tradeCommandsRejectUnknownHiddenRemoteAndUnauthorizedTargets`.
+The timeout occurred on its final rejection's full campaign snapshot comparison,
+which includes the complete generated agricultural ledger.
+
+The retry repair partitions independent market-access, cargo-access and malformed
+input journeys into three discovered tests. Every original command, rejection,
+full-state comparison and generated registration remains covered. The pinned
+20-second deadline and complete-suite gate are unchanged; full discovery now
+contains 812 cases.
+
+Fresh pinned typechecking and all 40 selected interpreter cases pass, covering
+every trade command journey, land comparison, installed Columns/Bayonet callbacks
+and military orders. The Columns comparison and installed callback emit all
+required weapon, composition, support and final-resolution probes.
+All 354 selected Python cases pass, including nine framework conformance cases.
+The framework transcript's printed 812-case execution is a synthetic fixture;
+the actual pinned interpreter run here is the separately recorded 40-case suite.
+`timeout-repair-validation.json` and compressed transcripts record this focused
+validation separately from the earlier Lua-size repair. Full repository execution
+remains the outer worker's responsibility; these results cannot close release
+findings or replace the required three audits on integrated main.
