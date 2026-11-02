@@ -796,6 +796,21 @@ def generate(config: BuildConfig, generated: Path) -> None:
     if courts_catalog:
         courts_wurst += '\tledger.availabilityMetric = "commercial_transaction_fee_reduction"\n'
     runtime['commercialCourts'] = courts_catalog
+    institution_wurst, institution_catalog, institution_sources = banking_configuration(
+        config.project, world, settlement_runtime, authored_sources, trade_records,
+        policy='institution-courts', metrics={'institution_processing_cost_reduction': 'policy'},
+        function='configureGeneratedInstitutionCourts')
+    if institution_catalog:
+        institution_wurst += '\tledger.availabilityMetric = "institution_processing_cost_reduction"\n'
+    courts_wurst += institution_wurst
+    courts_sources += institution_sources
+    runtime['institutionCourts'] = institution_catalog
+    if institution_catalog:
+        from settled_trade_services import adoption_configuration
+        adoption_lines, adoption_sources = adoption_configuration(config.project, world, institution_catalog)
+        civic_wurst = civic_wurst.replace("public function configureGeneratedCivic(CivicLedger ledger, CivicResearchEffects research, int day)\n", "public function configureGeneratedCivic(CivicLedger ledger, CivicResearchEffects research, int day)\n\tconfigureGeneratedCourtAdoption(ledger)\n")
+        civic_wurst += "\npublic function configureGeneratedCourtAdoption(CivicLedger ledger)\n" + adoption_lines
+        courts_sources += adoption_sources
     from army_food_logistics import configuration as logistics_configuration, supply_anchor
     logistics_wurst, logistics_catalog, logistics_sources = logistics_configuration(config.project, world, settlement_runtime, authored_sources, trade_records, finance_catalog)
     runtime['armyFoodLogistics'] = logistics_catalog
@@ -915,6 +930,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in courts_catalog.get('effects', [])}
+    bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in institution_catalog.get('effects', [])}
     if agriculture_payload:
         bound_research |= {(e['kind'], e['contentId']) for e in agriculture_payload['effects']}
     if naval_builder:

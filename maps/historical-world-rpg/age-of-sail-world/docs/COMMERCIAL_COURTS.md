@@ -74,3 +74,60 @@ capture, migration, failed-load rollback and 25-year active/abstract parity.
 Release evidence selection requires a verified current-source full-suite run;
 focused test logs do not close blockers. After overlap integration and merge, the
 controller must regenerate release, runtime and traceability audits on new main.
+
+## Phase 9 institutional courts and Commercial Statistics (#588)
+
+Commercial Courts institution adoption retains Merchant Correspondence and the
+catalogue's 14% urbanization requirement. A currently lawful administered civic
+district must meet that threshold. Adoption grants only
+`policy:progression_commercial_courts_institution`; it never grants Chartered
+Companies or elects either court policy. `/courts institution MARKET` elects the
+institutional source separately; `/courts repeal-institution MARKET` repeals it.
+`/courts policy MARKET` and `/courts repeal MARKET` retain their corporate meaning.
+Both use the existing qualified sites, bookkeeping requirement, 1% annual normal
+tax setup bill, 90-day transition and prepaid 0.5% annual upkeep. Each election
+pays its own bills and tracks its own owner, readiness, funding and serial.
+`/courts inspect MARKET` explains both elected sources on the same service.
+
+Only operating, currently entitled sources reduce the existing processing bill:
+400 bp institutional plus 500 bp corporate, summed before the existing floor of
+savings. Thus a 1,000-unit bill is 960 with institutional courts, 950 with corporate
+courts, or 910 with both. A one-unit bill remains one. Capturing a site clears both
+choices without transferring research, and failed renewal ends only that source.
+Re-enactment pays again and repeats its transition; it never resumes for free.
+
+Commercial Statistics binds `modifier:progression_commercial_statistics` at its
+1740 preferred year. Existing formal exchange execution charges fund price
+reporting and market coordination on actual purchases and sales. It reduces only
+the execution-slippage component by 500 bp, compatible with Brokerage's 700 bp.
+A 1,000-unit slippage component is 950 with Statistics or 880 with both. The processing bill retains its original pre-discount quote base, so reporting
+does not reduce another fee bucket. Commission, scarcity and unrelated charges keep their own rules; principal is never a rebate
+base. Current registered market and warehouse services, lawful administration,
+access, real stock, counterparty money and cargo capacity remain authoritative.
+Transfers and estimates earn no output or standing. The spread remains positive;
+same-market round trips lose money and cannot earn route standing.
+
+Trade inspection shows current execution estimates and eligible warehouse
+processing bills. Settlement recomputes current research, elected funding and
+resource checks; an earlier estimate neither locks a discount nor bypasses any
+check. Stable transaction IDs retain the existing replay history and FIFO costs.
+
+Military snapshots advance from v24 to **v25**, adding mandatory uppercase `O`
+records for institutional court sites, distinct from corporate lowercase `o`
+and banking `b`. Versions 1–24 retain their existing court/banking state and
+initialize institutional elections unfunded. Missing, duplicate, invalid-controller
+or future-clock current records reject in detached staging. Campaign checkpoints
+include the new ledger with treasury, stock, cargo and transaction history for
+late-load rollback. No outer campaign, RPG or trade schema changes are needed.
+
+`SettledTradeServicesTests.wurst` registers separate institution-only and
+Statistics-only buy/sell comparisons, combined-source arithmetic, adoption and
+service/resource negatives, failed upkeep, replay, split orders, round trips,
+player/AI and active/inactive parity, migration, capture, repeal/re-enactment,
+save/resume and late-load rollback. The evidence verifier requires each exact
+comparison's own production probes and the common lifecycle tests after full
+current-source pinned execution. Corporate courts or sibling finance evidence
+cannot close these findings. Focused development runs do not close release
+findings. After integration the controller must run the full pinned suite and
+regenerate release-blocker, runtime-acceptance and requirement-traceability audits
+on the new main revision. No player QA is required.

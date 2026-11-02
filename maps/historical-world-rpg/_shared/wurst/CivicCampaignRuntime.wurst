@@ -119,6 +119,12 @@ public class CivicCampaignRuntime implements ResearchEligibilityPort
 		campaign.rpg.technologies.eligibility = this
 	override function eligibleResearch(string controllerId, string nodeId) returns boolean
 		let ledger = campaign.militarySettlements.civic
+		if nodeId == ledger.courtNode
+			for i = 0 to ledger.count - 1
+				let id = ledger.districts[i].id
+				if economy.controller(id) == controllerId and economy.lawful(id) and ledger.states[i].urbanization >= ledger.courtMinimumUrbanization
+					return true
+			return false
 		if nodeId == ledger.councilNode
 			for i = 0 to ledger.count - 1
 				if ledger.councilDistrictEligible(i, controllerId, economy)

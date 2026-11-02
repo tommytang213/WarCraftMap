@@ -1,0 +1,357 @@
+package SettledTradeServicesTests
+
+import TradeFinanceTests
+import TradeFinance
+import FinanceCampaignRuntime
+import CommercialCourts
+import BankingOperations
+import BankingCampaignRuntime
+import CivicGovernance
+import CivicCampaignRuntime
+import MilitarySettlementRuntime
+import PlayableTrade
+import ResearchEntitlements
+import ScenarioData
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import WarcraftRpgRuntime
+
+class SettledFixture
+	FinanceFixture f
+	BankingResearchEffects effects
+	CommercialCourtsRuntime courts
+	CivicCampaignRuntime civic
+	construct(boolean ai, boolean active)
+		f = new FinanceFixture(ai, active)
+		effects = new BankingResearchEffects(f.effects)
+		configureGeneratedCourts(f.military.courts, effects)
+		configureGeneratedInstitutionCourts(f.military.institutionCourts, effects)
+		configureGeneratedBanking(f.military.banking, effects)
+		configureGeneratedCourtAdoption(f.military.civic)
+		let district = new CivicDistrict("london", "greater_london", 3341, true, 0, 1, 0, 0, 0, "timber", 1, 10000)
+		district.urbanization = 20
+		f.military.civic.register(district, f.day)
+		civic = new CivicCampaignRuntime(f.campaign, f.trade, new CivicResearchEffects(effects))
+		f.rpg.technologies.effects = effects
+		courts = new CommercialCourtsRuntime(f.campaign, f.trade, effects)
+		f.campaign.courtsRuntime = courts
+		f.trade.controller.courts = courts
+		registerCourtsCommands(f.commands, courts).assertEquals("")
+		let owner = f.resources.owner
+		f.rpg.restoreState(f.rpg.captureState() + "|u," + owner + ",merchant_correspondence|u," + owner + ",joint_stock_enterprise|u," + owner + ",galleon_design").assertTrue()
+		f.rpg.technologies.reconstructAll()
+		market().baseUnitPrice = 1000
+		market().pricing.elasticityPermille = 0
+		store().money = 1000000
+	function owner() returns string
+		return f.resources.owner
+	function market() returns RuntimeMarket
+		return f.trade.markets[0]
+	function store() returns TradeStore
+		return f.trade.findStore("warehouse:london")
+	function adopt()
+		f.commands.dispatch(Player(0), "/institution commercial_courts_institution").assertTrue()
+		f.resources.output.assertEquals("Action completed.")
+		f.rpg.technologies.bindingStatus(f.rpg.technologies.get("commercial_courts_institution").unlocks[0]).assertEquals(RESEARCH_BOUND)
+	function corporate()
+		f.commands.dispatch(Player(0), "/research chartered_companies").assertTrue()
+		f.resources.output.assertEquals("Action completed.")
+	function enact()
+		f.commands.dispatch(Player(0), "/courts institution london").assertTrue()
+		f.resources.output.assertEquals("Courts action completed.")
+	function ready()
+		adopt()
+		enact()
+		f.clock.advanceTo(f.day + 90).assertTrue()
+	function buy(string id, int units)
+		f.trade.controller.buy(id, market(), store(), units).startsWith("Bought").assertTrue()
+	function sell(string id, int units)
+		f.trade.controller.sell(id, market(), store(), units, 1000).startsWith("Sold").assertTrue()
+	function rejectBuy(string id, int units)
+		let before = f.trade.capture()
+		let military = f.military.snapshot()
+		let money = f.campaign.countries.treasury[0]
+		f.trade.controller.buy(id, market(), store(), units).startsWith("Bought").assertFalse()
+		f.trade.capture().assertEquals(before)
+		f.military.snapshot().assertEquals(military)
+		f.campaign.countries.treasury[0].assertEquals(money)
+
+@test function institutionOnlyRegisteredBuySellSettlesItsOwnProcessingBill()
+	let c = new SettledFixture(false, false)
+	let t = new SettledFixture(false, true)
+	let money = t.f.campaign.countries.treasury[0]
+	t.adopt()
+	t.f.military.courts.states[0].owner.assertEquals("")
+	t.f.military.institutionCourts.states[0].owner.assertEquals("")
+	t.f.rpg.technologies.isUnlocked("player", "chartered_companies").assertFalse()
+	t.f.campaign.countries.treasury[0].assertEquals(money)
+	t.enact()
+	t.f.campaign.countries.treasury[0].assertEquals(money - 51)
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(1000)
+	t.f.clock.advanceTo(t.f.day + 90).assertTrue()
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(960)
+	// Zero spread isolates the warehouse bill from exchange execution costs.
+	c.market().pricing.spreadPermille = 0
+	t.market().pricing.spreadPermille = 0
+	let counterparty = t.market().money
+	c.buy("control-buy", 100)
+	t.buy("institution-buy", 100)
+	c.store().money.assertEquals(899000)
+	t.store().money.assertEquals(899040)
+	t.market().money.assertEquals(counterparty + 100000)
+	t.store().quantity("timber").assertEquals(100)
+	t.market().stock.assertEquals(9900)
+	c.sell("control-sell", 100)
+	t.sell("institution-sell", 100)
+	t.store().money.assertEquals(998080)
+	c.store().money.assertEquals(998000)
+	t.market().money.assertEquals(counterparty)
+	t.f.trade.progress.standing.assertEquals(0)
+	t.f.trade.controller.processedCount.assertEquals(2)
+	// The corporate entitlement does not enact itself or share institutional funding.
+	t.corporate()
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(960)
+	t.courts.policy("player", "london", false).assertEquals("")
+	t.f.clock.advanceTo(t.f.day + 180).assertTrue()
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(910)
+	t.courts.fee("player", t.market(), t.store(), 1).assertEquals(1)
+	t.courts.institutionPolicy("player", "london", true).assertEquals("")
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(950)
+	t.courts.overview("player", "london").contains("institutional owner").assertTrue()
+
+@test function statisticsOnlyRegisteredBuySellSettlesItsOwnSlippage()
+	let c = new FinanceFixture(false, false)
+	let t = new FinanceFixture(false, true)
+	let cm = c.trade.markets[0]
+	let tm = t.trade.markets[0]
+	cm.baseUnitPrice = 2500
+	tm.baseUnitPrice = 2500
+	cm.pricing.elasticityPermille = 0
+	tm.pricing.elasticityPermille = 0
+	let cs = c.trade.findStore("warehouse:london")
+	let ts = t.trade.findStore("warehouse:london")
+	t.unlock("commercial_statistics")
+	// 25000 principal; 2000 spread = 1000 commission + 1000 slippage.
+	t.runtime.amount("player", tm, 10, true).assertEquals(26950)
+	c.runtime.amount("player", cm, 10, true).assertEquals(27000)
+	let money = tm.money
+	c.trade.controller.buy("control", cm, cs, 10).startsWith("Bought").assertTrue()
+	t.trade.controller.buy("statistics", tm, ts, 10).startsWith("Bought").assertTrue()
+	ts.money.assertEquals(73050)
+	cs.money.assertEquals(73000)
+	tm.money.assertEquals(money + 26950)
+	ts.quantity("timber").assertEquals(10)
+	tm.stock.assertEquals(9990)
+	t.runtime.amount("player", tm, 10, false).assertEquals(23050)
+	c.trade.controller.sell("control-sale", cm, cs, 10, 1000).startsWith("Sold").assertTrue()
+	t.trade.controller.sell("statistics-sale", tm, ts, 10, 1000).startsWith("Sold").assertTrue()
+	ts.money.assertEquals(96100)
+	cs.money.assertEquals(96000)
+	tm.money.assertEquals(money + 3900)
+	t.trade.progress.standing.assertEquals(0)
+	t.unlock("canal_tolls_finance")
+	t.unlock("brokerage_houses")
+	t.runtime.amount("player", tm, 10, true).assertEquals(26880)
+	t.runtime.amount("player", tm, 10, false).assertEquals(23120)
+	financeCost(1000, 500).assertEquals(950)
+	financeCost(1000, 1200).assertEquals(880)
+	financeCost(1, 1200).assertEquals(1)
+
+@test function settledServicesRejectStaleAuthorityFundsStockCapacityAndReplay()
+	let t = new SettledFixture(false, false)
+	let f = t.f
+	// Adoption checks the authored Merchant Correspondence and 14% gate.
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,merchant_correspondence", "")).assertTrue()
+	f.commands.dispatch(Player(0), "/institution commercial_courts_institution").assertTrue()
+	f.rpg.technologies.isUnlocked("player", "commercial_courts_institution").assertFalse()
+	f.rpg.restoreState(research).assertTrue()
+	f.military.civic.states[0].urbanization = 13
+	f.commands.dispatch(Player(0), "/institution commercial_courts_institution").assertTrue()
+	f.rpg.technologies.isUnlocked("player", "commercial_courts_institution").assertFalse()
+	f.military.civic.states[0].urbanization = 14
+	t.adopt()
+	let money = f.campaign.countries.treasury[0]
+	f.campaign.countries.treasury[0] = 50
+	(t.courts.institutionPolicy("player", "london", false) != "").assertTrue()
+	f.military.institutionCourts.states[0].owner.assertEquals("")
+	f.campaign.countries.treasury[0] = money
+	t.enact()
+	f.clock.advanceTo(f.day + 90).assertTrue()
+	f.unlock("commercial_statistics")
+	let quote = f.runtime.amount("player", t.market(), 10, true)
+	quote.assertEquals(10780)
+	let m = t.market()
+	m.stock = 0
+	t.rejectBuy("stock", 10)
+	m.stock = 10000
+	let cash = t.store().money
+	t.store().money = 0
+	t.rejectBuy("money", 10)
+	t.store().money = cash
+	let capacity = t.store().capacity
+	t.store().capacity = 0
+	t.rejectBuy("capacity", 10)
+	t.store().capacity = capacity
+	m.blockaded = true
+	t.rejectBuy("blockade", 10)
+	f.runtime.amount("player", m, 10, true).assertEquals(m.quoteAmount(10, true))
+	m.blockaded = false
+	m.occupiedByHostile = true
+	t.rejectBuy("occupation", 10)
+	m.occupiedByHostile = false
+	let office = f.military.administrators[0]
+	office.controllerId = "foreign"
+	f.runtime.amount("player", m, 10, true).assertEquals(m.quoteAmount(10, true))
+	office.controllerId = "player"
+	t.store().warehouseService = false
+	f.runtime.amount("player", m, 10, true).assertEquals(m.quoteAmount(10, true))
+	t.store().warehouseService = true
+	// Preview grants no authority: revocation changes the fresh commit amount.
+	let earned = f.rpg.captureState()
+	f.rpg.restoreState(earned.replace("|u,player,commercial_statistics", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	t.courts.institutionPolicy("player", "london", true).assertEquals("")
+	let before = t.store().money
+	t.buy("stale-estimate", 10)
+	t.store().money.assertEquals(before - 10800 - 108)
+	t.rejectBuy("stale-estimate", 10)
+	let marketFunds = m.money
+	m.money = 0
+	let state = f.trade.capture()
+	f.trade.controller.sell("funds", m, t.store(), 10, 1000).assertEquals("Market funds are insufficient.")
+	f.trade.capture().assertEquals(state)
+	m.money = marketFunds
+	f.rpg.restoreState(earned).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	t.enact()
+	f.clock.advanceTo(f.day + 180).assertTrue()
+	// No prepaid renewal, no benefit and no automatic re-enactment.
+	f.campaign.countries.treasury[0] = 0
+	let expiry = f.military.institutionCourts.states[0].upkeepThrough
+	f.clock.advanceTo(expiry).assertTrue()
+	f.military.institutionCourts.states[0].owner.assertEquals("")
+	t.courts.fee("player", m, t.store(), 100000).assertEquals(1000)
+
+@test function settledServicesParitySplitOrdersAndRoundTripsNeverFarmStanding()
+	var expected = -1
+	for mode = 0 to 3
+		let t = new SettledFixture(mode >= 2, mode mod 2 == 0)
+		t.ready()
+		t.f.unlock("commercial_statistics")
+		t.courts.fee(t.owner(), t.market(), t.store(), 100000).assertEquals(960)
+		let before = t.store().money
+		for i = 0 to 9
+			t.buy("split-buy-" + I2S(i), 1)
+		for i = 0 to 9
+			t.sell("split-sell-" + I2S(i), 1)
+		(t.store().money < before).assertTrue()
+		t.f.trade.progress.standing.assertEquals(0)
+		t.f.trade.progress.completedRouteCount.assertEquals(0)
+		t.store().quantity("timber").assertEquals(0)
+		if expected < 0
+			expected = t.store().money
+		t.store().money.assertEquals(expected)
+		// Reconstructed duplicate named sources still contribute once.
+		t.f.rpg.technologies.reconstructAll()
+		t.f.rpg.technologies.reconstructAll()
+		t.f.runtime.amount(t.owner(), t.market(), 10, true).assertEquals(10780)
+		t.courts.fee(t.owner(), t.market(), t.store(), 100000).assertEquals(960)
+		let bulkMoney = t.store().money
+		t.buy("bulk-buy", 100)
+		// Reporting changes only slippage; the original processing bucket stays 1080.
+		t.store().money.assertEquals(bulkMoney - 107800 - 1037)
+		t.sell("bulk-sell", 100)
+		t.f.trade.progress.standing.assertEquals(0)
+		let saved = t.f.trade.capture()
+		t.f.trade.reconstruct(saved).assertTrue()
+		t.f.trade.capture().assertEquals(saved)
+		t.rejectBuy("split-buy-0", 1)
+
+@test function settledServicesMigrationCaptureReenactmentAndRollbackPreserveAuthority()
+	let t = new SettledFixture(false, false)
+	t.ready()
+	t.f.unlock("commercial_statistics")
+	t.corporate()
+	t.courts.policy("player", "london", false).assertEquals("")
+	t.f.commands.dispatch(Player(0), "/institution central_bank_institution").assertTrue()
+	t.f.resources.output.assertEquals("Action completed.")
+	let bank = new BankingCampaignRuntime(t.f.campaign, t.f.trade, t.effects)
+	t.f.campaign.bankingRuntime = bank
+	bank.policy("player", "london", false).assertEquals("")
+	let bankRecord = t.f.military.banking.states[0].record()
+	let saved = t.f.military.snapshot()
+	let treasury = t.f.campaign.countries.treasury[0]
+	t.f.military.restore(saved).assertTrue()
+	t.f.military.snapshot().assertEquals(saved)
+	t.f.campaign.countries.treasury[0].assertEquals(treasury)
+	var legacy = saved.replace("v25|", "v24|")
+	for i = 0 to t.f.military.institutionCourts.count - 1
+		legacy = legacy.replace("|O," + t.f.military.institutionCourts.sites[i].id + "," + t.f.military.institutionCourts.states[i].record(), "")
+	t.f.military.restore(legacy).assertTrue()
+	t.f.military.institutionCourts.states[0].owner.assertEquals("")
+	t.f.military.courts.states[0].owner.assertEquals("player")
+	t.f.military.banking.states[0].record().assertEquals(bankRecord)
+	t.f.military.restore(saved).assertTrue()
+	let record = "|O,london," + t.f.military.institutionCourts.states[0].record()
+	t.f.military.restore(saved.replace(record, "")).assertFalse()
+	t.f.military.restore(saved + record).assertFalse()
+	t.f.military.snapshot().assertEquals(saved)
+	t.courts.institutionPolicy("player", "london", true).assertEquals("")
+	t.enact()
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(1000)
+	t.f.clock.advanceTo(t.f.day + 180).assertTrue()
+	t.courts.fee("player", t.market(), t.store(), 100000).assertEquals(910)
+	t.f.military.transferSettlement("london", "foreign")
+	t.f.military.institutionCourts.states[0].owner.assertEquals("")
+	t.f.military.courts.states[0].owner.assertEquals("")
+	t.f.rpg.technologies.isUnlocked("foreign", "commercial_courts_institution").assertFalse()
+	t.f.rpg.technologies.isUnlocked("foreign", "commercial_statistics").assertFalse()
+	// The actual campaign codec checkpoints policy, treasury and trade before a
+	// late extension failure. A candidate that predates payment cannot erase it.
+	let load = new LoadFixture()
+	let effects = new BankingResearchEffects(load.rpg.technologies.effects)
+	configureGeneratedCourts(load.military.courts, effects)
+	configureGeneratedInstitutionCourts(load.military.institutionCourts, effects)
+	load.military.registerSettlement(new SettlementRuntimeState("london", "england", "europe_west", 'htow', 'hfoo', 30, 20, 10000, 10000, 0., 0.))
+	load.military.appoint("london", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "london", 50, 50, 40, 1))
+	let trade = load.extension.trade
+	trade.registerMarket(new RuntimeMarket("london", "timber", 100, 100000, 1000, 1000))
+	trade.registerStore(new TradeStore("warehouse:london", 1000, 100000).withAccess("warehouse", "london", true))
+	load.military.institutionCourts.prerequisite = "printing"
+	load.military.courts.prerequisite = "printing"
+	let binding = effects.definitions[1] castTo BankingEffect
+	binding.firstDay = 0
+	let node = new RuntimeTechnology("fixture_institution", "Fixture institution", 1, 1)
+	node.addUnlock(node.id, "policy", "progression_commercial_courts_institution")
+	load.rpg.technologies.register(node).assertTrue()
+	let reporting = new FinanceResearchEffects(effects)
+	configureGeneratedFinance(load.military.finance, reporting)
+	for i = 0 to reporting.definitionCount - 1
+		let reportingEffect = reporting.definitions[i] castTo FinanceEffect
+		if reportingEffect.contentId == "progression_commercial_statistics"
+			reportingEffect.firstDay = 0
+	let statistics = new RuntimeTechnology("fixture_statistics", "Fixture statistics", 1, 1)
+	statistics.addUnlock(statistics.id, "modifier", "progression_commercial_statistics")
+	load.rpg.technologies.register(statistics).assertTrue()
+	load.rpg.technologies.effects = reporting
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "institution").assertTrue()
+	load.rpg.restoreState(load.rpg.captureState() + "|u,england,printing|u,england,fixture_institution|u,england,fixture_statistics").assertTrue()
+	load.rpg.technologies.reconstructAll()
+	let courts = new CommercialCourtsRuntime(load.campaign.state, trade, effects)
+	load.campaign.state.courtsRuntime = courts
+	trade.controller.courts = courts
+	trade.controller.financeOwner = "england"
+	let finance = new FinanceCampaignRuntime(load.campaign.state, trade, reporting)
+	load.campaign.state.financeRuntime = finance
+	trade.controller.finance = finance
+	courts.institutionPolicy("england", "london", false).assertEquals("")
+	trade.controller.buy("post-save", trade.findMarket("london", "timber"), trade.findStore("warehouse:london"), 10).startsWith("Bought").assertTrue()
+	let before = load.campaign.state.captureAuthoritativeState()
+	let tradeBefore = trade.capture()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.campaign.state.captureAuthoritativeState().assertEquals(before)
+	trade.capture().assertEquals(tradeBefore)
+	reporting.rateAt("england", "market_slippage_reduction", load.clock.currentDay).assertEquals(500)
+	effects.rateAt("england", "institution_processing_cost_reduction", load.clock.currentDay).assertEquals(400)

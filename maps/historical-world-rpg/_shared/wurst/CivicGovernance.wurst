@@ -180,6 +180,8 @@ public class CivicLedger
 	int councilTransitionDays = 90
 	int councilEnactmentBasisPoints = 100
 	int councilUpkeepBasisPoints = 50
+	string courtNode = ""
+	int courtMinimumUrbanization = 0
 	string municipalNode = ""
 	int municipalMinimumUrbanization = 101
 	int archiveUpkeepBasisPoints = 25
@@ -214,6 +216,8 @@ public class CivicLedger
 		copy.councilUpkeepBasisPoints = councilUpkeepBasisPoints
 		for i = 0 to councilLinkCount - 1
 			copy.addCouncilLink(councilLinks[i].originId, councilLinks[i].recipientId)
+		copy.courtNode = courtNode
+		copy.courtMinimumUrbanization = courtMinimumUrbanization
 		copy.municipalNode = municipalNode
 		copy.municipalMinimumUrbanization = municipalMinimumUrbanization
 		copy.archiveUpkeepBasisPoints = archiveUpkeepBasisPoints
