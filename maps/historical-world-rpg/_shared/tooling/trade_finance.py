@@ -92,10 +92,7 @@ def configuration(project, world, settlements, authored, trade_records):
                 raise ValueError('finance: bank lacks real service or is duplicated')
             banks[sid] = network['id']
     for sid, row in sites.items():
-        lines += [f'\tledger.sites[ledger.siteCount] = new ExchangeSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))})',
-                  f'\tledger.sites[ledger.siteCount].customsEligible = {str(bool(set(row["roles"]) & set(customs["roles"]))).lower()}',
-                  '\tledger.customs[ledger.siteCount] = new CustomsState()',
-                  '\tledger.siteCount++']
+        lines.append(f'\tledger.registerSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))}, {str(bool(set(row["roles"]) & set(customs["roles"]))).lower()})')
     ids, locations = set(), set()
     if not 0 < len(data['canalWorks']) <= 32:
         raise ValueError('finance: invalid project count')

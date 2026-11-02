@@ -38,3 +38,38 @@ The controller must run complete repository validation and the full pinned
 Wurst suite, then regenerate release-blocker, runtime-acceptance and requirement-
 traceability audits on integrated main before closure. No player QA is required.
 No commits, pushes or GitHub writes were performed.
+
+PR #596 CI repair: the campaign artifact job passed 825/825 interpreter tests but
+rejected compiled Europe West Lua above the unchanged 16 MiB budget. The finance
+generator now calls one shared, non-inlined site-registration method instead of
+repeating site and Customs House allocation for all 664 exchange districts.
+Authored order, geography, banking, eligibility, construction and save semantics
+are preserved. New correspondence and registration/reconstruction regressions
+check the complete catalogue and prevent unearned or shared paid authority.
+
+Fresh pinned production compilation reduces base Lua from 17,007,015 to
+16,245,991 bytes. The actual materialized Europe West archive has 16,248,600-byte
+Lua, leaving 528,616 bytes below the original limit. Normal compiled-script,
+archive and physical-map inspection pass.
+
+The complete pinned interpreter run passes **826/826 tests**. Its retained
+transcript, exact source discovery, input hashes, production probes and current
+source identity pass the normal fail-closed evidence verifier. Both independent
+Customs House comparisons emit every required probe and bind their exact
+identities. The production framework conformance and content-mutation campaigns
+both build successfully with 3/3 pinned tests each and unchanged shared sources.
+
+All **132 distinct targeted Python cases** and **215 automation cases** pass.
+The initial targeted run saw three stale reports before regeneration finished;
+those three checks pass on rerun against the refreshed reports. Python compiler
+fixtures are synthetic protocol tests, distinct from the real pinned execution.
+The framework boundary, world contracts, canonical map source, traceability
+freshness and whitespace checks pass. `ci-repair-validation.json` and the
+compressed transcripts record this repair separately from earlier focused runs.
+
+All three source-only audits were refreshed and retain both unresolved #589
+findings. Complete local execution does not replace authoritative outer-worker
+validation or the required release-blocker, runtime-acceptance and requirement-
+traceability audits on integrated main after merge. No player QA, commits, pushes
+or GitHub writes were performed. Containers used read-only inputs, disabled
+networking and private temporary storage, with no global tooling changes.

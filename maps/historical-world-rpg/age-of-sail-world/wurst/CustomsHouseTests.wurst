@@ -13,6 +13,37 @@ import CampaignLoadTransactionTests
 import CampaignSaveManager
 import ScenarioData
 
+@test function generatedExchangeRegistrationNeverGrantsOrSharesPaidCustomsAuthority()
+	let ledger = new FinanceLedger()
+	configureGeneratedFinance(ledger, new FinanceResearchEffects(null))
+	(ledger.siteCount > 1).assertTrue()
+	for i = 0 to ledger.siteCount - 1
+		ledger.siteIndex(ledger.sites[i].id).assertEquals(i)
+		let state = ledger.customsState(i)
+		state.restored.assertFalse()
+		state.builder.assertEquals("")
+		state.work.assertEquals(0)
+		state.lastDay.assertEquals(0)
+		state.completed.assertFalse()
+		state.operator.assertEquals("")
+		state.through.assertEquals(0)
+	ledger.customsState(0).completed = true
+	ledger.customsState(0).operator = "previous_controller"
+	ledger.customsState(1).completed.assertFalse()
+	ledger.customsState(1).operator.assertEquals("")
+	let fresh = ledger.fork()
+	fresh.siteCount.assertEquals(ledger.siteCount)
+	for i = 0 to fresh.siteCount - 1
+		fresh.sites[i].id.assertEquals(ledger.sites[i].id)
+		fresh.sites[i].provinceId.assertEquals(ledger.sites[i].provinceId)
+		fresh.sites[i].bankNetwork.assertEquals(ledger.sites[i].bankNetwork)
+		fresh.sites[i].customsEligible.assertEquals(ledger.sites[i].customsEligible)
+		fresh.customsState(i).completed.assertFalse()
+		fresh.customsState(i).operator.assertEquals("")
+	// A reconstruction candidate cannot clear the live ledger before commit.
+	ledger.customsState(0).completed.assertTrue()
+	ledger.customsState(0).operator.assertEquals("previous_controller")
+
 class CustomsFixture
 	AuctionCommandFixture a = new AuctionCommandFixture()
 	construct(boolean credit)

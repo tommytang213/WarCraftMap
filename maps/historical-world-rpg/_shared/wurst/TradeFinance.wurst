@@ -137,6 +137,14 @@ public class FinanceLedger
 	int customsCommission = 0
 	int customsSlippage = 0
 	int customsAdministration = 0
+	/** Keep generated catalogue entries as calls: inlining these allocations for
+	 * every exchange district needlessly expands the compiled campaign script. */
+	@noinline
+	function registerSite(string id, string provinceId, string bankNetwork, boolean customsEligible)
+		sites[siteCount] = new ExchangeSite(id, provinceId, bankNetwork)
+		sites[siteCount].customsEligible = customsEligible
+		customs[siteCount] = new CustomsState()
+		siteCount++
 	function customsState(int i) returns CustomsState
 		if customs[i] == null
 			customs[i] = new CustomsState()

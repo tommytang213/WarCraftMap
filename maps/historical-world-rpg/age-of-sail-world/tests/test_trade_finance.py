@@ -1,6 +1,7 @@
 """Scenario compiler guards; production outcomes execute in TradeFinanceTests."""
 import copy
 import json
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -33,7 +34,7 @@ class TradeFinanceCompilationTests(unittest.TestCase):
                           ('brokerage_houses', 700), ('commercial_statistics', 500), ('canal_tolls_finance', 600)},
                          {(e['nodeId'], e['bonusBasisPoints']) for e in catalog['effects']})
         self.assertIn('"river_transport_bureaus", "timber", 638810, 20, 1000, 100, 2, 90, 200, 10', source)
-        self.assertIn('new ExchangeSite("london", "greater_london", "european_correspondents")', source)
+        self.assertIn('ledger.registerSite("london", "greater_london", "european_correspondents", true)', source)
         self.assertNotIn('unlock(', source)
         self.assertEqual(3, len(paths))
         self.assertEqual(source, self.compile()[0])
@@ -95,8 +96,23 @@ class TradeFinanceCompilationTests(unittest.TestCase):
         for site in ('london', 'lisbon', 'yangzhou', 'malacca', 'venice'):
             self.assertIn(site, building['siteIds'])
         self.assertEqual(building['siteIds'], credit['siteIds'])
-        self.assertIn('new CustomsState()', source)
+        self.assertIn('ledger.registerSite(', source)
         self.assertNotIn('polityId', source)
+
+    def test_registered_sites_retain_authoritative_order_geography_banks_and_eligibility(self):
+        source, catalog, _paths = self.compile()
+        rows = re.findall(r'ledger.registerSite\("([^"]+)", "([^"]+)", "([^"]*)", (true|false)\)', source)
+        self.assertEqual(catalog['exchangeIds'], [row[0] for row in rows])
+        banks = {sid: network['id'] for network in self.data['bankNetworks']
+                 for sid in network['settlementIds']}
+        for sid, province, bank, eligible in rows:
+            authored = self.authored[sid][1]
+            self.assertEqual(authored['provinceId'], province)
+            self.assertEqual(banks.get(sid, ''), bank)
+            self.assertEqual(bool(set(authored['roles']) & set(self.data['customsHouse']['roles'])),
+                             eligible == 'true')
+        self.assertEqual(catalog['consumers'][0]['siteIds'],
+                         [sid for sid, _province, _bank, eligible in rows if eligible == 'true'])
 
     def test_rehashed_metadata_or_disconnected_executable_cannot_pass_customs_verification(self):
         from trade_finance import verify_generated
