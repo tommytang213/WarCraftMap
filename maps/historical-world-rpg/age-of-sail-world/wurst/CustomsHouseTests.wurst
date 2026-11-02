@@ -1,0 +1,351 @@
+package CustomsHouseTests
+
+import TradeFinanceTests
+import TradeFinance
+import FinanceCampaignRuntime
+import CivicGovernance
+import PlayableTrade
+import PlayableCountryInteractions
+import WarcraftRpgRuntime
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import CampaignLoadTransactionTests
+import CampaignSaveManager
+import ScenarioData
+
+class CustomsFixture
+	AuctionCommandFixture a = new AuctionCommandFixture()
+	construct(boolean credit)
+		let f = a.f
+		f.state.setCountryRuntime(new PlayableCountryInteractionRuntime(null))
+		f.state.countries.registerPolity("portugal", 100000)
+		let civicEffects = new CivicResearchEffects(null)
+		configureGeneratedCivic(f.military.civic, civicEffects, f.clock.currentDay)
+		let c = f.military.civic
+		let i = c.index("lisbon")
+		c.districts[0] = c.districts[i]
+		c.states[0] = c.states[i]
+		c.count = 1
+		f.trade.registerMarket(new RuntimeMarket("lisbon", "timber", 100, 100000, 100, 100))
+		f.trade.findMarket("lisbon", "tools").stock = 100
+		// Isolate the modifier's incremental contribution while both controls
+		// research the paid building unlock through the registered command.
+		if not credit
+			f.rpg.technologies.get("commodity_exchanges").unlocks[0].contentId = "withheld_credit"
+		f.rpg.restoreState(f.rpg.captureState() + "|u,portugal,insurance_markets|u,portugal,postal_networks").assertTrue()
+		f.dispatch("/research commodity_exchanges")
+		f.ports.output.assertEquals("Action completed.")
+		f.selectPersonal()
+	function state() returns CustomsState
+		return a.f.military.finance.customs[a.f.military.finance.siteIndex("lisbon")]
+	function action(string action)
+		a.f.dispatch("/finance " + action + " lisbon")
+		a.f.ports.output.assertEquals("Finance action completed.")
+	function advance(int days)
+		a.f.clock.currentDay += days
+		a.finance.advance(a.f.clock.currentDay)
+	function complete()
+		action("customs")
+		advance(90)
+		state().completed.assertTrue()
+		action("customs-operate")
+	function reject(string action)
+		let before = a.f.state.captureAuthoritativeState()
+		a.f.dispatch("/finance " + action + " lisbon")
+		(a.f.ports.output != "Finance action completed.").assertTrue()
+		a.f.state.captureAuthoritativeState().assertEquals(before)
+
+@test function registeredPaidCustomsCompletionConsumesInputsTimeAndOperationBeforeSettledCommissionBenefit()
+	let c = new CustomsFixture(false)
+	let t = new CustomsFixture(false)
+	let f = t.a.f
+	let tax = t.a.finance.customsTax("lisbon")
+	let build = civicBill(tax, 1000)
+	let upkeep = civicBill(tax, 50)
+	// Research alone cannot change a settled order's execution cost.
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(27000)
+	t.action("customs")
+	f.state.countries.treasury[0].assertEquals(100000 - build)
+	f.trade.findMarket("lisbon", "timber").stock.assertEquals(80)
+	f.trade.findMarket("lisbon", "tools").stock.assertEquals(90)
+	t.reject("customs")
+	t.advance(89)
+	t.state().work.assertEquals(89)
+	t.reject("customs-operate")
+	t.advance(1)
+	t.state().completed.assertTrue()
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(27000)
+	t.action("customs-operate")
+	t.reject("customs-operate")
+	f.state.countries.treasury[0].assertEquals(100000 - build - upkeep)
+	// Principal 25000; existing commission 1000 becomes 940, slippage 1000.
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26940)
+	let liquidity = f.trade.market.money
+	t.a.buy(25)
+	c.a.buy(25)
+	f.personal().money.assertEquals(c.a.f.personal().money + 60)
+	f.trade.market.money.assertEquals(liquidity + 26940)
+	(f.personal().money + f.trade.market.money).assertEquals(100000 + liquidity)
+	f.personal().quantity("grain").assertEquals(25)
+	f.trade.market.stock.assertEquals(75)
+	t.a.sell(25)
+	c.a.sell(25)
+	f.personal().money.assertEquals(c.a.f.personal().money + 120)
+	(f.personal().money < 100000).assertTrue()
+	f.trade.market.stock.assertEquals(100)
+	f.personal().quantity("grain").assertEquals(0)
+	f.trade.progress.standing.assertEquals(0)
+
+@test function registeredCreditLiquidityIncrementalSettledCostUsesExistingFundsAndActualCargo()
+	let c = new CustomsFixture(false)
+	let t = new CustomsFixture(true)
+	c.complete()
+	t.complete()
+	// Same paid building/operation/resources; modifier alone saves 50 on 1000.
+	c.a.finance.amount("portugal", c.a.f.trade.market, 25, true).assertEquals(26940)
+	t.a.finance.amount("portugal", t.a.f.trade.market, 25, true).assertEquals(26890)
+	let total = t.a.f.personal().money + t.a.f.trade.market.money
+	t.a.buy(25)
+	c.a.buy(25)
+	t.a.f.personal().money.assertEquals(c.a.f.personal().money + 50)
+	(t.a.f.personal().money + t.a.f.trade.market.money).assertEquals(total)
+	t.a.f.personal().quantity("grain").assertEquals(25)
+	t.a.sell(25)
+	c.a.sell(25)
+	t.a.f.personal().money.assertEquals(c.a.f.personal().money + 100)
+	(t.a.f.personal().money + t.a.f.trade.market.money).assertEquals(total)
+	t.a.f.trade.market.stock.assertEquals(100)
+	t.a.f.personal().quantity("grain").assertEquals(0)
+	t.a.f.trade.progress.standing.assertEquals(0)
+	let before = t.a.f.state.captureAuthoritativeState()
+	t.a.f.trade.controller.buy("runtime-buy-1", t.a.f.trade.market, t.a.f.personal(), 25).assertEquals("Transaction already processed.")
+	t.a.f.state.captureAuthoritativeState().assertEquals(before)
+
+@test function customsRejectsMissingMaterialsWorkersTreasuryAccessResearchAndUnsupportedSites()
+	let t = new CustomsFixture(true)
+	let f = t.a.f
+	let timber = f.trade.findMarket("lisbon", "timber")
+	let tools = f.trade.findMarket("lisbon", "tools")
+	timber.stock = 19
+	t.reject("customs")
+	timber.stock = 100
+	tools.stock = 9
+	t.reject("customs")
+	tools.stock = 100
+	f.military.settlements[0].manpower = 9
+	t.reject("customs")
+	f.military.settlements[0].manpower = 100
+	f.state.countries.treasury[0] = 0
+	t.reject("customs")
+	f.state.countries.treasury[0] = 100000
+	f.warehouse().warehouseService = false
+	t.reject("customs")
+	f.warehouse().warehouseService = true
+	f.military.administrators[0].administration = 0
+	t.reject("customs")
+	f.military.administrators[0].administration = 50
+	t.a.finance.customsAction("portugal", "unsupported", false).contains("qualified").assertTrue()
+	let earned = f.rpg.captureState()
+	f.rpg.restoreState(earned.replace("|u,portugal,commodity_exchanges", "")).assertTrue()
+	t.reject("customs")
+	f.rpg.restoreState(earned).assertTrue()
+	t.action("customs")
+	t.advance(10)
+	let partial = f.military.snapshot()
+	f.military.settlements[0].manpower = 9
+	t.advance(80)
+	t.state().work.assertEquals(10)
+	f.military.restore(partial, false).assertTrue()
+	t.state().work.assertEquals(10)
+	f.military.settlements[0].manpower = 9
+	t.a.finance.advance(f.clock.currentDay)
+	t.state().work.assertEquals(10)
+	f.military.settlements[0].manpower = 100
+	t.advance(80)
+	t.state().completed.assertTrue()
+	f.state.countries.treasury[0] = 0
+	t.reject("customs-operate")
+
+@test function customsStackingLiquidityStaleQuotesSplitsAndExpirationConserveCosts()
+	let t = new CustomsFixture(true)
+	t.complete()
+	let f = t.a.f
+	// Compatible sources aggregate once within their own buckets.
+	t.a.unlock()
+	f.rpg.restoreState(f.rpg.captureState() + "|u,portugal,commercial_statistics|u,portugal,canal_tolls_finance").assertTrue()
+	f.dispatch("/research brokerage_houses")
+	f.ports.output.assertEquals("Action completed.")
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26770)
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26770)
+	let money = f.trade.market.money
+	f.trade.market.money = 0
+	// Brokerage retains its rule; credit_liquidity requires counterparty funds.
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26820)
+	f.trade.market.money = money
+	let quote = t.a.finance.amount("portugal", f.trade.market, 25, true)
+	f.trade.market.pricing.spreadPermille = 100
+	(quote != t.a.finance.amount("portugal", f.trade.market, 25, true)).assertTrue()
+	let actual = t.a.finance.amount("portugal", f.trade.market, 25, true)
+	t.a.buy(25)
+	f.personal().money.assertEquals(100000 - actual)
+	let split = new CustomsFixture(true)
+	split.complete()
+	var total = 0
+	for i = 1 to 25
+		total += split.a.finance.amount("portugal", split.a.f.trade.market, 1, true)
+		split.a.buy(1)
+	(total >= 26890).assertTrue()
+	split.a.f.personal().money.assertEquals(100000 - total)
+	split.a.f.personal().quantity("grain").assertEquals(25)
+	split.a.f.trade.market.stock.assertEquals(75)
+	split.a.f.trade.controller.processedCount.assertEquals(25)
+	t.advance(365)
+	t.a.finance.operatingCustoms("portugal", "lisbon").assertFalse()
+	t.action("customs-operate")
+	t.a.finance.operatingCustoms("portugal", "lisbon").assertTrue()
+
+@test function customsCaptureDestructionReconstructionSaveResumeAndLegacyMigrationRetainOnlyPaidAuthority()
+	let t = new CustomsFixture(true)
+	t.action("customs")
+	t.advance(10)
+	let f = t.a.f
+	f.military.setWar("portugal", "successor", true)
+	f.military.capture("lisbon", "successor", 10.).assertTrue()
+	t.state().builder.assertEquals("")
+	t.state().work.assertEquals(0)
+	f.military.capture("lisbon", "portugal", 16.).assertTrue()
+	t.complete()
+	let saved = f.military.snapshot()
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	t.a.finance.operatingCustoms("portugal", "lisbon").assertTrue()
+	f.military.activateRegion("africa")
+	t.a.finance.operatingCustoms("portugal", "lisbon").assertTrue()
+	f.military.activateRegion("europe_west")
+	// Projection reconstruction never consumes a second bill or loses a house.
+	f.military.adapter.removeRepresentation("core:lisbon")
+	f.military.reconcileSettlementRegistrations("lisbon")
+	t.state().completed.assertTrue()
+	f.military.capture("lisbon", "successor", 22.).assertTrue()
+	t.state().completed.assertTrue()
+	t.state().operator.assertEquals("")
+	t.state().through.assertEquals(0)
+	t.a.finance.customsAction("successor", "lisbon", true).contains("Requires").assertTrue()
+	f.military.transferSovereignty("lisbon", "successor")
+	f.state.countries.registerPolity("successor", 100000)
+	t.a.resources.owner = "successor"
+	f.rpg.restoreState(f.rpg.captureState() + "|u,successor,insurance_markets|u,successor,postal_networks").assertTrue()
+	f.dispatch("/research commodity_exchanges")
+	f.ports.output.assertEquals("Action completed.")
+	t.a.finance.customsAction("successor", "lisbon", true).assertEquals("")
+	t.state().completed.assertTrue()
+	t.state().operator.assertEquals("successor")
+	f.state.countries.treasury[1].assertEquals(100000 - civicBill(t.a.finance.customsTax("lisbon"), 50))
+	f.military.restore(saved, false).assertTrue()
+	f.military.restore(saved.replace("v25|", "v24|"), false).assertFalse()
+	var legacy = saved.replace("v25|", "v24|").replace("|J,1", "|J,0")
+	for i = 0 to f.military.finance.siteCount - 1
+		let s = f.military.finance.customs[i]
+		var completed = "0"
+		if s.completed
+			completed = "1"
+		let row = "|H," + f.military.finance.sites[i].id + "," + s.builder + "," + I2S(s.work) + "," + I2S(s.lastDay) + "," + completed + "," + s.operator + "," + I2S(s.through)
+		legacy = legacy.replace(row, "")
+		if s.lastDay > 0
+			f.military.restore(saved.replace(row, ""), false).assertFalse()
+			f.military.restore(saved + row, false).assertFalse()
+	f.military.restore(legacy, false).assertTrue()
+	t.state().completed.assertFalse()
+	t.state().operator.assertEquals("")
+
+@test function customsPlayerAiActiveInactiveAndLateLoadRollbackUseSameAuthority()
+	let playerHouse = new CustomsFixture(true)
+	let aiHouse = new CustomsFixture(true)
+	// Swap the authority controller and all current earned provenance, rather
+	// than using a second simulation implementation for AI/inactive cities.
+	let f = aiHouse.a.f
+	f.rpg.restoreState(f.rpg.captureState().replace("portugal", "ai")).assertTrue()
+	f.military.settlements[0].controllerId = "ai"
+	f.military.settlements[0].legalOwnerId = "ai"
+	f.military.administrators[0].controllerId = "ai"
+	f.state.countries.registerPolity("ai", 100000)
+	f.military.activateRegion("africa")
+	playerHouse.complete()
+	aiHouse.a.finance.customsAction("ai", "lisbon", false).assertEquals("")
+	aiHouse.advance(90)
+	aiHouse.a.finance.customsAction("ai", "lisbon", true).assertEquals("")
+	aiHouse.a.finance.amount("ai", f.trade.market, 25, true).assertEquals(playerHouse.a.finance.amount("portugal", playerHouse.a.f.trade.market, 25, true))
+	f.trade.controller.financeOwner = "ai"
+	f.trade.controller.buy("ai-customs", f.trade.market, f.personal(), 25).startsWith("Bought").assertTrue()
+	playerHouse.a.buy(25)
+	f.personal().money.assertEquals(playerHouse.a.f.personal().money)
+	f.trade.market.money.assertEquals(playerHouse.a.f.trade.market.money)
+	// Exercise the complete transactional loader with paid unfinished works.
+	let load = new LoadFixture()
+	let trade = load.extension.trade
+	let effects = new FinanceResearchEffects(null)
+	configureGeneratedFinance(load.military.finance, effects)
+	let l = load.military.finance
+	l.sites[0] = new ExchangeSite("port", "province", "")
+	l.sites[0].customsEligible = true
+	l.customs[0] = new CustomsState()
+	l.siteCount = 1
+	l.customsFirstDay = 0
+	let tech = new RuntimeTechnology("customs_research", "Customs", 1450, 1)
+	tech.addUnlock(tech.id, "building", l.customsBuilding)
+	tech.addUnlock(tech.id, "modifier", l.customsModifier)
+	load.rpg.technologies.register(tech).assertTrue()
+	load.rpg.technologies.unlock("england", tech.id, 1450, 100, 0, 0).assertTrue()
+	load.military.civic.register(new CivicDistrict("port", "province", 1000, true, 0, 1, 0, 0, 0, "grain", 1, 100), load.clock.currentDay)
+	load.military.appoint("port", new AdministratorState("clerk", "Clerk", "Administrator", "england", "europe_west", "port", 50, 50, 40, 1))
+	trade.registerMarket(new RuntimeMarket("port", "timber", 100, 100000, 100, 100))
+	trade.registerMarket(new RuntimeMarket("port", "tools", 100, 100000, 100, 100))
+	trade.registerStore(new TradeStore("warehouse:port", 1000, 1000).withAccess("warehouse", "port", true))
+	let finance = new FinanceCampaignRuntime(load.campaign.state, trade, effects)
+	load.campaign.state.financeRuntime = finance
+	load.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "customs").assertTrue()
+	finance.customsAction("england", "port", false).assertEquals("")
+	load.clock.advanceTo(load.clock.currentDay + 10).assertTrue()
+	l.customs[0].work.assertEquals(10)
+	load.campaign.countries.treasury[0].assertEquals(900)
+	let before = load.campaign.state.captureAuthoritativeState()
+	load.extension.fail = true
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	load.campaign.state.captureAuthoritativeState().assertEquals(before)
+	load.extension.fail = false
+	load.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	load.military.finance.customs[0].work.assertEquals(0)
+	load.campaign.countries.treasury[0].assertEquals(1000)
+	trade.findMarket("port", "timber").stock.assertEquals(100)
+	trade.findMarket("port", "tools").stock.assertEquals(100)
+
+@test function customsSettlementsRecheckEntitlementsCounterpartyFundsAccessAndSavedDeadlines()
+	let t = new CustomsFixture(true)
+	t.complete()
+	let f = t.a.f
+	let savedResearch = f.rpg.captureState()
+	f.rpg.restoreState(savedResearch.replace("|u,portugal,commodity_exchanges", "")).assertTrue()
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(27000)
+	f.rpg.restoreState(savedResearch).assertTrue()
+	f.warehouse().warehouseService = false
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(27000)
+	f.warehouse().warehouseService = true
+	f.trade.market.money = 0
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26940)
+	f.trade.market.money = 100000
+	t.a.buy(25)
+	f.trade.market.money = 0
+	let before = f.state.captureAuthoritativeState()
+	f.dispatch("/trade sell 25")
+	f.ports.output.assertEquals("Market funds are insufficient.")
+	f.state.captureAuthoritativeState().assertEquals(before)
+	let saved = f.military.snapshot()
+	f.military.validateSnapshot(saved, f.clock.currentDay - 1).assertFalse()
+	let s = t.state()
+	let row = "|H,lisbon," + s.builder + ",90," + I2S(s.lastDay) + ",1," + s.operator + "," + I2S(s.through)
+	f.military.restore(saved.replace(row, row.replace(",90,", ",91,")), false).assertFalse()
+	f.military.restore(saved.replace("|J,1", "|J,0"), false).assertFalse()
+	f.military.restore(saved.replace("|J,1", ""), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)

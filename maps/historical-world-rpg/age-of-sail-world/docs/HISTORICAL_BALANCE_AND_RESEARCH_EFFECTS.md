@@ -993,3 +993,38 @@ and passing lifecycle, negative and rollback cases. Focused developer tests do
 not constitute release closure. After integration, regenerate release-blocker,
 runtime-acceptance and requirement-traceability audits on the new main revision;
 closure additionally requires this identity's absence from that fresh audit.
+
+## Commodity Exchanges and paid Customs Houses (issue #589)
+
+`/finance inspect SITE` shows the current tax-based bill, materials, workforce,
+construction time, annual operation bill and access conditions. From 1720, earned
+Commodity Exchanges permits `/finance customs SITE` at an authored historical
+port or wholesale district with an existing market and warehouse. Qualification
+uses commerce/geography and current lawful administration (minimum 30), with no
+nationality restriction. Construction consumes 10% of normal annual local tax
+from government treasury, 20 timber and 10 tools atomically. This prepays 90 days
+of work; each day needs ten available workers and qualified access. Missed days
+produce no work. `/finance customs-operate SITE` prepays 365 days of operation for
+0.5% of normal annual local tax; duplicate prepayment is rejected.
+
+One operating house reduces the existing commission component by 600 bp. Its
+current controller's earned `modifier:credit_liquidity` reduces actual execution
+slippage by another 500 bp when the counterparty has existing currency. For
+isolated sources, commission 1,000 becomes 940 and slippage 1,000 becomes 950.
+Auction and Brokerage combine once in the respective existing buckets before
+rounding savings down. Principal, scarcity, stock, unrelated service fees and
+ordinary physical/cargo/counterparty settlement requirements retain their rules.
+No money, cargo, research, standing, borrowing or debt is created.
+
+Military infrastructure snapshot v25 persists changed Customs House records by
+stable settlement ID with a required record count. Versions 1–24 migrate absent
+houses to unbuilt, unfunded authority; no legacy assets are inferred. Completed
+houses survive projection destruction and capture. Capture cancels unfinished
+work without refund and clears prepaid authority. A successor must qualify with
+its own research, administrator and funding before operation. Full campaign load
+rollback restores house state together with treasury, cargo and commodity stock.
+
+The building and modifier have separate registered command/settlement comparison
+tests and exact consumer metadata. Closure remains pending fresh complete pinned
+execution plus release-blocker, runtime-acceptance and requirement-traceability
+audits on integrated main; local focused results do not close either finding.

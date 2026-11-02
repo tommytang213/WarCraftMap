@@ -840,6 +840,16 @@
             "isolation_care_losses_avoided",
             "case_records_losses_avoided"
           ]
+        },
+        {
+          "path": "scenario/progression/trade-finance.json",
+          "contains": [
+            "customsHouse",
+            "customs_house",
+            "credit_liquidity",
+            "constructionTaxBasisPoints",
+            "upkeepTaxBasisPoints"
+          ]
         }
       ],
       "headlessVerification": [
@@ -902,6 +912,13 @@
           "contains": [
             "test_each_identity_requires_its_own_comparison",
             "test_resealed_generated_metadata_or_registration_cannot_substitute_consumers"
+          ]
+        },
+        {
+          "path": "tests/test_customs_binding_evidence.py",
+          "contains": [
+            "test_exact_independent_paid_building_and_credit_comparisons_bind_only_with_real_probes",
+            "test_missing_failed_stale_or_forged_complete_evidence_cannot_close_either_identity"
           ]
         }
       ],
@@ -993,6 +1010,16 @@
             "function commit",
             "q.principal + q.counting + q.reconciliation"
           ]
+        },
+        {
+          "path": "wurst/FinanceCampaignRuntime.wurst",
+          "contains": [
+            "customsAction",
+            "advanceCustoms",
+            "operatingCustoms",
+            "customsCommission",
+            "customsSlippage"
+          ]
         }
       ],
       "playerEntry": [
@@ -1043,6 +1070,14 @@
             "commands.register(\"banking\"",
             "function overview"
           ]
+        },
+        {
+          "path": "wurst/FinanceCampaignRuntime.wurst",
+          "contains": [
+            "customs-operate",
+            "Annual operation prepaid",
+            "available workers"
+          ]
         }
       ],
       "persistence": [
@@ -1065,7 +1100,7 @@
         {
           "path": "wurst/MilitarySettlementRuntime.wurst",
           "contains": [
-            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 24",
+            "MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 25",
             "progress.creditBasisPoints",
             "parsed.legacyVoyages",
             "banking.states[i].record()",
@@ -1098,6 +1133,16 @@
             "s.municipalOwner",
             "state.municipalRestored",
             "civic = parsed.civic"
+          ]
+        },
+        {
+          "path": "wurst/MilitarySettlementRuntime.wurst",
+          "contains": [
+            "customsRecords",
+            "customsRestored",
+            "customsExpected",
+            "|H,",
+            "|J,"
           ]
         }
       ],
@@ -1173,6 +1218,15 @@
             "pestHospitalsOnlyMatchedPaidCareAvoidsFiveOfOneHundredLosses",
             "clinicalRecordsOnlyMatchedPaidResponseAvoidsFiveOfOneHundredLosses",
             "medicalFractionalCompositionDeduplicatesDaysAndSources"
+          ]
+        },
+        {
+          "path": "wurst/CustomsHouseTests.wurst",
+          "contains": [
+            "registeredPaidCustomsCompletionConsumesInputsTimeAndOperationBeforeSettledCommissionBenefit",
+            "registeredCreditLiquidityIncrementalSettledCostUsesExistingFundsAndActualCargo",
+            "customsPlayerAiActiveInactiveAndLateLoadRollbackUseSameAuthority",
+            "customsSettlementsRecheckEntitlementsCounterpartyFundsAccessAndSavedDeadlines"
           ]
         }
       ],

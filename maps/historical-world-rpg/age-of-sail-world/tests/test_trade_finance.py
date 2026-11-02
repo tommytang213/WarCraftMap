@@ -20,7 +20,8 @@ class TradeFinanceCompilationTests(unittest.TestCase):
             for row in json.loads(path.read_text())['settlements']:
                 self.authored[row['id']] = ('region', row)
         self.settlements = [{'id': sid} for sid in self.authored]
-        self.trade = [f'runtime.registerMarketProfile("{sid}","timber",90,1000)' for sid in self.authored]
+        self.trade = [f'runtime.registerMarketProfile("{sid}","{good}",90,1000)'
+                      for sid in self.authored for good in ('timber', 'tools')]
 
     def compile(self, project=PROJECT, **kwargs):
         return configuration(project, kwargs.get('world', self.world), self.settlements,
@@ -76,6 +77,71 @@ class TradeFinanceCompilationTests(unittest.TestCase):
         authored = copy.deepcopy(self.authored)
         authored['yangzhou'][1]['roles'].remove('canal_node')
         with self.assertRaisesRegex(ValueError, 'canal geography'): self.compile(authored=authored)
+
+
+    def test_customs_has_exact_independent_consumer_metadata_and_no_nationality_gate(self):
+        source, catalog, _paths = self.compile()
+        consumers = {(row['kind'], row['contentId']): row for row in catalog['consumers']}
+        self.assertEqual({('building', 'customs_house'), ('modifier', 'credit_liquidity')}, set(consumers))
+        building = consumers['building', 'customs_house']
+        credit = consumers['modifier', 'credit_liquidity']
+        self.assertEqual((600, 500), (building['bonusBasisPoints'], credit['bonusBasisPoints']))
+        self.assertEqual('market_transaction_fee_reduction', building['costBucket'])
+        self.assertEqual('market_slippage_reduction', credit['costBucket'])
+        self.assertFalse(building['requiresCounterpartyLiquidity'])
+        self.assertTrue(credit['requiresCounterpartyLiquidity'])
+        self.assertEqual(dict(taxBasisPoints=1000, materials=[dict(good='timber', units=20), dict(good='tools', units=10)], workers=10, days=90), building['construction'])
+        self.assertEqual(dict(taxBasisPoints=50, prepaidDays=365, administration=30), building['operation'])
+        for site in ('london', 'lisbon', 'yangzhou', 'malacca', 'venice'):
+            self.assertIn(site, building['siteIds'])
+        self.assertEqual(building['siteIds'], credit['siteIds'])
+        self.assertIn('new CustomsState()', source)
+        self.assertNotIn('polityId', source)
+
+    def test_rehashed_metadata_or_disconnected_executable_cannot_pass_customs_verification(self):
+        from trade_finance import verify_generated
+        source, catalog, _paths = self.compile()
+        source = '\n'.join(self.trade) + source
+        verify_generated(PROJECT, self.world, self.settlements, self.authored, source, catalog)
+        for key, value in [('bonusBasisPoints', 1), ('contentId', 'other'),
+                           ('runtimeConsumer', 'unconnected'), ('siteIds', []),
+                           ('requiresCounterpartyLiquidity', False)]:
+            invalid = copy.deepcopy(catalog)
+            invalid['consumers'][1][key] = value
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'consumer metadata'):
+                verify_generated(PROJECT, self.world, self.settlements, self.authored, source, invalid)
+        invalid = copy.deepcopy(catalog)
+        invalid['consumers'].pop()
+        with self.assertRaises(ValueError):
+            verify_generated(PROJECT, self.world, self.settlements, self.authored, source, invalid)
+        with self.assertRaises(ValueError):
+            verify_generated(PROJECT, self.world, self.settlements, self.authored,
+                             source.replace('ledger.customsCommission = 600', 'ledger.customsCommission = 0'), catalog)
+
+    def test_customs_rejects_missing_exact_unlocks_free_construction_and_fake_materials(self):
+        mutations = [lambda d: d['customsHouse'].update(constructionTaxBasisPoints=0),
+                     lambda d: d['customsHouse'].update(upkeepTaxBasisPoints=0),
+                     lambda d: d['customsHouse'].update(constructionDays=True),
+                     lambda d: d['customsHouse'].update(building='unrelated'),
+                     lambda d: d['customsHouse'].update(modifier='unrelated'),
+                     lambda d: d['customsHouse']['materials'][0].update(units=0),
+                     lambda d: d['customsHouse']['materials'][0].update(good='invented'),
+                     lambda d: d['customsHouse'].update(roles=['capital'])]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                (root / 'scenario/progression').mkdir(parents=True)
+                (root / self.data['designSource']).write_bytes((PROJECT / self.data['designSource']).read_bytes())
+                data = copy.deepcopy(self.data)
+                mutation(data)
+                (root / 'scenario/progression/trade-finance.json').write_text(json.dumps(data))
+                with self.assertRaises(ValueError):
+                    self.compile(root)
+        world = copy.deepcopy(self.world)
+        node = next(n for n in world['technologies'] if n['id'] == 'commodity_exchanges')
+        node['unlocks'].remove(dict(kind='building', contentId='customs_house'))
+        with self.assertRaisesRegex(ValueError, 'typed'):
+            self.compile(world=world)
 
 
 class FinanceReleaseEvidenceTests(unittest.TestCase):

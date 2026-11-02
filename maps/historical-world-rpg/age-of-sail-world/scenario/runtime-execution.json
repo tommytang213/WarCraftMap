@@ -645,6 +645,18 @@
     "industry_yield": {
       "path": "wurst/Industry.wurst",
       "signature": "function refiningOutput(IndustrySite d, IndustryState s, int rate) returns int"
+    },
+    "customs_action": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function customsAction(string owner, string id, boolean operate) returns string"
+    },
+    "customs_advance": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function advanceCustoms(int day)"
+    },
+    "customs_operation": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function operatingCustoms(string owner, string id) returns boolean"
     }
   },
   "systems": {
@@ -1146,6 +1158,17 @@
       "industry_output",
       "industry_material",
       "industry_yield"
+    ],
+    "customs_house": [
+      "finance_registration",
+      "research",
+      "trade_command",
+      "finance_quote",
+      "finance_buy_settle",
+      "finance_sell_settle",
+      "customs_action",
+      "customs_advance",
+      "customs_operation"
     ]
   }
 }
