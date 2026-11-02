@@ -32,3 +32,23 @@ The controller must run complete repository validation and the full pinned Wurst
 suite, then regenerate release-blocker, runtime-acceptance and requirement-
 traceability audits on integrated main. Neither finding is declared closed by
 these focused logs. No player QA is required.
+
+## Integration validation repair
+
+After integration at `f14abb9c70c841ed177266a8cb844e0c77d8f44b`, regenerated
+release-blocker, runtime-acceptance and requirement-traceability reports from the
+current sources. The previous repository run's two failing report-freshness
+regressions now pass. The source-only audits retain their publication blockers;
+these refreshed identities do not substitute for full current-source execution
+or close either #588 finding. The implementation and merged main changes are
+preserved. Complete repository validation remains the controller's next step.
+
+Repair verification passed **68 Python tests**: settled-service metadata and
+evidence negative controls (6), trade finance (7), corporate courts, banking,
+release-save compatibility, research generation and gameplay design (31),
+integration evidence (13), the two previously failing freshness regressions (2),
+and framework conformance (9). The framework content boundary audit,
+traceability freshness check and `git diff --check` also passed. Framework
+conformance uses synthetic compiler fixtures; no pinned Wurst execution was
+rerun for this report-only repair, and no previous artifact is used as current
+release evidence.
