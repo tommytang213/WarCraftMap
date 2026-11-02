@@ -20,7 +20,7 @@ def configuration(project, world, settlements, authored, trade_records):
     if not design.resolve().is_relative_to(project.resolve()):
         raise ValueError('finance: design source escapes scenario')
     effects = [e for e in json.loads(design.read_text())['effects'] if e['metric'] in METRICS]
-    if len(effects) != 4 or {e['metric'] for e in effects} != METRICS:
+    if len(effects) != 5 or {e['metric'] for e in effects} != METRICS:
         raise ValueError('finance: missing exact contracts')
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     q = json.dumps
@@ -136,4 +136,5 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     if (not AUCTION_TESTS <= passed or not AUCTION_PROBES <= set(probes.get(
             'wurst/TradeFinanceTests.wurst:auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority', []))):
         bindings.discard(AUCTION_BINDING)
+    bindings.discard(("modifier", "progression_commercial_statistics"))
     return bindings

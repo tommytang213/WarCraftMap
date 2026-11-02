@@ -194,6 +194,7 @@ public function registerCampaignDomains(PlayableCampaignServices campaign, Warcr
 	campaign.state.scienceRuntime = new ScienceCampaignRuntime(campaign.state, trade, scienceResearch)
 	let courtsResearch = new BankingResearchEffects(rpg.technologies.effects)
 	configureGeneratedCourts(military.courts, courtsResearch)
+	configureGeneratedInstitutionCourts(military.institutionCourts, courtsResearch)
 	rpg.technologies.effects = courtsResearch
 	rpg.technologies.reconstructAll()
 	campaign.state.courtsRuntime = new CommercialCourtsRuntime(campaign.state, trade, courtsResearch)
