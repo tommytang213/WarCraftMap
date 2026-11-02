@@ -20,7 +20,7 @@ EXPECTED_NODES = {
     "artillery_train", "auction_markets", "barometric_measurement",
     "battlefleet_doctrine", "bayonet_system", "bill_of_exchange_networks",
     "blast_furnace_practice", "boring_mills", "botanical_collecting",
-    "brokerage_houses", "cadastral_survey", "calculus_methods",
+    "brokerage_houses", "commercial_statistics", "cadastral_survey", "calculus_methods",
     "campaign_bakeries", "canal_logistics", "canal_tolls_finance",
     "coke_smelted_iron", "careening_stations", "carronade_batteries", "carvel_hull_construction",
 }
@@ -40,7 +40,7 @@ class ResearchGameplayDesignTests(unittest.TestCase):
 
     def test_initial_and_delegated_effects_are_valid_and_unique_authored_research_unlocks(self):
         records = self.design["effects"]
-        self.assertEqual(27, len(records))
+        self.assertEqual(28, len(records))
         self.assertEqual(EXPECTED_NODES, {x["nodeId"] for x in records})
         self.assertEqual(1, self.design["schemaVersion"])
         self.assertEqual("1450-01-01", self.design["baselineDate"])

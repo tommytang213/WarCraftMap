@@ -114,6 +114,8 @@ class ResearchGenerationTests(unittest.TestCase):
                 ('modifier', 'progression_celestial_navigation'), ('modifier', 'progression_coastal_triangulation'),
                 ('modifier', 'progression_cast_cannon'),
                 ('modifier', 'progression_auction_markets'), ('modifier', 'progression_bill_of_exchange_networks'),
+                ('modifier', 'progression_commercial_statistics'), ('policy', 'progression_commercial_courts_institution'),
+                ('building', 'customs_house'), ('modifier', 'credit_liquidity'),
                 ('modifier', 'progression_brokerage_houses'), ('modifier', 'progression_canal_tolls_finance'), ('unit', 'ship_of_the_line'),
                 ('modifier', 'progression_careening_stations'), ('modifier', 'progression_carronade_batteries'),
                 ('modifier', 'progression_carvel_hull_construction'), ('modifier', 'progression_blast_furnace_practice'),

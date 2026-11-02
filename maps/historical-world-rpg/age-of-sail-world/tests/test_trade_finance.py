@@ -30,7 +30,7 @@ class TradeFinanceCompilationTests(unittest.TestCase):
     def test_compiles_exact_bindings_real_facilities_paid_canal_geography_and_eras(self):
         source, catalog, paths = self.compile()
         self.assertEqual({('auction_markets', 500), ('bill_of_exchange_networks', 600),
-                          ('brokerage_houses', 700), ('canal_tolls_finance', 600)},
+                          ('brokerage_houses', 700), ('commercial_statistics', 500), ('canal_tolls_finance', 600)},
                          {(e['nodeId'], e['bonusBasisPoints']) for e in catalog['effects']})
         self.assertIn('"river_transport_bureaus", "timber", 638810, 20, 1000, 100, 2, 90, 200, 10', source)
         self.assertIn('new ExchangeSite("london", "greater_london", "european_correspondents")', source)

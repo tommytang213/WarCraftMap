@@ -1016,8 +1016,10 @@ rounding savings down. Principal, scarcity, stock, unrelated service fees and
 ordinary physical/cargo/counterparty settlement requirements retain their rules.
 No money, cargo, research, standing, borrowing or debt is created.
 
-Military infrastructure snapshot v25 persists changed Customs House records by
-stable settlement ID with a required record count. Versions 1–24 migrate absent
+Military infrastructure snapshot v26 persists changed Customs House records by
+stable settlement ID with a required record count. Independent v25 Customs House
+and institutional-court snapshots preserve their existing domain and migrate the
+absent domain inactive. Versions 1–24 migrate absent
 houses to unbuilt, unfunded authority; no legacy assets are inferred. Completed
 houses survive projection destruction and capture. Capture cancels unfinished
 work without refund and clears prepaid authority. A successor must qualify with

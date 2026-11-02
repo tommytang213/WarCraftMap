@@ -218,7 +218,7 @@ public class PlayableTradeController
 		let principal=amount(market,quantity,true)
 		var fee=0
 		if courts != null
-			fee=courts.fee(financeOwner,market,destination,principal)
+			fee=courts.fee(financeOwner,market,destination,market.quoteAmount(quantity,true))
 		if principal<1 or principal>2147483647-fee
 			return "Trade amount is outside the currency settlement range."
 		let charge=principal+fee
@@ -260,7 +260,7 @@ public class PlayableTradeController
 		let principal=amount(market,quantity,false)
 		var fee=0
 		if courts != null
-			fee=courts.fee(financeOwner,market,source,principal)
+			fee=courts.fee(financeOwner,market,source,market.quoteAmount(quantity,false))
 		let proceeds=principal-fee
 		if proceeds<1 or source.money>2147483647-proceeds
 			return "Trade amount is outside the currency settlement range."
@@ -339,7 +339,19 @@ function inspectMarket(player viewer,PlayableTradeRuntime runtime,TradePresentat
 		if runtime.controller.finance != null
 			let finance = runtime.controller.finance
 			let owner = runtime.access.state.rpg.researchResources.controllerId(viewer)
-			rows += "\nOne stock unit, current settlement: buy " + I2S(finance.amount(owner, runtime.market, 1, true)) + "; sell " + I2S(finance.amount(owner, runtime.market, 1, false)) + ". Currency minor units. Use /finance inspect for fees and eligibility."
+			var exchangeEligibility = "ineligible"
+			if finance.eligibleExchange(owner, runtime.market)
+				exchangeEligibility = "eligible"
+			rows += "\nFormal exchange: " + exchangeEligibility + ". One stock unit, current settlement: buy " + I2S(finance.amount(owner, runtime.market, 1, true)) + "; sell " + I2S(finance.amount(owner, runtime.market, 1, false)) + ". Currency minor units. Use /finance inspect for fees and eligibility."
+		if runtime.controller.courts != null and runtime.storeSelected
+			let courts = runtime.controller.courts
+			let owner = runtime.access.state.rpg.researchResources.controllerId(viewer)
+			let purchase = runtime.market.quoteAmount(1, true)
+			let saleEstimate = runtime.market.quoteAmount(1, false)
+			var eligibility = "ineligible"
+			if courts.qualifies(owner, runtime.market, runtime.hold)
+				eligibility = "eligible"
+			rows += "\nFormal warehouse processing: " + eligibility + "; estimated one-unit buy bill " + I2S(courts.fee(owner, runtime.market, runtime.hold, purchase)) + "; sell bill " + I2S(courts.fee(owner, runtime.market, runtime.hold, saleEstimate)) + ". Added to purchases, withheld from sales. Commit rechecks current authority and funding. /courts inspect MARKET explains elected sources."
 		rows+="\n"+runtime.contentListings(viewer,page)
 	presentation.showMarket(viewer,title,rows+"\nCampaign paused. Use /trade inspect [PAGE], /trade buy QUANTITY, /trade sell QUANTITY, /trade move SOURCE DESTINATION COMMODITY QUANTITY, or /trade close.")
 public function buyCargo(player viewer,string transactionId,RuntimeMarket market,TradeStore store,int quantity,PlayableTradeController controller,TradePresentation presentation)

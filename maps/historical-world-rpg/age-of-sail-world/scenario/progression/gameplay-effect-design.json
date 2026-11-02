@@ -397,6 +397,20 @@
       "requiredFuel": "coke",
       "rules": "Only compatible commissioned mineral-fuel refining with lawful administration, workers, supporting technology, ore, coke, tools and paid labor. Adds once with Blast Furnace Practice to bounded feedstock recovery; no research grants equipment, fuel or iron.",
       "designStatus": "approved_unimplemented"
+    },
+    {
+      "nodeId": "commercial_statistics",
+      "unlock": {
+        "kind": "modifier",
+        "contentId": "progression_commercial_statistics"
+      },
+      "family": "commercial",
+      "activation": "passive",
+      "recipient": "lawful_administered_formal_exchange",
+      "metric": "market_slippage_reduction",
+      "bonusBasisPoints": 500,
+      "rules": "Funded price reporting and coordination on actual settled trading volume; only existing execution slippage, combined once with Brokerage.",
+      "designStatus": "approved_unimplemented"
     }
   ]
 }

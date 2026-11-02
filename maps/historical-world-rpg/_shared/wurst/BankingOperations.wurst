@@ -13,7 +13,8 @@ public class BankingResearchEffects extends CivicResearchEffects
 	construct(TechnologyEffectPort upstream)
 		super(upstream)
 	function rateAt(string owner, string metric, int day) returns int
-		let layer = get(owner)
+		return rateAt(get(owner), metric, day)
+	function rateAt(ResearchEntitlements layer, string metric, int day) returns int
 		var result = 0
 		if layer != null
 			for i = 0 to definitionCount - 1

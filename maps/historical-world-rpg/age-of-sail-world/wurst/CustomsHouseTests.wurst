@@ -170,19 +170,19 @@ class CustomsFixture
 	let t = new CustomsFixture(true)
 	t.complete()
 	let f = t.a.f
-	// Compatible sources aggregate once within their own buckets.
+	// Auction, Brokerage and Commercial Statistics aggregate once in their own buckets.
 	t.a.unlock()
 	f.rpg.restoreState(f.rpg.captureState() + "|u,portugal,commercial_statistics|u,portugal,canal_tolls_finance").assertTrue()
 	f.dispatch("/research brokerage_houses")
 	f.ports.output.assertEquals("Action completed.")
-	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26770)
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26720)
 	f.rpg.technologies.reconstructAll()
 	f.rpg.technologies.reconstructAll()
-	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26770)
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26720)
 	let money = f.trade.market.money
 	f.trade.market.money = 0
 	// Brokerage retains its rule; credit_liquidity requires counterparty funds.
-	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26820)
+	t.a.finance.amount("portugal", f.trade.market, 25, true).assertEquals(26770)
 	f.trade.market.money = money
 	let quote = t.a.finance.amount("portugal", f.trade.market, 25, true)
 	f.trade.market.pricing.spreadPermille = 100
@@ -244,8 +244,8 @@ class CustomsFixture
 	t.state().operator.assertEquals("successor")
 	f.state.countries.treasury[1].assertEquals(100000 - civicBill(t.a.finance.customsTax("lisbon"), 50))
 	f.military.restore(saved, false).assertTrue()
-	f.military.restore(saved.replace("v25|", "v24|"), false).assertFalse()
-	var legacy = saved.replace("v25|", "v24|").replace("|J,1", "|J,0")
+	f.military.restore(saved.replace("v26|", "v24|"), false).assertFalse()
+	var legacy = saved.replace("v26|", "v24|").replace("|J,1", "|J,0")
 	for i = 0 to f.military.finance.siteCount - 1
 		let s = f.military.finance.customs[i]
 		var completed = "0"
