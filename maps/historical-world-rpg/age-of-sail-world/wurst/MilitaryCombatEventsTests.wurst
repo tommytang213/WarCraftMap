@@ -2285,7 +2285,7 @@ function columnNativeDamage(CombatFixture f, string attack, string nativeWeapon,
 	orders.stop()
 	// Literal legacy weapon-less authority remains unknown; research cannot
 	// manufacture kit or resurrect a coordinated order after migration.
-	var legacy = military.replace("v24|", "v8|")
+	var legacy = military.replace("v25|", "v8|")
 	for i = 0 to f.runtime.forceCount - 1
 		let formation = f.runtime.forces[i]
 		if formation.combatProfileId != ""

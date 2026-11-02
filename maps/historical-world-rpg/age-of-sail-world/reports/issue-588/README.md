@@ -52,3 +52,31 @@ traceability freshness check and `git diff --check` also passed. Framework
 conformance uses synthetic compiler fixtures; no pinned Wurst execution was
 rerun for this report-only repair, and no previous artifact is used as current
 release evidence.
+
+## Columns save-fixture integration repair
+
+The next complete validation exposed a legacy combat fixture introduced on main
+that still replaced the military `v24` header after this issue advanced saves to
+`v25`. Its candidate therefore remained current and accepted current mineral
+records, failing the intended legacy rejection assertion. The fixture now
+converts `v25` to `v8`, preserving both the rejection check and the subsequent
+legacy restoration, rollback and current-composition assertions. Production save
+rules and the integrated issue implementation remain unchanged.
+
+Fresh pinned typechecking and **38/38 focused Wurst tests** pass, including the
+previously failing Columns case, installed Columns/Bayonet callbacks and all
+settled-service, finance, corporate-court and banking tests. Each #588 comparison
+emits its own required production settlement probes. Fresh Python validation
+passes **86 tests**, including exact metadata/evidence negative controls,
+save/research/combat regressions, integration evidence, framework conformance and
+both report-freshness regressions. The framework boundary and traceability
+freshness checks also pass. Framework compiler/execution fixtures are synthetic;
+their larger printed suite counts are not pinned gameplay execution.
+
+`integration-repair-validation.json` records the current source identity, pinned
+compiler checksum, assembled-input digest, selected tests and transcript hashes.
+The corresponding compressed Wurst/Python transcripts are development evidence.
+The compiler used read-only mounts, private temporary build storage and disabled
+networking. All three source-only audits were regenerated; their findings remain
+open pending the controller's full current-source validation and integrated-main
+audit regeneration. No player QA is required.
