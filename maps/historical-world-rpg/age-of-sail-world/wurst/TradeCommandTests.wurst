@@ -240,7 +240,13 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	f.actors.moveTo(f.rpg.interactions.get("london"))
 	f.dispatch("/trade markets")
 	(f.ports.output.indexOf("london")<0).assertTrue()
-	f.actors.moveTo(f.rpg.interactions.get("lisbon"))
+
+// Keep each independent command journey within the pinned interpreter's
+// unchanged deadline. Every rejection still compares complete campaign state,
+// including the full generated agricultural ledger inside the trade snapshot.
+@test function tradeCommandsRejectUnavailableAndUnauthorizedCargoStores()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
 	f.reject("/trade store missing")
 	f.reject("/trade store warehouse:lisbon")
 	f.reject("/trade store warehouse:london")
@@ -255,6 +261,10 @@ function tradeCommandDocument(string saved,CampaignClock clock) returns string
 	f.vessels.moveTo(f.rpg.interactions.get("lisbon"))
 	f.vessels.exists=false
 	f.reject("/trade store cargo:english_patrol_ship")
+
+@test function tradeCommandsRejectMalformedQuantitiesAndPages()
+	let f=new TradeCommandFixture()
+	f.selectPersonal()
 	f.reject("/trade buy 1x")
 	f.reject("/trade buy 2147483648")
 	f.reject("/trade buy -1")

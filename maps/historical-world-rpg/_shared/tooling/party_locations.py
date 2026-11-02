@@ -1,5 +1,6 @@
 """Generate land-party membership from the same raster as boundary arrivals."""
 import json
+from itertools import groupby
 
 from boundary_arrival import CELL, components, playable_cells
 
@@ -34,12 +35,29 @@ def campaign_navigation(config, generated):
     return result
 
 
+def configure_rows(receiver, rows):
+    """Keep repeated raster rows as bounded loops instead of expanded Lua writes.
+
+    This changes only executable initialization, not the raster or its component
+    labels. Short runs stay explicit so loop overhead cannot grow the payload.
+    """
+    lines = []
+    for row, entries in groupby(enumerate(rows), key=lambda entry: entry[1]):
+        indices = [index for index, _ in entries]
+        if len(indices) >= 4:
+            lines += [f'\tfor row = {indices[0]} to {indices[-1]}',
+                      f'\t\t{receiver}.rows[row] = {json.dumps(row)}']
+        else:
+            lines += [f'\t{receiver}.rows[{index}] = {json.dumps(row)}' for index in indices]
+    return lines
+
+
 def configuration(maps):
     lines = []
     for index, (map_id, data) in enumerate(maps.items()):
         lines += [f'function generatedPartyNavigation{index}() returns PartyNavigation',
                   f'\tlet nav = new PartyNavigation({json.dumps(map_id)}, {data["minX"]}, {data["minY"]}, {data["width"]}, {data["height"]})']
-        lines += [f'\tnav.rows[{y}] = {json.dumps(row)}' for y, row in enumerate(data['rows'])]
+        lines += configure_rows('nav', data['rows'])
         lines += ['\treturn nav', '']
     lines.append('public function configureGeneratedPartyNavigation(PlayableCampaignState state)')
     for index, map_id in enumerate(maps):

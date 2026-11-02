@@ -1,5 +1,6 @@
 package LandArmyEffectsTests
 
+import PartyLocations
 import LandArmyEffects
 import LandArmyRuntime
 import ScienceExploration
@@ -679,3 +680,211 @@ function bayonetDamage(LandFixture f, string attacker, string target, string att
 	destroy hit
 	destroy equipment
 	destroy layer
+
+/** Use the production raster reader with a deterministic two-component map. */
+function columnGrid() returns PartyNavigation
+	let grid = new PartyNavigation("europe", -4096., -4096., 64, 64)
+	for i = 0 to 63
+		grid.rows[i] = "64:1,"
+	return grid
+
+function columnsFixture(string owner, boolean researched) returns LandFixture
+	let f = new LandFixture()
+	f.resources.owner = owner
+	f.prerequisites()
+	f.rpg.restoreState(f.rpg.captureState() + "|u," + owner + ",reserve_mobilization").assertTrue()
+	f.rpg.reconcile(owner)
+	f.military.land.battlefields[0] = columnGrid()
+	f.military.land.battlefieldCount = 1
+	f.add("column_foot", "european_musket_battalion", owner)
+	f.add("column_horse", "sabre_cavalry", owner)
+	f.add("column_guns", "field_artillery_battery", owner)
+	f.add("column_enemy", "sabre_cavalry", "enemy")
+	for i = 0 to 2
+		var id = "column_foot"
+		if i == 1
+			id = "column_horse"
+		else if i == 2
+			id = "column_guns"
+		f.military.issueOrder(id, "attack-move", 512., 0.).assertTrue()
+	f.military.setWar(owner, "enemy", true)
+	if researched
+		let before = f.military.snapshot()
+		let cost = f.rpg.technologies.cost("combined_arms_columns", f.resources.year(), 0, 0)
+		f.unlock("combined_arms_columns")
+		f.resources.balance.assertEquals(100000 - cost)
+		f.military.snapshot().assertEquals(before) // Research grants no military state.
+	return f
+
+function columnsDamage(LandFixture f, string amount) returns string
+	f.military.gameplaySeconds += 10.
+	let hit = new CombatHit("land_cavalry_melee", new ExactRational(amount, "1", "1"))
+	f.military.applyCombatHit(hit, f.military.forceIndex("column_enemy"), f.military.forceIndex("column_foot"), "enemy", f.resources.owner, true)
+	let result = hit.damage.display()
+	f.military.applyCombatHit(hit, f.military.forceIndex("column_enemy"), f.military.forceIndex("column_foot"), "enemy", f.resources.owner, true)
+	hit.damage.display().assertEquals(result)
+	destroy hit
+	return result
+
+@test function columnsMatchedResearchControlResolves105To100()
+	let control = columnsFixture("player", false)
+	columnsDamage(control, "105").assertEquals("105")
+	let f = columnsFixture("player", true)
+	columnsDamage(f, "105").assertEquals("100")
+	f.commands.dispatch(Player(0), "/technology").assertTrue()
+	f.resources.output.contains("+500 bp coordinated_infantry_defense").assertTrue()
+	f.resources.output.contains("within 768 map units").assertTrue()
+	f.military.managementSummary("column_foot").contains("active: coordinated firearm infantry").assertTrue()
+	f.military.managementSummary("column_foot").contains("research:modifier:progression_combined_arms_columns").assertTrue()
+
+@test function columnsEachRoleSupplyEquipmentOrderMapConnectivityAndDistanceAreRequired()
+	let f = columnsFixture("player", true)
+	for role = 0 to 1
+		var id = "column_horse"
+		if role == 1
+			id = "column_guns"
+		let support = f.military.forces[f.military.forceIndex(id)]
+		support.active = false
+		columnsDamage(f, "105").assertEquals("105")
+		support.active = true
+		for condition = 1 to 11
+			let current = f.military.forces[f.military.forceIndex(id)]
+			let profile = current.combatProfileId
+			if condition == 1
+				current.strength = 0
+			else if condition == 2
+				current.supply = 0
+			else if condition == 3
+				current.combatProfileId = ""
+			else if condition == 4
+				current.unitTypeId = 'hfoo'
+			else if condition == 5
+				current.controllerId = "enemy"
+			else if condition == 6
+				current.orderControllerId = "enemy"
+			else if condition == 7
+				current.orderX = 640.
+			else if condition == 8
+				current.cancelOrder()
+			else if condition == 9
+				current.regionId = "africa"
+			else if condition == 10
+				current.x = 768.001
+			else
+				current.x = -128.
+				f.military.land.battlefields[0].rows[32] = "32:2,64:1,"
+			columnsDamage(f, "105").assertEquals("105")
+			current.strength = 100
+			current.supply = 100
+			current.combatProfileId = profile
+			current.unitTypeId = f.military.land.profile(profile).unitTypeId
+			current.controllerId = "player"
+			current.regionId = "europe"
+			current.x = 0.
+			f.military.issueOrder(id, "attack-move", 512., 0.).assertTrue()
+			f.military.land.battlefields[0].rows[32] = "64:1,"
+			columnsDamage(f, "105").assertEquals("100")
+	let currentFoot = f.military.forces[f.military.forceIndex("column_foot")]
+	currentFoot.supply = 0
+	columnsDamage(f, "105").assertEquals("105")
+	currentFoot.supply = 100
+	currentFoot.combatProfileId = ""
+	columnsDamage(f, "105").assertEquals("105")
+
+@test function columnsExactBoundariesCurrentCompositionAiAndInactiveAreEquivalent()
+	for controller = 0 to 1
+		var owner = "player"
+		if controller == 1
+			owner = "ai"
+		let f = columnsFixture(owner, true)
+		let horse = f.military.forces[f.military.forceIndex("column_horse")]
+		let guns = f.military.forces[f.military.forceIndex("column_guns")]
+		horse.x = 768.
+		guns.y = -768.
+		columnsDamage(f, "105").assertEquals("100")
+		f.military.activateRegion("africa")
+		columnsDamage(f, "105").assertEquals("100")
+		horse.x = 512.
+		horse.y = 512.
+		columnsDamage(f, "105").assertEquals("100")
+		horse.x = 544.
+		horse.y = 544.
+		columnsDamage(f, "105").assertEquals("105")
+		horse.y = 0.
+		horse.x = 768.001
+		columnsDamage(f, "105").assertEquals("105")
+		horse.x = 767.999
+		columnsDamage(f, "105").assertEquals("100")
+		guns.y = -768.001
+		columnsDamage(f, "105").assertEquals("105")
+		guns.y = -767.999
+		columnsDamage(f, "105").assertEquals("100")
+		// Composition derives from force records, including new support replacements.
+		horse.active = false
+		columnsDamage(f, "105").assertEquals("105")
+		let replacement = f.add("replacement_horse", "sabre_cavalry", owner)
+		f.military.issueOrder(replacement.id, "attack-move", 512., 0.).assertTrue()
+		columnsDamage(f, "105").assertEquals("100")
+		f.military.transferControl(replacement.id, "enemy")
+		columnsDamage(f, "105").assertEquals("105")
+
+@test function columnsDeduplicatedSourceStacksWithBayonetAndExactContinuousTradition()
+	let f = columnsFixture("player", true)
+	let duplicate = new RuntimeTechnology("duplicate_columns", "Duplicate columns", 1450, 1)
+	duplicate.addUnlock("duplicate_columns", "modifier", "progression_combined_arms_columns")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.rpg.technologies.unlock("player", "duplicate_columns", 1778, 1, 0, 0).assertTrue()
+	for repeat = 0 to 2
+		f.rpg.technologies.reconstructAll()
+		columnsDamage(f, "105").assertEquals("100")
+	let foot = f.military.forces[f.military.forceIndex("column_foot")]
+	foot.combatProfileId = "european_late_line_infantry"
+	f.unlock("bayonet_system")
+	columnsDamage(f, "113").assertEquals("100")
+	// Independent Pike and Shot source adds to the same denominator.
+	f.military.combatBindings.research = new CombatResearchEffects(f.military.combatBindings, f.research)
+	f.rpg.technologies.effects = f.military.combatBindings.research
+	f.rpg.technologies.reconstructAll()
+	columnsDamage(f, "118").assertEquals("100")
+	configureGeneratedMilitaryTraditions(f.military, true).assertTrue()
+	f.military.awardTradition("player", "land_formation", "3000")
+	columnsDamage(f, "118").assertEquals("23600/239") // 500 columns + 800 bayonet + 500 Pike + 150 tradition.
+	let layer = f.military.resolveTradition(foot)
+	let equipment = f.military.columnCombatSources(f.military.forces[f.military.forceIndex("column_enemy")], foot, "land_cavalry_melee", true)
+	equipment.replace("equipment:columns", "", "discipline", new ExactRational("200", "1", "1"))
+	equipment.replace("equipment:columns", "", "discipline", new ExactRational("200", "1", "1"))
+	let hit = new CombatHit("land_cavalry_melee", new ExactRational("118", "1", "1"))
+	hit.contextualDefense = 800
+	f.military.combatBindings.applyForCombatants(hit, true, null, null, layer, f.military.combatProfile(foot), null, equipment, "enemy", "land_formation", "player", "land_formation")
+	hit.damage.display().assertEquals("23600/243") // The same independent sources plus 200 equipment.
+	destroy hit
+	destroy equipment
+	destroy layer
+	f.military.awardTradition("player", "land_formation", "9007199254740993")
+	f.rpg.technologies.reconstructAll()
+	f.military.traditions[f.military.traditionIndex("player", "land_formation")].experience.assertEquals("9007199254743993")
+
+@test function columnsSharedAttackTargetAndUnknownBattlefieldFailClosed()
+	let f = columnsFixture("player", true)
+	for i = 0 to f.military.forceCount - 1
+		let formation = f.military.forces[i]
+		if formation.controllerId == "player" and formation.kind == FORCE_ARMY
+			formation.orderId = "attack"
+			formation.orderTargetId = "column_enemy"
+			formation.orderX = 0.
+			formation.orderY = 0.
+	columnsDamage(f, "105").assertEquals("100")
+	let guns = f.military.forces[f.military.forceIndex("column_guns")]
+	guns.orderTargetId = "other_engagement"
+	columnsDamage(f, "105").assertEquals("105")
+	guns.orderTargetId = "column_enemy"
+	let enemy = f.military.forces[f.military.forceIndex("column_enemy")]
+	enemy.active = false
+	f.military.columnStatus(f.military.forces[f.military.forceIndex("column_foot")]).contains("inactive:").assertTrue()
+	enemy.active = true
+	columnsDamage(f, "105").assertEquals("100")
+	f.military.land.battlefieldCount = 0
+	columnsDamage(f, "105").assertEquals("105")
+	f.military.land.battlefieldCount = 1
+	f.military.land.battlefields[0].rows[32] = "64:0,"
+	columnsDamage(f, "105").assertEquals("105")

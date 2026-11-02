@@ -2,6 +2,7 @@
 import copy
 import json
 from pathlib import Path
+import re
 import struct
 import sys
 import tempfile
@@ -27,6 +28,30 @@ def component(grid, x, y):
             if col < end:
                 return label
     return 0
+
+
+def initialized_rows(source, function, receiver):
+    """Expand emitted Wurst writes independently, checking every row exactly once."""
+    body = source.split(f'function {function}(', 1)[1].split('\n\n', 1)[0]
+    result = {}
+    loop = None
+    for line in body.splitlines():
+        repeat = re.fullmatch(r'\tfor row = (\d+) to (\d+)', line)
+        if repeat:
+            loop = range(int(repeat[1]), int(repeat[2]) + 1)
+            continue
+        assignment = re.fullmatch(r'\t(\t?)' + receiver + r'\.rows\[(row|\d+)\] = (.+)', line)
+        if assignment:
+            if assignment[2] == 'row':
+                assert assignment[1] and loop is not None
+                indices = loop
+            else:
+                assert not assignment[1]
+                indices = [int(assignment[2])]
+            for index in indices:
+                assert index not in result, (function, index)
+                result[index] = json.loads(assignment[3])
+    return [result[index] for index in range(len(result))]
 
 
 class LiveRecoveryGeographyTests(unittest.TestCase):
@@ -55,9 +80,7 @@ class LiveRecoveryGeographyTests(unittest.TestCase):
             self.assertNotIn('service.importLastSafe(', source)
             config = load_campaign_config(PROJECT / 'physical-maps.json')
             seen = set()
-            for physical in config.maps:
-                if physical.bootstrap:
-                    continue
+            for map_index, physical in enumerate(p for p in config.maps if not p.bootstrap):
                 seen.add(physical.id)
                 width, height, cells, _ = physical_layout(output, physical)
                 info = (physical.source_map / 'war3map.w3i').read_bytes()
@@ -69,6 +92,14 @@ class LiveRecoveryGeographyTests(unittest.TestCase):
                     rows.extend([pixels] * 4)
                 wpm = b'MP3W' + struct.pack('<III', 0, width * 4, height * 4) + b''.join(rows)
                 recovery = runtime['recoveryNavigation'][physical.id]
+                # Combat Columns, logistics and party membership use these
+                # constructors. Compaction must preserve every generated cell,
+                # including disconnected terrain, edges and all movement kinds.
+                self.assertEqual(runtime['partyNavigation'][physical.id]['rows'],
+                                 initialized_rows(source, f'generatedPartyNavigation{map_index}', 'nav'))
+                for kind, grid in enumerate(recovery):
+                    self.assertEqual(grid['rows'], initialized_rows(
+                        source, f'generatedRecoveryNavigation{map_index}_{kind}', 'grid'))
                 verify_packaged_navigation(runtime['boundaryNavigation'], physical.id, info, wpm,
                                           runtime['partyNavigation'][physical.id], recovery)
                 bad = copy.deepcopy(recovery)

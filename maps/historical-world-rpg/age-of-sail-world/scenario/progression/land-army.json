@@ -5,7 +5,8 @@
     "firearm_reload_efficiency",
     "artillery_production_throughput",
     "artillery_supply_waste_reduction",
-    "anti_cavalry_melee_defense"
+    "anti_cavalry_melee_defense",
+    "coordinated_infantry_defense"
   ],
   "rules": {
     "transitionDays": 90,
@@ -60,5 +61,24 @@
     "Procurement pays the existing roster cost, withdraws actual arms, manpower and supply, and takes 90 days of workshop labor. An active office contributes 800 bp to daily work only on orders that paid its 2% procurement administration bill. Policy enactment takes 90 days and costs 1% of normal local annual tax; 0.5% annual tax upkeep is prepaid.",
     "Resupply is a local connected delivery within the configured radius on the same physical map, from a lawful arsenal with unblocked arms stock to a living supplied field artillery force. A 100-unit shipment loses 25 units to handling; train research avoids floor(25*800/10000)=2 losses. It never reduces the useful ammunition input or creates stock.",
     "Roster equipment is the actual commissioned kit. A musket weapon name alone does not prove socket bayonet equipment. Strict historical roster dates and required research apply; future technology is never a 1450 starting buff."
-  ]
+  ],
+  "columns": {
+    "nodeId": "combined_arms_columns",
+    "unlock": {
+      "kind": "modifier",
+      "contentId": "progression_combined_arms_columns"
+    },
+    "sourceId": "research:modifier:progression_combined_arms_columns",
+    "metric": "coordinated_infantry_defense",
+    "bonusBasisPoints": 500,
+    "supportDistance": 768,
+    "recipientCategories": [
+      "infantry"
+    ],
+    "supportRoles": [
+      "cavalry",
+      "artillery"
+    ],
+    "inspection": "Requires living, supplied firearm infantry with compatible equipment and living, supplied cavalry and field artillery of the same controller. All share an authoritative attack target or attack-move destination, physical map and connected land battlefield within 768 map units of the infantry. Only authenticated hostile firearm and cavalry melee attacks qualify. Force inspection reports current missing conditions; research grants no forces, equipment, supply or orders."
+  }
 }

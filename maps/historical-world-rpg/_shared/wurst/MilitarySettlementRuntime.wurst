@@ -588,6 +588,74 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if kit.requiredResearch.contains("," + node + ",") and not rpg.technologies.isUnlocked(runtimeForce.controllerId, node)
 				return null
 		return kit
+	/** The packaged land raster is authority for both represented and remote
+	 * engagements. Unknown maps/cells never borrow a saved recovery hint. */
+	function columnBattlefield(RuntimeForce formation) returns PartyNavigation
+		for i = 0 to land.battlefieldCount - 1
+			let grid = land.battlefields[i]
+			if militaryMapMatches(formation.regionId, grid.mapId)
+				return grid
+		return null
+	function columnOrder(RuntimeForce formation, PartyNavigation grid) returns boolean
+		if not formation.validOrder() or formation.orderControllerId != formation.controllerId or grid == null
+			return false
+		let component = grid.componentAt(formation.x, formation.y)
+		if component <= 0
+			return false
+		if formation.orderId == "attack-move"
+			return grid.componentAt(formation.orderX, formation.orderY) == component
+		if formation.orderId == "attack"
+			let enemy = forceIndex(formation.orderTargetId)
+			return enemy >= 0 and forces[enemy].active and forces[enemy].strength > 0 and forces[enemy].controllerId != formation.controllerId and militaryMapMatches(forces[enemy].regionId, grid.mapId) and grid.componentAt(forces[enemy].x, forces[enemy].y) == component
+		return false
+	function columnSupport(RuntimeForce target, string role) returns boolean
+		let grid = columnBattlefield(target)
+		if not columnOrder(target, grid)
+			return false
+		let component = grid.componentAt(target.x, target.y)
+		for i = 0 to forceCount - 1
+			let support = forces[i]
+			if support.id != target.id and support.controllerId == target.controllerId and support.active and support.strength > 0 and support.supply > 0 and militaryMapMatches(support.regionId, grid.mapId) and support.orderId == target.orderId and support.orderTargetId == target.orderTargetId and support.orderX == target.orderX and support.orderY == target.orderY and support.orderControllerId == support.controllerId
+				let dx = support.x - target.x
+				let dy = support.y - target.y
+				// Reject remote/uncoordinated records before resolving roster kit.
+				if dx * dx + dy * dy <= I2R(land.columnDistance) * I2R(land.columnDistance) and grid.componentAt(support.x, support.y) == component and not naval.busy(support.id) and not science.busy(support.id) and not support.navigation.pending() and columnOrder(support, grid)
+					let kit = landKit(support)
+					if kit != null and ((role == "cavalry" and kit.cavalry) or (role == "artillery" and kit.artillery))
+						return true
+		return false
+	/** Inspection and impact read the same live composition; no cached bonus. */
+	function columnStatus(RuntimeForce target) returns string
+		if land.rate(target.controllerId, "coordinated_infantry_defense") <= 0
+			return "inactive: research incomplete"
+		let kit = landKit(target)
+		if kit == null or not kit.columnInfantry
+			return "inactive: requires compatible firearm infantry roster and equipment"
+		if not target.active or target.strength <= 0 or target.supply <= 0 or naval.busy(target.id) or science.busy(target.id) or target.navigation.pending()
+			return "inactive: infantry must be living, supplied and available"
+		if not columnOrder(target, columnBattlefield(target))
+			return "inactive: requires an authoritative engagement order on a connected battlefield"
+		if land.columnRoleCount <= 0
+			return "inactive: support roles unavailable"
+		for i = 0 to land.columnRoleCount - 1
+			if not columnSupport(target, land.columnRoles[i])
+				return "inactive: requires living, supplied " + land.columnRoles[i] + " with compatible equipment, the same controller, engagement order, physical map and connected battlefield within " + I2S(land.columnDistance) + " map units"
+		return "active: coordinated firearm infantry; authenticated hostile firearm or cavalry melee only"
+	function columnWeapon(RuntimeForce source, string attackId) returns boolean
+		let kit = landKit(source)
+		if kit == null
+			return false
+		if attackId == "land_cavalry_melee"
+			return kit.cavalry
+		if attackId == "land_firearm"
+			return kit.firearm
+		let weapon = combatProfile(source)
+		return kit.firearm and weapon != null and weapon.attackId == attackId and attackId == "firearm_volley"
+	function columnCombatSources(RuntimeForce source, RuntimeForce target, string attackId, boolean legalWeapon) returns CombatSources
+		let result = new CombatSources()
+		if legalWeapon and columnWeapon(source, attackId) and columnStatus(target).startsWith("active:")
+			result.replace(land.columnSourceId, "", "discipline", new ExactRational(I2S(land.rate(target.controllerId, "coordinated_infantry_defense")), "1", "1"))
+		return result
 	function reloadRate(RuntimeForce runtimeForce) returns int
 		let kit = landKit(runtimeForce)
 		if not runtimeForce.active or runtimeForce.strength <= 0 or kit == null or not kit.firearm
@@ -1068,9 +1136,11 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let defendingKit = landKit(target)
 		if legal and weaponAttack and hit.attackId == "land_cavalry_melee" and attackingKit != null and attackingKit.cavalry and defendingKit != null and defendingKit.bayonet
 			hit.contextualDefense = land.rate(target.controllerId, "anti_cavalry_melee_defense")
+		let columnSource = columnCombatSources(source, target, hit.attackId, legal and weaponAttack)
 		let navalSource = navalCombatSources(source, target, weaponAttack)
-		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), navalSource, null, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
+		combatBindings.applyForCombatants(hit, legal, attackingLayer, weapon, defendingLayer, combatProfile(target), navalSource, columnSource, source.controllerId, source.categoryId, target.controllerId, target.categoryId)
 		destroy navalSource
+		destroy columnSource
 		if attackingLayer != null
 			destroy attackingLayer
 		if defendingLayer != null
@@ -2440,8 +2510,12 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	function managementSummary(string subjectId) returns string
 		let f = forceIndex(subjectId)
 		if f >= 0
+			if orderCallbacks != null
+				orderCallbacks.capture()
 			let runtimeForce = forces[f]
 			var result = "Controller: " + runtimeForce.controllerId + " | Strength: " + runtimeForce.strength.toString() + "/" + runtimeForce.maximumStrength.toString() + " | Supply: " + runtimeForce.supply.toString() + " | Region: " + runtimeForce.regionId
+			if land.columnSourceId != ""
+				result += "\n" + land.columnSourceId + ": +" + I2S(land.rate(runtimeForce.controllerId, "coordinated_infantry_defense")) + " basis points defense [" + columnStatus(runtimeForce) + "]"
 			let track = traditionIndex(runtimeForce.controllerId, runtimeForce.categoryId)
 			if track >= 0
 				result += " | Tradition XP: " + traditions[track].experience

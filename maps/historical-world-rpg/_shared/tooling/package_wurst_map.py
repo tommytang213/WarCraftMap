@@ -900,6 +900,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
         runtime['landArmy'] = land_payload['catalog']
         land_wurst = land_payload['wurst']
         land_sources = [content_path(config.project, name) for name in land_payload['sources']]
+        if len(runtime['partyNavigation']) > 64:
+            raise PackagingError('land army: battlefield map capacity exceeded')
+        land_wurst += '\nPartyNavigation array[64] generatedLandBattlefields\n\npublic function configureGeneratedLandBattlefields(LandArmyLedger ledger)\n'
+        for index, map_id in enumerate(runtime['partyNavigation']):
+            land_wurst += f'\tif generatedLandBattlefields[{index}] == null\n\t\tgeneratedLandBattlefields[{index}] = generatedPartyNavigation{index}()\n'
+            land_wurst += f'\tledger.battlefields[{index}] = generatedLandBattlefields[{index}]\n'
+        land_wurst += f"\tledger.battlefieldCount = {len(runtime['partyNavigation'])}\n"
     industry_sources = []
     industry_wurst = '\npublic function configureGeneratedIndustry(IndustryLedger ledger, IndustryResearchEffects effects)\n\tskip\n\npublic function configureGeneratedIndustryMarkets(PlayableTradeRuntime runtime)\n\tskip\n'
     industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
