@@ -76,3 +76,15 @@ edit; the complete Botanical class then passed against stable final source.
 packaging/execution protocol fixtures use a synthetic compiler; their printed
 full-suite counts are not pinned gameplay evidence. No implementation failures
 remain after the focused reruns.
+
+Integration repair preserved both science and finance generated-output verifiers,
+both historical documentation sections, and the Comparative Linguistics and
+Customs House execution contracts. The comparative legacy-save test now changes
+main's v26 header to v19 and asserts the migration header before restoring.
+Fresh focused validation passes **43/43 pinned Wurst cases** (science and Customs
+House) and **29/29 Python cases**, plus generation/verification, framework boundary,
+canonical map source and whitespace checks. All compiled authored inputs match
+current source, and both independent comparison probe contracts pass. See
+`merge-validation.json` and `merge-wurst.log.gz`. Full repository validation and
+all three integrated-main audits remain controller gates; these focused results
+do not establish release closure. No player QA is required.

@@ -934,6 +934,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         entitlement = voyage_payload['catalog']['entitlement']
         bound_research.update((s['entitlement']['kind'], s['entitlement']['contentId']) for s in voyage_payload['catalog']['sources'])
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in finance_catalog.get('effects', [])}
+    bound_research |= {(e['kind'], e['contentId']) for e in finance_catalog.get('consumers', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in banking_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in logistics_catalog.get('effects', [])}
     bound_research |= {(e['unlock']['kind'], e['unlock']['contentId']) for e in courts_catalog.get('effects', [])}
@@ -1121,6 +1122,20 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
         actual = json.loads((generated / GENERATED_DATA).read_text()).get('scienceExploration')
         if actual != catalogue or source.count(expected) != 1:
             raise _fail('science bindings', 'executable catalogue or exact consumer metadata differs from scenario')
+
+    finance_path = config.project / 'scenario/progression/trade-finance.json'
+    if finance_path.is_file() and not selector:
+        from trade_finance import verify_generated as verify_finance
+        world = json.loads(config.scenario_file.read_text())
+        authored = {row['id']: (region, row)
+                    for path, _geography, region in settlement_sources(config.project)
+                    for row in json.loads(path.read_text()).get('settlements', [])}
+        try:
+            verify_finance(config.project, world, _load_settlement_runtime_data(config, world), authored,
+                           (generated / GENERATED_WURST).read_text(),
+                           json.loads((generated / GENERATED_DATA).read_text()).get('tradeFinance'))
+        except ValueError as error:
+            raise _fail('finance bindings', error) from error
 
     voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
     if voyage_builder and not selector:

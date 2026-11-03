@@ -646,6 +646,18 @@
       "path": "wurst/Industry.wurst",
       "signature": "function refiningOutput(IndustrySite d, IndustryState s, int rate) returns int"
     },
+    "customs_action": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function customsAction(string owner, string id, boolean operate) returns string"
+    },
+    "customs_advance": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function advanceCustoms(int day)"
+    },
+    "customs_operation": {
+      "path": "wurst/FinanceCampaignRuntime.wurst",
+      "signature": "function operatingCustoms(string owner, string id) returns boolean"
+    },
     "institution_courts_policy": {
       "path": "wurst/CommercialCourts.wurst",
       "signature": "function institutionPolicy(string owner, string id, boolean repeal) returns string"
@@ -1166,6 +1178,17 @@
       "science_work_commit",
       "science_complete",
       "science_source_qualification"
+    ],
+    "customs_house": [
+      "finance_registration",
+      "research",
+      "trade_command",
+      "finance_quote",
+      "finance_buy_settle",
+      "finance_sell_settle",
+      "customs_action",
+      "customs_advance",
+      "customs_operation"
     ]
   }
 }

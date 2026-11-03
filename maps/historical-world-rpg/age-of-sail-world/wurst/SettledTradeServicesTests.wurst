@@ -285,7 +285,7 @@ class SettledFixture
 	t.f.military.restore(saved).assertTrue()
 	t.f.military.snapshot().assertEquals(saved)
 	t.f.campaign.countries.treasury[0].assertEquals(treasury)
-	var legacy = saved.replace("v25|", "v24|")
+	var legacy = saved.replace("v26|", "v24|")
 	for i = 0 to t.f.military.institutionCourts.count - 1
 		legacy = legacy.replace("|O," + t.f.military.institutionCourts.sites[i].id + "," + t.f.military.institutionCourts.states[i].record(), "")
 	t.f.military.restore(legacy).assertTrue()
@@ -355,3 +355,43 @@ class SettledFixture
 	trade.capture().assertEquals(tradeBefore)
 	reporting.rateAt("england", "market_slippage_reduction", load.clock.currentDay).assertEquals(500)
 	effects.rateAt("england", "institution_processing_cost_reduction", load.clock.currentDay).assertEquals(400)
+
+@test function customsAndInstitutionCourtsIndependentV25SavesMigrateWithoutLosingPaidAuthority()
+	let t = new SettledFixture(false, true)
+	t.ready()
+	let f = t.f
+	f.rpg.restoreState(f.rpg.captureState() + "|u,player,insurance_markets|u,player,postal_networks").assertTrue()
+	f.unlock("commodity_exchanges")
+	f.trade.registerMarket(new RuntimeMarket("london", "tools", 100, 100000, 100, 100))
+	f.action("customs london")
+	f.clock.advanceTo(f.day + 180).assertTrue()
+	f.action("customs-operate london")
+	let customs = f.military.finance.customs[f.military.finance.siteIndex("london")]
+	customs.completed.assertTrue()
+	customs.operator.assertEquals("player")
+	let court = "|O,london," + f.military.institutionCourts.states[0].record()
+	let house = "|H,london," + customs.builder + ",90," + I2S(customs.lastDay) + ",1,player," + I2S(customs.through)
+	let saved = f.military.snapshot()
+	let money = f.campaign.countries.treasury[0]
+	// Current snapshots require both domains, including a counted customs set.
+	f.military.restore(saved.replace("|J,1", ""), false).assertFalse()
+	f.military.restore(saved.replace(court, ""), false).assertFalse()
+	f.military.snapshot().assertEquals(saved)
+	// Customs-only v25 predates institutional choices. Keep the paid house.
+	var customs25 = saved.replace("v26|", "v25|")
+	for i = 0 to f.military.institutionCourts.count - 1
+		customs25 = customs25.replace("|O," + f.military.institutionCourts.sites[i].id + "," + f.military.institutionCourts.states[i].record(), "")
+	f.military.restore(customs25, false).assertTrue()
+	f.runtime.operatingCustoms("player", "london").assertTrue()
+	f.military.institutionCourts.states[0].owner.assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(money)
+	f.military.restore(saved, false).assertTrue()
+	// Courts-only v25 predates customs funding. Keep its independently paid policy.
+	let courts25 = saved.replace("v26|", "v25|").replace("|J,1", "").replace(house, "")
+	f.military.restore(courts25, false).assertTrue()
+	f.military.institutionCourts.states[0].owner.assertEquals("player")
+	f.military.finance.customs[f.military.finance.siteIndex("london")].completed.assertFalse()
+	f.runtime.operatingCustoms("player", "london").assertFalse()
+	f.campaign.countries.treasury[0].assertEquals(money)
+	f.military.restore(saved, false).assertTrue()
+	f.military.snapshot().assertEquals(saved)

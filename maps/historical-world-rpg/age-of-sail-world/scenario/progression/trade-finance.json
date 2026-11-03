@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "designSource": "scenario/progression/gameplay-effect-design.json",
   "commissionShareBasisPoints": 5000,
   "remittanceFeeBasisPoints": 200,
@@ -30,5 +30,36 @@
       "capacityUnits": 200,
       "laborUnits": 10
     }
-  ]
+  ],
+  "customsHouse": {
+    "nodeId": "commodity_exchanges",
+    "building": "customs_house",
+    "modifier": "credit_liquidity",
+    "constructionTaxBasisPoints": 1000,
+    "upkeepTaxBasisPoints": 50,
+    "workers": 10,
+    "constructionDays": 90,
+    "administration": 30,
+    "commissionReductionBasisPoints": 600,
+    "slippageReductionBasisPoints": 500,
+    "roles": [
+      "major_port",
+      "port",
+      "trade_center",
+      "market_center",
+      "trade_hub",
+      "caravan_center"
+    ],
+    "eligibility": "Historical port geography or authored wholesale commerce with existing market and warehouse; current lawful administration, no nationality restriction.",
+    "materials": [
+      {
+        "good": "timber",
+        "units": 20
+      },
+      {
+        "good": "tools",
+        "units": 10
+      }
+    ]
+  }
 }
