@@ -1387,3 +1387,352 @@ function calculusSetup(ScienceFixture f, boolean earned)
 	f.rpg.captureState().assertEquals(completed)
 	f.extension.trade.capture().assertEquals(stocks)
 	f.campaign.countries.treasury[0].assertEquals(treasury)
+
+// Walk the real generated graph, including institutions and military/economic
+// dependencies. Both arms earn every common prerequisite by registered commands.
+function comparativeEarn(ScienceFixture f, string id)
+	let d = f.rpg.technologies.get(id)
+	(d != null).assertTrue()
+	for i = 0 to d.prerequisiteCount - 1
+		comparativeEarn(f, d.prerequisiteIds[i])
+	if not f.rpg.technologies.isUnlocked(f.resources.owner, id)
+		let before = f.resources.balance
+		let cost = f.rpg.technologies.cost(id, f.resources.researchYear, 0, 0)
+		f.commands.dispatch(Player(0), "/research " + id).assertTrue()
+		f.resources.output.assertEquals("Action completed.")
+		f.resources.balance.assertEquals(before - cost)
+
+function comparativeSetup(ScienceFixture f, boolean earned)
+	f.resources.researchYear = 1800
+	f.day = 657072 // 1800-01-01, no startup or initial-resource changes.
+	f.clock.advanceTo(f.day).assertTrue()
+	// Remove fixture shortcuts: the entire legal common graph is earned below.
+	let owner = f.resources.owner
+	f.rpg.restoreState(f.rpg.captureState().replace("|u," + owner + ",microscopy", "").replace("|u," + owner + ",overland_caravan_surveys", "").replace("|u," + owner + ",flintlock_drill", "").replace("|u," + owner + ",scientific_societies", "").replace("|u," + owner + ",oceanic_seamanship", "")).assertTrue()
+	comparativeEarn(f, "metric_metrology")
+	let target = f.rpg.technologies.get("systematic_natural_history")
+	for i = 0 to target.prerequisiteCount - 1
+		comparativeEarn(f, target.prerequisiteIds[i])
+	f.effects.rate(owner, "research_generation_efficiency").assertEquals(500)
+	f.effects.rate(owner, "repeatable_observation_efficiency").assertEquals(400)
+	if earned
+		f.unlock("comparative_linguistics")
+	f.runtime.port.researchCost(owner, target.id).assertEquals(f.rpg.technologies.cost(target.id, 1800, 0, 0))
+	f.action("equip", 2, "")
+	f.advance(7)
+	f.action("start", 2, " systematic_natural_history")
+
+@test function comparativeRegisteredScholarshipCommitsExactWorkAgainstCompleteCommonPrerequisites()
+	let treatment = new ScienceFixture(false, true)
+	let control = new ScienceFixture(false, true)
+	comparativeSetup(treatment, true)
+	comparativeSetup(control, false)
+	let d = treatment.military.science.sites[2]
+	d.workRequired.assertEquals(9000)
+	let bill = treatment.rpg.technologies.cost("systematic_natural_history", 1800, 0, 0)
+	treatment.military.science.states[2].paid.assertEquals(bill)
+	control.military.science.states[2].paid.assertEquals(bill)
+	treatment.campaign.countries.treasury[0].assertEquals(100000 - 120 - bill)
+	control.campaign.countries.treasury[0].assertEquals(100000 - 120 - bill)
+	let paid = treatment.campaign.countries.treasury[0]
+	treatment.effects.workRate(d, "player", "systematic_natural_history").assertEquals(1300)
+	control.effects.workRate(control.military.science.sites[2], "player", "systematic_natural_history").assertEquals(900)
+	treatment.advance(8)
+	control.advance(8)
+	treatment.military.science.states[2].work.assertEquals(113)
+	control.military.science.states[2].work.assertEquals(109)
+	treatment.trade.markets[0].stock.assertEquals(997)
+	control.trade.markets[0].stock.assertEquals(997)
+	treatment.advance(86) // 79 funded days
+	control.advance(86)
+	treatment.military.science.states[2].work.assertEquals(8927)
+	control.military.science.states[2].work.assertEquals(8611)
+	treatment.advance(87) // 80 funded days
+	control.advance(87)
+	treatment.rpg.technologies.isUnlocked("player", "systematic_natural_history").assertTrue()
+	control.rpg.technologies.isUnlocked("player", "systematic_natural_history").assertFalse()
+	treatment.campaign.countries.treasury[0].assertEquals(paid - 80)
+	treatment.trade.markets[0].stock.assertEquals(918)
+	control.advance(89) // 82 days is still insufficient
+	control.military.science.states[2].work.assertEquals(8938)
+	control.advance(90)
+	control.rpg.technologies.isUnlocked("player", "systematic_natural_history").assertTrue()
+	control.campaign.countries.treasury[0].assertEquals(paid - 83)
+	control.trade.markets[0].stock.assertEquals(915)
+	let research = treatment.rpg.captureState()
+	treatment.advance(100)
+	treatment.runtime.advance(treatment.clock.currentDay)
+	treatment.rpg.technologies.reconstructAll()
+	treatment.rpg.technologies.reconstructAll()
+	treatment.rpg.captureState().assertEquals(research)
+	treatment.campaign.countries.treasury[0].assertEquals(paid - 80)
+	treatment.trade.markets[0].stock.assertEquals(918)
+	treatment.military.science.states[2].owner.assertEquals("")
+	treatment.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Choose an unearned").assertTrue()
+	for i = 0 to 1
+		treatment.military.science.states[i].record().assertEquals(control.military.science.states[i].record())
+	treatment.campaign.knowledge.snapshot().assertEquals(control.campaign.knowledge.snapshot())
+	treatment.commands.dispatch(Player(0), "/science inspect london_scholarly_work systematic_natural_history").assertTrue()
+	treatment.resources.output.contains("linnaeus_systema_naturae (latin)").assertTrue()
+	treatment.resources.output.contains("sloane_jamaica (english)").assertTrue()
+	treatment.resources.output.contains("Expected funded work per day: 113").assertTrue()
+
+@test function comparativeRequiresMultilingualCorporaSupportedTargetsAndPaidInputs()
+	let f = new ScienceFixture(false, true)
+	f.commands.dispatch(Player(0), "/research comparative_linguistics").assertTrue()
+	f.resources.output.assertEquals("Requirements are not met here.")
+	comparativeSetup(f, true)
+	let d = f.military.science.sites[2]
+	let corpus = d.corpora
+	f.effects.workRate(d, "player", "electromagnetic_experiment").assertEquals(900)
+	for i = 0 to 2
+		if i == 0
+			d.corpora = ""
+		else if i == 1
+			d.corpora = "|linnaeus_systema_naturae:latin|"
+		else
+			d.corpora = "|linnaeus_systema_naturae:latin|sloane_jamaica:latin|"
+		f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(900)
+		f.advance(8 + i)
+	f.military.science.states[2].work.assertEquals(327)
+	d.corpora = corpus
+	let treasury = f.campaign.countries.treasury[0]
+	f.trade.markets[0].stock = 0
+	f.advance(11)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.military.science.states[2].work.assertEquals(327)
+	f.trade.markets[0].stock = 1000
+	f.campaign.countries.treasury[0] = 0
+	f.advance(12)
+	f.trade.markets[0].stock.assertEquals(1000)
+	f.military.science.states[2].work.assertEquals(327)
+	f.campaign.countries.treasury[0] = treasury
+	f.advance(13)
+	f.military.science.states[2].work.assertEquals(440)
+	f.action("stop", 2, "")
+	let funds = f.campaign.countries.treasury[0]
+	let fullBill = f.rpg.technologies.cost("systematic_natural_history", 1800, 0, 0)
+	f.campaign.countries.treasury[0] = fullBill - 1
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Treasury").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(fullBill - 1)
+	f.campaign.countries.treasury[0] = funds
+	f.military.science.states[2].equipmentOwner = ""
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Commission").assertTrue()
+	f.military.science.states[2].equipmentOwner = "player"
+	let clerk = f.military.administrators[0]
+	clerk.administration = 39
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Requires").assertTrue()
+	clerk.administration = 40
+	clerk.capacity = 0
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Requires").assertTrue()
+	clerk.capacity = 1
+	f.trade.markets[0].blockaded = true
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Requires").assertTrue()
+	f.trade.markets[0].blockaded = false
+	f.runtime.act("ai", "start", d.id, "systematic_natural_history").startsWith("Requires").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(funds)
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,scientific_societies", "")).assertTrue()
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Requires").assertTrue()
+	f.rpg.restoreState(research.replace("|u,player,standardized_charts", "")).assertTrue()
+	f.runtime.act("player", "start", d.id, "systematic_natural_history").startsWith("Choose an unearned").assertTrue()
+	f.rpg.restoreState(research).assertTrue()
+	f.action("start", 2, " systematic_natural_history")
+	f.trade.markets[0].occupiedByHostile = true
+	f.advance(14)
+	f.military.science.states[2].owner.assertEquals("")
+	f.military.science.states[2].work.assertEquals(0)
+	f.campaign.countries.treasury[0].assertEquals(funds - f.rpg.technologies.cost("systematic_natural_history", 1800, 0, 0))
+
+@test function comparativeNamedSourcesAddOnceWithSeparateCalculusAndChemicalContributions()
+	let f = new ScienceFixture(false, false)
+	comparativeSetup(f, true)
+	let d = f.military.science.sites[2]
+	f.effects.rate("player", "multilingual_comparison_efficiency").assertEquals(400)
+	let duplicate = new RuntimeTechnology("duplicate_linguistics", "Duplicate provenance", 1450, 1)
+	duplicate.addUnlock("duplicate_linguistics", "modifier", "progression_comparative_linguistics")
+	f.rpg.technologies.register(duplicate).assertTrue()
+	f.unlock("duplicate_linguistics")
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	d.registerSource(d.sources[0]) // Repeated compatible provenance adds this metric once.
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(1300)
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,calculus_methods", "").replace("|u,player,chemical_classification", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(400)
+	f.rpg.restoreState(research.replace("|u,player,chemical_classification", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(900)
+	f.rpg.restoreState(research.replace("|u,player,calculus_methods", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(800)
+	f.rpg.restoreState(research).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	f.effects.workRate(d, "player", "systematic_natural_history").assertEquals(1300)
+	f.effects.workRate(f.military.science.sites[1], "player", "systematic_natural_history").assertEquals(0)
+
+@test function comparativeFractionalResumeCaptureInterruptionAndControllerRegionParity()
+	let human = new ScienceFixture(false, true)
+	let ai = new ScienceFixture(true, false)
+	let abstractHuman = new ScienceFixture(false, false)
+	let activeAi = new ScienceFixture(true, true)
+	comparativeSetup(human, true)
+	comparativeSetup(ai, true)
+	comparativeSetup(abstractHuman, true)
+	comparativeSetup(activeAi, true)
+	human.military.science.sites[2].dailyWork = 1
+	ai.military.science.sites[2].dailyWork = 1
+	abstractHuman.military.science.sites[2].dailyWork = 1
+	activeAi.military.science.sites[2].dailyWork = 1
+	human.advance(14)
+	ai.advance(14)
+	abstractHuman.advance(14)
+	activeAi.advance(14)
+	human.military.science.states[2].work.assertEquals(7)
+	human.military.science.states[2].remainder.assertEquals(9100)
+	let saved = human.military.snapshot()
+	let research = human.rpg.captureState()
+	human.military.restore(saved.replace("v25|", "v19|")).assertTrue()
+	human.military.science.states[2].work.assertEquals(7)
+	human.military.science.states[2].remainder.assertEquals(9100)
+	human.military.science.states[2].paid.assertEquals(280)
+	human.military.science.states[2].equipmentOwner.assertEquals("player")
+	human.military.restore(saved).assertTrue()
+	human.rpg.restoreState(research).assertTrue()
+	human.rpg.technologies.reconstructAll()
+	human.military.restore(saved + "|j,unknown,,,,,,,,,,").assertFalse()
+	human.military.snapshot().assertEquals(saved)
+	human.advance(15)
+	ai.advance(15)
+	abstractHuman.advance(15)
+	activeAi.advance(15)
+	human.military.science.states[2].work.assertEquals(9)
+	human.military.science.states[2].remainder.assertEquals(400)
+	human.military.science.states[2].work.assertEquals(ai.military.science.states[2].work)
+	human.military.science.states[2].remainder.assertEquals(ai.military.science.states[2].remainder)
+	human.military.snapshot().replace("|a,europe_west|", "|a,africa|").assertEquals(abstractHuman.military.snapshot())
+	ai.military.snapshot().assertEquals(activeAi.military.snapshot().replace("|a,europe_west|", "|a,africa|"))
+	human.campaign.countries.treasury[0].assertEquals(ai.campaign.countries.treasury[0])
+	human.trade.markets[0].stock.assertEquals(ai.trade.markets[0].stock)
+	human.runtime.advance(human.clock.currentDay)
+	human.military.science.states[2].remainder.assertEquals(400)
+	human.action("stop", 2, "")
+	human.military.science.states[2].work.assertEquals(0)
+	human.military.science.states[2].remainder.assertEquals(0)
+	human.action("start", 2, " systematic_natural_history")
+	human.advance(16)
+	human.military.transferSettlement("london", "ai")
+	human.military.science.states[2].owner.assertEquals("")
+	human.military.science.states[2].equipmentOwner.assertEquals("ai")
+	human.military.science.states[2].work.assertEquals(0)
+	human.military.science.states[2].remainder.assertEquals(0)
+	human.effects.rate("ai", "multilingual_comparison_efficiency").assertEquals(0)
+
+@test function comparativeFailedLoadRollsBackResearchWorkPaymentsAndResources()
+	let f = new LoadFixture()
+	let effects = new ScienceResearchEffects(f.rpg.technologies.effects)
+	f.rpg.technologies.effects = effects
+	let definitions = new ScienceLedger()
+	configureGeneratedScience(definitions, effects)
+	let d = definitions.sites[2]
+	d.id = "study"
+	d.settlementId = "port"
+	d.good = "grain"
+	d.firstDay = 0
+	d.prerequisite = "comparative_linguistics"
+	d.dailyWork = 1
+	d.workRequired = 3
+	d.equipmentDays = 1
+	f.military.science.register(d)
+	f.military.appoint("port", new AdministratorState("clerk", "Clerk", "Scholar", "england", "europe_west", "port", 40, 50, 40, 1))
+	let technology = new RuntimeTechnology("comparative_linguistics", "Comparative Linguistics", 1, 1)
+	technology.addUnlock("comparative_linguistics", "modifier", "progression_comparative_linguistics")
+	f.rpg.technologies.register(technology).assertTrue()
+	f.rpg.research("england", "comparative_linguistics", 1, 1).assertTrue()
+	let target = new RuntimeTechnology("systematic_natural_history", "Study", 1, 1)
+	target.addUnlock("systematic_natural_history", "modifier", "study_result")
+	f.rpg.technologies.register(target).assertTrue()
+	let runtime = new ScienceCampaignRuntime(f.campaign.state, f.extension.trade, effects)
+	f.campaign.state.scienceRuntime = runtime
+	runtime.act("england", "equip", d.id, "").assertEquals("")
+	let day = f.clock.currentDay
+	f.clock.advanceTo(day + 1).assertTrue()
+	runtime.act("england", "start", d.id, "systematic_natural_history").assertEquals("")
+	f.clock.advanceTo(day + 2).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(400)
+	let savedClock = f.clock.captureState()
+	f.campaign.saves.save(SAVE_SLOT_MANUAL, 1, "comparative").assertTrue()
+	// The live state has later work, bills AND completed research. A failed
+	// restore of the earlier uncompleted save must preserve all authorities.
+	f.clock.advanceTo(day + 4).assertTrue()
+	f.rpg.technologies.isUnlocked("england", "systematic_natural_history").assertTrue()
+	f.rpg.restoreState(f.rpg.captureState().replace("|u,england,comparative_linguistics", "")).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	let before = f.military.snapshot()
+	let research = f.rpg.captureState()
+	let stocks = f.extension.trade.capture()
+	let treasury = f.campaign.countries.treasury[0]
+	let knowledge = f.campaign.state.knowledge.snapshot()
+	let beforeClock = f.clock.captureState()
+	f.recordingTimer.expected = beforeClock
+	f.extension.fail = true
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertFalse()
+	f.military.snapshot().assertEquals(before)
+	f.rpg.captureState().assertEquals(research)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	f.campaign.state.knowledge.snapshot().assertEquals(knowledge)
+	f.clock.captureState().assertEquals(beforeClock)
+	effects.rate("england", "multilingual_comparison_efficiency").assertEquals(0)
+	f.rpg.technologies.isUnlocked("england", "systematic_natural_history").assertTrue()
+	f.extension.fail = false
+	f.recordingTimer.expected = savedClock
+	f.campaign.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.military.science.states[0].work.assertEquals(1)
+	f.military.science.states[0].remainder.assertEquals(400)
+	effects.rate("england", "multilingual_comparison_efficiency").assertEquals(400)
+	f.rpg.technologies.isUnlocked("england", "systematic_natural_history").assertFalse()
+	f.clock.advanceTo(day + 4).assertTrue()
+	f.rpg.technologies.isUnlocked("england", "systematic_natural_history").assertTrue()
+	f.military.snapshot().assertEquals(before)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	let completed = f.rpg.captureState()
+	f.clock.advanceTo(day + 5).assertTrue()
+	f.rpg.captureState().assertEquals(completed)
+	f.extension.trade.capture().assertEquals(stocks)
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+
+
+@test function comparativeCompletionRevalidatesTargetAndUnsupportedJobsKeepCommonSources()
+	let f = new ScienceFixture(false, false)
+	comparativeSetup(f, true)
+	f.action("stop", 2, "")
+	f.action("start", 2, " electromagnetic_experiment")
+	let s = f.military.science.states[2]
+	s.paid.assertEquals(f.rpg.technologies.cost("electromagnetic_experiment", 1800, 0, 0))
+	f.advance(8)
+	s.work.assertEquals(109)
+	f.action("stop", 2, "")
+	f.action("start", 2, " systematic_natural_history")
+	f.advance(87) // 79 funded days since restarting
+	s.work.assertEquals(8927)
+	let research = f.rpg.captureState()
+	f.rpg.restoreState(research.replace("|u,player,standardized_charts", "")).assertTrue()
+	f.advance(88)
+	f.rpg.technologies.isUnlocked("player", "systematic_natural_history").assertFalse()
+	s.owner.assertEquals("")
+	f.rpg.restoreState(research).assertTrue()
+	f.action("start", 2, " systematic_natural_history")
+	comparativeEarn(f, "systematic_natural_history")
+	let completed = f.rpg.captureState()
+	let paid = f.campaign.countries.treasury[0]
+	f.advance(168)
+	f.rpg.captureState().assertEquals(completed)
+	f.campaign.countries.treasury[0].assertEquals(paid - 80)
+	f.runtime.advance(f.clock.currentDay)
+	f.rpg.captureState().assertEquals(completed)
+	f.campaign.countries.treasury[0].assertEquals(paid - 80)

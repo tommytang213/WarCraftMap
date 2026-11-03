@@ -28,12 +28,12 @@ class ScienceCompilationTests(unittest.TestCase):
     def test_exact_design_bindings_values_eras_inputs_and_actor_routes(self):
         source, catalog, paths = self.compile()
         self.assertEqual({('barometric_measurement', 1000), ('botanical_collecting', 1000),
-                          ('calculus_methods', 500), ('chemical_classification', 400)}, {(e['nodeId'], e['bonusBasisPoints']) for e in catalog['effects']})
+                          ('calculus_methods', 500), ('chemical_classification', 400), ('comparative_linguistics', 400)}, {(e['nodeId'], e['bonusBasisPoints']) for e in catalog['effects']})
         self.assertIn('site0.unitTypeId', source)
         self.assertIn('site1.unitTypeId', source)
         self.assertIn('site1.stationX = 100.0', source)
         self.assertIn('"scientific_societies", "cloth"', source)
-        self.assertEqual(4, len(paths))
+        self.assertEqual(5, len(paths))
         self.assertIn('site2.observationMetric = "repeatable_observation_efficiency"', source)
         self.assertIn('site2.minimumAdministration = 40', source)
         self.assertIn('|chemical_classification|', source)

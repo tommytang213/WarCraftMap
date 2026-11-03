@@ -993,3 +993,36 @@ and passing lifecycle, negative and rollback cases. Focused developer tests do
 not constitute release closure. After integration, regenerate release-blocker,
 runtime-acceptance and requirement-traceability audits on the new main revision;
 closure additionally requires this identity's absence from that fresh audit.
+
+## Comparative Linguistics in funded multilingual scholarship (#590)
+
+`scenario/progression/comparative-linguistics.json` owns the exact 400 bp
+`comparative_linguistics` → `modifier:progression_comparative_linguistics` source.
+The initial target is the existing Systematic Natural History project at London's
+commissioned scholarly center. Its Latin *Systema Naturae* and English *A Voyage
+to Jamaica* references support comparison of published descriptions, translation
+and consistent recorded terminology. The coefficient models paid adoption of
+comparative methods, not either author's use of later comparative linguistics.
+Research never supplies books, equipment, specimens, discoveries or translation
+of hidden information. The existing paid kit covers reference-copy access and
+recording tools: 120 treasury, two real local cloth units and seven preparation
+days. Daily assistants and recording/reference work retain one treasury and one
+local cloth per funded day, in addition to the full unchanged target bill.
+
+A lawful official with positive capacity and Administration >=40, accessible
+center, completed paid equipment and all documented source-language/corpus pairs
+are required. Unsupported targets and monolingual/missing corpora contribute
+zero. The source adds once to compatible Calculus and Chemical Classification
+before the existing exact fractional calculation. With both common sources,
+109 work becomes 113 and 9000 work completes in 83 versus 80 funded days.
+Metric Metrology and every other catalogue prerequisite and historical cost rule
+remain intact. Science inspection shows target/source eligibility, the material
+bill and expected funded work; research inspection describes the same contract.
+
+No saved fields or schema changes: durable equipment, paid target, committed
+day, work and remainder remain authoritative across reconstruction and legacy
+migration. Comparison-specific consumer metadata and verified production probes
+are required for audit recognition. Complete pinned execution, repository and
+framework checks and all three audits must be regenerated on integrated main;
+focused worktree tests and merged PRs cannot establish closure. See
+[issue 590 evidence contract](../reports/issue-590/README.md). No player QA is required.

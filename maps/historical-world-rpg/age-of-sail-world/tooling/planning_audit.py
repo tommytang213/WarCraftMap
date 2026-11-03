@@ -28,6 +28,7 @@ REPORTS = {"release": "reports/release-blocker-audit.json",
 # These identities select observations, never grant bindings or waive a verifier.
 COMPARISONS = {
     "carronade": ("CARRONADE-BATTERIES-MODIFIER-PROGRESSION-CARRONADE-BATTERIES",),
+    "comparative": ("COMPARATIVE-LINGUISTICS-MODIFIER-PROGRESSION-COMPARATIVE-LINGUISTICS",),
     "calculus": ("CALCULUS-METHODS-MODIFIER-PROGRESSION-CALCULUS-METHODS",),
     "civilServiceExaminations": ("CIVIL-SERVICE-EXAMINATIONS-MODIFIER-PROGRESSION-CIVIL-SERVICE-EXAMINATIONS",),
     "agriculture": (

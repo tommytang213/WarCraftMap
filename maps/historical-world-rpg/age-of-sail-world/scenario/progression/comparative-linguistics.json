@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "authority": "Issue #590; funded scholarly work, owner-delegated science defaults. Coefficient is gameplay accounting, not measured historical productivity.",
+  "nodeId": "comparative_linguistics",
+  "unlock": {
+    "kind": "modifier",
+    "contentId": "progression_comparative_linguistics"
+  },
+  "metric": "multilingual_comparison_efficiency",
+  "bonusBasisPoints": 400,
+  "siteId": "london_scholarly_work",
+  "minimumAdministration": 40,
+  "corpora": [
+    {
+      "id": "linnaeus_systema_naturae",
+      "language": "latin",
+      "title": "Systema Naturae (1735), published Latin classification and consistent names"
+    },
+    {
+      "id": "sloane_jamaica",
+      "language": "english",
+      "title": "A Voyage to Jamaica (1707/1725), published English observations and descriptions"
+    }
+  ],
+  "targets": [
+    {
+      "id": "systematic_natural_history",
+      "sourceLanguages": [
+        "latin",
+        "english"
+      ],
+      "corpusIds": [
+        "linnaeus_systema_naturae",
+        "sloane_jamaica"
+      ],
+      "activity": "Compare published descriptions across Latin and English, translate observed terms and reconcile consistent specimen terminology in written reference tables."
+    }
+  ],
+  "historicalRationale": "Natural historians compared published descriptions and names across languages. These already published works support translation and terminology checking at a commissioned center; comparative linguistic methods improve this paid task, not every kind of research. This is paid adoption, not a claim that either author practiced later comparative linguistics.",
+  "materialBill": "Existing commissioning pays 120 treasury minor units and two real local cloth units, with seven preparation days, for instruments, specimen cases, recording tools and reference-copy consultation/procurement. The authored published corpus is part of this paid reference kit, never a research grant. Each funded day still consumes one local cloth for records/wrapping and one treasury unit for assistants and translation/reference work. Full target research payment is unchanged and separate.",
+  "rules": "Requires lawful administration >=40, positive capacity, accessible scholarly center and commissioned equipment. Only targets with every authored source-language/corpus pair qualify. Research grants no corpus, equipment, specimens, discovery or translation of hidden campaign information.",
+  "stacking": "Add this named 400 bp source once to qualified Calculus 500 and Chemical Classification 400 before the existing single fractional work calculation. 109 becomes 113 daily work; 9000 completes in 83 versus 80 funded days.",
+  "persistence": "No new saved state. Corpus requirements are immutable definitions of the existing paid equipment kit. Existing equipment, pending target/full payment, work, remainder and committed day remain authoritative; existing legacy migration grants no work or equipment."
+}
