@@ -1108,6 +1108,21 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
                 or (generated / GENERATED_WURST).read_text().count(payload['wurst']) != 1):
             raise _fail('naval bindings', 'executable catalogue or consumer metadata differs from scenario')
 
+    science_path = config.project / 'scenario/progression/science-exploration.json'
+    if science_path.is_file() and not selector:
+        from science_exploration import configuration as science_configuration
+        world = json.loads(config.scenario_file.read_text())
+        authored = {row['id']: (region, row)
+                    for path, _geography, region in settlement_sources(config.project)
+                    for row in json.loads(path.read_text()).get('settlements', [])}
+        source = (generated / GENERATED_WURST).read_text()
+        records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
+        expected, catalogue, _inputs = science_configuration(
+            config.project, world, _load_settlement_runtime_data(config, world), authored, records)
+        actual = json.loads((generated / GENERATED_DATA).read_text()).get('scienceExploration')
+        if actual != catalogue or source.count(expected) != 1:
+            raise _fail('science bindings', 'executable catalogue or exact consumer metadata differs from scenario')
+
     finance_path = config.project / 'scenario/progression/trade-finance.json'
     if finance_path.is_file() and not selector:
         from trade_finance import verify_generated as verify_finance

@@ -15,8 +15,37 @@ public class ScienceResearchEffects extends CivicResearchEffects
 		var result = rate(owner, site.metric)
 		if site.observationMetric != "" and site.observationTargets.contains("|" + target + "|")
 			result += rate(owner, site.observationMetric)
+		var applied = "|"
+		for i = 0 to site.sourceCount - 1
+			let source = site.sources[i]
+			if source.qualified(site, target) and not applied.contains("|" + source.metric + "|")
+				result += rate(owner, source.metric)
+				applied += source.metric + "|"
 		// All earned sources add before a single rounding, bounded at +100%.
 		return IMinBJ(10000, result)
+
+/** Immutable source requirements describe published reference material in a paid
+ * equipment kit. They confer neither equipment ownership nor hidden knowledge. */
+public class ScienceWorkSource
+	string metric
+	string targets
+	string requiredCorpora
+	string description
+	construct(string metric, string targets, string requiredCorpora, string description)
+		this.metric = metric
+		this.targets = targets
+		this.requiredCorpora = requiredCorpora
+		this.description = description
+	function qualified(ScienceSite site, string target) returns boolean
+		if not site.scholarly() or not targets.contains("|" + target + "|") or requiredCorpora == ""
+			return false
+		var remaining = requiredCorpora
+		while remaining != ""
+			let cut = remaining.indexOf("|")
+			if cut <= 0 or not site.corpora.contains("|" + SubString(remaining, 0, cut) + "|")
+				return false
+			remaining = SubString(remaining, cut + 1, StringLength(remaining))
+		return true
 
 /** A bounded, authored station-return journey or scholarly facility. Equipment
  * is commissioned locally, never granted by research. Hazard is supply lost,
@@ -33,6 +62,10 @@ public class ScienceSite
 	string observationMetric = ""
 	string observationTargets = ""
 	int minimumAdministration = 0
+	// Published corpus IDs paired with source languages, available in the paid kit.
+	string corpora = ""
+	ScienceWorkSource array[8] sources
+	int sourceCount = 0
 	int unitTypeId = 0
 	real stationX = 0.
 	real stationY = 0.
@@ -67,6 +100,9 @@ public class ScienceSite
 		this.hazardLoss = hazardLoss
 		this.weatherPeriod = weatherPeriod
 		this.weatherDays = weatherDays
+	function registerSource(ScienceWorkSource source)
+		sources[sourceCount] = source
+		sourceCount++
 	function scholarly() returns boolean
 		return forceId == ""
 	function hazard(int day) returns int

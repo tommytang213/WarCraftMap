@@ -43,6 +43,12 @@ def configuration(project, world, settlements, authored, trade_records):
                 or not 1 <= observation['minimumAdministration'] <= 100):
             raise ValueError('science: invalid observation contract')
         effects.append(observation)
+    comparison_path = project / 'scenario/progression/comparative-linguistics.json'
+    comparison = None
+    if comparison_path.is_file():
+        comparison = json.loads(comparison_path.read_text())
+        validate_comparison(comparison, nodes)
+        effects.append(comparison)
     lines = [header]
     q = json.dumps
     for e in effects:
@@ -127,10 +133,56 @@ def configuration(project, world, settlements, authored, trade_records):
             lines.append(f'\tsite{i}.observationMetric = {q(observation["metric"])}')
             lines.append(f'\tsite{i}.observationTargets = {q("|" + "|".join(targets) + "|")}')
             lines.append(f'\tsite{i}.minimumAdministration = {observation["minimumAdministration"]}')
+        if comparison and d['id'] == comparison['siteId']:
+            if d['metric'] != 'research_generation_efficiency':
+                raise ValueError('science: comparison requires a scholarly facility')
+            corpora = {c['id']: c['language'] for c in comparison['corpora']}
+            lines.append(f'\tsite{i}.corpora = {q("|" + "|".join(k + ":" + v for k, v in corpora.items()) + "|")}')
+            lines.append(f'\tsite{i}.minimumAdministration = {max(d.get("minimumAdministration", 0), comparison["minimumAdministration"], observation["minimumAdministration"] if observation and d["id"] == observation["siteId"] else 0)}')
+            for target in comparison['targets']:
+                required = "".join(k + ":" + corpora[k] + "|" for k in target['corpusIds'])
+                description = target['activity'] + " Required published sources: " + ", ".join(k + " (" + corpora[k] + ")" for k in target['corpusIds']) + ". " + comparison['materialBill']
+                lines.append(f'\tsite{i}.registerSource(new ScienceWorkSource({q(comparison["metric"])}, {q("|" + target["id"] + "|")}, {q(required)}, {q(description)}))')
         lines.append(f'\tledger.register(site{i})')
     if observation and observation['siteId'] not in ids:
         raise ValueError('science: missing observation facility')
-    return '\n'.join(lines) + '\n', data | {'effects': effects}, [path, design_path, Path(__file__)] + ([observation_path] if observation else [])
+    if comparison and comparison['siteId'] not in ids:
+        raise ValueError('science: missing comparison facility')
+    consumers = []
+    if comparison:
+        consumers.append({k: comparison[k] for k in ('nodeId', 'unlock', 'metric', 'bonusBasisPoints',
+                         'siteId', 'minimumAdministration', 'targets', 'corpora', 'materialBill')})
+        consumers[0]['comparisonTest'] = COMPARATIVE_COMPARISON
+        consumers[0]['executionSystem'] = 'comparative_scholarship'
+    return '\n'.join(lines) + '\n', data | {'effects': effects, 'consumers': consumers}, [path, design_path, Path(__file__)] + ([observation_path] if observation else []) + ([comparison_path] if comparison else [])
+
+
+def validate_comparison(data, nodes):
+    identifier = re.compile(r'[a-z][a-z0-9]*(?:_[a-z0-9]+)*')
+    if (data.get('schemaVersion') != 1
+            or data.get('nodeId') != 'comparative_linguistics'
+            or data.get('unlock') != {'kind': 'modifier', 'contentId': 'progression_comparative_linguistics'}
+            or data['unlock'] not in nodes.get(data['nodeId'], {}).get('unlocks', [])
+            or data.get('metric') != 'multilingual_comparison_efficiency'
+            or type(data.get('bonusBasisPoints')) is not int or data['bonusBasisPoints'] != 400
+            or type(data.get('minimumAdministration')) is not int or data['minimumAdministration'] != 40
+            or not data.get('siteId') or not data.get('historicalRationale') or not data.get('materialBill')):
+        raise ValueError('science: invalid multilingual comparison binding')
+    corpora = data.get('corpora', [])
+    if (not 2 <= len(corpora) <= 16 or len({c['id'] for c in corpora}) != len(corpora)
+            or any(not identifier.fullmatch(c[k]) for c in corpora for k in ('id', 'language'))
+            or any(not c.get('title') for c in corpora)):
+        raise ValueError('science: invalid published corpora')
+    languages = {c['id']: c['language'] for c in corpora}
+    targets = data.get('targets', [])
+    if not 1 <= len(targets) <= 8 or len({t['id'] for t in targets}) != len(targets):
+        raise ValueError('science: invalid comparison targets')
+    for t in targets:
+        ids, langs = t.get('corpusIds', []), t.get('sourceLanguages', [])
+        if (t['id'] not in nodes or not t.get('activity') or not ids or len(set(ids)) != len(ids)
+                or any(k not in languages for k in ids) or len(set(langs)) < 2
+                or len(set(langs)) != len(langs) or {languages[k] for k in ids} != set(langs)):
+            raise ValueError('science: comparison needs documented multilingual source pairs')
 
 
 CHEMICAL_TESTS = {
@@ -187,6 +239,37 @@ CALCULUS_PROBES = {'research', 'dispatch', 'science_registration', 'science_acti
                    'science_advance', 'science_pay', 'science_research_bill',
                    'science_work_commit', 'science_complete'}
 CALCULUS_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_calculus_methods'}
+
+
+
+COMPARATIVE_COMPARISON = 'comparativeRegisteredScholarshipCommitsExactWorkAgainstCompleteCommonPrerequisites'
+COMPARATIVE_TESTS = {
+    COMPARATIVE_COMPARISON,
+    'comparativeRequiresMultilingualCorporaSupportedTargetsAndPaidInputs',
+    'comparativeNamedSourcesAddOnceWithSeparateCalculusAndChemicalContributions',
+    'comparativeFractionalResumeCaptureInterruptionAndControllerRegionParity',
+    'comparativeFailedLoadRollsBackResearchWorkPaymentsAndResources',
+    'comparativeCompletionRevalidatesTargetAndUnsupportedJobsKeepCommonSources',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+COMPARATIVE_PROBES = CALCULUS_PROBES | {'science_source_qualification'}
+COMPARATIVE_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_comparative_linguistics'}
+
+
+def _comparative_authored(project):
+    data = json.loads((project / 'scenario/progression/comparative-linguistics.json').read_text())
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
+    validate_comparison(data, nodes)
+    sites = json.loads((project / 'scenario/progression/science-exploration.json').read_text())['sites']
+    # Recognition is target-specific, never a generic all-research consumer.
+    return ([t['id'] for t in data['targets']] == ['systematic_natural_history']
+            and data['targets'][0]['sourceLanguages'] == ['latin', 'english']
+            and data['targets'][0]['corpusIds'] == ['linnaeus_systema_naturae', 'sloane_jamaica']
+            and {c['id']: c['language'] for c in data['corpora']} == {
+                'linnaeus_systema_naturae': 'latin', 'sloane_jamaica': 'english'}
+            and len([s for s in sites if s['id'] == data['siteId'] and s['forceId'] == ''
+                     and s['metric'] == 'research_generation_efficiency']) == 1)
 
 
 def _calculus_authored(project):
@@ -300,6 +383,15 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
                 and CALCULUS_PROBES <= set(probes.get(comparative, []))
                 and _calculus_authored(project)):
             bound.add(('modifier', 'progression_calculus_methods'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    comparative = prefix + COMPARATIVE_COMPARISON
+    try:
+        if (COMPARATIVE_TESTS <= passed
+                and comparative in coverage.get('comparative_scholarship', [])
+                and COMPARATIVE_PROBES <= set(probes.get(comparative, []))
+                and _comparative_authored(project)):
+            bound.add(('modifier', 'progression_comparative_linguistics'))
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
         pass
     return bound
