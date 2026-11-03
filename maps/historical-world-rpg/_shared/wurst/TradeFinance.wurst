@@ -37,6 +37,7 @@ public class ExchangeSite
 	string id
 	string provinceId
 	string bankNetwork
+	boolean customsEligible = false
 	construct(string id, string provinceId, string bankNetwork)
 		this.id = id
 		this.provinceId = provinceId
@@ -87,6 +88,16 @@ public class FoodDepot
 		this.x = x
 		this.y = y
 
+/** Stable settlement authority, independent of a Warcraft projection. */
+public class CustomsState
+	boolean restored = false
+	string builder = ""
+	int work = 0
+	int lastDay = 0
+	boolean completed = false
+	string operator = ""
+	int through = 0
+
 public class CanalState
 	boolean freightRestored = false
 	int freightDay = 0
@@ -108,6 +119,41 @@ public interface FinancePort
 public class FinanceLedger
 	ExchangeSite array[1024] sites
 	int siteCount = 0
+	int customsExpected = -1
+	int customsRestored = 0
+	CustomsState array[1024] customs
+	string customsNode = ""
+	string customsBuilding = ""
+	string customsModifier = ""
+	int customsFirstDay = 0
+	int customsBuildRate = 0
+	int customsUpkeepRate = 0
+	int customsDays = 0
+	int customsWorkers = 0
+	string customsMaterialGood = ""
+	string customsEquipmentGood = ""
+	int customsMaterialUnits = 0
+	int customsEquipmentUnits = 0
+	int customsCommission = 0
+	int customsSlippage = 0
+	int customsAdministration = 0
+	/** Keep generated catalogue entries as calls: inlining these allocations for
+	 * every exchange district needlessly expands the compiled campaign script. */
+	@noinline
+	function registerSite(string id, string provinceId, string bankNetwork, boolean customsEligible)
+		sites[siteCount] = new ExchangeSite(id, provinceId, bankNetwork)
+		sites[siteCount].customsEligible = customsEligible
+		customs[siteCount] = new CustomsState()
+		siteCount++
+	function customsState(int i) returns CustomsState
+		if customs[i] == null
+			customs[i] = new CustomsState()
+		return customs[i]
+	function siteIndex(string id) returns int
+		for i = 0 to siteCount - 1
+			if sites[i].id == id
+				return i
+		return -1
 	CanalWork array[32] projects
 	CanalState array[32] states
 	int count = 0
@@ -147,6 +193,21 @@ public class FinanceLedger
 		return -1
 	function fork() returns FinanceLedger
 		let copy = new FinanceLedger()
+		copy.customsNode = customsNode
+		copy.customsBuilding = customsBuilding
+		copy.customsModifier = customsModifier
+		copy.customsFirstDay = customsFirstDay
+		copy.customsBuildRate = customsBuildRate
+		copy.customsUpkeepRate = customsUpkeepRate
+		copy.customsDays = customsDays
+		copy.customsWorkers = customsWorkers
+		copy.customsMaterialGood = customsMaterialGood
+		copy.customsEquipmentGood = customsEquipmentGood
+		copy.customsMaterialUnits = customsMaterialUnits
+		copy.customsEquipmentUnits = customsEquipmentUnits
+		copy.customsCommission = customsCommission
+		copy.customsSlippage = customsSlippage
+		copy.customsAdministration = customsAdministration
 		copy.commissionShare = commissionShare
 		copy.remittanceFee = remittanceFee
 		copy.bankPrerequisite = bankPrerequisite
@@ -166,10 +227,19 @@ public class FinanceLedger
 		copy.siteCount = siteCount
 		for i = 0 to siteCount - 1
 			copy.sites[i] = sites[i]
+			copy.customs[i] = new CustomsState()
 		for i = 0 to count - 1
 			copy.register(projects[i])
 		return copy
 	function controlChanged(string id)
+		let site = siteIndex(id)
+		if site >= 0
+			let s = customsState(site)
+			if not s.completed
+				s.builder = ""
+				s.work = 0
+			s.operator = ""
+			s.through = 0
 		for i = 0 to count - 1
 			if projects[i].settlementId == id and not states[i].completed
 				states[i].owner = ""
@@ -203,5 +273,7 @@ public class FinanceLedger
 					if s.work == d.constructionDays
 						s.completed = true
 	ondestroy
+		for i = 0 to siteCount - 1
+			destroy customs[i]
 		for i = 0 to count - 1
 			destroy states[i]

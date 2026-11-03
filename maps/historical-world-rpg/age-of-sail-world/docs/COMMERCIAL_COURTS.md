@@ -112,10 +112,12 @@ processing bills. Settlement recomputes current research, elected funding and
 resource checks; an earlier estimate neither locks a discount nor bypasses any
 check. Stable transaction IDs retain the existing replay history and FIFO costs.
 
-Military snapshots advance from v24 to **v25**, adding mandatory uppercase `O`
+Military snapshots use **v26**, retaining the independent v25 uppercase `O`
 records for institutional court sites, distinct from corporate lowercase `o`
-and banking `b`. Versions 1–24 retain their existing court/banking state and
-initialize institutional elections unfunded. Missing, duplicate, invalid-controller
+and banking `b`. Versions 1–24 and Customs-House-only v25 snapshots retain
+their existing state and initialize institutional elections unfunded. Courts-only
+v25 snapshots preserve paid institutional choices and initialize Customs Houses
+unbuilt and unfunded. Missing, duplicate, invalid-controller
 or future-clock current records reject in detached staging. Campaign checkpoints
 include the new ledger with treasury, stock, cargo and transaction history for
 late-load rollback. No outer campaign, RPG or trade schema changes are needed.

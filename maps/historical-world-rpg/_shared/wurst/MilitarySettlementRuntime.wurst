@@ -39,7 +39,7 @@ public constant int FORCE_GARRISON = 3
 public constant int FORCE_CITY_CORE = 4
 public constant int FORCE_DEFENSE = 5
 public constant real CITY_CAPTURE_IMMUNITY_SECONDS = 5.
-public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 25
+public constant int MILITARY_SETTLEMENT_SNAPSHOT_VERSION = 26
 
 function militaryOrderAtom(string value) returns boolean
 	return value != "" and value.indexOf(",") < 0 and value.indexOf("|") < 0 and value.indexOf(";") < 0 and value.indexOf("=") < 0
@@ -1606,6 +1606,15 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			result += "|O," + institutionCourts.sites[i].id + "," + institutionCourts.states[i].record()
 		for i = 0 to banking.count - 1
 			result += "|b," + banking.sites[i].id + "," + banking.states[i].record()
+		var customsRecords = 0
+		for i = 0 to finance.siteCount - 1
+			if finance.customsState(i).lastDay > 0
+				customsRecords++
+		result += "|J," + I2S(customsRecords)
+		for i = 0 to finance.siteCount - 1
+			let s = finance.customsState(i)
+			if s.lastDay > 0
+				result += "|H," + finance.sites[i].id + "," + s.builder + "," + I2S(s.work) + "," + I2S(s.lastDay) + "," + boolText(s.completed) + "," + s.operator + "," + I2S(s.through)
 		for i = 0 to finance.count - 1
 			let s = finance.states[i]
 			result += "|z," + finance.projects[i].id + "," + I2S(s.freightDay) + "," + I2S(s.freightUsed)
@@ -1810,6 +1819,30 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			s.freightDay = S2I(record.field(2))
 			s.freightUsed = S2I(record.field(3))
 			return s.freightUsed == 0 or s.freightDay > 0 and target.finance.projects[i].freightCapacity > 0
+		if kind == "J"
+			if record.count != 2 or target.finance.customsExpected >= 0 or not exactNaturalValid(record.field(1)) or exactNaturalCompare(record.field(1), I2S(target.finance.siteCount)) > 0
+				return false
+			target.finance.customsExpected = S2I(record.field(1))
+			return true
+		if kind == "H"
+			let i = target.finance.siteIndex(record.field(1))
+			if record.count != 8 or i < 0 or target.finance.customs[i].restored
+				return false
+			if (record.field(2) != "" and not scienceControllerText(record.field(2))) or (record.field(6) != "" and not scienceControllerText(record.field(6))) or (record.field(5) != "0" and record.field(5) != "1")
+				return false
+			for j = 3 to 7
+				if j != 5 and j != 6 and (not exactNaturalValid(record.field(j)) or exactNaturalCompare(record.field(j), "2147483282") > 0)
+					return false
+			let s = target.finance.customs[i]
+			s.restored = true
+			target.finance.customsRestored++
+			s.builder = record.field(2)
+			s.work = S2I(record.field(3))
+			s.lastDay = S2I(record.field(4))
+			s.completed = record.field(5) == "1"
+			s.operator = record.field(6)
+			s.through = S2I(record.field(7))
+			return s.lastDay > 0 and target.finance.sites[i].customsEligible and s.work <= target.finance.customsDays and s.completed == (s.work == target.finance.customsDays) and (s.builder != "" or s.work == 0) and (s.builder == "" or target.finance.sites[i].customsEligible and s.lastDay >= target.finance.customsFirstDay + s.work) and (s.operator == "" and s.through == 0 or s.operator != "" and s.completed and s.through > s.lastDay and s.through <= s.lastDay + 365)
 		if kind == "q"
 			let i = target.finance.index(record.field(1))
 			if record.count != 6 or i < 0 or target.finance.states[i].restored
@@ -2135,7 +2168,8 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			destroy conflicts[i]
 		destroy this
 	function parseSnapshot(string candidate) returns MilitarySettlementRuntime
-		if (not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and not candidate.startsWith("v22|") and not candidate.startsWith("v21|") and not candidate.startsWith("v20|") and not candidate.startsWith("v19|") and not candidate.startsWith("v18|") and not candidate.startsWith("v17|") and not candidate.startsWith("v16|") and not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
+		// v26 combines independent v25 Customs House (J/H) and institutional court (O) layouts.
+		if (not candidate.startsWith("v26|") and not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and not candidate.startsWith("v22|") and not candidate.startsWith("v21|") and not candidate.startsWith("v20|") and not candidate.startsWith("v19|") and not candidate.startsWith("v18|") and not candidate.startsWith("v17|") and not candidate.startsWith("v16|") and not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|") and not candidate.startsWith("v9|") and not candidate.startsWith("v8|") and not candidate.startsWith("v7|") and not candidate.startsWith("v6|") and not candidate.startsWith("v5|") and not candidate.startsWith("v4|") and not candidate.startsWith("v3|") and not candidate.startsWith("v2|") and not candidate.startsWith("v1|")) or candidate.endsWith("|")
 			return null
 		let parsed = new MilitarySettlementRuntime(adapter)
 		// Borrow the immutable provider while staging; it must not allocate a
@@ -2165,11 +2199,11 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		// Independent v23 layouts introduced mineral industry and councils.
 		// Preserve the present domain and migrate the absent one inactive.
 		let mineral23 = candidate.startsWith("v23|") and candidate.contains("|I,")
-		parsed.legacyIndustry = not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not mineral23
+		parsed.legacyIndustry = not candidate.startsWith("v26|") and not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not mineral23
 		// Independent v22 branches added councils and navigation sources.
 		// Council-bearing v22 snapshots predate coastal source/kit records.
-		parsed.legacyNavigationSources = not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and (not candidate.startsWith("v22|") or candidate.contains("|C,"))
-		parsed.legacyVoyages = not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and not candidate.startsWith("v22|") and not candidate.startsWith("v21|") and not candidate.startsWith("v20|") and not candidate.startsWith("v19|") and not candidate.startsWith("v18|") and not candidate.startsWith("v17|") and not candidate.startsWith("v16|") and not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
+		parsed.legacyNavigationSources = not candidate.startsWith("v26|") and not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and (not candidate.startsWith("v22|") or candidate.contains("|C,"))
+		parsed.legacyVoyages = not candidate.startsWith("v26|") and not candidate.startsWith("v25|") and not candidate.startsWith("v24|") and not candidate.startsWith("v23|") and not candidate.startsWith("v22|") and not candidate.startsWith("v21|") and not candidate.startsWith("v20|") and not candidate.startsWith("v19|") and not candidate.startsWith("v18|") and not candidate.startsWith("v17|") and not candidate.startsWith("v16|") and not candidate.startsWith("v15|") and not candidate.startsWith("v14|") and not candidate.startsWith("v13|") and not candidate.startsWith("v12|") and not candidate.startsWith("v11|") and not candidate.startsWith("v10|")
 		parsed.legacyCombatProfiles = parsed.legacyVoyages and not candidate.startsWith("v9|")
 		parsed.legacyIntegerExperience = parsed.legacyCombatProfiles and not candidate.startsWith("v8|")
 		parsed.legacyTraditions = parsed.legacyIntegerExperience and not candidate.startsWith("v7|")
@@ -2212,11 +2246,20 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if s.equipmentOwner != "" and (city < 0 or parsed.settlements[city].controllerId != s.equipmentOwner)
 				parsed.dispose()
 				return null
-		for i = 0 to parsed.finance.count - 1
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.contains("|q,")) and not parsed.finance.states[i].restored
+		if (not candidate.startsWith("v26|") and not candidate.startsWith("v25|") and parsed.finance.customsRestored > 0) or ((candidate.startsWith("v26|") or parsed.finance.customsRestored > 0) and parsed.finance.customsExpected < 0) or (parsed.finance.customsExpected >= 0 and parsed.finance.customsExpected != parsed.finance.customsRestored)
+			parsed.dispose()
+			return null
+		for i = 0 to parsed.finance.siteCount - 1
+			let s = parsed.finance.customs[i]
+			let city = parsed.settlementIndex(parsed.finance.sites[i].id)
+			if (s.builder != "" and not s.completed and (city < 0 or parsed.settlements[city].controllerId != s.builder)) or (s.operator != "" and (city < 0 or parsed.settlements[city].controllerId != s.operator))
 				parsed.dispose()
 				return null
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.contains("|z,")) and not parsed.finance.states[i].freightRestored
+		for i = 0 to parsed.finance.count - 1
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.contains("|q,")) and not parsed.finance.states[i].restored
+				parsed.dispose()
+				return null
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.contains("|z,")) and not parsed.finance.states[i].freightRestored
 				parsed.dispose()
 				return null
 			let state = parsed.finance.states[i]
@@ -2230,13 +2273,13 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		for i = 0 to parsed.courts.count - 1
 			let state = parsed.courts.states[i]
 			let city = parsed.settlementIndex(parsed.courts.sites[i].id)
-			if ((candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.contains("|o,")) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
+			if ((candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.contains("|o,")) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.institutionCourts.count - 1
 			let state = parsed.institutionCourts.states[i]
 			let city = parsed.settlementIndex(parsed.institutionCourts.sites[i].id)
-			if ((candidate.startsWith("v25|") or candidate.contains("|O,")) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
+			if ((candidate.startsWith("v26|") or (candidate.startsWith("v25|") and not candidate.contains("|J,")) or candidate.contains("|O,")) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
 				parsed.dispose()
 				return null
 		// The independent courts v19 branch predates municipal u records.
@@ -2250,7 +2293,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		for i = 0 to parsed.banking.count - 1
 			let state = parsed.banking.states[i]
 			let city = parsed.settlementIndex(parsed.banking.sites[i].id)
-			if ((candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") and not legacyMunicipal or bankingRecords) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
+			if ((candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") and not legacyMunicipal or bankingRecords) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
 				parsed.dispose()
 				return null
 		// Independent v15 branches may lack finance or industry; v16 branches
@@ -2261,15 +2304,15 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		// v20 requires both domains; either v19 branch migrates the absent one inactive.
 		// Finance v14 may also lack naval records.
 		for i = 0 to parsed.land.count - 1
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.contains("|l,")) and not parsed.land.arsenals[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.civic.count - 1
 			let state = parsed.civic.states[i]
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") and not legacyCourts or legacyMunicipal or candidate.contains("|u,")) and not state.municipalRestored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") and not legacyCourts or legacyMunicipal or candidate.contains("|u,")) and not state.municipalRestored
 				parsed.dispose()
 				return null
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.contains("|r,")) and not state.careRestored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.contains("|r,")) and not state.careRestored
 				parsed.dispose()
 				return null
 			let city = parsed.settlementIndex(parsed.civic.districts[i].id)
@@ -2277,17 +2320,17 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				parsed.dispose()
 				return null
 			// v24 requires every domain; mineral-only v23 predates council records.
-			if ((candidate.startsWith("v25|") or candidate.startsWith("v24|") or (candidate.startsWith("v23|") and not mineral23) or candidate.contains("|C,")) and not state.councilRestored) or (state.councilOwner != "" and (city < 0 or parsed.settlements[city].controllerId != state.councilOwner or state.councilReady > state.lastDay + parsed.civic.councilTransitionDays or state.councilThrough > IMaxBJ(state.lastDay, state.councilReady) + 365))
+			if ((candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or (candidate.startsWith("v23|") and not mineral23) or candidate.contains("|C,")) and not state.councilRestored) or (state.councilOwner != "" and (city < 0 or parsed.settlements[city].controllerId != state.councilOwner or state.councilReady > state.lastDay + parsed.civic.councilTransitionDays or state.councilThrough > IMaxBJ(state.lastDay, state.councilReady) + 365))
 				parsed.dispose()
 				return null
 			if state.municipalOwner != "" and (city < 0 or parsed.settlements[city].controllerId != state.municipalOwner or state.municipalReady > state.lastDay + parsed.civic.transitionDays or state.municipalThrough > IMaxBJ(state.lastDay, state.municipalReady) + 365)
 				parsed.dispose()
 				return null
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.startsWith("v11|") or candidate.contains("|g,")) and not parsed.civic.states[i].restored
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored and (not parsed.science.sites[i].commissioningOnly or not parsed.legacyNavigationSources)
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.startsWith("v14|") or candidate.startsWith("v13|") or candidate.startsWith("v12|") or candidate.contains("|j,")) and not parsed.science.states[i].restored and (not parsed.science.sites[i].commissioningOnly or not parsed.legacyNavigationSources)
 				parsed.dispose()
 				return null
 		for i = 0 to parsed.science.count - 1
@@ -2329,7 +2372,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if f.navigation.saved and not parsed.voyageSupported(f, f.navigation.routeId)
 				parsed.dispose()
 				return null
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|")) and f.kind == FORCE_FLEET and not f.hull.restored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|")) and f.kind == FORCE_FLEET and not f.hull.restored
 				parsed.dispose()
 				return null
 			let p = parsed.naval.profile(f.combatProfileId, f.unitTypeId)
@@ -2338,7 +2381,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				return null
 		for i = 0 to parsed.naval.count - 1
 			let s = parsed.naval.states[i]
-			if (candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.contains("|y,")) and not s.restored
+			if (candidate.startsWith("v26|") or candidate.startsWith("v25|") or candidate.startsWith("v24|") or candidate.startsWith("v23|") or candidate.startsWith("v22|") or candidate.startsWith("v21|") or candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|") or candidate.contains("|y,")) and not s.restored
 				parsed.dispose()
 				return null
 			if s.target != "" and s.job != "build"
@@ -2395,6 +2438,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				return false
 		for i = 0 to parsed.banking.count - 1
 			if campaignDay >= 0 and parsed.banking.states[i].lastDay > campaignDay
+				parsed.dispose()
+				return false
+		for i = 0 to parsed.finance.siteCount - 1
+			if campaignDay >= 0 and parsed.finance.customsState(i).lastDay > campaignDay
 				parsed.dispose()
 				return false
 		for i = 0 to parsed.finance.count - 1

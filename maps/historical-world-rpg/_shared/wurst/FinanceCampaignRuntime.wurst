@@ -37,6 +37,7 @@ public class FinanceCampaignRuntime
 	function ledger() returns FinanceLedger
 		return campaign.militarySettlements.finance
 	function advance(int day)
+		advanceCustoms(day)
 		ledger().advance(day, port)
 		refresh()
 	function refresh()
@@ -56,6 +57,79 @@ public class FinanceCampaignRuntime
 		// The generated site is a capability, not proof that its live facilities
 		// still exist. Recheck the registered market and warehouse at settlement.
 		return ledger().site(market.id) != null and trade.findMarket(market.id, market.goodName) == market and warehouse != null and warehouse.warehouseService and warehouse.accessKind == "warehouse" and warehouse.accessId == market.id and market.discovered and not market.blockaded and not market.occupiedByHostile and port.eligible(owner, market.id)
+	function customsTax(string id) returns int
+		let c = campaign.militarySettlements.civic
+		let i = c.index(id)
+		if i < 0
+			return 0
+		return c.districts[i].annualTax
+	function customsAccess(string owner, string id) returns boolean
+		let i = ledger().siteIndex(id)
+		let store = trade.findStore("warehouse:" + id)
+		return i >= 0 and ledger().sites[i].customsEligible and customsTax(id) > 0 and port.eligible(owner, id) and port.economy.administration(id) >= ledger().customsAdministration and store != null and store.warehouseService and store.accessKind == "warehouse" and store.accessId == id
+	function customsEarned(string owner, string kind, string content) returns boolean
+		if campaign.rpg == null or campaign.clock.currentDay < ledger().customsFirstDay
+			return false
+		let earned = campaign.rpg.technologies.entitlements(owner)
+		let result = earned.has(kind, content)
+		destroy earned
+		return result
+	function operatingCustoms(string owner, string id) returns boolean
+		let i = ledger().siteIndex(id)
+		if i < 0 or not customsAccess(owner, id) or not customsEarned(owner, "building", ledger().customsBuilding)
+			return false
+		let s = ledger().customsState(i)
+		return s.completed and s.operator == owner and campaign.clock.currentDay >= s.lastDay and campaign.clock.currentDay < s.through
+	function customsAction(string owner, string id, boolean operate) returns string
+		if not campaign.isSaveSafe()
+			return "Finance actions are unavailable during restoration or transfer."
+		advance(campaign.clock.currentDay)
+		if not customsAccess(owner, id) or not customsEarned(owner, "building", ledger().customsBuilding)
+			return "Requires Commodity Exchanges, historical availability, a qualified port or wholesale district, market, warehouse and lawful current administration."
+		let l = ledger()
+		let s = l.customsState(l.siteIndex(id))
+		let day = campaign.clock.currentDay
+		if day < s.lastDay or day > 2147483282
+			return "Construction clock is stale."
+		if operate
+			if not s.completed or s.through > day
+				return "Requires a completed house with no prepaid operating year remaining."
+			if not port.pay(owner, id, civicBill(customsTax(id), l.customsUpkeepRate), "", 0)
+				return "Insufficient treasury for prepaid annual Customs House upkeep."
+			s.operator = owner
+			s.through = day + 365
+			s.lastDay = day
+			return ""
+		if s.completed or s.builder != ""
+			return "A Customs House is already built or under construction here."
+		let materials = trade.findMarket(id, l.customsMaterialGood)
+		let equipment = trade.findMarket(id, l.customsEquipmentGood)
+		if not port.workforce(id, l.customsWorkers) or materials == null or equipment == null
+			return "Requires available workers and existing materials and equipment."
+		if materials.blockaded or equipment.blockaded or materials.occupiedByHostile or equipment.occupiedByHostile or materials.stock < l.customsMaterialUnits or equipment.stock < l.customsEquipmentUnits
+			return "Insufficient accessible materials or equipment."
+		if not port.pay(owner, id, civicBill(customsTax(id), l.customsBuildRate), "", 0)
+			return "Insufficient treasury for funded construction."
+		// All inputs were validated before the first mutation; no partial bill.
+		materials.stock -= l.customsMaterialUnits
+		equipment.stock -= l.customsEquipmentUnits
+		s.builder = owner
+		s.lastDay = day
+		return ""
+	function advanceCustoms(int day)
+		let l = ledger()
+		for i = 0 to l.siteCount - 1
+			let s = l.customsState(i)
+			while s.builder != "" and not s.completed and s.lastDay < day
+				s.lastDay++
+				let id = l.sites[i].id
+				if not port.eligible(s.builder, id)
+					s.builder = ""
+					s.work = 0
+				else if customsAccess(s.builder, id) and customsEarned(s.builder, "building", ledger().customsBuilding) and port.workforce(id, l.customsWorkers)
+					s.work++
+					if s.work == l.customsDays
+						s.completed = true
 	function amount(string owner, RuntimeMarket market, int quantity, boolean buying) returns int
 		let original = market.quoteAmount(quantity, buying)
 		if original < 1 or not eligibleExchange(owner, market) or campaign.rpg == null
@@ -64,8 +138,12 @@ public class FinanceCampaignRuntime
 		// Preview layers can predate a restore/revocation. Resolve the current
 		// earned typed sources without mutating any reconstructed effect layer.
 		let earned = campaign.rpg.technologies.entitlements(owner)
-		let auction = effects.rateAt(earned, "market_transaction_fee_reduction", day)
-		let brokerage = effects.rateAt(earned, "market_slippage_reduction", day)
+		var auction = effects.rateAt(earned, "market_transaction_fee_reduction", day)
+		var brokerage = effects.rateAt(earned, "market_slippage_reduction", day)
+		if operatingCustoms(owner, market.id)
+			auction += ledger().customsCommission
+			if earned.has("modifier", ledger().customsModifier) and market.money > 0
+				brokerage += ledger().customsSlippage
 		destroy earned
 		if auction == 0 and brokerage == 0
 			return original
@@ -129,6 +207,11 @@ public class FinanceCampaignRuntime
 				let s = l.states[i]
 				let fee = financeCost(d.financingCost, effects.rateAt(owner, "canal_infrastructure_financing_cost_reduction", campaign.clock.currentDay))
 				result += "\n" + d.id + " at " + d.settlementId + ": principal " + I2S(d.principalCost) + ", financing " + I2S(fee) + " (base " + I2S(d.financingCost) + ") treasury currency minor units; " + I2S(d.materialUnits) + " " + d.good + " stock units; daily paid labor " + I2S(d.laborCostPerDay) + "; " + I2S(d.constructionDays) + " funded days. Requires lawful administered canal geography, access and " + d.prerequisite + "; earliest day " + I2S(d.firstDay) + ". Completed canal quay adds " + I2S(d.capacityUnits) + " local warehouse cargo capacity once. Work " + I2S(s.work) + "; complete " + I2S(s.work div d.constructionDays) + ". Capture cancels unfinished work without refund. No free materials, capital or generic building discount."
+		for i = 0 to l.siteCount - 1
+			let site = l.sites[i]
+			if site.customsEligible and (id == site.id or id == "" and port.eligible(owner, site.id))
+				let s = l.customsState(i)
+				result += "\nCustoms House " + site.id + ": construction " + I2S(civicBill(customsTax(site.id), l.customsBuildRate)) + " treasury currency (10% normal annual local tax), " + I2S(l.customsMaterialUnits) + " " + l.customsMaterialGood + ", " + I2S(l.customsEquipmentUnits) + " " + l.customsEquipmentGood + ", " + I2S(l.customsWorkers) + " available workers; " + I2S(l.customsDays) + " funded days. Annual operation prepaid " + I2S(civicBill(customsTax(site.id), l.customsUpkeepRate)) + " currency (0.5% normal annual tax). Requires current-controller Commodity Exchanges, qualified historical port/wholesale commerce, existing accessible market and warehouse, lawful administration " + I2S(l.customsAdministration) + "; earliest day " + I2S(l.customsFirstDay) + ". Work " + I2S(s.work) + "; completed " + I2S(s.work div l.customsDays) + "; operator " + s.operator + "; funded through " + I2S(s.through) + ". Operating commission reduction " + I2S(l.customsCommission) + " bp; earned credit_liquidity reduces actual slippage " + I2S(l.customsSlippage) + " bp with existing counterparty funds. Capture cancels unfinished work and prepaid authority; completed infrastructure survives. Use /finance customs SITE or /finance customs-operate SITE."
 		return result + "\nUse /finance inspect [PROJECT], /finance canal PROJECT, /finance remit SOURCE DESTINATION AMOUNT. For actual commodity orders use /trade buy or sell."
 
 class FinanceCommand implements CommandHandler
@@ -145,6 +228,8 @@ class FinanceCommand implements CommandHandler
 		if action == "inspect" and countArguments(arguments) <= 2
 			output.show(sender, runtime.overview(owner, id))
 			return
+		if (action == "customs" or action == "customs-operate") and countArguments(arguments) == 2
+			problem = runtime.customsAction(owner, id, action == "customs-operate")
 		if action == "canal" and countArguments(arguments) == 2
 			problem = runtime.start(owner, id)
 		if action == "remit" and countArguments(arguments) == 4
@@ -167,4 +252,4 @@ function tradeFinanceArgument(string arguments, int wanted) returns string
 	return ""
 
 public function registerFinanceCommands(CommandRegistry commands, FinanceCampaignRuntime runtime) returns string
-	return commands.register("finance", "", "finance <inspect [PROJECT]|canal PROJECT|remit SOURCE DESTINATION AMOUNT>", "Inspect trade costs, remit existing funds or fund canal works.", "Research reduces only eligible existing costs. Inspection shows currency, materials, labor, duration, control, facility and historical conditions; both player and AI use the same campaign ledger.", 1, 4, COMMAND_RELEASE, new FinanceCommand(runtime, commands.output))
+	return commands.register("finance", "", "finance <inspect [PROJECT]|customs SITE|customs-operate SITE|canal PROJECT|remit SOURCE DESTINATION AMOUNT>", "Inspect trade costs, remit existing funds or fund canal works.", "Research reduces only eligible existing costs. Inspection shows currency, materials, labor, duration, control, facility and historical conditions; both player and AI use the same campaign ledger.", 1, 4, COMMAND_RELEASE, new FinanceCommand(runtime, commands.output))

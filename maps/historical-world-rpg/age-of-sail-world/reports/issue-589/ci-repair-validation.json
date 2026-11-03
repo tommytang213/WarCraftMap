@@ -1,0 +1,134 @@
+{
+  "format": "warcraftmap_ci_repair_validation_v1",
+  "scope": "Complete current-worktree pinned interpreter suite and focused production packaging repair; not integrated-main closure or full RC evidence.",
+  "sourceRevision": "ea7e783c195759c3c419ff3637baabc4c1d7eed6",
+  "sourceTreeSha256": "731c8ad4be41ea712d628f2e01a66cf23566e4e5dc867cd61c6cf0c548b322c4",
+  "dirtyWorktree": true,
+  "ciFailure": {
+    "pr": 596,
+    "job": "https://github.com/tommytang213/WarCraftMap/actions/runs/41504519954/job/125480275705",
+    "cause": "All 825 interpreter tests passed; compiled Europe West Lua exceeded the unchanged 16 MiB budget."
+  },
+  "repair": "Generate one non-inlined FinanceLedger.registerSite call per exchange, retaining all 664 ordered site identities, provinces, banking links, eligibility and fresh unbuilt/unfunded state.",
+  "compiler": {
+    "image": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+    "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
+  },
+  "stdlib": {
+    "revision": "e8800908c926c7277d5f43c4af271316f34e3f56",
+    "workingTreeClean": true
+  },
+  "luaSize": {
+    "before": 17007015,
+    "after": 16245991,
+    "saved": 761024,
+    "budget": 16777216,
+    "europeWest": 16248600,
+    "europeWestHeadroom": 528616
+  },
+  "productionChecks": {
+    "typecheck": "pass",
+    "compiledScriptAcceptance": "pass",
+    "regionalArchiveInspection": "pass",
+    "physicalMapInspection": "pass",
+    "generatedCatalogueVerification": "pass"
+  },
+  "wurst": {
+    "status": "pass",
+    "passed": 826,
+    "discovered": 826,
+    "batches": 9,
+    "inputSetSha256": "c6840981cad8f7e14bb6d5da26d931d9eefea2fc6320ddb2b1128b99765f16a8",
+    "logSha256": "bd24dd11db973e0b5f39c596a6c1532b1c492722f86a6f604b4f12e000ecdc23",
+    "currentSourceEvidenceVerification": "pass",
+    "customsBindingEvidenceVerification": "pass"
+  },
+  "customsComparisons": {
+    "building:customs_house": {
+      "test": "registeredPaidCustomsCompletionConsumesInputsTimeAndOperationBeforeSettledCommissionBenefit",
+      "probes": [
+        "administrative_pay",
+        "administrative_skill",
+        "agriculture_definitions",
+        "agriculture_storage",
+        "appoint",
+        "customs_action",
+        "customs_advance",
+        "customs_operation",
+        "dispatch",
+        "finance_advance",
+        "finance_buy_settle",
+        "finance_quote",
+        "finance_registration",
+        "finance_sell_settle",
+        "land_pay",
+        "medical_snapshot",
+        "naval_snapshot",
+        "research",
+        "rpg_registration",
+        "trade_command",
+        "trade_registration",
+        "treasure_definitions"
+      ]
+    },
+    "modifier:credit_liquidity": {
+      "test": "registeredCreditLiquidityIncrementalSettledCostUsesExistingFundsAndActualCargo",
+      "probes": [
+        "administrative_pay",
+        "administrative_skill",
+        "agriculture_definitions",
+        "agriculture_storage",
+        "appoint",
+        "customs_action",
+        "customs_advance",
+        "customs_operation",
+        "dispatch",
+        "finance_advance",
+        "finance_buy_settle",
+        "finance_quote",
+        "finance_registration",
+        "finance_sell_settle",
+        "land_pay",
+        "medical_snapshot",
+        "naval_snapshot",
+        "research",
+        "rpg_registration",
+        "trade_command",
+        "trade_registration",
+        "treasure_definitions"
+      ]
+    }
+  },
+  "python": {
+    "distinctTargetedCasesPassed": 132,
+    "initialRun": {
+      "passed": 129,
+      "total": 132,
+      "failures": "Three stale tracked-report checks ran before the audit refresh completed."
+    },
+    "afterAuditRefresh": {
+      "passed": 3,
+      "total": 3,
+      "status": "pass"
+    },
+    "automationCasesPassed": 215,
+    "note": "Synthetic compiler/execution fixtures in Python logs are protocol tests, not pinned gameplay evidence."
+  },
+  "framework": {
+    "status": "pass",
+    "originalPinnedTestsPassed": 3,
+    "mutatedPinnedTestsPassed": 3,
+    "sharedSourcesUnchanged": true,
+    "report": "ci-repair-framework.json"
+  },
+  "otherChecks": {
+    "frameworkBoundary": "pass",
+    "worldContracts": "pass",
+    "canonicalMapSource": "pass",
+    "traceabilityFreshness": "pass",
+    "diffWhitespace": "pass"
+  },
+  "audits": "All three tracked source-only audits regenerated. Both #589 findings remain unresolved; fresh integrated-main audits with that revision\u2019s evidence are required before closure.",
+  "validationSafety": "Installed pinned compiler image, UID/GID 1001, disabled networking, read-only input mounts, all compiler writes in container-private /tmp. Python runtime copied to task-local temporary storage; no global tooling installed or changed. Cached clean pinned standard-library source was the only predecessor input; no predecessor execution evidence was reused.",
+  "remaining": "Outer worker authoritative repository validation; after merge regenerate release-blocker, runtime-acceptance and requirement-traceability audits on new main."
+}

@@ -111,7 +111,11 @@ class SettledTradeMetadataTests(unittest.TestCase):
         next(n for n in bad['institutions'] if n['id'] == 'commercial_courts_institution')['prerequisiteIds'] = []
         with self.assertRaises(ValueError): services.adoption_configuration(PROJECT, bad, contract)
         from trade_finance import configuration as finance
-        source, data, _ = finance(PROJECT, fixture.world, fixture.settlements, fixture.authored, fixture.trade)
+        from test_trade_finance import TradeFinanceCompilationTests
+        finance_fixture = TradeFinanceCompilationTests()
+        finance_fixture.setUp()
+        source, data, _ = finance(PROJECT, finance_fixture.world, finance_fixture.settlements,
+                                  finance_fixture.authored, finance_fixture.trade)
         effect, = [e for e in data['effects'] if e['nodeId'] == 'commercial_statistics']
         self.assertEqual(({'kind':'modifier', 'contentId':'progression_commercial_statistics'}, 500), (effect['unlock'], effect['bonusBasisPoints']))
         self.assertIn('"market_slippage_reduction", 500,', source)

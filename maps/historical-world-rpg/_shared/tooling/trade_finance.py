@@ -14,7 +14,7 @@ def configuration(project, world, settlements, authored, trade_records):
     if not path.is_file():
         return header + '\tskip\n', {}, []
     data = json.loads(path.read_text())
-    if data.get('schemaVersion') != 1:
+    if data.get('schemaVersion') != 2:
         raise ValueError('finance: invalid schema')
     design = project / data['designSource']
     if not design.resolve().is_relative_to(project.resolve()):
@@ -40,10 +40,46 @@ def configuration(project, world, settlements, authored, trade_records):
     lines += [f'\tledger.commissionShare = {data["commissionShareBasisPoints"]}',
               f'\tledger.remittanceFee = {data["remittanceFeeBasisPoints"]}',
               f'\tledger.bankPrerequisite = {q(data["bankPrerequisite"])}']
+    customs = data['customsHouse']
+    node = nodes.get(customs['nodeId'])
+    if (not node or customs['nodeId'] != 'commodity_exchanges'
+            or {'kind': 'building', 'contentId': customs['building']} not in node['unlocks']
+            or {'kind': 'modifier', 'contentId': customs['modifier']} not in node['unlocks']):
+        raise ValueError('finance: missing exact Customs House typed unlocks')
+    fields = {'constructionTaxBasisPoints': ('customsBuildRate', 1000),
+              'upkeepTaxBasisPoints': ('customsUpkeepRate', 50),
+              'workers': ('customsWorkers', 10), 'constructionDays': ('customsDays', 90),
+              'administration': ('customsAdministration', 30),
+              'commissionReductionBasisPoints': ('customsCommission', 600),
+              'slippageReductionBasisPoints': ('customsSlippage', 500)}
+    for key, (field, expected) in fields.items():
+        if type(customs[key]) is not int or customs[key] != expected:
+            raise ValueError('finance: invalid Customs House ' + key)
+        lines.append(f'\tledger.{field} = {customs[key]}')
+    materials = customs['materials']
+    if (len(materials) != 2 or materials[0]['good'] == materials[1]['good']
+            or any(type(row['units']) is not int or row['units'] != units
+                   or not re.fullmatch(r'[a-z][a-z0-9_]{0,63}', row['good'])
+                   or not any(f',{q(row["good"])},' in record for record in trade_records)
+                   for row, units in zip(materials, (20, 10)))):
+        raise ValueError('finance: invalid existing Customs House materials/equipment')
+    for row, field in zip(materials, ('Material', 'Equipment')):
+        lines += [f'\tledger.customs{field}Good = {q(row["good"])}',
+                  f'\tledger.customs{field}Units = {row["units"]}']
+    first = date(node['timeCost']['preferredYear'], 1, 1).toordinal()
+    lines += [f'\tledger.customsBuilding = {q(customs["building"])}',
+              f'\tledger.customsModifier = {q(customs["modifier"])}',
+              f'\teffects.register(new FinanceEffect("building", {q(customs["building"])}, "customs_commission_reduction", {customs["commissionReductionBasisPoints"]}, {first}))',
+              f'\teffects.register(new FinanceEffect("modifier", {q(customs["modifier"])}, "customs_slippage_reduction", {customs["slippageReductionBasisPoints"]}, {first}))']
+    lines += [f'\tledger.customsNode = {q(node["id"])}',
+              f'\tledger.customsFirstDay = {first}']
+    if (not customs['eligibility'] or not customs['roles'] or len(set(customs['roles'])) != len(customs['roles'])
+            or not set(customs['roles']) <= {'major_port', 'port', 'trade_center', 'market_center', 'trade_hub', 'caravan_center'}):
+        raise ValueError('finance: invalid historical Customs House geography/commerce')
     positions = {s['id']: s for s in settlements}
     sites = {sid: row for sid, (_, row) in authored.items() if sid in positions
              and {'market', 'warehouse'} <= set(row['services'])
-             and {'trade_center', 'market_center', 'capital', 'trade_hub', 'caravan_center'} & set(row['roles'])
+             and {'major_port', 'port', 'trade_center', 'market_center', 'capital', 'trade_hub', 'caravan_center'} & set(row['roles'])
              and any(f'runtime.registerMarketProfile({q(sid)},' in x for x in trade_records)}
     if len(sites) > 1024:
         raise ValueError('finance: exchange capacity exceeded')
@@ -56,8 +92,7 @@ def configuration(project, world, settlements, authored, trade_records):
                 raise ValueError('finance: bank lacks real service or is duplicated')
             banks[sid] = network['id']
     for sid, row in sites.items():
-        lines += [f'\tledger.sites[ledger.siteCount] = new ExchangeSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))})',
-                  '\tledger.siteCount++']
+        lines.append(f'\tledger.registerSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))}, {str(bool(set(row["roles"]) & set(customs["roles"]))).lower()})')
     ids, locations = set(), set()
     if not 0 < len(data['canalWorks']) <= 32:
         raise ValueError('finance: invalid project count')
@@ -79,7 +114,30 @@ def configuration(project, world, settlements, authored, trade_records):
             raise ValueError('finance: canal project precedes supporting technology')
         args = [q(d[k]) for k in ('id', 'settlementId', 'prerequisite', 'good')] + [str(first)] + [str(d[k]) for k in fields]
         lines.append('\tledger.register(new CanalWork(' + ', '.join(args) + '))')
-    return '\n'.join(lines) + '\n', data | {'effects': effects, 'exchangeIds': list(sites)}, [path, design, Path(__file__)]
+    consumers = [dict(nodeId=node['id'], kind=kind, contentId=content,
+                      metric=metric, bonusBasisPoints=rate,
+                      runtimeConsumer=consumer,
+                      construction=dict(taxBasisPoints=customs['constructionTaxBasisPoints'],
+                                        materials=materials, workers=customs['workers'], days=customs['constructionDays']),
+                      operation=dict(taxBasisPoints=customs['upkeepTaxBasisPoints'], prepaidDays=365,
+                                     administration=customs['administration']),
+                      costBucket=metric, requiresCounterpartyLiquidity=(kind == 'modifier'),
+                      qualification='paid_completed_lawful_administered_market_warehouse_current_controller_earned_prepaid_operation',
+                      siteIds=[sid for sid, row in sites.items() if set(row['roles']) & set(customs['roles'])])
+                 for kind, content, metric, rate, consumer in (
+                     ('building', customs['building'], 'market_transaction_fee_reduction', customs['commissionReductionBasisPoints'],
+                      'FinanceCampaignRuntime.customsAction/advanceCustoms/amount'),
+                     ('modifier', customs['modifier'], 'market_slippage_reduction', customs['slippageReductionBasisPoints'],
+                      'FinanceCampaignRuntime.operatingCustoms/amount'))]
+    return '\n'.join(lines) + '\n', data | {'effects': effects, 'consumers': consumers, 'exchangeIds': list(sites)}, [path, design, Path(__file__)]
+
+
+def verify_generated(project, world, settlements, authored, source, catalogue):
+    """Reject disconnected recipes and per-identity metadata, even if rehashed."""
+    records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
+    expected, expected_catalogue, _inputs = configuration(project, world, settlements, authored, records)
+    if catalogue != expected_catalogue or source.count(expected) != 1:
+        raise ValueError('finance: executable catalogue or exact consumer metadata differs from scenario')
 
 # These are production tests, not a design approval or source-name heuristic.
 # Release consumes only a verified full current-source interpreter transcript.
@@ -106,6 +164,19 @@ AUCTION_PROBES = {'finance_registration', 'research', 'trade_command',
                   'finance_quote', 'finance_buy_settle', 'finance_sell_settle'}
 AUCTION_BINDING = ('modifier', 'progression_auction_markets')
 
+
+CUSTOMS_COMPARISONS = {
+    ('building', 'customs_house'): 'registeredPaidCustomsCompletionConsumesInputsTimeAndOperationBeforeSettledCommissionBenefit',
+    ('modifier', 'credit_liquidity'): 'registeredCreditLiquidityIncrementalSettledCostUsesExistingFundsAndActualCargo',
+}
+CUSTOMS_TESTS = {
+    'customsRejectsMissingMaterialsWorkersTreasuryAccessResearchAndUnsupportedSites',
+    'customsStackingLiquidityStaleQuotesSplitsAndExpirationConserveCosts',
+    'customsCaptureDestructionReconstructionSaveResumeAndLegacyMigrationRetainOnlyPaidAuthority',
+    'customsPlayerAiActiveInactiveAndLateLoadRollbackUseSameAuthority',
+    'customsSettlementsRecheckEntitlementsCounterpartyFundsAccessAndSavedDeadlines',
+}
+CUSTOMS_PROBES = AUCTION_PROBES | {'customs_action', 'customs_advance', 'customs_operation'}
 
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     """Fail closed until same-revision execution verifies every finance consumer."""
@@ -136,5 +207,11 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     if (not AUCTION_TESTS <= passed or not AUCTION_PROBES <= set(probes.get(
             'wurst/TradeFinanceTests.wurst:auctionOnlyRegisteredPurchaseAndSaleMatchControlsAndConserveAuthority', []))):
         bindings.discard(AUCTION_BINDING)
+    customs_passed = {row['id'].rsplit(':', 1)[-1] for row in execution['tests']
+                     if row['status'] == 'pass' and row['id'].startswith('wurst/CustomsHouseTests.wurst:')}
+    if CUSTOMS_TESTS <= customs_passed:
+        for identity, name in CUSTOMS_COMPARISONS.items():
+            if name in customs_passed and CUSTOMS_PROBES <= set(probes.get('wurst/CustomsHouseTests.wurst:' + name, [])):
+                bindings.add(identity)
     bindings.discard(("modifier", "progression_commercial_statistics"))
     return bindings
