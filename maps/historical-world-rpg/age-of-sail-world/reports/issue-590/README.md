@@ -88,3 +88,20 @@ current source, and both independent comparison probe contracts pass. See
 `merge-validation.json` and `merge-wurst.log.gz`. Full repository validation and
 all three integrated-main audits remain controller gates; these focused results
 do not establish release closure. No player QA is required.
+
+The subsequent repository-validation repair refreshes both soak profiles for the
+new Comparative Linguistics description in `world.json` and `catalog.json`.
+The soak includes these descriptions in its source fingerprint. Comparison with
+the previous fixture-refresh revision proves that only `fixtureHash` changed in
+the initial and final states: substituting the previous fingerprint reproduces
+every previous expected hash exactly. `soak-fixture-refresh.json` records all
+four seeds. No simulation rule, save format or gameplay outcome changes.
+All three source-only audits were regenerated against the merged worktree;
+complete execution and post-merge closure still belong to the controller.
+
+Fresh repair validation passes **123/123 Python tests**, including the previously
+failing soak and report-freshness regressions, plus the framework boundary audit.
+The complete soak passes all four seeds in normal, accelerated and checkpoint/
+resume modes. `validation-repair.json` records the commands and scope, with the
+Python transcript and soak summary alongside it. Docker socket access is denied
+in this environment, so no new pinned Wurst execution is claimed for this repair.

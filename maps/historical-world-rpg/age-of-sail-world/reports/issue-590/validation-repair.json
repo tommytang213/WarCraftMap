@@ -1,0 +1,86 @@
+{
+  "audits": {
+    "closureFinding": "RESEARCH-UNBOUND-COMPARATIVE-LINGUISTICS-MODIFIER-PROGRESSION-COMPARATIVE-LINGUISTICS",
+    "freshness": "All three source-only reports pass their freshness regressions; traceability --check also passes. Existing release findings remain explicitly unresolved pending complete current-source execution.",
+    "regenerated": [
+      "reports/release-blocker-audit.json",
+      "reports/runtime-acceptance.json",
+      "reports/traceability/requirements.json"
+    ]
+  },
+  "completeSoak": {
+    "command": "python3 tooling/run_full_world_soak.py --profile complete_multi_century",
+    "executionModes": [
+      "normal",
+      "accelerated",
+      "checkpoint_resume"
+    ],
+    "seeds": [
+      1450,
+      1588,
+      1701,
+      1815
+    ],
+    "status": "pass",
+    "summary": "validation-repair-soak.json"
+  },
+  "frameworkBoundary": {
+    "command": "python3 maps/historical-world-rpg/_shared/tooling/audit_framework_boundary.py",
+    "status": "pass"
+  },
+  "python": {
+    "checks": [
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_comparative*.py' -v",
+        "failed": 0,
+        "passed": 8
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_science_exploration.py' -v",
+        "failed": 0,
+        "passed": 5
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_research*.py' -v",
+        "failed": 0,
+        "passed": 15
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_full_world_soak.py' -v",
+        "failed": 0,
+        "passed": 6
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_runtime_acceptance.py' -v",
+        "failed": 0,
+        "passed": 25
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_requirement_traceability.py' -v",
+        "failed": 0,
+        "passed": 54
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -p 'test_release_blocker_audit.py' -v",
+        "failed": 0,
+        "passed": 10
+      }
+    ],
+    "failed": 0,
+    "passed": 123,
+    "transcript": "validation-repair-python.log.gz"
+  },
+  "repair": [
+    "Preserved the existing issue implementation and merged main changes.",
+    "Refreshed smoke and complete soak golden hashes after proving description-only source fingerprint changes for all four seeds.",
+    "Regenerated release-blocker, runtime-acceptance and requirement-traceability source-only audits."
+  ],
+  "scope": "Focused validation repair after integrated-main repository checks; no fresh pinned Wurst execution or release closure is claimed.",
+  "sourceIdentity": {
+    "sourceRevision": "6bb74b84e5b92f0010d3fa29c83c0b046f5bd076",
+    "sourceTreeSha256": "c425966f4979da3b185955ff7291e6de312cb2967325f48cacfc387966665a3e"
+  },
+  "unavailableValidation": {
+    "pinnedWurst": "Docker socket access denied in this environment; no container was launched. Complete pinned Wurst and repository validation remain controller gates."
+  }
+}
