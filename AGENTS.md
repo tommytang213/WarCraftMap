@@ -18,3 +18,17 @@ This repository is designed for agent-assisted development. The player is not a 
 ## Player role
 
 The player provides design decisions and eventually plays release candidates. Development should minimize manual human involvement.
+
+## Cloud Agent environment
+
+Python 3, Docker, and the pinned Grill compiler are installed. The Docker socket is mode 660 and owned by the `docker` group, which includes `ubuntu`. A shell started before that membership was recorded cannot access the daemon until a new login. The daemon does not survive a snapshot. If boot start did not run, start it with the environment start command and leave the socket at mode 660. `grill` and `wurstscript` on `PATH` run the compiler jar identified by `PINNED_COMPILER_SHA256` in `maps/historical-world-rpg/_shared/tooling/wurst_execution.py`. Grill loads that installation from `~/.wurst`.
+
+Validate world data and the Age of Sail Python suite with:
+
+```sh
+python3 maps/historical-world-rpg/_shared/tooling/validate_world.py \
+  maps/historical-world-rpg/age-of-sail-world/scenario/world/world.json
+python3 -m unittest discover -s maps/historical-world-rpg/age-of-sail-world/tests -p 'test_*.py'
+```
+
+`bash automation/run_checks.sh` is the full gate, including Wurst execution. Scenario packaging goes through `package_wurst_map.py` or `tooling/package_release.sh`, which generates sources before Grill runs. `grill install` rewrites `wurst.build` and can add `.vscode/`. Restore those files when the formatting change is unintentional. The execution helper reserves an 8 GiB Java heap for the complete suite. A caller `-Xmx` in `JAVA_TOOL_OPTIONS` overrides that reservation.
