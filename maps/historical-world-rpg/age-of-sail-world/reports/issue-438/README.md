@@ -5,6 +5,10 @@
 diagnostic identity and an opt-in local WGC adapter. It makes no gameplay,
 startup, object, map-format or save-schema repair. No player retest is requested.
 
+Later owner tests through 2026-10-18, and open drafts #455 and #536, supersede
+the WGC-only next experiment in this historical note. See
+`follow-up-2026-11-08.md`. Do not request a new capture of unchanged bytes.
+
 ## Baseline preserved before implementation
 
 Downloaded [Actions run 37864283149](https://github.com/tommytang213/WarCraftMap/actions/runs/37864283149),
