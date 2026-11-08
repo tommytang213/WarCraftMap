@@ -21,7 +21,7 @@ The player provides design decisions and eventually plays release candidates. De
 
 ## Cloud Agent environment
 
-Python 3, Docker, and the pinned Grill compiler are installed. The Docker socket is mode 660 and owned by the `docker` group, which includes `ubuntu`. A shell started before that membership was recorded cannot access the daemon until a new login. `grill` and `wurstscript` on `PATH` run the compiler jar identified by `PINNED_COMPILER_SHA256` in `maps/historical-world-rpg/_shared/tooling/wurst_execution.py`. Grill loads that installation from `~/.wurst`.
+Python 3, Docker, and the pinned Grill compiler are installed. The Docker socket is mode 660 and owned by the `docker` group, which includes `ubuntu`. A shell started before that membership was recorded cannot access the daemon until a new login. The daemon does not survive a snapshot. If boot start did not run, start it with the environment start command and leave the socket at mode 660. `grill` and `wurstscript` on `PATH` run the compiler jar identified by `PINNED_COMPILER_SHA256` in `maps/historical-world-rpg/_shared/tooling/wurst_execution.py`. Grill loads that installation from `~/.wurst`.
 
 Validate world data and the Age of Sail Python suite with:
 
