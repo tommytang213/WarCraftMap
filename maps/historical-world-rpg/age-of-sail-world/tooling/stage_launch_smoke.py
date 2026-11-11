@@ -38,6 +38,36 @@ def reject_failed_digest(digest: str) -> None:
         raise ValueError("diagnostic must not repeat the failing campaign bytes")
 
 
+def _compiled_origin_routes(tokens: list[str], polity_id: str) -> list[tuple[str, str, str]]:
+    """Extract one compiled OriginCatalog.add record, not unrelated literals.
+
+    The pinned Wurst compiler emits OriginCatalog_OriginCatalog_add(controller,
+    polityId, displayName, mapId, packagePath, ...). This remains a static
+    inspection: matching text cannot prove that Warcraft executes the call.
+    """
+    routes = []
+    for index, token in enumerate(tokens):
+        if token != "OriginCatalog_OriginCatalog_add":
+            continue
+        args = tokens[index + 1:index + 12]
+        if len(args) != 11 or args[0] != "(" or args[2::2] != [","] * 5:
+            continue
+        try:
+            values = [json.loads(args[position]) for position in (3, 5, 7, 9)]
+        except (ValueError, TypeError):
+            continue
+        if all(isinstance(value, str) for value in values) and values[0] == polity_id:
+            routes.append((values[1], values[2], values[3]))
+    return routes
+
+
+def _require_compiled_origin_route(tokens: list[str], polity_id: str, name: str,
+                                   map_id: str, package_path: str) -> None:
+    """Reject missing, duplicate, or wrongly routed compiled origin entries."""
+    if _compiled_origin_routes(tokens, polity_id) != [(name, map_id, package_path)]:
+        raise ValueError(f"compiled selector has missing, duplicate, or mismatched {polity_id} route")
+
+
 def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
     """Cross-check actual compiled selector literals; never claim native execution.
 
@@ -58,10 +88,10 @@ def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
     if compiled["status"] != "pass":
         raise ValueError("handoff bootstrap inspection failed: " + "; ".join(compiled["failures"]))
     tokens = _tokens(bootstrap_lua.decode("utf-8"))
+    _require_compiled_origin_route(tokens, "austria", "Archduchy of Austria",
+                                   destination.id, destination.package_path)
     literals = {token[1:-1] for token in tokens
                 if len(token) >= 2 and token[0] in "\"'" and token[-1] == token[0]}
-    if not {"austria", destination.id, destination.package_path}.issubset(literals):
-        raise ValueError("compiled selector is missing the Austria root destination literals")
     if any(value in literals for item in config.maps
            for value in ("Maps/" + item.package_path, "Maps\\\\" + item.package_path)):
         raise ValueError("compiled selector retains a prefixed campaign destination")
