@@ -36,9 +36,26 @@ public class WarcraftRegionalAdapter
 				return i
 		return -1
 
+	/** A transient unit belongs to the region, type and owner it was made for.
+	 * Changing any of these identities must invalidate the old handle before
+	 * replacing its definition, or later region retirement can miss that unit. */
+	function retireHandle(int index)
+		if handles[index] != null
+			compatRemoveUnit(handles[index])
+			handles[index] = null
+
+	function hasLiveHandle(int index) returns boolean
+		return handles[index] != null and GetUnitTypeId(handles[index]) != 0
+
+	function moveHandle(int index, real x, real y)
+		compatTeleportUnit(handles[index], x, y)
+
 	function register(RegionalRepresentation definition)
 		let existing = indexOf(definition.stableId)
 		if existing >= 0
+			let previous = definitions[existing]
+			if previous.regionId != definition.regionId or previous.typeId != definition.typeId or previous.owner != definition.owner
+				retireHandle(existing)
 			definitions[existing] = definition
 		else
 			definitions[count] = definition
@@ -51,14 +68,13 @@ public class WarcraftRegionalAdapter
 
 	function retireRegion(string regionId)
 		for i = 0 to count - 1
-			if definitions[i].regionId == regionId and handles[i] != null
-				compatRemoveUnit(handles[i])
-				handles[i] = null
+			if definitions[i].regionId == regionId
+				retireHandle(i)
 
 	function reconstructRegion(string regionId)
 		for i = 0 to count - 1
 			let definition = definitions[i]
-			if definition.regionId == regionId and (handles[i] == null or GetUnitTypeId(handles[i]) == 0)
+			if definition.regionId == regionId and not hasLiveHandle(i)
 				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
 		activeRegionId = regionId
 
@@ -70,11 +86,16 @@ public class WarcraftRegionalAdapter
 	function relocate(string stableId, string regionId, real x, real y)
 		let found = indexOf(stableId)
 		if found >= 0
+			// A unit moved to another physical region cannot stay alive in this
+			// map. Retire it while its old region is still recorded, then let
+			// the destination reconstruction materialize its new projection.
+			if definitions[found].regionId != regionId
+				retireHandle(found)
 			definitions[found].regionId = regionId
 			definitions[found].x = x
 			definitions[found].y = y
-			if handles[found] != null and GetUnitTypeId(handles[found]) != 0
-				compatTeleportUnit(handles[found], x, y)
+			if hasLiveHandle(found)
+				moveHandle(found, x, y)
 
 	function recoverActiveRegion() returns int
 		var recovered = 0
@@ -91,7 +112,7 @@ public class WarcraftRegionalAdapter
 	function activeObjectCount() returns int
 		var result = 0
 		for i = 0 to count - 1
-			if handles[i] != null and GetUnitTypeId(handles[i]) != 0
+			if hasLiveHandle(i)
 				result++
 		return result
 
