@@ -107,6 +107,43 @@ class LaunchIdentityTests(unittest.TestCase):
             with self.subTest(case=case), self.assertRaises(ValueError):
                 smoke.verify_staged(output, "a" * 40)
 
+    def test_diagnostic_receipt_never_certifies_native_or_release_success(self):
+        # A valid W3N checksum is not evidence of gameplay. Both publish and
+        # the later verify-only gate must reject edited success claims.
+        cases = (
+            ("releaseCandidate", True),
+            ("releaseCandidate", "false"),
+            ("campaign_native", "pass"),
+            ("map_standalone_native", "success"),
+            ("origin_to_region_native", "verified"),
+            ("real_client_launch", "pass"),
+            ("nativeClient", {"revisedArtifact": "pass"}),
+            ("nativeClient", {"reproduction": "pass", "revisedArtifact": "not_run"}),
+        )
+        staged_dir = self.root / "native-claim-check"
+        baseline = self.result() | {
+            "releaseCandidate": False,
+            "campaign_native": "not_run",
+            "map_standalone_native": "not_run",
+            "origin_to_region_native": "not_run",
+            "real_client_launch": "failed",
+            "nativeClient": {"reproduction": "failed", "revisedArtifact": "not_run"},
+        }
+        staged = smoke.publish(self.campaign, staged_dir, baseline)
+        receipt = staged_dir / "launch-smoke.json"
+        self.assertEqual(smoke.verify_staged(staged_dir, "a" * 40), staged)
+        for index, (key, value) in enumerate(cases):
+            with self.subTest(field=key, value=value):
+                output = self.root / f"invalid-native-{index}"
+                with self.assertRaisesRegex(ValueError, "diagnostic must not claim"):
+                    smoke.publish(self.campaign, output, baseline | {key: value})
+                self.assertFalse(output.exists())
+                receipt.write_text(json.dumps(staged | {key: value}))
+                with self.assertRaisesRegex(ValueError, "diagnostic must not claim"):
+                    smoke.verify_staged(staged_dir, "a" * 40)
+        receipt.write_text(json.dumps(staged))
+        self.assertEqual(smoke.verify_staged(staged_dir, "a" * 40), staged)
+
     def test_explicit_reviewed_test_request_retains_native_pending_and_exact_bytes(self):
         output = self.root / "reviewed"
         result = smoke.publish(self.campaign, output, self.result() | {
