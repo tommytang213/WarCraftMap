@@ -54,9 +54,16 @@ public class WarcraftRegionalAdapter
 		let existing = indexOf(definition.stableId)
 		if existing >= 0
 			let previous = definitions[existing]
-			if previous.regionId != definition.regionId or previous.typeId != definition.typeId or previous.owner != definition.owner
+			let identityChanged = previous.regionId != definition.regionId or previous.typeId != definition.typeId or previous.owner != definition.owner
+			let positionChanged = previous.x != definition.x or previous.y != definition.y
+			if identityChanged
 				retireHandle(existing)
 			definitions[existing] = definition
+			// Updating an existing stable ID must also update the live Warcraft
+			// position. Otherwise its saved representation and visible position
+			// disagree until the next physical-region reconstruction.
+			if not identityChanged and positionChanged and hasLiveHandle(existing)
+				moveHandle(existing, definition.x, definition.y)
 		else
 			definitions[count] = definition
 			count++
