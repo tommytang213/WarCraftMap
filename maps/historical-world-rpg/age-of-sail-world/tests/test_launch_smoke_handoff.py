@@ -3,6 +3,7 @@
 These inspect compiler-shaped Lua text only. They never imply native Warcraft
 campaign transition, destination startup, or responsive unit movement.
 """
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -17,8 +18,9 @@ EXPECTED = ("Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3
 
 
 def compiled_selector(*, name=EXPECTED[0], map_id=EXPECTED[1], path=EXPECTED[2]):
-    return (f'function main() OriginCatalog_OriginCatalog_add(controller2, "austria", '
-            f'{name!r}, {map_id!r}, {path!r}, "europe_central_alpine", "vienna") end')
+    return ('function main() OriginCatalog_OriginCatalog_add(controller2, "austria", '
+            + ", ".join(json.dumps(value) for value in (name, map_id, path))
+            + ', "europe_central_alpine", "vienna") end')
 
 
 class CompiledHandoffRouteTests(unittest.TestCase):
@@ -30,7 +32,7 @@ class CompiledHandoffRouteTests(unittest.TestCase):
 
     def test_unrelated_literals_and_commented_out_call_do_not_pass(self):
         script = ('-- OriginCatalog_OriginCatalog_add(controller, "austria", '
-                  '"Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x")\\n'
+                  '"Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x")\n'
                   'function main() print("austria") print("europe_central_east") '
                   'print("EuropeCentralEast.w3x") end')
         tokens = _tokens(script)
@@ -45,12 +47,12 @@ class CompiledHandoffRouteTests(unittest.TestCase):
             with self.subTest(field=field):
                 # The expected strings appear elsewhere, but not as the
                 # arguments of the actual Austrian origin registration.
-                tokens = _tokens(compiled_selector(**update) + '\\nprint("europe_central_east", "EuropeCentralEast.w3x", "Archduchy of Austria")')
+                tokens = _tokens(compiled_selector(**update) + '\nprint("europe_central_east", "EuropeCentralEast.w3x", "Archduchy of Austria")')
                 with self.assertRaisesRegex(ValueError, "mismatched austria route"):
                     _require_compiled_origin_route(tokens, "austria", *EXPECTED)
 
     def test_duplicate_austria_route_is_rejected(self):
-        script = compiled_selector() + "\\n" + compiled_selector()
+        script = compiled_selector() + "\n" + compiled_selector()
         tokens = _tokens(script)
         self.assertEqual([EXPECTED, EXPECTED], _compiled_origin_routes(tokens, "austria"))
         with self.assertRaisesRegex(ValueError, "duplicate"):
