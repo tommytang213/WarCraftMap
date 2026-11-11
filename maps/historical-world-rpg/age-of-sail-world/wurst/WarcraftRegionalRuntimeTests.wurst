@@ -138,3 +138,40 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.materializeCalls.assertEquals(0)
 	regional.live.assertFalse()
 	regional.definitions[0].typeId.assertEquals('hrif')
+
+/** Arrivals on the current physical map materialize immediately. Moving out
+ * retires the handle; movement into an inactive map remains dormant. */
+@test function incomingRelocationMaterializesOnActivePhysicalRegion()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.register(new RegionalRepresentation("ship", "africa", 'hfoo', Player(0), 10., 20., 0.))
+	regional.activeRegionId = "europe_west"
+	regional.relocate("ship", "europe_west", 30., 40.)
+	regional.materializeCalls.assertEquals(1)
+	regional.materializedRegion.assertEquals("europe_west")
+	regional.retiredFrom.assertEquals("africa")
+	regional.moveCalls.assertEquals(0)
+	regional.live.assertTrue()
+	regional.definitions[0].x.assertEquals(30.)
+	regional.definitions[0].y.assertEquals(40.)
+	regional.relocate("ship", "europe_west", 35., 45.)
+	regional.materializeCalls.assertEquals(1)
+	regional.moveCalls.assertEquals(1)
+	regional.lastMoveX.assertEquals(35.)
+	regional.lastMoveY.assertEquals(45.)
+	regional.relocate("ship", "asia", 50., 60.)
+	regional.materializeCalls.assertEquals(1)
+	regional.live.assertFalse()
+	regional.count.assertEquals(1)
+
+@test function inactiveDestinationRelocationRemainsDormant()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.register(new RegionalRepresentation("scout", "africa", 'hfoo', Player(0), 10., 20., 0.))
+	regional.activeRegionId = "europe_west"
+	regional.relocate("scout", "asia", 30., 40.)
+	regional.materializeCalls.assertEquals(0)
+	regional.moveCalls.assertEquals(0)
+	regional.definitions[0].regionId.assertEquals("asia")
+	regional.definitions[0].x.assertEquals(30.)
+	regional.definitions[0].y.assertEquals(40.)

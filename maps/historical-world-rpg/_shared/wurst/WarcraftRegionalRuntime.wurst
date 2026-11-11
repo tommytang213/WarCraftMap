@@ -104,15 +104,18 @@ public class WarcraftRegionalAdapter
 	function relocate(string stableId, string regionId, real x, real y)
 		let found = indexOf(stableId)
 		if found >= 0
-			// A unit moved to another physical region cannot stay alive in this
-			// map. Retire it while its old region is still recorded, then let
-			// the destination reconstruction materialize its new projection.
-			if definitions[found].regionId != regionId
+			// Relocation invalidates the old projection before rewriting its
+			// identity. An incoming unit on the current physical map must appear
+			// now, without requiring another activation or save reload.
+			let changedRegion = definitions[found].regionId != regionId
+			if changedRegion
 				retireHandle(found)
 			definitions[found].regionId = regionId
 			definitions[found].x = x
 			definitions[found].y = y
-			if hasLiveHandle(found)
+			if changedRegion and activeRegionId != "" and regionId == activeRegionId
+				materializeHandle(found)
+			else if hasLiveHandle(found)
 				moveHandle(found, x, y)
 
 	function recoverActiveRegion() returns int
