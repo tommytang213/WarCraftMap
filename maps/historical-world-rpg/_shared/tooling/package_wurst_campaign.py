@@ -692,6 +692,12 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         records = validate_units(units)
         runtime = json.loads(read(f"runtime/{GENERATED_DATA}"))
         manifest = json.loads(read("runtime/physical-map.json"))
+        localized = runtime.get("physicalMap")
+        if (not isinstance(localized, dict)
+                or type(localized.get("bootstrap")) is not bool
+                or (localized.get("id"), localized.get("packagePath"), localized.get("bootstrap"))
+                    != (physical.id, physical.package_path, physical.bootstrap)):
+            raise ValueError("localized runtime identity differs from packaged map")
         offset = 13
         ground = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + ground * 4
         cliffs = struct.unpack_from("<I", w3e, offset)[0]; offset += 4 + cliffs * 4

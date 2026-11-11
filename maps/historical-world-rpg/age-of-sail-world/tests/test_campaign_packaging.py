@@ -52,7 +52,10 @@ class CampaignPackagingTests(unittest.TestCase):
         broken = self.project / "broken-bootstrap.w3x"
         files = {name: (source / name).read_bytes()
                  for name in ("war3map.w3i", "war3map.w3e", "war3map.wpm", "war3mapUnits.doo", "war3map.shd")}
-        files["runtime/scenario-runtime.json"] = json.dumps({"settlementDefinitions": []})
+        runtime = {"settlementDefinitions": [],
+                   "physicalMap": {"id": physical.id, "packagePath": physical.package_path,
+                                   "bootstrap": physical.bootstrap}}
+        files["runtime/scenario-runtime.json"] = json.dumps(runtime)
         files["runtime/physical-map.json"] = json.dumps({
                 "physicalMapId": physical.id,
                 "terrain": {"width": 64, "height": 64},
@@ -66,6 +69,30 @@ class CampaignPackagingTests(unittest.TestCase):
 
         package({})
         _inspect_physical_map(physical, broken)
+        # An archive can have a correct terrain/object manifest yet contain
+        # runtime authority for the wrong physical map. Reject this before
+        # treating the candidate as a viable campaign handoff.
+        for key, bad in (("id", "bootstrap_runtime_duplicate"),
+                         ("packagePath", "WrongDestination.w3x"),
+                         ("bootstrap", False),
+                         ("bootstrap", 1)):
+            with self.subTest(runtime_identity=key, bad=bad):
+                corrupted = json.loads(json.dumps(runtime))
+                corrupted["physicalMap"][key] = bad
+                package({"runtime/scenario-runtime.json": json.dumps(corrupted)})
+                with self.assertRaisesRegex(PackagingError, "localized runtime identity"):
+                    _inspect_physical_map(physical, broken)
+        for missing in ("physicalMap", "id", "packagePath", "bootstrap"):
+            with self.subTest(missing=missing):
+                corrupted = json.loads(json.dumps(runtime))
+                if missing == "physicalMap":
+                    del corrupted[missing]
+                else:
+                    del corrupted["physicalMap"][missing]
+                package({"runtime/scenario-runtime.json": json.dumps(corrupted)})
+                with self.assertRaisesRegex(PackagingError, "localized runtime identity"):
+                    _inspect_physical_map(physical, broken)
+        package({})
         marker = struct.pack("<6i", 1, 3, 1, 1650, 3000, 1250)
         player_at = files["war3map.w3i"].index(marker) + len(marker)
         for label, name, value in (
