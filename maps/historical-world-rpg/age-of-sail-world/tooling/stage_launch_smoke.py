@@ -74,7 +74,7 @@ def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
     inspect_campaign has already checked the same configured paths against the
     archived W3F tables, MPQ member set and nested-map checksums. The existing
     compiled-bootstrap inspector checks the ChangeLevel call and entry points.
-    Literal presence below is static evidence, not control-flow reachability.
+    Parsed origin registration is static evidence, not control-flow reachability.
     """
     from runtime_acceptance import verify_compiled_bootstrap
     from warcraft_lua_startup import _tokens
@@ -96,7 +96,7 @@ def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
            for value in ("Maps/" + item.package_path, "Maps\\\\" + item.package_path)):
         raise ValueError("compiled selector retains a prefixed campaign destination")
     return {"status": "pass", "evidenceLevel": "compiled_text_static_heuristic",
-            "scope": "configured root paths, inspected W3F/MPQ, bootstrap native call and destination literals; no reachability or native-execution proof",
+            "scope": "configured root paths, inspected W3F/MPQ, bootstrap native call and exactly one matching Austria origin registration; no reachability or native-execution proof",
             "command": "/origin choose austria", "destinationMapId": destination.id,
             "destinationPackagePath": destination.package_path,
             "requiredMilestone": "destination terrain AND a player-controlled unit"}
