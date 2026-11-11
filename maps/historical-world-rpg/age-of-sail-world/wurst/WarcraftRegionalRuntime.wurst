@@ -1,1 +1,126 @@
-../../_shared/wurst/WarcraftRegionalRuntime.wurst
+package WarcraftRegionalRuntime
+
+import WC3Compatibility
+
+/**
+ * Warcraft-object boundary for regional activation. The strategic systems own
+ * RegionalRepresentation records; this adapter owns every transient handle.
+ * Handles are never exposed to saves or used as campaign authority.
+ */
+public class RegionalRepresentation
+	string stableId
+	string regionId
+	int typeId
+	player owner
+	real x
+	real y
+	real facing
+	construct(string newStableId, string newRegionId, int newTypeId, player newOwner, real newX, real newY, real newFacing)
+		stableId = newStableId
+		regionId = newRegionId
+		typeId = newTypeId
+		owner = newOwner
+		x = newX
+		y = newY
+		facing = newFacing
+
+public class WarcraftRegionalAdapter
+	RegionalRepresentation array[2048] definitions
+	unit array[2048] handles
+	int count = 0
+	string activeRegionId = ""
+
+	function indexOf(string stableId) returns int
+		for i = 0 to count - 1
+			if definitions[i].stableId == stableId
+				return i
+		return -1
+
+	/** A transient unit belongs to the region, type and owner it was made for.
+	 * Changing any of these identities must invalidate the old handle before
+	 * replacing its definition, or later region retirement can miss that unit. */
+	function retireHandle(int index)
+		if handles[index] != null
+			compatRemoveUnit(handles[index])
+			handles[index] = null
+
+	function hasLiveHandle(int index) returns boolean
+		return handles[index] != null and GetUnitTypeId(handles[index]) != 0
+
+	function moveHandle(int index, real x, real y)
+		compatTeleportUnit(handles[index], x, y)
+
+	function register(RegionalRepresentation definition)
+		let existing = indexOf(definition.stableId)
+		if existing >= 0
+			let previous = definitions[existing]
+			let identityChanged = previous.regionId != definition.regionId or previous.typeId != definition.typeId or previous.owner != definition.owner
+			let positionChanged = previous.x != definition.x or previous.y != definition.y
+			if identityChanged
+				retireHandle(existing)
+			definitions[existing] = definition
+			// Updating an existing stable ID must also update the live Warcraft
+			// position. Otherwise its saved representation and visible position
+			// disagree until the next physical-region reconstruction.
+			if not identityChanged and positionChanged and hasLiveHandle(existing)
+				moveHandle(existing, definition.x, definition.y)
+		else
+			definitions[count] = definition
+			count++
+
+	function bind(string stableId, unit target)
+		let found = indexOf(stableId)
+		if found >= 0
+			handles[found] = target
+
+	function retireRegion(string regionId)
+		for i = 0 to count - 1
+			if definitions[i].regionId == regionId
+				retireHandle(i)
+
+	function reconstructRegion(string regionId)
+		for i = 0 to count - 1
+			let definition = definitions[i]
+			if definition.regionId == regionId and not hasLiveHandle(i)
+				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
+		activeRegionId = regionId
+
+	function activateRegion(string regionId)
+		if activeRegionId != "" and activeRegionId != regionId
+			retireRegion(activeRegionId)
+		reconstructRegion(regionId)
+
+	function relocate(string stableId, string regionId, real x, real y)
+		let found = indexOf(stableId)
+		if found >= 0
+			// A unit moved to another physical region cannot stay alive in this
+			// map. Retire it while its old region is still recorded, then let
+			// the destination reconstruction materialize its new projection.
+			if definitions[found].regionId != regionId
+				retireHandle(found)
+			definitions[found].regionId = regionId
+			definitions[found].x = x
+			definitions[found].y = y
+			if hasLiveHandle(found)
+				moveHandle(found, x, y)
+
+	function recoverActiveRegion() returns int
+		var recovered = 0
+		for i = 0 to count - 1
+			let definition = definitions[i]
+			if definition.regionId == activeRegionId and not hasLiveHandle(i)
+				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
+				recovered++
+		return recovered
+
+	function focus(player owner, real x, real y)
+		compatPanCamera(owner, x, y, 0.)
+
+	function activeObjectCount() returns int
+		var result = 0
+		for i = 0 to count - 1
+			if hasLiveHandle(i)
+				result++
+		return result
+
+public WarcraftRegionalAdapter regionalRuntime = new WarcraftRegionalAdapter()

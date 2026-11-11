@@ -9,6 +9,8 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	boolean live = true
 	int retireCalls = 0
 	int moveCalls = 0
+	real lastMoveX = 0.
+	real lastMoveY = 0.
 	string retiredFrom = ""
 	int retiredType = 0
 	override function hasLiveHandle(int index) returns boolean
@@ -20,6 +22,8 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 		live = false
 	override function moveHandle(int index, real x, real y)
 		moveCalls++
+		lastMoveX = x
+		lastMoveY = y
 
 @test function relocatedUnitRetiresOldRegionalHandleBeforeChangingIdentity()
 	let regional = new RecordingRegionalAdapter()
@@ -64,3 +68,29 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.retireCalls.assertEquals(0)
 	regional.moveCalls.assertEquals(0)
 	regional.count.assertEquals(0)
+
+@test function sameIdentityRegistrationUpdatesLiveUnitPositionWithoutRetiringIt()
+	let regional = new RecordingRegionalAdapter()
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.moveCalls.assertEquals(0)
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 15., 25., 0.))
+	regional.count.assertEquals(1)
+	regional.moveCalls.assertEquals(1)
+	regional.retireCalls.assertEquals(0)
+	regional.lastMoveX.assertEquals(15.)
+	regional.lastMoveY.assertEquals(25.)
+	regional.definitions[0].x.assertEquals(15.)
+	regional.definitions[0].y.assertEquals(25.)
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 15., 25., 0.))
+	regional.moveCalls.assertEquals(1)
+
+@test function dormantSameIdentityRegistrationPreservesDestinationForReconstruction()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 15., 25., 0.))
+	regional.moveCalls.assertEquals(0)
+	regional.retireCalls.assertEquals(0)
+	regional.definitions[0].x.assertEquals(15.)
+	regional.definitions[0].y.assertEquals(25.)
