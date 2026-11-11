@@ -9,6 +9,10 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	boolean live = true
 	int retireCalls = 0
 	int moveCalls = 0
+	int materializeCalls = 0
+	string materializedRegion = ""
+	int materializedType = 0
+	player materializedOwner = null
 	real lastMoveX = 0.
 	real lastMoveY = 0.
 	string retiredFrom = ""
@@ -24,6 +28,12 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 		moveCalls++
 		lastMoveX = x
 		lastMoveY = y
+	override function materializeHandle(int index)
+		materializeCalls++
+		materializedRegion = definitions[index].regionId
+		materializedType = definitions[index].typeId
+		materializedOwner = definitions[index].owner
+		live = true
 
 @test function relocatedUnitRetiresOldRegionalHandleBeforeChangingIdentity()
 	let regional = new RecordingRegionalAdapter()
@@ -94,3 +104,37 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.retireCalls.assertEquals(0)
 	regional.definitions[0].x.assertEquals(15.)
 	regional.definitions[0].y.assertEquals(25.)
+
+/** An active live unit must reappear immediately when its type/owner changes;
+ * transfer to an inactive physical region or edits of dormant projections must not spawn it. */
+@test function activeIdentityReplacementMaterializesOnlyCurrentRegion()
+	let regional = new RecordingRegionalAdapter()
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hrif', Player(0), 10., 20., 0.))
+	regional.retireCalls.assertEquals(1)
+	regional.materializeCalls.assertEquals(1)
+	regional.materializedRegion.assertEquals("europe_west")
+	regional.materializedType.assertEquals('hrif')
+	regional.materializedOwner.assertEquals(Player(0))
+	regional.live.assertTrue()
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hrif', Player(1), 15., 25., 0.))
+	regional.retireCalls.assertEquals(2)
+	regional.materializeCalls.assertEquals(2)
+	regional.materializedOwner.assertEquals(Player(1))
+	regional.live.assertTrue()
+	regional.register(new RegionalRepresentation("guard", "africa", 'hrif', Player(1), 20., 30., 0.))
+	regional.retireCalls.assertEquals(3)
+	regional.materializeCalls.assertEquals(2)
+	regional.live.assertFalse()
+	regional.count.assertEquals(1)
+
+@test function dormantIdentityReplacementDoesNotSpawnCurrentRegionUnit()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hrif', Player(0), 10., 20., 0.))
+	regional.materializeCalls.assertEquals(0)
+	regional.live.assertFalse()
+	regional.definitions[0].typeId.assertEquals('hrif')
