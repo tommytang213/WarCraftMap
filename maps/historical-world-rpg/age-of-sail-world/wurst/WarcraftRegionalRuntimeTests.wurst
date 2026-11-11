@@ -1,0 +1,66 @@
+package WarcraftRegionalRuntimeTests
+
+import WarcraftRegionalRuntime
+
+/** These tests use a handle spy so they exercise production routing without
+ * relying on Warcraft natives in the Wurst interpreter. Native unit creation
+ * and visible regional gameplay remain separate client acceptance gates. */
+class RecordingRegionalAdapter extends WarcraftRegionalAdapter
+	boolean live = true
+	int retireCalls = 0
+	int moveCalls = 0
+	string retiredFrom = ""
+	int retiredType = 0
+	override function hasLiveHandle(int index) returns boolean
+		return live
+	override function retireHandle(int index)
+		retireCalls++
+		retiredFrom = definitions[index].regionId
+		retiredType = definitions[index].typeId
+		live = false
+	override function moveHandle(int index, real x, real y)
+		moveCalls++
+
+@test function relocatedUnitRetiresOldRegionalHandleBeforeChangingIdentity()
+	let regional = new RecordingRegionalAdapter()
+	regional.register(new RegionalRepresentation("hero", "europe_west", 'hfoo', Player(0), 10., 20., 0.))
+	regional.relocate("hero", "europe_west", 11., 21.)
+	regional.moveCalls.assertEquals(1)
+	regional.retireCalls.assertEquals(0)
+	regional.relocate("hero", "africa", 40., 50.)
+	regional.retireCalls.assertEquals(1)
+	regional.retiredFrom.assertEquals("europe_west")
+	regional.retiredType.assertEquals('hfoo')
+	regional.moveCalls.assertEquals(1)
+	regional.definitions[0].regionId.assertEquals("africa")
+	regional.definitions[0].x.assertEquals(40.)
+	regional.definitions[0].y.assertEquals(50.)
+	regional.relocate("hero", "africa", 45., 55.)
+	regional.retireCalls.assertEquals(1)
+	regional.moveCalls.assertEquals(1)
+
+@test function replacingProjectionWithChangedRegionTypeOrOwnerRetiresOldHandle()
+	let regional = new RecordingRegionalAdapter()
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hfoo', Player(0), 0., 0., 0.))
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hfoo', Player(0), 5., 0., 0.))
+	regional.retireCalls.assertEquals(0)
+	regional.count.assertEquals(1)
+	regional.register(new RegionalRepresentation("guard", "europe_west", 'hrif', Player(0), 5., 0., 0.))
+	regional.retireCalls.assertEquals(1)
+	regional.retiredType.assertEquals('hfoo')
+	regional.live = true
+	regional.register(new RegionalRepresentation("guard", "africa", 'hrif', Player(0), 5., 0., 0.))
+	regional.retireCalls.assertEquals(2)
+	regional.retiredFrom.assertEquals("europe_west")
+	regional.live = true
+	regional.register(new RegionalRepresentation("guard", "africa", 'hrif', Player(1), 5., 0., 0.))
+	regional.retireCalls.assertEquals(3)
+	regional.retiredFrom.assertEquals("africa")
+	regional.count.assertEquals(1)
+
+@test function unknownRelocationNeverCreatesOrMovesRepresentation()
+	let regional = new RecordingRegionalAdapter()
+	regional.relocate("not_registered", "africa", 1., 2.)
+	regional.retireCalls.assertEquals(0)
+	regional.moveCalls.assertEquals(0)
+	regional.count.assertEquals(0)
