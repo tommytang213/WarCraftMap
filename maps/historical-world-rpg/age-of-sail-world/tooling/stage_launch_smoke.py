@@ -38,6 +38,28 @@ def reject_failed_digest(digest: str) -> None:
         raise ValueError("diagnostic must not repeat the failing campaign bytes")
 
 
+def reject_diagnostic_approval(result: dict) -> None:
+    """A staged diagnostic is never proof of a release or native acceptance.
+
+    Check again at verify-only time: the receipt is an editable JSON file and
+    successful digest verification cannot establish that Warcraft ran.
+    Absent native fields are permitted for minimal staging-test fixtures.
+    """
+    if result.get("releaseCandidate", False) is not False:
+        raise ValueError("diagnostic must not claim release approval")
+    for field in ("campaign_native", "map_standalone_native",
+                  "origin_to_region_native", "real_client_launch"):
+        state = result.get(field)
+        if state is not None and state not in ("not_run", "failed", "unknown"):
+            raise ValueError(f"diagnostic must not claim native acceptance: {field}")
+    client = result.get("nativeClient")
+    if client is not None and (
+            not isinstance(client, dict)
+            or client.get("revisedArtifact") not in (None, "not_run", "failed", "unknown")
+            or client.get("reproduction") not in (None, "failed")):
+        raise ValueError("diagnostic must not claim native acceptance: nativeClient")
+
+
 def _compiled_origin_routes(tokens: list[str], polity_id: str) -> list[tuple[str, str, str]]:
     """Extract one compiled OriginCatalog.add record, not unrelated literals.
 
@@ -121,6 +143,7 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
     """Copy exact bytes only. Never reserialize W3F or any nested W3X."""
     if output.exists() and any(output.iterdir()):
         raise ValueError("diagnostic output must be empty; do not mix installed versions")
+    reject_diagnostic_approval(result)
     digest = result["campaignSha256"]
     reject_failed_digest(digest)
     profile = result.get("diagnosticProfile", LAUNCH_PROFILE)
@@ -191,6 +214,7 @@ def publish(campaign: Path, output: Path, result: dict) -> dict:
 def verify_staged(output: Path, revision: str) -> dict:
     """Post-copy/upload-input gate, using the actual installed filename."""
     result = json.loads((output / "launch-smoke.json").read_text())
+    reject_diagnostic_approval(result)
     reject_failed_digest(result["campaignSha256"])
     if result["sourceIdentity"]["sourceRevision"] != revision:
         raise ValueError("staged source revision mismatch")
