@@ -101,7 +101,7 @@ public class WarcraftRegionalAdapter
 		var recovered = 0
 		for i = 0 to count - 1
 			let definition = definitions[i]
-			if definition.regionId == activeRegionId and (handles[i] == null or GetUnitTypeId(handles[i]) == 0)
+			if definition.regionId == activeRegionId and not hasLiveHandle(i)
 				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
 				recovered++
 		return recovered
