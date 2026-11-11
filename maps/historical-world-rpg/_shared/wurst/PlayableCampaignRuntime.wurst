@@ -2033,7 +2033,10 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 			return false
 		let valid = recoveryApplies(request) and recoveryCandidate(request) != ""
 		let mapId = request.mapId
-		let alreadyActive = started and state.isSaveSafe() and request.status == "consumed"
+		// A consumed request can survive a later command-map handoff without
+		// changing its source milestone. Never treat that other physical map as
+		// the already-restored destination.
+		let alreadyActive = started and state.isSaveSafe() and physicalMapId == mapId and request.status == "consumed"
 		destroy request
 		if not valid
 			lastDiagnostic = "The recovery request is incompatible or superseded by a later campaign start or milestone."

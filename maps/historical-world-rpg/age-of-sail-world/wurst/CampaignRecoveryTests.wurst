@@ -333,6 +333,31 @@ class RecoveryTrip
 	storageBytes(trip.source.saves).assertEquals(trip.bytes)
 	recoveryReceipt("replay")
 
+/** A consumed acknowledgement may be shared with another loaded command map.
+ * /load retry must still invoke the physical loader for the saved destination,
+ * rather than saying success merely because that other map has started. */
+@test function consumedRecoveryRetryOnAnotherLoadedMapRequiresRealHandoff()
+	let trip = new RecoveryTrip()
+	registerCampaignSaveCommands(trip.commands, trip.active.campaign)
+	trip.commands.dispatch(null, "/load 1").assertTrue()
+	let request = decodeCampaignRecoveryRequest(trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST))
+	request.status = "consumed"
+	trip.active.cache.writeTransactional(CAMPAIGN_RECOVERY_REQUEST, request.encode()).assertTrue()
+	let recorded = trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST)
+	let other = new StartupFixture(new StartupStorage(), new StartupStorage(), "middle_east_india")
+	other.start("aq_qoyunlu")
+	// Model the persisted recovery ticket and source saves remaining available
+	// after changing the active command map, without changing either record.
+	other.campaign.handoff.storage = trip.active.cache
+	other.campaign.saves.storage = trip.source.saves
+	other.campaign.physicalMapId.assertEquals("middle_east_india")
+	other.ports.loads.assertEquals(1)
+	other.campaign.retryRecovery().assertTrue()
+	other.ports.loads.assertEquals(2)
+	other.ports.destination.assertEquals(scenarioPhysicalMapPath("africa"))
+	trip.active.cache.read(CAMPAIGN_RECOVERY_REQUEST).assertEquals(recorded)
+	storageBytes(trip.source.saves).assertEquals(trip.bytes)
+
 @test function durableRecoveryRejectsCorruptForeignAndWrongDestinationRequests()
 	let trip = new RecoveryTrip()
 	let commands = trip.commands
