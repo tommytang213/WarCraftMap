@@ -111,6 +111,13 @@ class MpqReader:
          hash_count, block_count) = struct.unpack_from("<4sIIHHIIII", self.data, self.base)
         if header_size != 32 or version != 0 or self.base + archive_size > len(self.data) or not hash_count or not block_count:
             raise ValueError("malformed MPQ header")
+        # Validate offsets relative to the MPQ's declared size, not the
+        # physical file, which may include a wrapper or unrelated trailing data.
+        if (hash_at < header_size or block_at < header_size or
+                hash_at + hash_count * 16 > archive_size or
+                block_at + block_count * 16 > archive_size):
+            raise ValueError("MPQ tables outside declared archive")
+        self.archive_size = archive_size
         raw_hash = self.data[self.base + hash_at:self.base + hash_at + hash_count * 16]
         raw_block = self.data[self.base + block_at:self.base + block_at + block_count * 16]
         if len(raw_hash) != hash_count * 16 or len(raw_block) != block_count * 16:
@@ -138,6 +145,8 @@ class MpqReader:
         return payload
 
     def _payload(self, offset: int, packed: int, size: int, flags: int, name: str) -> bytes:
+        if offset < 32 or offset > self.archive_size or packed > self.archive_size - offset:
+            raise ValueError(f"MPQ member outside declared archive: {name}")
         if flags & FILE_IMPLODE:
             raise ValueError(f"unsupported imploded MPQ member: {name}")
         value = self.data[self.base + offset:self.base + offset + packed]
@@ -188,6 +197,8 @@ class MpqReader:
             if block == HASH_EMPTY:
                 break
             if one == _hash(name, 1) and two == _hash(name, 2):
+                if block >= len(self.blocks):
+                    raise ValueError(f"MPQ hash references invalid block: {name}")
                 offset, packed, size, flags = self.blocks[block]
                 if not flags & FILE_EXISTS:
                     raise ValueError(f"missing MPQ member: {name}")
