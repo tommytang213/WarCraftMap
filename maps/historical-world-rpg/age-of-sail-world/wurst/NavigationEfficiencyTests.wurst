@@ -314,3 +314,35 @@ class NavigationFixture
 	let noResearch = new NavigationFixture(true, false, true)
 	noResearch.military.voyages.addSource(new VoyageSource("test_celestial", noResearch.military.voyages.kind, noResearch.military.voyages.contentId, noResearch.military.voyages.reductionBasisPoints, "", "astronomical_observation"))
 	noResearch.military.qualifiedNavigationSources(noResearch.ship, 0).assertEquals("")
+
+/** Source-qualified voyages require both independent research bindings before
+ * schema-26 save output is enabled. Legacy v20 binding remains unchanged. */
+@test function typedNavigationResearchSourcesBindIndependentlyAndPreserveLegacy()
+	let legacyResearch = new ResearchFixture()
+	let legacyMilitary = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	legacyMilitary.voyages = createGeneratedVoyageContract()
+	legacyMilitary.setRpgRuntime(legacyResearch.runtime)
+	let celestial = legacyResearch.runtime.technologies.get("celestial_navigation").unlocks[0]
+	legacyResearch.runtime.technologies.bindingStatus(celestial).assertEquals(RESEARCH_BOUND)
+	legacyMilitary.snapshot().startsWith("v20|").assertTrue()
+
+	let research = new ResearchFixture()
+	let military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	let catalogue = createGeneratedVoyageContract()
+	let coastal = new RuntimeTechnology("typed_navigation_probe", "Typed Navigation Probe", 1450, 1)
+	coastal.addUnlock("typed_navigation_probe", "modifier", "typed_navigation_probe_effect")
+	research.runtime.technologies.register(coastal)
+	let celestialUnlock = research.runtime.technologies.get("celestial_navigation").unlocks[0]
+	research.runtime.technologies.bindingStatus(coastal.unlocks[0]).assertEquals(RESEARCH_UNBOUND)
+	catalogue.addSource(new VoyageSource("typed_celestial", catalogue.kind, catalogue.contentId, catalogue.reductionBasisPoints, "", "astronomical_observation"))
+	let coastalSource = new VoyageSource("typed_coastal", "modifier", "typed_navigation_probe_effect", 500, "coastal_kit_probe", "coastal_bearings")
+	coastalSource.inspection = "Coastal kit research eligibility"
+	catalogue.addSource(coastalSource)
+	military.voyages = catalogue
+	military.setRpgRuntime(research.runtime)
+	research.runtime.technologies.bindingStatus(celestialUnlock).assertEquals(RESEARCH_BOUND)
+	research.runtime.technologies.bindingStatus(coastal.unlocks[0]).assertEquals(RESEARCH_BOUND)
+	research.runtime.technologies.get("typed_navigation_probe").consumerDetails.assertEquals("Coastal kit research eligibility")
+	military.setRpgRuntime(research.runtime)
+	research.runtime.technologies.bindingStatus(coastal.unlocks[0]).assertEquals(RESEARCH_BOUND)
+	military.snapshot().startsWith("v20|").assertTrue()

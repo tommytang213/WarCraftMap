@@ -633,7 +633,21 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	function setRpgRuntime(WarcraftRpgRuntime runtime)
 		rpg=runtime
 		if rpg != null and voyages != null and not navigationEffectsInstalled
-			rpg.technologies.effects = new NavigationResearchEffects(rpg.technologies.effects, voyages.kind, voyages.contentId)
+			if voyages.sources == null
+				// Preserve the existing source-less scenario's celestial entitlement.
+				rpg.technologies.effects = new NavigationResearchEffects(rpg.technologies.effects, voyages.kind, voyages.contentId)
+			else
+				// Typed catalogues bind each source independently. Preserve the
+				// authoritative upstream inspection text and entitlement semantics.
+				var source = voyages.sources
+				while source != null
+					for i = 0 to rpg.technologies.count - 1
+						let technology = rpg.technologies.definitions[i]
+						for j = 0 to technology.unlockCount - 1
+							if technology.unlocks[j].kind == source.kind and technology.unlocks[j].contentId == source.contentId
+								technology.consumerDetails = source.inspection
+					rpg.technologies.effects = new NavigationResearchEffects(rpg.technologies.effects, source.kind, source.contentId)
+					source = source.next
 			navigationEffectsInstalled = true
 		if rpg != null and combatBindings != null
 			if rpg.technologies.effects instanceof CombatResearchEffects
