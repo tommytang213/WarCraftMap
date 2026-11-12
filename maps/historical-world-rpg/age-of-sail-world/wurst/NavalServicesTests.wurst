@@ -634,3 +634,23 @@ public class NavalFixture
 	f.military.land.arsenals[0].projectOwner.assertEquals("")
 	f.military.restore(saved, false).assertTrue()
 	f.military.snapshot().assertEquals(saved)
+
+@test function commissionedVoyageRestoresAfterLaterProfileRecordWithoutForgivingMissingProfile()
+	// The voyage record is emitted before the paid hull's profile record.
+	// Restoration must validate support only after both have been staged.
+	let f = new NavalFixture(false, false)
+	f.unlock("battlefleet_doctrine")
+	f.commissioningReady()
+	let ship = f.military.forces[f.military.forceIndex("ship")]
+	let route = f.military.voyages.routes
+	f.military.voyageSupported(ship, route.id).assertTrue()
+	f.military.startVoyage(ship.id, route.id, "player", f.clock.currentDay, true).assertTrue()
+	let saved = f.military.snapshot()
+	let progressRecord = "|v," + ship.id + "," + ship.navigation.record()
+	let profileRecord = "|p," + ship.id + "," + ship.combatProfileId
+	(saved.indexOf(progressRecord) >= 0).assertTrue()
+	(saved.indexOf(profileRecord) > saved.indexOf(progressRecord)).assertTrue()
+	f.military.restore(saved).assertTrue()
+	f.military.snapshot().assertEquals(saved)
+	f.military.restore(saved.replace(profileRecord, "")).assertFalse()
+	f.military.snapshot().assertEquals(saved)

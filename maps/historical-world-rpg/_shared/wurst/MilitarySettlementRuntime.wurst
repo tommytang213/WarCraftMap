@@ -1815,7 +1815,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				return false
 			let vessel = target.forces[found]
 			let progress = vessel.navigation
-			if progress.saved or not target.voyageSupported(vessel, record.field(3)) or (record.field(2) != "0" and record.field(2) != "1")
+			// Profile |p records follow |v records. Defer the route/profile check
+			// until all records have been staged so paid hulls can reload.
+			if progress.saved or (record.field(2) != "0" and record.field(2) != "1")
 				return false
 			for i = 4 to 7
 				if S2I(record.field(i)).toString() != record.field(i)
@@ -2090,6 +2092,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 					return null
 		for i = 0 to parsed.forceCount - 1
 			let f = parsed.forces[i]
+			// Check voyage support after the later |p combat-profile record.
+			if f.navigation.saved and not parsed.voyageSupported(f, f.navigation.routeId)
+				parsed.dispose()
+				return null
 			if (candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.startsWith("v15|")) and f.kind == FORCE_FLEET and not f.hull.restored
 				parsed.dispose()
 				return null
