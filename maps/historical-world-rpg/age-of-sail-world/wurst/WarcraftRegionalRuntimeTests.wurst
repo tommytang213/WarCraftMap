@@ -175,3 +175,32 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.definitions[0].regionId.assertEquals("asia")
 	regional.definitions[0].x.assertEquals(30.)
 	regional.definitions[0].y.assertEquals(40.)
+
+/** A freshly registered unit is not part of an earlier reconstruction pass.
+ * It must materialize immediately only when its physical map is active. */
+@test function newRegistrationOnActivePhysicalRegionMaterializesImmediately()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("new_recruit", "europe_west", 'hfoo', Player(0), 31., 41., 0.))
+	regional.count.assertEquals(1)
+	regional.materializeCalls.assertEquals(1)
+	regional.materializedRegion.assertEquals("europe_west")
+	regional.materializedType.assertEquals('hfoo')
+	(regional.materializedOwner == Player(0)).assertTrue()
+	regional.live.assertTrue()
+	regional.register(new RegionalRepresentation("new_recruit", "europe_west", 'hfoo', Player(0), 31., 41., 0.))
+	regional.materializeCalls.assertEquals(1)
+	regional.count.assertEquals(1)
+
+@test function newRegistrationBeforeActivationOrOnAnotherMapStaysDormant()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.register(new RegionalRepresentation("pre_start", "europe_west", 'hfoo', Player(0), 1., 2., 0.))
+	regional.materializeCalls.assertEquals(0)
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("off_map", "africa", 'hfoo', Player(0), 3., 4., 0.))
+	regional.materializeCalls.assertEquals(0)
+	regional.moveCalls.assertEquals(0)
+	regional.count.assertEquals(2)
+	regional.definitions[1].regionId.assertEquals("africa")

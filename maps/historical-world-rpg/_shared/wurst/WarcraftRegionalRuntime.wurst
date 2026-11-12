@@ -78,6 +78,11 @@ public class WarcraftRegionalAdapter
 		else
 			definitions[count] = definition
 			count++
+			// A new representation arriving after region activation is not
+			// covered by the earlier reconstruction pass. Spawn it now only
+			// when its owning physical map is currently loaded.
+			if activeRegionId != "" and definition.regionId == activeRegionId
+				materializeHandle(count - 1)
 
 	function bind(string stableId, unit target)
 		let found = indexOf(stableId)
