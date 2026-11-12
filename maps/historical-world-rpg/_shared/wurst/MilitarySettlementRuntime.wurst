@@ -1503,8 +1503,13 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				result += "|h," + f.id + "," + f.hull.record()
 			if f.nextFireAt > 0.
 				result += "|h," + f.id + "," + clockReal(f.nextFireAt)
-			if f.navigation.equipment or f.navigation.pending() or f.navigation.creditBasisPoints > 0
+			// Typed |x records belong to schema 26, never an active v20 save.
+			// Keep common-only historical output byte-for-byte while the other
+			// schema dependencies and save migrations are integrated.
+			if f.navigation.equipment or f.navigation.pending() or f.navigation.creditBasisPoints > 0 or (MILITARY_SETTLEMENT_SNAPSHOT_VERSION >= 26 and f.navigation.sourceFractional())
 				result += "|v," + f.id + "," + f.navigation.record()
+				if MILITARY_SETTLEMENT_SNAPSHOT_VERSION >= 26 and voyages != null and voyages.sources != null
+					result += f.navigation.sourceRecords(f.id, voyages.sources)
 			if f.combatProfileId != ""
 				result += "|p," + f.id + "," + f.combatProfileId
 			// Strategic movement may reassign an unloaded force. A hint from its

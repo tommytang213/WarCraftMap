@@ -346,3 +346,28 @@ class NavigationFixture
 	military.setRpgRuntime(research.runtime)
 	research.runtime.technologies.bindingStatus(coastal.unlocks[0]).assertEquals(RESEARCH_BOUND)
 	military.snapshot().startsWith("v20|").assertTrue()
+
+/** The typed source serializer is staged for the later v26 writer. It must
+ * include *both* fractions even when their combined common refund bucket is
+ * zero, but a v20 campaign may not emit a premature |x record. */
+@test function typedNavigationSourceRecordsStayBehindSnapshotVersionGate()
+	let progress = new VoyageProgress()
+	let contract = new VoyageContract("modifier", "legacy_navigation", 2000, 0)
+	contract.addSource(new VoyageSource("celestial_probe", "modifier", "celestial_navigation", 2000, "", "astronomical_observation"))
+	contract.addSource(new VoyageSource("coastal_probe", "modifier", "coastal_navigation", 500, "paid_chart", "coastal_bearings"))
+	let celestial = progress.credit("celestial_probe")
+	celestial.remainder = 6000
+	let coastal = progress.credit("coastal_probe")
+	coastal.remainder = 4000
+	progress.creditBasisPoints.assertEquals(0)
+	progress.sourceFractional().assertTrue()
+	progress.sourceRecords("english_patrol_ship", contract.sources).assertEquals("|x,english_patrol_ship,coastal_probe,4000|x,english_patrol_ship,celestial_probe,6000")
+	// The installed v20 scenario has no typed-source save contract; its
+	// historical snapshot bytes must remain unaffected by staged code.
+	let live = new NavigationFixture(true, true, true)
+	let v20 = live.military.snapshot()
+	v20.startsWith("v20|").assertTrue()
+	v20.contains("|v,english_patrol_ship,").assertTrue()
+	v20.contains("|x,").assertFalse()
+	destroy progress
+	destroy contract
