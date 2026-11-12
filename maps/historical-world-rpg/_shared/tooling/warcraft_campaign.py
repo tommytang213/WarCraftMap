@@ -285,8 +285,15 @@ def parse_campaign_metadata(data: bytes) -> dict:
             position += 20 + 4  # five extended fog floats and draw-over-sky
         background_version = integer() if version >= 2 else None
         button_count = integer()
+        # Each chapter requires an integer visibility flag and three strings.
+        # Negative counts must never silently become empty tables.
+        if button_count < 0 or button_count > (len(data) - position) // 7:
+            raise ValueError("invalid campaign chapter count")
         buttons = [(integer(), string(), string(), string()) for _ in range(button_count)]
         map_count = integer()
+        # Each map requires two null-terminated strings.
+        if map_count < 0 or map_count > (len(data) - position) // 2:
+            raise ValueError("invalid campaign map count")
         maps = [(string(), string()) for _ in range(map_count)]
     except (IndexError, UnicodeDecodeError, struct.error, ValueError) as error:
         raise ValueError("malformed war3campaign.w3f") from error
