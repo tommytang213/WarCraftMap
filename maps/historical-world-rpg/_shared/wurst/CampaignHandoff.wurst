@@ -75,6 +75,11 @@ public class CampaignHandoff implements OriginSelectionObserver
 	override function commitSelection(string polityId, string physicalMapId, string regionalInstanceId, string settlementId) returns boolean
 		var sequence = 1
 		let previous = readRequest()
+		// A corrupt durable request may still own a private checkpoint slot.
+		// Never silently reset its sequence to 1 and risk replaying that slot.
+		// A genuinely empty cache and supported legacy keys still work.
+		if previous == null and hasRequest()
+			return false
 		if previous != null
 			sequence = previous.sequence + 1
 			// readRequest constructs a transient request; never retain it after

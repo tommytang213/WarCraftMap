@@ -353,6 +353,34 @@ function originLifecycle(string origin, string mapId)
 	retained.origin.assertEquals("england")
 	destroy retained
 
+/** A damaged durable request must not silently reset the sequence to 1.
+ * That slot can still contain a checkpoint from an earlier campaign. */
+@test function damagedDurableSelectionCannotReusePriorCheckpointSlot()
+	string array[3] damaged
+	damaged[0] = "damaged"
+	damaged[1] = "v1|invalid|pending|england|europe_west|europe_atlantic_isles|london"
+	damaged[2] = "v1|1|pending|england|europe_west|europe_atlantic_isles"
+	for i = 0 to 2
+		let cache = new StartupStorage()
+		cache.writeTransactional(HANDOFF_REQUEST, damaged[i]).assertTrue()
+		cache.writeTransactional(HANDOFF_CHECKPOINT + "1", "previous-campaign-checkpoint").assertTrue()
+		// Leftover legacy keys must not hide a corrupt atomic v1 request.
+		cache.writeTransactional("origin", "england").assertTrue()
+		let writesBefore = cache.writes
+		let handoff = new CampaignHandoff(cache, new StartupPorts())
+		handoff.commitSelection("ming_empire", "east_asia", "east_asia_china_north", "beijing").assertFalse()
+		cache.writes.assertEquals(writesBefore)
+		cache.read(HANDOFF_REQUEST).assertEquals(damaged[i])
+		cache.read(HANDOFF_CHECKPOINT + "1").assertEquals("previous-campaign-checkpoint")
+	// An empty cache must still accept a first legitimate selection.
+	let clean = new StartupStorage()
+	let newCampaign = new CampaignHandoff(clean, new StartupPorts())
+	newCampaign.commitSelection("england", "europe_west", "europe_atlantic_isles", "london").assertTrue()
+	let request = newCampaign.readRequest()
+	request.sequence.assertEquals(1)
+	request.status.assertEquals("pending")
+	destroy request
+
 @test function staleAcknowledgementCannotConsumeNewerOriginOrConsumedRequest()
 	let cache = new StartupStorage()
 	let ports = new StartupPorts()
