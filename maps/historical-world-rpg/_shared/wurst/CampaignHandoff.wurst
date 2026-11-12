@@ -84,5 +84,18 @@ public class CampaignHandoff implements OriginSelectionObserver
 	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 		loader.load(packagePath)
 	function acknowledge(CampaignStartRequest request) returns boolean
+		// A stale callback must never consume a newer origin selection or
+		// overwrite a damaged handoff. The legacy unversioned request compares
+		// through readRequest() and migrates only when the write succeeds.
+		if request == null or request.status != "pending"
+			return false
+		let current = readRequest()
+		let matches = current != null and current.encode() == request.encode()
+		if current != null
+			destroy current
+		if not matches
+			return false
 		let consumed = new CampaignStartRequest(request.sequence, "consumed", request.origin, request.mapId, request.instanceId, request.settlementId)
-		return storage.writeTransactional(HANDOFF_REQUEST, consumed.encode())
+		let written = storage.writeTransactional(HANDOFF_REQUEST, consumed.encode())
+		destroy consumed
+		return written
