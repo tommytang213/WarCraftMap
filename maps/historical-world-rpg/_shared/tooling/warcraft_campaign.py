@@ -117,6 +117,12 @@ class MpqReader:
                 hash_at + hash_count * 16 > archive_size or
                 block_at + block_count * 16 > archive_size):
             raise ValueError("MPQ tables outside declared archive")
+        # Lookup uses (hash_count - 1) as a bit mask; a non-power-of-two
+        # table silently skips slots. Encrypted index tables must not overlap.
+        if hash_count & (hash_count - 1):
+            raise ValueError("MPQ hash table size must be a power of two")
+        if hash_at < block_at + block_count * 16 and block_at < hash_at + hash_count * 16:
+            raise ValueError("overlapping MPQ tables")
         self.archive_size = archive_size
         raw_hash = self.data[self.base + hash_at:self.base + hash_at + hash_count * 16]
         raw_block = self.data[self.base + block_at:self.base + block_at + block_count * 16]

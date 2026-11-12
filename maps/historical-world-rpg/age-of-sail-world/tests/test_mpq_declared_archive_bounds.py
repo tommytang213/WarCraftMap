@@ -39,6 +39,27 @@ class DeclaredMpqArchiveBoundsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "tables outside declared archive"):
             MpqReader(self.path)
 
+    def test_hash_table_size_must_be_a_power_of_two(self):
+        invalid = bytearray(self.original)
+        # The advertised index table still fits, but three slots cannot
+        # be searched by the mask-based MPQ lookup.
+        self.assertEqual(4, struct.unpack_from("<I", invalid, 24)[0])
+        struct.pack_into("<I", invalid, 24, 3)
+        for prefix in (b"", b"HM3W" + bytes(24)):
+            with self.subTest(wrapped=bool(prefix)):
+                self.path.write_bytes(prefix + invalid)
+                with self.assertRaisesRegex(ValueError, "power of two"):
+                    MpqReader(self.path)
+
+    def test_encrypted_hash_and_block_tables_cannot_overlap(self):
+        invalid = bytearray(self.original)
+        hash_at = struct.unpack_from("<I", invalid, 16)[0]
+        # Both corrupted ranges remain within the advertised archive.
+        struct.pack_into("<I", invalid, 20, hash_at + 8)
+        self.path.write_bytes(invalid)
+        with self.assertRaisesRegex(ValueError, "overlapping MPQ tables"):
+            MpqReader(self.path)
+
     def test_member_must_fit_declared_archive_not_only_physical_file(self):
         invalid = bytearray(self.original)
         declared = struct.unpack_from("<I", invalid, 8)[0]
