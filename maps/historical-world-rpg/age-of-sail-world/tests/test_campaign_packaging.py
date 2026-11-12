@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,7 @@ from package_wurst_campaign import (  # noqa: E402
     _localize_runtime,
     _retain_bootstrap_dependencies,
     _write_browser_safe_w3x,
+    _verify_final_map,
     build_campaign,
     inspect_campaign,
     load_campaign_config,
@@ -93,6 +95,15 @@ class CampaignPackagingTests(unittest.TestCase):
 
         package({})
         _inspect_physical_map(physical, broken)
+        # The post-normalization path must inspect the exact bytes emitted
+        # for campaign inclusion and reject corruption introduced there.
+        final = self.project / "final-bootstrap.w3x"
+        _verify_final_map(physical, broken, final)
+        self.assertEqual(broken.read_bytes(), final.read_bytes())
+        with patch("package_wurst_campaign._write_browser_safe_w3x",
+                   side_effect=lambda _source, destination: destination.write_bytes(b"broken-final")):
+            with self.assertRaisesRegex(PackagingError, "not an MPQ archive"):
+                _verify_final_map(physical, broken, final)
         # An archive can have a correct terrain/object manifest yet contain
         # runtime authority for the wrong physical map. Reject this before
         # treating the candidate as a viable campaign handoff.
@@ -152,6 +163,11 @@ class CampaignPackagingTests(unittest.TestCase):
         header[8:8 + len(name)] = name
         wrapped.write_bytes(header + raw.read_bytes())
         _write_browser_safe_w3x(wrapped, safe)
+        # The publication path validates the normalized, wrapper-free artifact.
+        physical = load_campaign_config(self.manifest).maps[0]
+        with patch("package_wurst_campaign._inspect_physical_map") as inspect:
+            _verify_final_map(physical, wrapped, safe)
+            inspect.assert_called_once_with(physical, safe)
         self.assertEqual(b"MPQ\x1a", safe.read_bytes()[:4])
         self.assertEqual(b"current", MpqReader(safe).read("war3map.w3i"))
 

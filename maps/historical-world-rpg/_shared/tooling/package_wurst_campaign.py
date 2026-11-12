@@ -785,6 +785,17 @@ def _write_browser_safe_w3x(source: Path, destination: Path) -> None:
     destination.write_bytes(data[mpq_at:mpq_at + archive_size])
 
 
+def _verify_final_map(physical: PhysicalMap, compiled: Path, destination: Path) -> None:
+    """Inspect the exact W3X bytes embedded into the W3N.
+
+    Grill's compiled artifact is checked before its optional HM3W wrapper is
+    stripped. Check the normalized result too: the campaign references that
+    result, not the pre-normalized compiler output.
+    """
+    _write_browser_safe_w3x(compiled, destination)
+    _inspect_physical_map(physical, destination)
+
+
 def clean(config: CampaignConfig) -> None:
     root = config.project / "_build"
     if root.exists():
@@ -898,7 +909,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
         _inspect(map_config, archive, compile_root, physical.terrain_ids)
         _inspect_physical_map(physical, archive)
         destination = map_root / f"{physical.id}.w3x"
-        _write_browser_safe_w3x(archive, destination)
+        _verify_final_map(physical, archive, destination)
         built.append((physical, destination))
     _write_campaign(config.output, config, built)
     inspect_campaign(config, config.output)
