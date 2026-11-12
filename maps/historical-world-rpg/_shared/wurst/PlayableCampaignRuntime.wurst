@@ -2162,8 +2162,15 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		if not restoreOrdinaryStartup()
 			return false
 		return finishStartup()
+	/** Always release the decoded durable request, including failure paths.
+	 * The delegate owns no request object and may return early safely. */
 	function restoreOrdinaryStartup() returns boolean
 		let request = handoff.readRequest()
+		let restored = restoreOrdinaryStartupWithRequest(request)
+		if request != null
+			destroy request
+		return restored
+	function restoreOrdinaryStartupWithRequest(CampaignStartRequest request) returns boolean
 		if handoff.hasRequest() and (request == null or not request.valid(origins))
 			return rejectStartup("The campaign start request is missing fields or does not match the authored origins.")
 		if request != null and request.status == "pending"
