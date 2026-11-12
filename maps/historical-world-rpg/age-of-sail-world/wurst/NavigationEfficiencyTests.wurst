@@ -256,3 +256,41 @@ class NavigationFixture
 	f.advance(10)
 	f.ship.supply.assertEquals(22)
 	f.ship.navigation.creditBasisPoints.assertEquals(0)
+
+@test function sourceAwareNavigationPreservesLegacyScenarioVoyageCredits()
+	let contract = new VoyageContract("technology", "navigation", 2000, 0)
+	let route = new VoyageRoute("legacy_circuit", "sea", "", 10, 5, 1)
+	contract.addRoute(route)
+	let progress = new VoyageProgress()
+	progress.equipment = true
+	contract.start(progress, route, 0, 50).assertTrue()
+	contract.resolve(progress, 3, true).assertEquals(0)
+	progress.creditBasisPoints.assertEquals(6000)
+	contract.resolve(progress, 3, true).assertEquals(0)
+	contract.resolve(progress, 5, true).assertEquals(1)
+	progress.creditBasisPoints.assertEquals(0)
+	progress.reserved.assertEquals(25)
+	destroy progress
+	destroy contract
+
+@test function sourceAwareNavigationCreditsQualifiedSourcesWithoutRepeatedDayRefund()
+	let contract = new VoyageContract("technology", "navigation", 0, 0)
+	contract.addSource(new VoyageSource("celestial", "technology", "celestial_navigation", 2500, "", "astronomical_observation"))
+	contract.addSource(new VoyageSource("coastal", "technology", "coastal_navigation", 2500, "", "coastal_bearings"))
+	let route = new VoyageRoute("source_circuit", "sea", "", 4, 5, 3)
+	contract.addRoute(route)
+	let progress = new VoyageProgress()
+	progress.equipment = true
+	contract.start(progress, route, 0, 20).assertTrue()
+	contract.resolve(progress, 2, true).assertEquals(1)
+	progress.fraction("celestial").assertEquals(5000)
+	progress.fraction("coastal").assertEquals(0)
+	progress.creditBasisPoints.assertEquals(5000)
+	contract.resolve(progress, 2, true).assertEquals(0)
+	contract.resolve(progress, 4, true).assertEquals(2)
+	progress.fraction("celestial").assertEquals(0)
+	progress.fraction("coastal").assertEquals(0)
+	progress.creditBasisPoints.assertEquals(0)
+	progress.pending().assertFalse()
+	destroy progress
+	destroy contract
