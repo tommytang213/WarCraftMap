@@ -54,6 +54,26 @@ def _resize_map_info(data: bytes, width: int, height: int) -> bytes:
         raise MaterializationError(f"cannot resize malformed W3I: {error}") from error
 
 
+def _set_map_title(data: bytes, title: str) -> bytes:
+    """Give each physical chapter a distinct W3I title, without editing other fields.
+
+    Every packaged region uses the same authoring map as the selector. Retaining
+    that source map's name in every compiled W3I makes a second chapter's binary
+    identity indistinguishable by title. This is a packaging integrity contract,
+    not evidence that the retail ChangeLevel failure is fixed.
+    """
+    if not isinstance(title, str) or not title.strip() or "\x00" in title:
+        raise MaterializationError("invalid physical chapter W3I title")
+    if len(data) < 29 or struct.unpack_from("<i", data)[0] not in (31, 33, 39):
+        raise MaterializationError("unsupported W3I map-title layout")
+    try:
+        end = data.index(b"\x00", 28)
+        encoded = title.encode("utf-8")
+    except (ValueError, UnicodeError) as error:
+        raise MaterializationError("invalid W3I map-title string") from error
+    return data[:28] + encoded + b"\x00" + data[end + 1:]
+
+
 def _decode(instance: dict) -> list[int]:
     cells = []
     for value, count in instance["surfaceEncoding"]["runs"]:
@@ -243,7 +263,8 @@ def materialize(project: Path, map_dir: Path, generated: Path, physical, runtime
     # raster after resizing leaves the client with a truncated terrain resource.
     map_dir.joinpath("war3map.shd").write_bytes(bytes(width * height * 16))
     info_path = map_dir / "war3map.w3i"
-    info_path.write_bytes(_resize_map_info(info_path.read_bytes(), width, height))
+    resized = _resize_map_info(info_path.read_bytes(), width, height)
+    info_path.write_bytes(_set_map_title(resized, physical.chapter_title))
     placed = settlement_placements(project, physical, runtime.get("settlementDefinitions", []), width, height, cells, layouts)
     records = [_unit(b"nshp" if row["kind"] == "port" else b"ntav", *row["world"], 15, index + 1)
                for index, row in enumerate(placed)]

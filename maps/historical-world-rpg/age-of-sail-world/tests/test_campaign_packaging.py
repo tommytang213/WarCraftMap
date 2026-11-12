@@ -26,6 +26,8 @@ from package_wurst_campaign import (  # noqa: E402
 from package_wurst_map import _assemble, generate, load_config, verify_generated  # noqa: E402
 from wurst_execution_fixture import FAKE_EXECUTION, allow_synthetic_compiler
 from warcraft_campaign import MpqReader, campaign_metadata, parse_campaign_metadata, write_mpq  # noqa: E402
+from materialize_physical_map import MaterializationError, _set_map_title  # noqa: E402
+from warcraft_map_info import parse_w3i  # noqa: E402
 
 FAKE_GRILL = r'''#!/usr/bin/env python3
 import pathlib, sys, zipfile
@@ -46,6 +48,28 @@ FAKE_GRILL = FAKE_GRILL.replace('if sys.argv[1] == "build":', FAKE_EXECUTION + '
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_regional_w3i_titles_are_unique_and_preserve_other_binary_fields(self):
+        source = (self.project / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
+        original = parse_w3i(source)
+        original_end = source.index(b"\x00", 28)
+        seen = {original["name"]}
+        for chapter in load_campaign_config(self.manifest).maps:
+            if chapter.bootstrap:
+                continue  # The known-launching selector's W3I remains untouched.
+            revised = _set_map_title(source, chapter.chapter_title)
+            self.assertEqual(chapter.chapter_title, parse_w3i(revised)["name"])
+            self.assertNotIn(chapter.chapter_title, seen)
+            seen.add(chapter.chapter_title)
+            self.assertEqual(source[:28], revised[:28])
+            self.assertEqual(source[original_end + 1:],
+                             revised[revised.index(b"\x00", 28) + 1:])
+        for malformed_title in ("", " ", "Europe\x00Asia"):
+            with self.subTest(title=repr(malformed_title)):
+                with self.assertRaisesRegex(MaterializationError, "chapter W3I title"):
+                    _set_map_title(source, malformed_title)
+        with self.assertRaisesRegex(MaterializationError, "unsupported W3I"):
+            _set_map_title(b"\x00" * 30, "Europe")
+
     def test_bootstrap_cannot_bypass_binary_structure_inspection(self):
         physical = load_campaign_config(self.manifest).maps[0]
         source = self.project / "map/AgeOfSailWorld.w3x"
@@ -618,12 +642,17 @@ class CampaignPackagingTests(unittest.TestCase):
         self.assertEqual(len(configured_maps), len(metadata["maps"]))
         self.assertEqual(len(configured_maps), len(campaign_manifest["maps"]))
         physical_hashes = set()
+        w3i_titles = set()
         for configured in configured_maps:
             packaged = self.project / (configured["id"] + "-identity.w3x")
             packaged.write_bytes(campaign.read(configured["packagePath"]))
             with zipfile.ZipFile(packaged) as map_archive:
                 lua = map_archive.read("war3map.lua").decode("utf-8")
+                w3i_title = parse_w3i(map_archive.read("war3map.w3i"))["name"]
+                self.assertNotIn(w3i_title, w3i_titles)
+                w3i_titles.add(w3i_title)
                 if not configured.get("bootstrap", False):
+                    self.assertEqual(configured["chapterTitle"], w3i_title)
                     w3e = map_archive.read("war3map.w3e"); wpm = map_archive.read("war3map.wpm")
                     physical_hashes.add((hashlib.sha256(w3e).hexdigest(), hashlib.sha256(wpm).hexdigest()))
                     physical = json.loads(map_archive.read("runtime/physical-map.json"))

@@ -708,6 +708,8 @@ def _inspect_physical_map(physical: PhysicalMap, archive: Path) -> None:
         if object_count != len(records) or len(read("war3map.shd")) != width * height * 16:
             raise ValueError("placement records or shadow raster do not match terrain")
         info = validate_w3i_structure(w3i)
+        if not physical.bootstrap and info["name"] != physical.chapter_title:
+            raise ValueError("regional W3I title differs from authoritative campaign chapter")
         left, right, bottom, top = info["cameraComplements"]
         if (info["playableWidth"], info["playableHeight"]) != (width - left - right, height - bottom - top):
             raise ValueError("W3I playable dimensions and camera bounds do not match terrain")
