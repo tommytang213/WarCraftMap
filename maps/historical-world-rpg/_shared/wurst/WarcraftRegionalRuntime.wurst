@@ -59,16 +59,17 @@ public class WarcraftRegionalAdapter
 		let existing = indexOf(definition.stableId)
 		if existing >= 0
 			let previous = definitions[existing]
-			let identityChanged = previous.regionId != definition.regionId or previous.typeId != definition.typeId or previous.owner != definition.owner
+			let changedRegion = previous.regionId != definition.regionId
+			let identityChanged = changedRegion or previous.typeId != definition.typeId or previous.owner != definition.owner
 			let positionChanged = previous.x != definition.x or previous.y != definition.y
 			let wasLive = identityChanged and hasLiveHandle(existing)
 			if identityChanged
 				retireHandle(existing)
 			definitions[existing] = definition
-			// Replacing a live unit in the current physical region must not
-			// leave it invisible until the next region activation. Other
-			// regions remain dormant and will reconstruct on their own map.
-			if wasLive and activeRegionId != "" and definition.regionId == activeRegionId
+			// Recreate live replacements and materialize dormant units that
+			// move into the active region through registration. Same-region
+			// dormant edits remain deferred until normal reconstruction.
+			if activeRegionId != "" and definition.regionId == activeRegionId and (wasLive or changedRegion)
 				materializeHandle(existing)
 			// Updating an existing stable ID must also update the live Warcraft
 			// position. Otherwise its saved representation and visible position

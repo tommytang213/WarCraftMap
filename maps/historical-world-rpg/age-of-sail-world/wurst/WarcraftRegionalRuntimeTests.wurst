@@ -204,3 +204,34 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.moveCalls.assertEquals(0)
 	regional.count.assertEquals(2)
 	regional.definitions[1].regionId.assertEquals("africa")
+
+/** Re-registering a dormant cross-map unit is another arrival path. It must
+ * materialize on the loaded map even when there was no old handle to retire. */
+@test function registeringDormantUnitIntoActiveRegionMaterializesImmediately()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("patrol", "africa", 'hfoo', Player(0), 10., 20., 0.))
+	regional.materializeCalls.assertEquals(0)
+	regional.register(new RegionalRepresentation("patrol", "europe_west", 'hrif', Player(1), 30., 40., 0.))
+	regional.materializeCalls.assertEquals(1)
+	regional.materializedRegion.assertEquals("europe_west")
+	regional.materializedType.assertEquals('hrif')
+	(regional.materializedOwner == Player(1)).assertTrue()
+	regional.retiredFrom.assertEquals("africa")
+	regional.definitions[0].x.assertEquals(30.)
+	regional.definitions[0].y.assertEquals(40.)
+	regional.count.assertEquals(1)
+	regional.register(new RegionalRepresentation("patrol", "europe_west", 'hrif', Player(1), 30., 40., 0.))
+	regional.materializeCalls.assertEquals(1)
+
+@test function registeringDormantUnitIntoInactiveRegionDoesNotMaterialize()
+	let regional = new RecordingRegionalAdapter()
+	regional.live = false
+	regional.activeRegionId = "europe_west"
+	regional.register(new RegionalRepresentation("ship", "africa", 'hfoo', Player(0), 10., 20., 0.))
+	regional.register(new RegionalRepresentation("ship", "asia", 'hrif', Player(0), 30., 40., 0.))
+	regional.count.assertEquals(1)
+	regional.materializeCalls.assertEquals(0)
+	regional.moveCalls.assertEquals(0)
+	regional.definitions[0].regionId.assertEquals("asia")
