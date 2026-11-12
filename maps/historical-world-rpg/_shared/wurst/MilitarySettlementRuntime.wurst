@@ -539,6 +539,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	CombatBindings combatBindings = null
 	VoyageContract voyages = null
 	boolean legacyVoyages = false
+	// Until the schema-26 migration is complete, every accepted v1-v20 save
+	// uses the legacy common-credit record, never the typed |x extension.
+	boolean legacyNavigationSources = true
 	boolean navigationEffectsInstalled = false
 	SettlementRuntimeState array[1024] settlements
 	AdministratorState array[1024] administrators
@@ -1828,6 +1831,20 @@ public class MilitarySettlementRuntime implements LandReloadListener
 				f.orderControllerId = record.field(17)
 			target.registerForce(f)
 			return f.validOrder() and f.controllerId != "" and f.regionId != "" and f.maximumStrength >= f.strength and f.strength >= 0 and f.supply >= 0
+		if kind == "x"
+			let found = target.forceIndex(record.field(1))
+			// No current v20 snapshot may acquire typed credits by injection.
+			// When a new schema is enabled, validate each typed fraction
+			// without accepting duplicate or previously unknown source IDs.
+			if target.legacyNavigationSources or record.count != 4 or found < 0 or target.voyages == null or target.voyages.source(record.field(2)) == null
+				return false
+			let value = S2I(record.field(3))
+			let entry = target.forces[found].navigation.credit(record.field(2))
+			if entry.restored or I2S(value) != record.field(3) or value < 0 or value >= 10000
+				return false
+			entry.remainder = value
+			entry.restored = true
+			return true
 		if kind == "v"
 			let found = target.forceIndex(record.field(1))
 			if target.legacyVoyages or record.count != 8 or found < 0 or target.voyages == null
@@ -2111,6 +2128,24 @@ public class MilitarySettlementRuntime implements LandReloadListener
 					return null
 		for i = 0 to parsed.forceCount - 1
 			let f = parsed.forces[i]
+			// Migrate existing v20 celestial fractions into typed source
+			// attribution only when a typed catalogue has been registered.
+			// Source-less v20 contracts keep their exact legacy refund behavior.
+			if parsed.voyages != null and parsed.voyages.sources != null and (f.navigation.saved or f.navigation.credits != null)
+				var source = parsed.voyages.sources
+				var sum = 0
+				while source != null
+					let entry = f.navigation.credit(source.id)
+					if parsed.legacyNavigationSources and source.qualification == "astronomical_observation"
+						entry.remainder = f.navigation.creditBasisPoints
+					if (not parsed.legacyNavigationSources and f.navigation.saved and not entry.restored) or (entry.restored and not f.navigation.saved)
+						parsed.dispose()
+						return null
+					sum += entry.remainder
+					source = source.next
+				if sum mod 10000 != f.navigation.creditBasisPoints
+					parsed.dispose()
+					return null
 			// Check voyage support after the later |p combat-profile record.
 			if f.navigation.saved and not parsed.voyageSupported(f, f.navigation.routeId)
 				parsed.dispose()

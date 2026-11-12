@@ -120,6 +120,28 @@ class MilitaryValidationFixture
 		observed.campaign = state
 		return state
 
+@test function legacyVoyageFractionMigratesOnlyInDetachedSnapshotAndRejectsPrematureTypedRecords()
+	let f = new MilitaryValidationFixture()
+	// The current v20 runtime still serializes the common credit only.
+	// A later catalogue may already declare sources during migration.
+	f.military.voyages.addSource(new VoyageSource("celestial", "modifier", "celestial_credit", 1000, "", "astronomical_observation"))
+	f.military.voyages.addSource(new VoyageSource("coastal", "modifier", "coastal_credit", 1000, "test_site", "coastal_bearings"))
+	f.military.forces[0].navigation.creditBasisPoints = 6000
+	let original = f.military.snapshot()
+	original.startsWith("v20|").assertTrue()
+	original.contains("|x,").assertFalse()
+	let parsed = f.military.parseSnapshot(original)
+	(parsed != null).assertTrue()
+	parsed.forces[0].navigation.fraction("celestial").assertEquals(6000)
+	parsed.forces[0].navigation.fraction("coastal").assertEquals(0)
+	parsed.snapshot().assertEquals(original)
+	f.military.forces[0].navigation.fraction("celestial").assertEquals(0)
+	parsed.dispose()
+	// Premature or forged |x records cannot silently extend a v20 save.
+	(f.military.parseSnapshot(original + "|x,ship,celestial,6000") == null).assertTrue()
+	(f.military.parseSnapshot(original + "|x,ship,unknown,6000") == null).assertTrue()
+	f.military.snapshot().assertEquals(original)
+
 @test function validatedMilitarySnapshotsKeepOwnershipAndAllElevenCampaignDayLimits()
 	let f = new MilitaryValidationFixture()
 	let saved = f.military.snapshot()
