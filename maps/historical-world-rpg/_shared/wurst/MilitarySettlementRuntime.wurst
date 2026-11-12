@@ -794,6 +794,25 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		let eligible = earned.has(voyages.kind, voyages.contentId)
 		destroy earned
 		return eligible
+	function qualifiedNavigationSources(RuntimeForce vessel, int day) returns string
+		if rpg == null or not voyageSupported(vessel, vessel.navigation.routeId) or not vessel.active or vessel.strength <= 0
+			return ""
+		let earned = rpg.technologies.entitlements(vessel.controllerId)
+		var qualified = ""
+		var source = voyages.sources
+		while source != null
+			var equipped = vessel.navigation.equipment and source.qualification == "astronomical_observation"
+			if source.qualification == "coastal_bearings"
+				let ship = voyages.ship(vessel.id)
+				let i = science.index(source.equipmentSiteId)
+				if ship != null and ship.coastalBearingCapable and ship.unitTypeId == vessel.unitTypeId and i >= 0 and science.sites[i].forceId == vessel.id
+					let kit = science.states[i]
+					equipped = kit.equipmentOwner == vessel.controllerId and kit.equipmentReady <= day
+			if equipped and earned.has(source.kind, source.contentId)
+				qualified += "|" + source.id + "|"
+			source = source.next
+		destroy earned
+		return qualified
 	/** Runs identically for represented and unloaded forces. Never advances time.
 	 * Equipment/control changes must settle elapsed days before their mutation. */
 	function resolveVoyages(int day)

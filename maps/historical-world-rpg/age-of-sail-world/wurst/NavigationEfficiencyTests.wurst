@@ -294,3 +294,23 @@ class NavigationFixture
 	progress.pending().assertFalse()
 	destroy progress
 	destroy contract
+
+/** The typed-source qualification adapter is staged before the v26 save
+ * migration; ordinary v20 voyage resolution is intentionally unchanged. */
+@test function typedNavigationQualificationRequiresResearchAndTheRightEquipment()
+	let f = new NavigationFixture(true, true, true)
+	let contract = f.military.voyages
+	contract.addSource(new VoyageSource("test_celestial", contract.kind, contract.contentId, contract.reductionBasisPoints, "", "astronomical_observation"))
+	f.military.qualifiedNavigationSources(f.ship, 0).assertEquals("|test_celestial|")
+	f.ship.navigation.equipment = false
+	f.military.qualifiedNavigationSources(f.ship, 0).assertEquals("")
+	f.ship.navigation.equipment = true
+	f.ship.active = false
+	f.military.qualifiedNavigationSources(f.ship, 0).assertEquals("")
+	f.ship.active = true
+	// A purchased astronomical kit cannot stand in for a dedicated coastal kit.
+	contract.addSource(new VoyageSource("test_coastal", contract.kind, contract.contentId, 500, "not_a_registered_site", "coastal_bearings"))
+	f.military.qualifiedNavigationSources(f.ship, 0).assertEquals("|test_celestial|")
+	let noResearch = new NavigationFixture(true, false, true)
+	noResearch.military.voyages.addSource(new VoyageSource("test_celestial", noResearch.military.voyages.kind, noResearch.military.voyages.contentId, noResearch.military.voyages.reductionBasisPoints, "", "astronomical_observation"))
+	noResearch.military.qualifiedNavigationSources(noResearch.ship, 0).assertEquals("")
