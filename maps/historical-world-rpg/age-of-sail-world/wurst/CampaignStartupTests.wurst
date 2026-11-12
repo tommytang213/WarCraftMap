@@ -338,6 +338,21 @@ function originLifecycle(string origin, string mapId)
 	f.ports.loads.assertEquals(1)
 	f.handoff.readRequest().origin.assertEquals("ming_empire")
 
+/** A new origin is an explicit reset, but its request sequence must never
+ * wrap and overwrite a still-durable handoff when the counter is exhausted.
+ * This also exercises cleanup paths without changing the stored bytes. */
+@test function exhaustedOriginSequenceDoesNotOverwriteDurableRequest()
+	let cache = new StartupStorage()
+	let original = "v1|2147483647|pending|england|europe_west|europe_atlantic_isles|london"
+	cache.writeTransactional(HANDOFF_REQUEST, original).assertTrue()
+	let handoff = new CampaignHandoff(cache, new StartupPorts())
+	handoff.commitSelection("ming_empire", "east_asia", "east_asia_china_north", "beijing").assertFalse()
+	cache.read(HANDOFF_REQUEST).assertEquals(original)
+	let retained = handoff.readRequest()
+	retained.sequence.assertEquals(2147483647)
+	retained.origin.assertEquals("england")
+	destroy retained
+
 @test function staleAcknowledgementCannotConsumeNewerOriginOrConsumedRequest()
 	let cache = new StartupStorage()
 	let ports = new StartupPorts()

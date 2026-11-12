@@ -77,10 +77,16 @@ public class CampaignHandoff implements OriginSelectionObserver
 		let previous = readRequest()
 		if previous != null
 			sequence = previous.sequence + 1
+			// readRequest constructs a transient request; never retain it after
+			// the sequence decision (including the exhausted-sequence path).
+			destroy previous
 		if sequence <= 0
 			return false
 		let request = new CampaignStartRequest(sequence, "pending", polityId, physicalMapId, regionalInstanceId, settlementId)
-		return storage.writeTransactional(HANDOFF_REQUEST, request.encode())
+		let committed = storage.writeTransactional(HANDOFF_REQUEST, request.encode())
+		// The cache owns serialized bytes, not the temporary request object.
+		destroy request
+		return committed
 	override function campaignStarted(string polityId, string physicalMapId, string packagePath, string regionalInstanceId, string settlementId)
 		loader.load(packagePath)
 	function acknowledge(CampaignStartRequest request) returns boolean
