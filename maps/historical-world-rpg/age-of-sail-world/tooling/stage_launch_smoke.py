@@ -60,27 +60,37 @@ def reject_diagnostic_approval(result: dict) -> None:
         raise ValueError("diagnostic must not claim native acceptance: nativeClient")
 
 
-def _compiled_origin_routes(tokens: list[str], polity_id: str) -> list[tuple[str, str, str]]:
-    """Extract one compiled OriginCatalog.add record, not unrelated literals.
+def _compiled_origin_definitions(tokens: list[str]) -> list[tuple[str, str, str, str, str, str]]:
+    """Inspect complete literal origin registrations, including start location.
 
-    The pinned Wurst compiler emits OriginCatalog_OriginCatalog_add(controller,
-    polityId, displayName, mapId, packagePath, ...). This remains a static
-    inspection: matching text cannot prove that Warcraft executes the call.
+    Function declarations are not registrations. A partial or dynamic call
+    cannot establish static compiled-path evidence for a player diagnostic.
+    This is still not proof that the Warcraft client executes the call.
     """
-    routes = []
+    records = []
     for index, token in enumerate(tokens):
-        if token != "OriginCatalog_OriginCatalog_add":
+        if token != "OriginCatalog_OriginCatalog_add" or (
+                index > 0 and tokens[index - 1] == "function"):
             continue
-        args = tokens[index + 1:index + 12]
-        if len(args) != 11 or args[0] != "(" or args[2::2] != [","] * 5:
-            continue
+        args = tokens[index + 1:index + 16]
+        if (len(args) != 15 or args[0] != "(" or args[14] != ")"
+                or args[2:14:2] != [","] * 6):
+            raise ValueError("compiled selector has a malformed origin registration")
         try:
-            values = [json.loads(args[position]) for position in (3, 5, 7, 9)]
-        except (ValueError, TypeError):
-            continue
-        if all(isinstance(value, str) for value in values) and values[0] == polity_id:
-            routes.append((values[1], values[2], values[3]))
-    return routes
+            values = [json.loads(args[position]) for position in (3, 5, 7, 9, 11, 13)]
+        except (ValueError, TypeError) as error:
+            raise ValueError("compiled selector has a nonliteral origin registration") from error
+        if any(not isinstance(value, str) or not value for value in values):
+            raise ValueError("compiled selector has a nonliteral origin registration")
+        records.append(tuple(values))
+    return records
+
+
+def _compiled_origin_routes(tokens: list[str], polity_id: str) -> list[tuple[str, str, str]]:
+    """Extract complete compiler-shaped calls rather than unrelated strings."""
+    return [(name, map_id, package_path)
+            for candidate, name, map_id, package_path, _instance, _settlement
+            in _compiled_origin_definitions(tokens) if candidate == polity_id]
 
 
 def _require_compiled_origin_route(tokens: list[str], polity_id: str, name: str,
@@ -88,6 +98,38 @@ def _require_compiled_origin_route(tokens: list[str], polity_id: str, name: str,
     """Reject missing, duplicate, or wrongly routed compiled origin entries."""
     if _compiled_origin_routes(tokens, polity_id) != [(name, map_id, package_path)]:
         raise ValueError(f"compiled selector has missing, duplicate, or mismatched {polity_id} route")
+
+
+def _expected_compiled_origins(config) -> dict[str, tuple[str, str, str, str, str]]:
+    """Use the exact authoritative records consumed by the campaign packager."""
+    from package_wurst_campaign import campaign_origin_records
+
+    world = json.loads((PROJECT / "scenario/world/world.json").read_text(encoding="utf-8"))
+    maps = {item.id: item for item in config.maps}
+    expected = {}
+    for origin in campaign_origin_records(world, config.maps):
+        start = origin["startingLocation"]
+        destination = maps[start["physicalMapId"]]
+        if destination.bootstrap:
+            raise ValueError(f"origin {origin['polityId']} targets the selector map")
+        expected[origin["polityId"]] = (
+            origin["name"], destination.id, destination.package_path,
+            start["regionalInstanceId"], start["settlementId"])
+    return expected
+
+
+def _require_compiled_origin_catalog(tokens: list[str],
+                                     expected: dict[str, tuple[str, str, str, str, str]]) -> int:
+    """Require one exact compiled start record for every authored polity."""
+    actual = sorted(_compiled_origin_definitions(tokens))
+    wanted = sorted((polity_id, *fields) for polity_id, fields in expected.items())
+    if actual != wanted:
+        missing = sorted(set(wanted) - set(actual))
+        unexpected = sorted(set(actual) - set(wanted))
+        detail = f"; first missing={missing[0]!r}" if missing else ""
+        detail += f"; first unexpected={unexpected[0]!r}" if unexpected else ""
+        raise ValueError("compiled selector origin catalog differs from authoritative start records" + detail)
+    return len(actual)
 
 
 def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
@@ -110,6 +152,11 @@ def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
     if compiled["status"] != "pass":
         raise ValueError("handoff bootstrap inspection failed: " + "; ".join(compiled["failures"]))
     tokens = _tokens(bootstrap_lua.decode("utf-8"))
+    # The archived metadata can be sound while a compiled selector has a
+    # wrong region instance or settlement, or omits an origin entirely.
+    # Compare all six registration fields against the same authored records
+    # that generated the campaign, not merely Austria's destination basename.
+    validated_origins = _require_compiled_origin_catalog(tokens, _expected_compiled_origins(config))
     _require_compiled_origin_route(tokens, "austria", "Archduchy of Austria",
                                    destination.id, destination.package_path)
     literals = {token[1:-1] for token in tokens
@@ -118,7 +165,8 @@ def inspect_root_basename_handoff(config, bootstrap_lua: bytes) -> dict:
            for value in ("Maps/" + item.package_path, "Maps\\\\" + item.package_path)):
         raise ValueError("compiled selector retains a prefixed campaign destination")
     return {"status": "pass", "evidenceLevel": "compiled_text_static_heuristic",
-            "scope": "configured root paths, inspected W3F/MPQ, bootstrap native call and exactly one matching Austria origin registration; no reachability or native-execution proof",
+            "scope": "configured root paths, inspected W3F/MPQ, bootstrap native call and exact compiled map, path, instance, settlement and name for every authored origin; no reachability or native-execution proof",
+            "validatedOriginCount": validated_origins,
             "command": "/origin choose austria", "destinationMapId": destination.id,
             "destinationPackagePath": destination.package_path,
             "requiredMilestone": "destination terrain AND a player-controlled unit"}
