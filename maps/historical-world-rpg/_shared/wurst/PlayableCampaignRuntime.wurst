@@ -2085,7 +2085,10 @@ public class PlayableCampaignServices implements CampaignLoadObserver
 		return false
 	function loadStartupPayload(string payload, CampaignStartRequest request) returns boolean
 		let candidate = saves.codec.decodeMigrateAndValidate(payload, request.checkpointSlot())
-		if candidate != "" and (playerAuthorityValue(candidate, "origin") != request.origin or lastAuthorityValue(candidate, "world") != "instance:" + request.instanceId or playerAuthorityValue(candidate, "settlement") != request.settlementId)
+		// Bind the private start checkpoint to its requested physical and logical map.
+		// Matching the origin, instance and settlement alone cannot rule out a
+		// checkpoint whose map metadata points to another campaign chapter.
+		if candidate != "" and (lastAuthorityValue(candidate, "map") != request.mapId or lastAuthorityValue(candidate, "region") != scenarioLogicalRegion(request.mapId) or playerAuthorityValue(candidate, "origin") != request.origin or lastAuthorityValue(candidate, "world") != "instance:" + request.instanceId or playerAuthorityValue(candidate, "settlement") != request.settlementId)
 			return rejectRestoration("The startup checkpoint does not match its request.")
 		if candidate == "" or not saves.stageCandidate(candidate)
 			return rejectRestoration("Campaign startup checkpoint rejected: " + saves.codec.diagnostic() + " " + saves.diagnostic())

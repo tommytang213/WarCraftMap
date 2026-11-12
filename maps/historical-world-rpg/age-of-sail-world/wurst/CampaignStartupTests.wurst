@@ -712,6 +712,48 @@ function startupRejectsEmptyPublicCheckpoint(string failSlot)
 	f.ports.activePlayers.assertEquals(1)
 	f.campaign.state.rpg.heroes.strategicRosterSize().assertEquals(1)
 
+/** A correctly encoded private checkpoint can still carry inconsistent
+ * destination metadata. Test the production guard without giving a synthetic
+ * decoder credit for the validation performed by the real save codec. */
+class StartupDecodedCheckpointCodec implements CampaignSaveCodec
+	string decoded
+	construct(string candidate)
+		decoded = candidate
+	override function encode(string slotId, int slotKind, int slotIndex, string createdAt, string authoritativeState) returns string
+		return ""
+	override function decodeMigrateAndValidate(string payload, string expectedSlotId) returns string
+		return decoded
+	override function diagnostic() returns string
+		return ""
+
+@test function startupCheckpointRejectsCrossMapOrCrossRegionAuthorityBeforeStaging()
+	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
+	f.start("england")
+	let document = f.campaign.state.captureAuthoritativeState()
+	let request = new CampaignStartRequest(1, "pending", "england", "europe_west", "europe_atlantic_isles", "london")
+	let existingCodec = f.campaign.saves.codec
+	let decoder = new StartupDecodedCheckpointCodec("")
+	f.campaign.saves.codec = decoder
+	let writes = f.saves.writes
+	// Another European chapter has the same logical region but is not the
+	// physical chapter selected by the player.
+	decoder.decoded = replaceCampaignField(document, "map", "europe_central_east")
+	f.campaign.loadStartupPayload("decoded-test-payload", request).assertFalse()
+	f.campaign.lastDiagnostic.assertEquals("The startup checkpoint does not match its request.")
+	f.campaign.state.captureAuthoritativeState().assertEquals(document)
+	f.saves.writes.assertEquals(writes)
+	f.campaign.saves.loading.assertFalse()
+	// The correct physical map with an unrelated logical region is also unsafe.
+	decoder.decoded = replaceCampaignField(document, "region", "africa")
+	f.campaign.loadStartupPayload("decoded-test-payload", request).assertFalse()
+	f.campaign.lastDiagnostic.assertEquals("The startup checkpoint does not match its request.")
+	f.campaign.state.captureAuthoritativeState().assertEquals(document)
+	f.saves.writes.assertEquals(writes)
+	f.campaign.saves.loading.assertFalse()
+	f.campaign.saves.codec = existingCodec
+	destroy decoder
+	destroy request
+
 @test function invalidTransferCheckpointStopsBeforeAutosavesOrRewrites()
 	let f = new StartupFixture(new StartupStorage(), new StartupStorage(), "europe_west")
 	f.start("england")
