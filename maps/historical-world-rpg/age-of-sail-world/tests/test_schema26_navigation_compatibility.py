@@ -211,6 +211,37 @@ class Schema26NavigationCompatibilityTests(unittest.TestCase):
             self.catalog.validate(saved)
         self.assertEqual(before, saved)
 
+    def test_v2_qualified_source_fraction_and_coastal_day_gating(self):
+        if CATALOG_SCHEMA != 2:
+            self.skipTest("typed-source accounting exists only in v2 catalogue")
+        state = self.restored()["ships"][SHIP]
+        # Offset 3 has valid coastal bearings. Offset 4 does not.
+        self.assertEqual(0, self.catalog.resolve(state, 4, {"coastal"}))
+        self.assertEqual(8000, state["creditBasisPoints"])
+        self.assertEqual({"celestial": 6000, "coastal": 2000}, state["sourceCredits"])
+        state = self.catalog.validate({"schemaVersion": 2, "ships": {SHIP: state}})["ships"][SHIP]
+        before = copy.deepcopy(state)
+        self.assertEqual(0, self.catalog.resolve(state, 5, {"coastal"}))
+        self.assertEqual(before["creditBasisPoints"], state["creditBasisPoints"])
+        self.assertEqual(before["sourceCredits"], state["sourceCredits"])
+        # Offset 5 has bearings again; source fractions sum to an exact bucket.
+        self.assertEqual(1, self.catalog.resolve(state, 6, {"coastal"}))
+        self.assertEqual(0, state["creditBasisPoints"])
+        self.assertEqual({"celestial": 6000, "coastal": 4000}, state["sourceCredits"])
+        self.assertEqual(state, self.catalog.validate({"schemaVersion": 2, "ships": {SHIP: state}})["ships"][SHIP])
+
+    def test_v2_rejects_disagreeing_source_bucket_without_mutation(self):
+        if CATALOG_SCHEMA != 2:
+            self.skipTest("typed-source accounting exists only in v2 catalogue")
+        migrated = self.restored()
+        original = copy.deepcopy(migrated)
+        migrated["ships"][SHIP]["sourceCredits"]["coastal"] = 2000
+        tampered = copy.deepcopy(migrated)
+        with self.assertRaises(self.engine.VoyageError):
+            self.catalog.validate(migrated)
+        self.assertEqual(tampered, migrated)
+        self.assertEqual(6000, original["ships"][SHIP]["creditBasisPoints"])
+
     def test_backwards_clock_and_failed_departure_preserve_state(self):
         state = self.restored()["ships"][SHIP]
         before = copy.deepcopy(state)
