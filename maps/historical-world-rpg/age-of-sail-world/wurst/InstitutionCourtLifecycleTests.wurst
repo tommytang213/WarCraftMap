@@ -1,0 +1,147 @@
+package InstitutionCourtLifecycleTests
+
+import BankingOperations
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import Wurstunit
+
+/** Synthetic authority only: no generated institution catalogue or schema
+ * activation. The public snapshot reader remains restricted to v1-v20. */
+class InstitutionCourtFixture
+	RecordingMilitaryAdapter adapter = new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime runtime = new MilitarySettlementRuntime(adapter)
+	construct()
+		let city = new SettlementRuntimeState("port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 100, 50, 0., 0.)
+		city.withPolicy(false, false, "")
+		runtime.registerSettlement(city)
+		runtime.institutionCourts.register(new BankingSite("port", 10000))
+		runtime.institutionCourts.transitionDays = 2
+	function state() returns BankingState
+		return runtime.institutionCourts.states[0]
+	function seedDetachedPolicy()
+		// Only the domain helper is opted in; the snapshot version gate is not.
+		runtime.legacyInstitutionCourts = false
+		runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "100", "1").assertTrue()
+	ondestroy
+		runtime.dispose()
+		destroy adapter.traditionLayers
+		destroy adapter
+
+@test function institutionCourtRequirednessPreservesCustomsBranchAmbiguity()
+	militaryInstitutionCourtsRequired("v20|k,0").assertFalse()
+	militaryInstitutionCourtsRequired("v25|k,0").assertTrue()
+	militaryInstitutionCourtsRequired("v25|k,0|J,0").assertFalse()
+	militaryInstitutionCourtsRequired("v25|k,0|J,0|O,port,,0,0,0,0").assertTrue()
+	militaryInstitutionCourtsRequired("v26|k,0|J,0").assertTrue()
+	militaryInstitutionCourtsRequired("v26|k,0").assertTrue()
+	// The lowercase commercial-court/science records are different domains.
+	militaryInstitutionCourtsRequired("v20|o,port,,0,0,0,0|j,site").assertFalse()
+	militaryInstitutionCourtsRequired("v25|j,site").assertTrue()
+
+@test function institutionCourtStagingDoesNotActivateWriterOrAcceptNewVersions()
+	let f = new InstitutionCourtFixture()
+	let saved = f.runtime.snapshot()
+	saved.startsWith("v20|").assertTrue()
+	saved.contains("|O,").assertFalse()
+	f.runtime.institutionCourtRecords(20).assertEquals("")
+	f.runtime.institutionCourtRecords(25).assertEquals("|O,port,,0,0,0,0")
+	f.runtime.institutionCourtRecords(26).assertEquals("|O,port,,0,0,0,0")
+	let ledger = f.runtime.institutionCourts
+	f.runtime.restore(saved + "|O,port,,0,0,0,0", false).assertFalse()
+	f.runtime.restore(saved + "|J,0|O,port,,0,0,0,0", false).assertFalse()
+	for version = 21 to 26
+		f.runtime.restore(saved.replace("v20|", "v" + I2S(version) + "|"), false).assertFalse()
+	(f.runtime.institutionCourts == ledger).assertTrue()
+	f.runtime.snapshot().assertEquals(saved)
+	destroy f
+
+@test function institutionCourtLegacyRestoreForksBlankAuthorityWithoutBorrowingLivePolicy()
+	let f = new InstitutionCourtFixture()
+	f.seedDetachedPolicy()
+	let saved = f.runtime.snapshot()
+	let live = f.runtime.institutionCourts
+	let liveState = f.state()
+	let record = liveState.record()
+	let parsed = f.runtime.parseValidatedSnapshot(saved, 100)
+	(parsed != null).assertTrue()
+	(parsed.institutionCourts != live).assertTrue()
+	(parsed.institutionCourts.states[0] != liveState).assertTrue()
+	(parsed.institutionCourts.sites[0] == live.sites[0]).assertTrue()
+	parsed.institutionCourts.transitionDays.assertEquals(2)
+	parsed.institutionCourts.states[0].record().assertEquals(",0,0,0,0")
+	parsed.institutionCourts.states[0].restored.assertFalse()
+	parsed.institutionCourts.states[0].owner = "france"
+	parsed.dispose()
+	liveState.record().assertEquals(record)
+	// The rollback/no-projection entry point transfers ownership too.
+	f.runtime.restore(saved, false).assertTrue()
+	f.state().record().assertEquals(",0,0,0,0")
+	f.runtime.legacyInstitutionCourts.assertTrue()
+	f.runtime.institutionCourts.transitionDays.assertEquals(2)
+	f.runtime.snapshot().assertEquals(saved)
+	f.runtime.restore(saved, false).assertTrue()
+	f.state().record().assertEquals(",0,0,0,0")
+	f.adapter.created.assertEquals("")
+	f.adapter.removed.assertEquals("")
+	destroy f
+
+@test function institutionCourtRecordValidationRejectsAtomicallyBeforeMutation()
+	let f = new InstitutionCourtFixture()
+	let before = f.state().record()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "100", "1").assertFalse()
+	f.runtime.legacyInstitutionCourts = false
+	f.runtime.restoreInstitutionCourtRecord("missing", "england", "102", "467", "100", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "-1", "467", "100", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "2147483648", "100", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "466", "100", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "468", "100", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "99", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "467", "1").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "100", "0").assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "", "102", "467", "100", "1").assertFalse()
+	f.state().record().assertEquals(before)
+	f.state().restored.assertFalse()
+	f.runtime.restoreInstitutionCourtRecord("port", "england", "102", "467", "100", "1").assertTrue()
+	f.state().record().assertEquals("england,102,467,100,1")
+	f.runtime.restoreInstitutionCourtRecord("port", "france", "102", "467", "100", "2").assertFalse()
+	f.state().record().assertEquals("england,102,467,100,1")
+	destroy f
+
+@test function institutionCourtCompletenessControllerAndCampaignDayRemainIndependentGates()
+	let f = new InstitutionCourtFixture()
+	f.runtime.validateInstitutionCourts("v20|k,0", 0).assertTrue()
+	f.runtime.validateInstitutionCourts("v25|k,0|J,0", 0).assertTrue()
+	f.runtime.validateInstitutionCourts("v25|k,0", 0).assertFalse()
+	f.runtime.validateInstitutionCourts("v26|k,0|J,0", 0).assertFalse()
+	f.seedDetachedPolicy()
+	let before = f.state().record()
+	f.runtime.validateInstitutionCourts("v26|k,0", 100).assertTrue()
+	f.runtime.validateInstitutionCourts("v26|k,0", 99).assertFalse()
+	f.runtime.settlements[0].controllerId = "france"
+	f.runtime.validateInstitutionCourts("v26|k,0", 100).assertFalse()
+	f.runtime.settlements[0].controllerId = "england"
+	f.runtime.institutionCourts.register(new BankingSite("other_port", 20000))
+	f.runtime.validateInstitutionCourts("v26|k,0", 100).assertFalse()
+	f.runtime.validateInstitutionCourts("v25|k,0|J,0", 100).assertTrue()
+	f.runtime.validateInstitutionCourts("v25|k,0|J,0|O,port", 100).assertFalse()
+	f.state().record().assertEquals(before)
+	destroy f
+
+@test function institutionCourtRejectedRestoreAndControlTransferPreserveOwnershipRules()
+	let f = new InstitutionCourtFixture()
+	f.seedDetachedPolicy()
+	let saved = f.runtime.snapshot()
+	let ledger = f.runtime.institutionCourts
+	let state = f.state()
+	let before = state.record()
+	f.runtime.restore(saved + "|unknown,bad", false).assertFalse()
+	(f.runtime.institutionCourts == ledger).assertTrue()
+	(f.state() == state).assertTrue()
+	state.record().assertEquals(before)
+	f.runtime.transferSettlement("port", "france")
+	state.owner.assertEquals("")
+	state.ready.assertEquals(0)
+	state.upkeepThrough.assertEquals(0)
+	state.serial.assertEquals(2)
+	state.lastDay.assertEquals(100)
+	destroy f

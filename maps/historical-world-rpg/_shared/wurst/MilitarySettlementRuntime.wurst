@@ -28,6 +28,15 @@ import PartyLocations
 public function militaryMapMatches(string locationId, string mapId) returns boolean
 	return locationId == mapId or (mapId != "" and scenarioAuthorityMap(locationId) == mapId)
 
+/** The institutional-court and customs branches both emitted v25. A customs
+ * |J record permits an absent institutional domain; any |O record requires the
+ * complete domain. This predicate does not authorize a snapshot version. */
+public function militaryInstitutionCourtsRequired(string candidate) returns boolean
+	return candidate.startsWith("v26|") or (candidate.startsWith("v25|") and not candidate.contains("|J,")) or candidate.contains("|O,")
+
+function militaryCourtInteger(string value) returns boolean
+	return exactNaturalValid(value) and exactNaturalCompare(value, "2147483647") <= 0
+
 /**
  * Warcraft projection of the authoritative warfare, settlement and office state.
  * Stable records below are saveable campaign state. Unit handles live exclusively
@@ -103,7 +112,7 @@ class MilitarySnapshotRecord
 		return fields[index]
 
 /** Stable conflict identity survives settlement. Membership is immutable once
- * registered; a new war needs a new ID, even between the same governments. */
+ * registered; a new war needs its own ID, even between the same governments. */
 public class MilitaryConflict
 	string id
 	boolean settled = false
@@ -511,6 +520,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	CivicLedger civic = new CivicLedger()
 	BankingLedger banking = new BankingLedger()
 	BankingLedger courts = new BankingLedger()
+	// Dormant until the institutional catalogue and its save version are enabled.
+	BankingLedger institutionCourts = new BankingLedger()
+	boolean legacyInstitutionCourts = true
 	FinanceLedger finance = new FinanceLedger()
 	NavalLedger naval = new NavalLedger()
 	NavalResearchEffects navalResearch = null
@@ -567,6 +579,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		destroy land
 		destroy industry
 		destroy courts
+		destroy institutionCourts
 		destroy banking
 		destroy finance
 		destroy science
@@ -1363,6 +1376,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			industry.controlChanged(settlementId, controllerId, transferDay)
 			civic.controlChanged(settlementId)
 			courts.controlChanged(settlementId)
+			institutionCourts.controlChanged(settlementId)
 			banking.controlChanged(settlementId)
 			finance.controlChanged(settlementId)
 			let arsenal = land.index(settlementId)
@@ -1488,6 +1502,52 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if value
 			return "1"
 		return "0"
+	/** Standalone domain encoding is testable without changing the live schema.
+	 * snapshot() supplies the current constant, so v20 output stays unchanged. */
+	function institutionCourtRecords(int snapshotVersion) returns string
+		var result = ""
+		if snapshotVersion >= 25
+			for i = 0 to institutionCourts.count - 1
+				result += "|O," + institutionCourts.sites[i].id + "," + institutionCourts.states[i].record()
+		return result
+	/** Restore only into detached authority. Reject before changing the record,
+	 * including on duplicate input, so this helper is atomic independently too. */
+	function restoreInstitutionCourtRecord(string id, string owner, string readyText, string throughText, string dayText, string serialText) returns boolean
+		let i = institutionCourts.index(id)
+		if legacyInstitutionCourts or i < 0 or institutionCourts.states[i].restored
+			return false
+		if owner != "" and not scienceControllerText(owner)
+			return false
+		if not militaryCourtInteger(readyText) or not militaryCourtInteger(throughText) or not militaryCourtInteger(dayText) or not militaryCourtInteger(serialText)
+			return false
+		let ready = S2I(readyText)
+		let through = S2I(throughText)
+		let day = S2I(dayText)
+		let serial = S2I(serialText)
+		if owner == ""
+			if ready != 0 or through != 0
+				return false
+		else if not (serial > 0 and ready > 0 and ready >= institutionCourts.transitionDays and ready - institutionCourts.transitionDays <= day and through >= ready and through - ready >= 365 and (through - ready) mod 365 == 0 and through > day)
+			return false
+		let state = institutionCourts.states[i]
+		state.owner = owner
+		state.ready = ready
+		state.upkeepThrough = through
+		state.lastDay = day
+		state.serial = serial
+		state.restored = true
+		return true
+	/** Run after all settlement records have been staged. No live state changes. */
+	function validateInstitutionCourts(string candidate, int campaignDay) returns boolean
+		let required = militaryInstitutionCourtsRequired(candidate)
+		for i = 0 to institutionCourts.count - 1
+			let state = institutionCourts.states[i]
+			let city = settlementIndex(institutionCourts.sites[i].id)
+			if (required and not state.restored) or (state.owner != "" and (city < 0 or settlements[city].controllerId != state.owner))
+				return false
+			if campaignDay >= 0 and state.lastDay > campaignDay
+				return false
+		return true
 	/** Stable, handle-free authority. Every mutable military/settlement field is
 	 * included so inactive regions advance and reload exactly like active ones. */
 	function snapshot() returns string
@@ -1537,6 +1597,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			result += "|i," + industry.sites[i].id + "," + industry.states[i].record()
 		for i = 0 to courts.count - 1
 			result += "|o," + courts.sites[i].id + "," + courts.states[i].record()
+		result += institutionCourtRecords(MILITARY_SETTLEMENT_SNAPSHOT_VERSION)
 		for i = 0 to banking.count - 1
 			result += "|b," + banking.sites[i].id + "," + banking.states[i].record()
 		for i = 0 to finance.count - 1
@@ -1682,6 +1743,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if s.owner == ""
 				return s.ready == 0 and s.upkeepThrough == 0
 			return s.serial > 0 and s.ready > 0 and s.ready >= target.courts.transitionDays and s.ready - target.courts.transitionDays <= s.lastDay and s.upkeepThrough >= s.ready and s.upkeepThrough - s.ready >= 365 and (s.upkeepThrough - s.ready) mod 365 == 0 and s.upkeepThrough > s.lastDay
+		if kind == "O"
+			if record.count != 7
+				return false
+			return target.restoreInstitutionCourtRecord(record.field(1), record.field(2), record.field(3), record.field(4), record.field(5), record.field(6))
 		if kind == "b" and not (target.legacyMunicipalRecords and record.count == 6)
 			let i = target.banking.index(record.field(1))
 			if record.count != 7 or i < 0 or target.banking.states[i].restored
@@ -2024,6 +2089,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		parsed.science = science.fork()
 		destroy parsed.courts
 		parsed.courts = courts.fork()
+		destroy parsed.institutionCourts
+		parsed.institutionCourts = institutionCourts.fork()
+		// The outer version gate remains v1-v20 until the full migration lands.
+		parsed.legacyInstitutionCourts = not candidate.startsWith("v25|") and not candidate.startsWith("v26|")
 		destroy parsed.banking
 		parsed.banking = banking.fork()
 		destroy parsed.finance
@@ -2096,6 +2165,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if ((candidate.startsWith("v20|") or candidate.contains("|o,")) and not state.restored) or (state.owner != "" and (city < 0 or parsed.settlements[city].controllerId != state.owner))
 				parsed.dispose()
 				return null
+		if not parsed.validateInstitutionCourts(candidate, -1)
+			parsed.dispose()
+			return null
 		// The independent courts v19 branch predates municipal u records.
 		let legacyCourts = candidate.startsWith("v19|") and candidate.contains("|o,") and not candidate.contains("|u,")
 		var legacyMunicipal = false
@@ -2237,6 +2309,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if campaignDay >= 0 and parsed.courts.states[i].lastDay > campaignDay
 				parsed.dispose()
 				return null
+		if not parsed.validateInstitutionCourts(candidate, campaignDay)
+			parsed.dispose()
+			return null
 		for i = 0 to parsed.banking.count - 1
 			if campaignDay >= 0 and parsed.banking.states[i].lastDay > campaignDay
 				parsed.dispose()
@@ -2298,6 +2373,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		for i = 0 to conflictCount - 1
 			destroy conflicts[i]
 		destroy courts
+		destroy institutionCourts
 		destroy banking
 		destroy finance
 		destroy naval
@@ -2310,6 +2386,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		destroy civic
 		courts = parsed.courts
 		parsed.courts = new BankingLedger()
+		institutionCourts = parsed.institutionCourts
+		parsed.institutionCourts = new BankingLedger()
+		legacyInstitutionCourts = parsed.legacyInstitutionCourts
 		banking = parsed.banking
 		parsed.banking = new BankingLedger()
 		finance = parsed.finance
