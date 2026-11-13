@@ -56,8 +56,9 @@ def configuration(project, world, settlements, authored, trade_records):
                 raise ValueError('finance: bank lacks real service or is duplicated')
             banks[sid] = network['id']
     for sid, row in sites.items():
-        lines += [f'\tledger.sites[ledger.siteCount] = new ExchangeSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))})',
-                  '\tledger.siteCount++']
+        # Initialize the ledger-owned state through the same registration path
+        # as typed catalogues, without making any legacy site customs-eligible.
+        lines.append(f'\tledger.registerSite({q(sid)}, {q(row["provinceId"])}, {q(banks.get(sid, ""))}, false)')
     ids, locations = set(), set()
     if not 0 < len(data['canalWorks']) <= 32:
         raise ValueError('finance: invalid project count')

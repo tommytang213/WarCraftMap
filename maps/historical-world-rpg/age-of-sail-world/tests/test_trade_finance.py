@@ -32,7 +32,8 @@ class TradeFinanceCompilationTests(unittest.TestCase):
                           ('brokerage_houses', 700), ('canal_tolls_finance', 600)},
                          {(e['nodeId'], e['bonusBasisPoints']) for e in catalog['effects']})
         self.assertIn('"river_transport_bureaus", "timber", 638810, 20, 1000, 100, 2, 90, 200, 10', source)
-        self.assertIn('new ExchangeSite("london", "greater_london", "european_correspondents")', source)
+        self.assertIn('ledger.registerSite("london", "greater_london", "european_correspondents", false)', source)
+        self.assertNotIn('ledger.siteCount++', source)
         self.assertNotIn('unlock(', source)
         self.assertEqual(3, len(paths))
         self.assertEqual(source, self.compile()[0])
