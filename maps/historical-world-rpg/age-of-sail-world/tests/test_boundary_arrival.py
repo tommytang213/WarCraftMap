@@ -127,6 +127,15 @@ class GeneratedBoundaryArrivalTests(unittest.TestCase):
                 map_dir.mkdir()
                 shutil.copy2(physical.source_map / 'war3map.w3i', map_dir / 'war3map.w3i')
                 runtime = copy.deepcopy(self.runtime)
+                # The packager localizes this exact identity before inspecting
+                # each W3X. Keep the real identity gate active in this fixture.
+                runtime['physicalMap'] = {
+                    'id': physical.id,
+                    'bootstrap': physical.bootstrap,
+                    'packagePath': physical.package_path,
+                    'logicalRegionIds': list(physical.logical_region_ids),
+                    'regionalInstanceIds': list(physical.regional_instance_ids),
+                }
                 runtime['settlementDefinitions'] = [s for s in self.world['settlements'] if s.get('regionalInstanceId') in physical.regional_instance_ids]
                 materialize(PROJECT, map_dir, self.generated, physical, runtime)
                 (map_dir / 'runtime/scenario-runtime.json').write_text(json.dumps(runtime))
