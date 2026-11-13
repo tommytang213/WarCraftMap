@@ -1,0 +1,112 @@
+package BankingEntitlementIsolationTests
+
+import BankingOperations
+import ResearchEntitlements
+
+function addBankingIsolationUnlock(ResearchEntitlements layer, string node, string kind, string content)
+	let entry = new ResearchUnlock(node, kind, content)
+	layer.add(entry)
+	destroy entry
+
+/** These exercise the production overload needed by the upstream institutional
+ * court consumer. They do not activate a new military snapshot version. */
+@test function bankingExplicitEntitlementsDoNotReadOrReplaceInstalledLayer()
+	let upstream = new UnboundResearchEffects()
+	let effects = new BankingResearchEffects(upstream)
+	effects.register(new BankingEffect("policy", "corporate_courts", "processing", 600, 10))
+	effects.register(new BankingEffect("policy", "institutional_courts", "processing", 400, 20))
+	let live = new ResearchEntitlements("owner")
+	addBankingIsolationUnlock(live, "corporate_node", "policy", "corporate_courts")
+	effects.replaceResearchEntitlements(live)
+	let candidate = new ResearchEntitlements("owner")
+	addBankingIsolationUnlock(candidate, "institution_node", "policy", "institutional_courts")
+	let candidateBefore = candidate.identities()
+	let liveBefore = effects.get("owner").identities()
+	let upstreamBefore = upstream.get("owner").identities()
+	effects.rateAt("owner", "processing", 20).assertEquals(600)
+	effects.rateAt(candidate, "processing", 19).assertEquals(0)
+	effects.rateAt(candidate, "processing", 20).assertEquals(400)
+	candidate.identities().assertEquals(candidateBefore)
+	effects.get("owner").identities().assertEquals(liveBefore)
+	upstream.get("owner").identities().assertEquals(upstreamBefore)
+	// The caller retains ownership of a supplied layer; evaluation cannot retain it.
+	destroy candidate
+	effects.rateAt("owner", "processing", 20).assertEquals(600)
+	effects.rateAt("unknown", "processing", 20).assertEquals(0)
+	destroy effects
+	destroy upstream
+
+@test function bankingExplicitEntitlementsPreserveDatesMetricsAndSetMembership()
+	let upstream = new UnboundResearchEffects()
+	let effects = new BankingResearchEffects(upstream)
+	effects.register(new BankingEffect("policy", "corporate_courts", "processing", 600, 10))
+	effects.register(new BankingEffect("policy", "institutional_courts", "processing", 400, 20))
+	effects.register(new BankingEffect("modifier", "counting", "counting", 200, 0))
+	let candidate = new ResearchEntitlements("owner")
+	addBankingIsolationUnlock(candidate, "corporate_node", "policy", "corporate_courts")
+	addBankingIsolationUnlock(candidate, "another_node", "policy", "corporate_courts")
+	addBankingIsolationUnlock(candidate, "institution_node", "policy", "institutional_courts")
+	// A matching content ID with the wrong kind must not grant its effect.
+	addBankingIsolationUnlock(candidate, "wrong_kind", "policy", "counting")
+	let before = candidate.identities()
+	ResearchEntitlements absent = null
+	effects.rateAt(absent, "processing", 20).assertEquals(0)
+	effects.rateAt(candidate, "processing", 9).assertEquals(0)
+	effects.rateAt(candidate, "processing", 10).assertEquals(600)
+	effects.rateAt(candidate, "processing", 19).assertEquals(600)
+	effects.rateAt(candidate, "processing", 20).assertEquals(1000)
+	effects.rateAt(candidate, "counting", 20).assertEquals(0)
+	effects.rateAt(candidate, "unknown", 20).assertEquals(0)
+	candidate.identities().assertEquals(before)
+	candidate.count.assertEquals(4)
+	(effects.get("owner") == null).assertTrue()
+	(upstream.get("owner") == null).assertTrue()
+	destroy candidate
+	destroy effects
+	destroy upstream
+
+/** A staged court ledger borrows immutable sites but must start with separate,
+ * blank authority, not the live policy a save is meant to replace. */
+@test function bankingCourtForkPreservesDefinitionsWithoutCopyingLiveAuthority()
+	let ledger = new BankingLedger()
+	let site = new BankingSite("port", 10000)
+	ledger.register(site)
+	ledger.prerequisite = "bookkeeping"
+	ledger.availabilityMetric = "institutional_processing"
+	ledger.transitionDays = 30
+	ledger.enactmentBasisPoints = 100
+	ledger.upkeepBasisPoints = 50
+	ledger.countingBasisPoints = 125
+	ledger.reconciliationBasisPoints = 75
+	let live = ledger.states[0]
+	live.owner = "owner"
+	live.ready = 30
+	live.upkeepThrough = 395
+	live.lastDay = 40
+	live.serial = 7
+	live.restored = true
+	let before = live.record()
+	let candidate = ledger.fork()
+	candidate.count.assertEquals(1)
+	(candidate.sites[0] == site).assertTrue()
+	(candidate.states[0] != live).assertTrue()
+	candidate.prerequisite.assertEquals(ledger.prerequisite)
+	candidate.availabilityMetric.assertEquals(ledger.availabilityMetric)
+	candidate.transitionDays.assertEquals(ledger.transitionDays)
+	candidate.enactmentBasisPoints.assertEquals(ledger.enactmentBasisPoints)
+	candidate.upkeepBasisPoints.assertEquals(ledger.upkeepBasisPoints)
+	candidate.countingBasisPoints.assertEquals(ledger.countingBasisPoints)
+	candidate.reconciliationBasisPoints.assertEquals(ledger.reconciliationBasisPoints)
+	candidate.states[0].record().assertEquals(",0,0,0,0")
+	candidate.states[0].restored.assertFalse()
+	candidate.states[0].owner = "other"
+	candidate.states[0].serial = 99
+	candidate.states[0].restored = true
+	live.record().assertEquals(before)
+	destroy candidate
+	ledger.states[0].record().assertEquals(before)
+	ledger.states[0].restored.assertTrue()
+	ledger.sites[0].id.assertEquals("port")
+	ledger.sites[0].annualTax.assertEquals(10000)
+	destroy ledger
+	destroy site
