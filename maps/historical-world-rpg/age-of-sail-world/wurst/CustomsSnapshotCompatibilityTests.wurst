@@ -1,0 +1,97 @@
+package CustomsSnapshotCompatibilityTests
+
+import TradeFinance
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import Wurstunit
+
+/** Synthetic detached authority only. v25/v26 remain unavailable to public
+ * save/load until all migration domains and pinned Wurst tests are verified. */
+class CustomsCompatibilityFixture
+	RecordingMilitaryAdapter adapter = new RecordingMilitaryAdapter()
+	MilitarySettlementRuntime runtime = new MilitarySettlementRuntime(adapter)
+	construct()
+		let city = new SettlementRuntimeState("port", "england", "europe_west", 'htow', 'hfoo', 30, 20, 100, 50, 0., 0.)
+		city.withPolicy(false, false, "")
+		runtime.registerSettlement(city)
+		runtime.finance.registerSite("port", "europe_west", "", true)
+		runtime.finance.customsDays = 90
+		runtime.finance.customsFirstDay = 100
+	function record(string data) returns MilitarySnapshotRecord
+		let r = new MilitarySnapshotRecord()
+		r.read(data, 1)
+		return r
+	ondestroy
+		runtime.dispose()
+		destroy adapter.traditionLayers
+		destroy adapter
+
+@test function customsHistoryNeverAcceptsInjectedRecordsOrEnablesNewSaveVersions()
+	let f = new CustomsCompatibilityFixture()
+	let saved = f.runtime.snapshot()
+	saved.startsWith("v20|").assertTrue()
+	saved.contains("|J,").assertFalse()
+	saved.contains("|H,").assertFalse()
+	for version = 1 to 24
+		militaryCustomsRecordsAllowed("v" + I2S(version) + "|k,0").assertFalse()
+	militaryCustomsRecordsAllowed("v25|k,0").assertTrue()
+	militaryCustomsRecordsAllowed("v26|k,0").assertTrue()
+	let live = f.runtime.finance
+	f.runtime.restore(saved + "|J,0", false).assertFalse()
+	f.runtime.restore(saved + "|H,port,england,90,190,1,england,555", false).assertFalse()
+	f.runtime.restore(saved + "|J,1|H,port,england,90,190,1,england,555", false).assertFalse()
+	for version = 21 to 26
+		f.runtime.restore(saved.replace("v20|", "v" + I2S(version) + "|"), false).assertFalse()
+	(f.runtime.finance == live).assertTrue()
+	f.runtime.snapshot().assertEquals(saved)
+	destroy f
+
+@test function customsHeaderAndSiteRecordsRequireVersionAndCorrectOrder()
+	let f = new CustomsCompatibilityFixture()
+	let h = f.record("|H,port,england,90,190,1,england,555")
+	let j = f.record("|J,1")
+	f.runtime.restoreSnapshotRecord(h, f.runtime).assertFalse()
+	f.runtime.restoreSnapshotRecord(j, f.runtime).assertFalse()
+	f.runtime.legacyCustomsRecords = false
+	f.runtime.restoreSnapshotRecord(h, f.runtime).assertFalse()
+	f.runtime.restoreSnapshotRecord(j, f.runtime).assertTrue()
+	f.runtime.restoreSnapshotRecord(j, f.runtime).assertFalse()
+	f.runtime.restoreSnapshotRecord(h, f.runtime).assertTrue()
+	f.runtime.restoreSnapshotRecord(h, f.runtime).assertFalse()
+	f.runtime.finance.customsRestored.assertEquals(1)
+	f.runtime.finance.customsState(0).lastDay.assertEquals(190)
+	destroy j
+	destroy h
+	destroy f
+
+@test function customsCompletenessControllerCampaignDayAndLegacyForkStayIndependent()
+	let f = new CustomsCompatibilityFixture()
+	f.runtime.legacyCustomsRecords = false
+	let j = f.record("|J,1")
+	let h = f.record("|H,port,england,90,190,1,england,555")
+	f.runtime.validateCustomsRecords("v25|k,0", 0).assertTrue()
+	f.runtime.validateCustomsRecords("v26|k,0", 0).assertFalse()
+	f.runtime.restoreSnapshotRecord(j, f.runtime).assertTrue()
+	f.runtime.validateCustomsRecords("v25|k,0|J,1", 190).assertFalse()
+	f.runtime.restoreSnapshotRecord(h, f.runtime).assertTrue()
+	f.runtime.validateCustomsRecords("v25|k,0|J,1", 190).assertTrue()
+	f.runtime.validateCustomsRecords("v25|k,0|J,1", 189).assertFalse()
+	f.runtime.settlements[0].controllerId = "france"
+	f.runtime.validateCustomsRecords("v25|k,0|J,1", 190).assertFalse()
+	f.runtime.settlements[0].controllerId = "england"
+	let legacy = f.runtime.snapshot()
+	let parsed = f.runtime.parseValidatedSnapshot(legacy, 190)
+	(parsed != null).assertTrue()
+	(parsed.finance != f.runtime.finance).assertTrue()
+	parsed.finance.customsState(0).lastDay.assertEquals(0)
+	parsed.finance.customsExpected.assertEquals(-1)
+	parsed.legacyCustomsRecords.assertTrue()
+	parsed.dispose()
+	f.runtime.restore(legacy + "|J,0", false).assertFalse()
+	f.runtime.finance.customsState(0).lastDay.assertEquals(190)
+	f.runtime.restore(legacy, false).assertTrue()
+	f.runtime.finance.customsState(0).lastDay.assertEquals(0)
+	f.runtime.legacyCustomsRecords.assertTrue()
+	destroy h
+	destroy j
+	destroy f

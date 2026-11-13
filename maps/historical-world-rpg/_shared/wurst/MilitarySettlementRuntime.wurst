@@ -34,6 +34,11 @@ public function militaryMapMatches(string locationId, string mapId) returns bool
 public function militaryInstitutionCourtsRequired(string candidate) returns boolean
 	return candidate.startsWith("v26|") or (candidate.startsWith("v25|") and not candidate.contains("|J,")) or candidate.contains("|O,")
 
+/** Customs records belong to the historical v25 customs branch and v26.
+ * This predicate does not authorize either version for the active v20 reader. */
+public function militaryCustomsRecordsAllowed(string candidate) returns boolean
+	return candidate.startsWith("v25|") or candidate.startsWith("v26|")
+
 function militaryCourtInteger(string value) returns boolean
 	return exactNaturalValid(value) and exactNaturalCompare(value, "2147483647") <= 0
 
@@ -523,6 +528,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 	// Dormant until the institutional catalogue and its save version are enabled.
 	BankingLedger institutionCourts = new BankingLedger()
 	boolean legacyInstitutionCourts = true
+	boolean legacyCustomsRecords = true
 	FinanceLedger finance = new FinanceLedger()
 	NavalLedger naval = new NavalLedger()
 	NavalResearchEffects navalResearch = null
@@ -1548,6 +1554,24 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if campaignDay >= 0 and state.lastDay > campaignDay
 				return false
 		return true
+	/** The independent v25 institution branch may omit J; v26 requires J.
+	 * A J count without every exact H record is never a complete snapshot. */
+	function validateCustomsRecords(string candidate, int campaignDay) returns boolean
+		if legacyCustomsRecords
+			return finance.customsExpected < 0 and finance.customsRestored == 0
+		if finance.customsExpected < 0
+			if candidate.startsWith("v26|") or finance.customsRestored != 0
+				return false
+		else if finance.customsExpected != finance.customsRestored
+			return false
+		for i = 0 to finance.siteCount - 1
+			let state = finance.customsState(i)
+			let city = settlementIndex(finance.sites[i].id)
+			if (state.builder != "" and not state.completed and (city < 0 or settlements[city].controllerId != state.builder)) or (state.operator != "" and (city < 0 or settlements[city].controllerId != state.operator))
+				return false
+			if campaignDay >= 0 and state.lastDay > campaignDay
+				return false
+		return true
 	/** Stable, handle-free authority. Every mutable military/settlement field is
 	 * included so inactive regions advance and reload exactly like active ones. */
 	function snapshot() returns string
@@ -1600,6 +1624,17 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		result += institutionCourtRecords(MILITARY_SETTLEMENT_SNAPSHOT_VERSION)
 		for i = 0 to banking.count - 1
 			result += "|b," + banking.sites[i].id + "," + banking.states[i].record()
+		// Only v25 customs/v26 emit typed house records; v20 bytes are unchanged.
+		if MILITARY_SETTLEMENT_SNAPSHOT_VERSION >= 25
+			var customsRecords = 0
+			for i = 0 to finance.siteCount - 1
+				if finance.customsState(i).lastDay > 0
+					customsRecords++
+			result += "|J," + I2S(customsRecords)
+			for i = 0 to finance.siteCount - 1
+				let s = finance.customsState(i)
+				if s.lastDay > 0
+					result += "|H," + finance.sites[i].id + "," + s.builder + "," + I2S(s.work) + "," + I2S(s.lastDay) + "," + boolText(s.completed) + "," + s.operator + "," + I2S(s.through)
 		for i = 0 to finance.count - 1
 			let s = finance.states[i]
 			result += "|z," + finance.projects[i].id + "," + I2S(s.freightDay) + "," + I2S(s.freightUsed)
@@ -1766,6 +1801,30 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if s.owner == ""
 				return s.ready == 0 and s.upkeepThrough == 0
 			return s.serial > 0 and s.ready > 0 and s.ready >= target.banking.transitionDays and s.ready - target.banking.transitionDays <= s.lastDay and s.upkeepThrough >= s.ready and s.upkeepThrough - s.ready >= 365 and (s.upkeepThrough - s.ready) mod 365 == 0 and s.upkeepThrough > s.lastDay
+		if kind == "J"
+			if target.legacyCustomsRecords or record.count != 2 or target.finance.customsExpected >= 0 or not exactNaturalValid(record.field(1)) or exactNaturalCompare(record.field(1), I2S(target.finance.siteCount)) > 0
+				return false
+			target.finance.customsExpected = S2I(record.field(1))
+			return true
+		if kind == "H"
+			let i = target.finance.siteIndex(record.field(1))
+			if target.legacyCustomsRecords or target.finance.customsExpected < 0 or target.finance.customsRestored >= target.finance.customsExpected or record.count != 8 or i < 0 or target.finance.customs[i].restored
+				return false
+			if (record.field(2) != "" and not scienceControllerText(record.field(2))) or (record.field(6) != "" and not scienceControllerText(record.field(6))) or (record.field(5) != "0" and record.field(5) != "1")
+				return false
+			for j = 3 to 7
+				if j != 5 and j != 6 and (not exactNaturalValid(record.field(j)) or exactNaturalCompare(record.field(j), "2147483282") > 0)
+					return false
+			let s = target.finance.customs[i]
+			s.restored = true
+			target.finance.customsRestored++
+			s.builder = record.field(2)
+			s.work = S2I(record.field(3))
+			s.lastDay = S2I(record.field(4))
+			s.completed = record.field(5) == "1"
+			s.operator = record.field(6)
+			s.through = S2I(record.field(7))
+			return s.lastDay > 0 and target.finance.sites[i].customsEligible and s.work <= target.finance.customsDays and s.completed == (s.work == target.finance.customsDays) and (s.builder != "" or s.work == 0) and (s.builder == "" or target.finance.sites[i].customsEligible and s.lastDay >= target.finance.customsFirstDay + s.work) and (s.operator == "" and s.through == 0 or s.operator != "" and s.completed and s.through > s.lastDay and s.through <= s.lastDay + 365)
 		if kind == "z"
 			let i = target.finance.index(record.field(1))
 			if record.count != 4 or i < 0 or target.finance.states[i].freightRestored
@@ -2097,6 +2156,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		parsed.banking = banking.fork()
 		destroy parsed.finance
 		parsed.finance = finance.fork()
+		parsed.legacyCustomsRecords = not militaryCustomsRecordsAllowed(candidate)
 		destroy parsed.naval
 		parsed.naval = naval.fork()
 		parsed.traditionDefinitions = traditionDefinitions
@@ -2144,6 +2204,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if s.equipmentOwner != "" and (city < 0 or parsed.settlements[city].controllerId != s.equipmentOwner)
 				parsed.dispose()
 				return null
+		if not parsed.validateCustomsRecords(candidate, -1)
+			parsed.dispose()
+			return null
 		for i = 0 to parsed.finance.count - 1
 			if (candidate.startsWith("v20|") or candidate.startsWith("v19|") or candidate.startsWith("v18|") or candidate.startsWith("v17|") or candidate.startsWith("v16|") or candidate.contains("|q,")) and not parsed.finance.states[i].restored
 				parsed.dispose()
@@ -2316,6 +2379,9 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			if campaignDay >= 0 and parsed.banking.states[i].lastDay > campaignDay
 				parsed.dispose()
 				return null
+		if not parsed.validateCustomsRecords(candidate, campaignDay)
+			parsed.dispose()
+			return null
 		for i = 0 to parsed.finance.count - 1
 			if campaignDay >= 0 and (parsed.finance.states[i].lastDay > campaignDay or parsed.finance.states[i].freightDay > campaignDay)
 				parsed.dispose()
@@ -2393,6 +2459,7 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		parsed.banking = new BankingLedger()
 		finance = parsed.finance
 		parsed.finance = new FinanceLedger()
+		legacyCustomsRecords = parsed.legacyCustomsRecords
 		science = parsed.science
 		parsed.science = new ScienceLedger()
 		civic = parsed.civic
