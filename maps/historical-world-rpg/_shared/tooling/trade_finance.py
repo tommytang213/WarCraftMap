@@ -83,13 +83,42 @@ def configuration(project, world, settlements, authored, trade_records):
     return '\n'.join(lines) + '\n', data | {'effects': effects, 'exchangeIds': list(sites)}, [path, design, Path(__file__)]
 
 
+def _finance_function_matches(source, expected):
+    """Check the complete canonical finance function, not just its prefix.
+
+    The map composer appends one logistics call after the finance recipe. Allow
+    that known continuation, but no other statements in this function. Ignore
+    comments when finding indentation boundaries without treating comment-like
+    text inside quoted strings/rawcodes as comments. This is a generated-source
+    contract, not a Wurst parser or verification of the logistics implementation.
+    """
+    tokens = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?(?:\*/|\Z)')
+    visible = tokens.sub(
+        lambda match: re.sub(r'[^\n]', ' ', match.group())
+        if match.group().startswith(('//', '/*')) else match.group(), source)
+    declarations = list(re.finditer(
+        r'(?m)^(?:public[ \t]+)?function[ \t]+configureGeneratedFinance\b[^\n]*', visible))
+    if len(declarations) != 1:
+        return False
+    actual = []
+    for line in visible[declarations[0].start():].splitlines():
+        if actual and line.strip() and not line[0].isspace():
+            break
+        if line.strip():
+            actual.append(line.rstrip())
+    recipe = [line.rstrip() for line in expected.splitlines() if line.strip()]
+    return actual == recipe or actual == recipe + [
+        '\tconfigureGeneratedLogistics(ledger, effects)']
+
+
 def verify_generated(project, world, settlements, authored, source, catalogue):
     """Reject disconnected recipes and per-identity metadata, even if rehashed."""
     records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
     expected, expected_catalogue, _inputs = configuration(project, world, settlements, authored, records)
     if (json.dumps(catalogue, sort_keys=True, allow_nan=False) !=
             json.dumps(expected_catalogue, sort_keys=True, allow_nan=False)
-            or source.count(expected) != 1):
+            or source.count(expected) != 1
+            or not _finance_function_matches(source, expected)):
         raise ValueError('finance: executable catalogue or exact consumer metadata differs from scenario')
 
 # These are production tests, not a design approval or source-name heuristic.

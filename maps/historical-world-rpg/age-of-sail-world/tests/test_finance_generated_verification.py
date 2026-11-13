@@ -140,6 +140,72 @@ class FinanceGeneratedVerificationTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'invalid schema'):
                     self.f.generate()
 
+    def test_appended_finance_overrides_do_not_hide_behind_expected_prefix(self):
+        for separator in ('', '\n', '// Boundary comment.\n',
+                          '/* Boundary\ncomment. */\n'):
+            with self.subTest(separator=separator):
+                source = self.source + separator + '\tledger.commissionShare = 0\n'
+                self.assertEqual(1, source.count(self.generated))
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=source)
+
+    def test_packager_logistics_continuation_is_allowed_once(self):
+        # package_wurst_map.generate appends this call to finance_wurst, then
+        # appends the separate logistics function. No Wurst execution is claimed.
+        for separator in ('', '\n', '// Composer boundary.\n', '/* boundary */\n'):
+            with self.subTest(separator=separator):
+                source = (self.source + separator
+                          + '\tconfigureGeneratedLogistics(ledger, effects)\n'
+                          + '\npublic function configureGeneratedLogistics(FinanceLedger ledger, FinanceResearchEffects effects)\n'
+                          + '\tskip\n')
+                self.assertIsNone(self.verify(source=source))
+
+    def test_logistics_continuation_cannot_hide_extra_finance_statements(self):
+        call = '\tconfigureGeneratedLogistics(ledger, effects)\n'
+        for tail in (call * 2, call + '\tledger.remittanceFee = 0\n',
+                     '\tledger.remittanceFee = 0\n' + call,
+                     '\tconfigureGeneratedLogistics(ledger, inventedEffects)\n',
+                     call + '// Still the same function.\n\tledger.commissionShare = 0\n'):
+            with self.subTest(tail=tail):
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=self.source + tail)
+
+    def test_commented_out_finance_recipe_cannot_satisfy_the_gate(self):
+        for terminator in ('*/\n', ''):
+            with self.subTest(terminated=bool(terminator)):
+                source = self.market_source + '/* disabled finance\n' + self.generated + terminator
+                self.assertEqual(1, source.count(self.generated))
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=source)
+
+    def test_different_duplicate_finance_definition_is_rejected(self):
+        for declaration in ('public function configureGeneratedFinance',
+                            'function configureGeneratedFinance'):
+            with self.subTest(declaration=declaration):
+                source = (self.source + '\n' + declaration
+                          + '(FinanceLedger ledger, FinanceResearchEffects effects)\n\tskip\n')
+                self.assertEqual(1, source.count(self.generated))
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=source)
+
+    def test_comment_like_literals_do_not_mask_the_finance_declaration(self):
+        for literal in ('"/* not a comment */ // still a string"',
+                        '"escaped \\" quote and /* marker"', "'/*xx'", "'//xx'"):
+            with self.subTest(literal=literal):
+                # Canonical generated code uses quoted IDs and can contain
+                # comment-like characters without starting a source comment.
+                kind = 'int' if literal.startswith("'") else 'string'
+                prefix = kind + ' unrelated = ' + literal + '\n'
+                self.assertIsNone(self.verify(source=prefix + self.source))
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=prefix + self.source + '\tledger.remittanceFee = 0\n')
+
+    def test_next_top_level_function_is_not_part_of_finance_body(self):
+        tail = ('\n/* next generated section */\n'
+                'public function unrelated(FinanceLedger ledger)\n'
+                '\tledger.remittanceFee = 0\n')
+        self.assertIsNone(self.verify(source=self.source + tail))
+
     def test_matching_output_is_not_release_execution_evidence(self):
         self.assertEqual(set(), finance.verified_bindings(self.f.root))
         self.verify()
