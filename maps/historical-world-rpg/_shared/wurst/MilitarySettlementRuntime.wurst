@@ -1804,7 +1804,10 @@ public class MilitarySettlementRuntime implements LandReloadListener
 		if kind == "J"
 			if target.legacyCustomsRecords or record.count != 2 or target.finance.customsExpected >= 0 or not exactNaturalValid(record.field(1)) or exactNaturalCompare(record.field(1), I2S(target.finance.siteCount)) > 0
 				return false
-			target.finance.customsExpected = S2I(record.field(1))
+			let count = S2I(record.field(1))
+			if I2S(count) != record.field(1)
+				return false
+			target.finance.customsExpected = count
 			return true
 		if kind == "H"
 			let i = target.finance.siteIndex(record.field(1))
@@ -1815,16 +1818,30 @@ public class MilitarySettlementRuntime implements LandReloadListener
 			for j = 3 to 7
 				if j != 5 and j != 6 and (not exactNaturalValid(record.field(j)) or exactNaturalCompare(record.field(j), "2147483282") > 0)
 					return false
-			let s = target.finance.customs[i]
-			s.restored = true
+			// Rejected records cannot even alter a synthetic candidate invoked
+			// directly; detached full loads retain the same all-or-nothing rule.
+			let work = S2I(record.field(3))
+			let day = S2I(record.field(4))
+			let completed = record.field(5) == "1"
+			let through = S2I(record.field(7))
+			let builder = record.field(2)
+			let operatorId = record.field(6)
+			if day <= 0 or not target.finance.sites[i].customsEligible or work > target.finance.customsDays or completed != (work == target.finance.customsDays)
+				return false
+			if (builder == "" and work > 0) or (builder != "" and day < target.finance.customsFirstDay + work)
+				return false
+			if (operatorId == "" and through != 0) or (operatorId != "" and (not completed or through <= day or through > day + 365))
+				return false
+			let state = target.finance.customs[i]
+			state.builder = builder
+			state.work = work
+			state.lastDay = day
+			state.completed = completed
+			state.operator = operatorId
+			state.through = through
+			state.restored = true
 			target.finance.customsRestored++
-			s.builder = record.field(2)
-			s.work = S2I(record.field(3))
-			s.lastDay = S2I(record.field(4))
-			s.completed = record.field(5) == "1"
-			s.operator = record.field(6)
-			s.through = S2I(record.field(7))
-			return s.lastDay > 0 and target.finance.sites[i].customsEligible and s.work <= target.finance.customsDays and s.completed == (s.work == target.finance.customsDays) and (s.builder != "" or s.work == 0) and (s.builder == "" or target.finance.sites[i].customsEligible and s.lastDay >= target.finance.customsFirstDay + s.work) and (s.operator == "" and s.through == 0 or s.operator != "" and s.completed and s.through > s.lastDay and s.through <= s.lastDay + 365)
+			return true
 		if kind == "z"
 			let i = target.finance.index(record.field(1))
 			if record.count != 4 or i < 0 or target.finance.states[i].freightRestored

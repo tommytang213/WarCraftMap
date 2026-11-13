@@ -95,3 +95,33 @@ class CustomsCompatibilityFixture
 	destroy h
 	destroy j
 	destroy f
+
+@test function rejectedCustomsSiteRecordsNeverPartiallyMutateCandidate()
+	let f = new CustomsCompatibilityFixture()
+	f.runtime.legacyCustomsRecords = false
+	let invalidHeader = f.record("|J,01")
+	f.runtime.restoreSnapshotRecord(invalidHeader, f.runtime).assertFalse()
+	f.runtime.finance.customsExpected.assertEquals(-1)
+	let header = f.record("|J,1")
+	f.runtime.restoreSnapshotRecord(header, f.runtime).assertTrue()
+	let invalidCompletion = f.record("|H,port,england,90,190,0,england,555")
+	let invalidUpkeep = f.record("|H,port,england,90,190,1,england,556")
+	let invalidDate = f.record("|H,port,england,90,189,1,england,554")
+	f.runtime.restoreSnapshotRecord(invalidCompletion, f.runtime).assertFalse()
+	f.runtime.restoreSnapshotRecord(invalidUpkeep, f.runtime).assertFalse()
+	f.runtime.restoreSnapshotRecord(invalidDate, f.runtime).assertFalse()
+	f.runtime.finance.customsRestored.assertEquals(0)
+	f.runtime.finance.customsState(0).restored.assertFalse()
+	f.runtime.finance.customsState(0).work.assertEquals(0)
+	f.runtime.finance.customsState(0).lastDay.assertEquals(0)
+	let good = f.record("|H,port,england,90,190,1,england,555")
+	f.runtime.restoreSnapshotRecord(good, f.runtime).assertTrue()
+	f.runtime.finance.customsRestored.assertEquals(1)
+	f.runtime.finance.customsState(0).completed.assertTrue()
+	destroy good
+	destroy invalidDate
+	destroy invalidUpkeep
+	destroy invalidCompletion
+	destroy header
+	destroy invalidHeader
+	destroy f
