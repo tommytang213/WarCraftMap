@@ -116,6 +116,30 @@ class FinanceGeneratedVerificationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'invalid schema'):
             self.verify()
 
+    def test_catalogue_numeric_type_substitutions_are_rejected(self):
+        # JSON numeric identity matters: Python considers True == 1 and 1.0 == 1.
+        self.assertIsNone(self.verify())
+        for value in (True, 1.0, False, 0.0):
+            with self.subTest(value=value, kind=type(value).__name__):
+                changed = copy.deepcopy(self.catalogue)
+                changed['schemaVersion'] = value
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(catalogue=changed)
+        for value in (True, 5000.0):
+            with self.subTest(value=value, kind=type(value).__name__):
+                changed = copy.deepcopy(self.catalogue)
+                changed['commissionShareBasisPoints'] = value
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(catalogue=changed)
+
+    def test_noninteger_authored_schema_never_generates_finance(self):
+        for value in (True, 1.0, '1'):
+            with self.subTest(value=value, kind=type(value).__name__):
+                self.f.data['schemaVersion'] = value
+                self.f.path.write_text(json.dumps(self.f.data))
+                with self.assertRaisesRegex(ValueError, 'invalid schema'):
+                    self.f.generate()
+
     def test_matching_output_is_not_release_execution_evidence(self):
         self.assertEqual(set(), finance.verified_bindings(self.f.root))
         self.verify()

@@ -121,6 +121,40 @@ class PackagingTests(unittest.TestCase):
         self.assertNotIn('new RuntimeMarket("starting_settlement","Grain",100,10000,10,8)', source)
         self.assertIn('runtime.registerMarketProfile("london","grain"', source)
 
+    def test_generated_finance_audit_rejects_rehashed_source_and_metadata_tampering(self):
+        # The finance gate is independent of provenance hashes and Wurst release evidence.
+        import hashlib
+        config = load_config(self.project / "package.json")
+        generated = self.project / "_build/generated"
+        generate(config, generated)
+        verify_generated(config, generated)
+        paths = {name: generated / name for name in (
+            "ScenarioData.wurst", "scenario-runtime.json", "provenance.json")}
+        pristine = {name: path.read_bytes() for name, path in paths.items()}
+        for kind in ("metadata", "numeric_type", "wurst", "both"):
+            with self.subTest(kind=kind):
+                for name, path in paths.items():
+                    path.write_bytes(pristine[name])
+                runtime = json.loads(paths["scenario-runtime.json"].read_text())
+                source = paths["ScenarioData.wurst"].read_text()
+                baseline = runtime["tradeFinance"]["commissionShareBasisPoints"]
+                if kind in ("metadata", "both"):
+                    runtime["tradeFinance"]["commissionShareBasisPoints"] = baseline + 1
+                elif kind == "numeric_type":
+                    runtime["tradeFinance"]["schemaVersion"] = True
+                if kind in ("wurst", "both"):
+                    old = f'ledger.commissionShare = {baseline}'
+                    self.assertIn(old, source)
+                    source = source.replace(old, f'ledger.commissionShare = {baseline + 1}', 1)
+                paths["ScenarioData.wurst"].write_text(source)
+                paths["scenario-runtime.json"].write_text(json.dumps(runtime, sort_keys=True))
+                provenance = json.loads(pristine["provenance.json"])
+                for name in ("ScenarioData.wurst", "scenario-runtime.json"):
+                    provenance["outputs"][name] = hashlib.sha256(paths[name].read_bytes()).hexdigest()
+                paths["provenance.json"].write_text(json.dumps(provenance, sort_keys=True))
+                with self.assertRaisesRegex(PackagingError, "finance bindings"):
+                    verify_generated(config, generated)
+
     def test_changed_authoritative_input_is_rejected(self):
         config = load_config(self.project / "package.json"); generated = self.project / "_build/generated"
         generate(config, generated)

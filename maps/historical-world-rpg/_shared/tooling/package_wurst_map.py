@@ -1070,6 +1070,20 @@ def verify_generated(config: BuildConfig, generated: Path) -> None:
                 or json.loads((generated / GENERATED_DATA).read_text()).get('landArmy') != payload['catalog']):
             raise _fail('land army bindings', 'executable catalogue differs from scenario (release blocker)')
 
+    finance_path = config.project / 'scenario/progression/trade-finance.json'
+    if finance_path.is_file() and not selector:
+        from trade_finance import verify_generated as verify_finance
+        world = json.loads(config.scenario_file.read_text())
+        authored = {row['id']: (region, row)
+                    for path, _geography, region in settlement_sources(config.project)
+                    for row in json.loads(path.read_text()).get('settlements', [])}
+        try:
+            verify_finance(config.project, world, _load_settlement_runtime_data(config, world), authored,
+                           (generated / GENERATED_WURST).read_text(),
+                           json.loads((generated / GENERATED_DATA).read_text()).get('tradeFinance'))
+        except ValueError as error:
+            raise _fail('finance bindings', error) from error
+
     voyage_builder = configuration(config.project)["scenario"].get("voyageBuilder")
     if voyage_builder and not selector:
         result = subprocess.run([sys.executable, str(content_path(config.project, voyage_builder))],

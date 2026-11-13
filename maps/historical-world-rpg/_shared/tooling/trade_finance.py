@@ -14,7 +14,7 @@ def configuration(project, world, settlements, authored, trade_records):
     if not path.is_file():
         return header + '\tskip\n', {}, []
     data = json.loads(path.read_text())
-    if data.get('schemaVersion') != 1:
+    if type(data.get('schemaVersion')) is not int or data['schemaVersion'] != 1:
         raise ValueError('finance: invalid schema')
     design = project / data['designSource']
     if not design.resolve().is_relative_to(project.resolve()):
@@ -87,7 +87,9 @@ def verify_generated(project, world, settlements, authored, source, catalogue):
     """Reject disconnected recipes and per-identity metadata, even if rehashed."""
     records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
     expected, expected_catalogue, _inputs = configuration(project, world, settlements, authored, records)
-    if catalogue != expected_catalogue or source.count(expected) != 1:
+    if (json.dumps(catalogue, sort_keys=True, allow_nan=False) !=
+            json.dumps(expected_catalogue, sort_keys=True, allow_nan=False)
+            or source.count(expected) != 1):
         raise ValueError('finance: executable catalogue or exact consumer metadata differs from scenario')
 
 # These are production tests, not a design approval or source-name heuristic.
