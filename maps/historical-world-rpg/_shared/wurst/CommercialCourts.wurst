@@ -27,9 +27,14 @@ public class CommercialCourtsRuntime
 		let l = ledger()
 		let store = trade.findStore("warehouse:" + id)
 		return not campaign.loading and not campaign.startupLocked and not campaign.transitionOpen and owner != "" and l.index(id) >= 0 and port.economy.controller(id) == owner and port.economy.lawful(id) and port.economy.accessible(id) and campaign.rpg.technologies.isUnlocked(owner, l.prerequisite) and store != null and store.warehouseService and store.accessKind == "warehouse" and store.accessId == id
+	// Staged behind the unconfigured institution ledger; do not expose policy
+	// controls until the scenario catalogue and military migration are complete.
+	function institutionLedger() returns BankingLedger
+		return campaign.militarySettlements.institutionCourts
 	function advance(int day)
 		// The port delegates its eligibility to the courts ledger below.
 		ledger().advance(day, effects, policyPort)
+		institutionLedger().advance(day, effects, policyPort)
 	function policy(string owner, string id, boolean repeal) returns string
 		if not campaign.isSaveSafe()
 			return "Courts unavailable during restoration or transfer."
@@ -41,9 +46,16 @@ public class CommercialCourtsRuntime
 			return 0
 		let l = ledger()
 		let base = civicBill(principal, l.countingBasisPoints)
+		let earned = campaign.rpg.technologies.entitlements(owner)
+		var reduction = 0
 		if l.operating(l.index(market.id), owner, campaign.clock.currentDay, effects, policyPort)
-			return bankingCost(base, effects.rateAt(owner, l.availabilityMetric, campaign.clock.currentDay))
-		return base
+			reduction += effects.rateAt(earned, l.availabilityMetric, campaign.clock.currentDay)
+		let institution = institutionLedger()
+		let i = institution.index(market.id)
+		if i >= 0 and institution.operating(i, owner, campaign.clock.currentDay, effects, policyPort)
+			reduction += effects.rateAt(earned, institution.availabilityMetric, campaign.clock.currentDay)
+		destroy earned
+		return bankingCost(base, reduction)
 	function overview(string owner, string id) returns string
 		let l = ledger()
 		let i = l.index(id)

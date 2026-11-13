@@ -474,3 +474,56 @@ class CharteredFixture
 	f.military.forceCount.assertEquals(count)
 	c.market().stock.assertEquals(stock)
 	(f.campaign.countries.treasury[0] <= paid).assertTrue()
+
+@test function charteredDormantInstitutionConsumerRequiresIndependentEarnedSourceAndPreservesOldFee()
+	let c = new CharteredFixture(false)
+	let f = c.f
+	c.research()
+	c.policy()
+	f.clock.advanceTo(f.day + 90).assertTrue()
+	let day = f.clock.currentDay
+	let market = c.market()
+	let store = c.store()
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	f.military.institutionCourts.count.assertEquals(0)
+	// This synthetic site is deliberately not in the v20 scenario catalogue.
+	let ledger = f.military.institutionCourts
+	ledger.register(new BankingSite("london", 10000))
+	ledger.availabilityMetric = "fixture_institution_fee_reduction"
+	ledger.prerequisite = "fixture_institution_research"
+	let state = ledger.states[0]
+	state.owner = "player"
+	state.ready = day
+	state.lastDay = day
+	state.upkeepThrough = day + 365
+	// A paid-looking ledger cannot grant an unearned research source.
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	c.effects.register(new BankingEffect("policy", "fixture_institution_policy", ledger.availabilityMetric, 250, 0))
+	let research = new RuntimeTechnology("fixture_institution_research", "Synthetic court entitlement", 1, 1)
+	research.addUnlock(research.id, "policy", "fixture_institution_policy")
+	f.rpg.technologies.register(research).assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	f.rpg.restoreState(f.rpg.captureState() + "|u,player,fixture_institution_research").assertTrue()
+	f.rpg.technologies.reconstructAll()
+	c.effects.rateAt("player", ledger.availabilityMetric, day).assertEquals(250)
+	// One 100-unit service bill: 500 + 250 basis points saved exactly once.
+	c.courts.fee("player", market, store, 10000).assertEquals(93)
+	c.courts.fee("player", market, store, 1).assertEquals(1)
+	c.courts.fee("player", market, store, 0).assertEquals(0)
+	state.ready = day + 1
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	state.ready = day
+	state.upkeepThrough = day
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	state.upkeepThrough = day + 365
+	state.owner = "other"
+	c.courts.fee("player", market, store, 10000).assertEquals(95)
+	state.owner = "player"
+	market.blockaded = true
+	c.courts.fee("player", market, store, 10000).assertEquals(0)
+	market.blockaded = false
+	// Until a new schema is fully validated, institution records remain unsaved.
+	let snapshot = f.military.snapshot()
+	snapshot.startsWith("v20|").assertTrue()
+	snapshot.contains("|O,").assertFalse()
