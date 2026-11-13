@@ -108,3 +108,72 @@ class StagedCustomsCampaign
 	t.state().completed.assertTrue()
 	t.state().operator.assertEquals("")
 	t.state().through.assertEquals(0)
+
+@test function stagedCustomsQuoteNeedsFundedConstructionAndPrepaidOperation()
+	let t = new StagedCustomsCampaign()
+	let f = t.f
+	let l = f.military.finance
+	l.customsCommission = 600
+	l.customsSlippage = 500
+	let market = f.trade.findMarket("london", "timber")
+	let initial = market.quoteAmount(100, true)
+	f.runtime.amount("player", market, 100, true).assertEquals(initial)
+	f.runtime.customsAction("player", "london", false).assertEquals("")
+	f.runtime.amount("player", market, 100, true).assertEquals(market.quoteAmount(100, true))
+	f.clock.currentDay = t.day + 90
+	f.runtime.advance(f.clock.currentDay)
+	t.state().completed.assertTrue()
+	f.runtime.amount("player", market, 100, true).assertEquals(market.quoteAmount(100, true))
+	let base = market.quoteAmount(100, true)
+	let spread = market.pricing.spreadPermille
+	market.pricing.spreadPermille = 0
+	let principal = market.quoteAmount(100, true)
+	market.pricing.spreadPermille = spread
+	(base > principal).assertTrue()
+	let commission = civicScale(base - principal, l.commissionShare)
+	let discount = civicScale(commission, l.customsCommission)
+	(discount > 0).assertTrue()
+	f.runtime.customsAction("player", "london", true).assertEquals("")
+	f.runtime.amount("player", market, 100, true).assertEquals(base - discount)
+	f.clock.currentDay = t.day + 455
+	f.runtime.amount("player", market, 100, true).assertEquals(base)
+
+@test function stagedCustomsCreditNeedsSeparateResearchAndRealCounterpartyLiquidity()
+	let t = new StagedCustomsCampaign()
+	let f = t.f
+	let l = f.military.finance
+	l.customsCommission = 600
+	l.customsSlippage = 500
+	let credit = new RuntimeTechnology("synthetic_credit_liquidity", "Synthetic Credit Liquidity", 1450, 1)
+	credit.addUnlock(credit.id, "modifier", l.customsModifier)
+	f.rpg.technologies.register(credit).assertTrue()
+	f.runtime.customsAction("player", "london", false).assertEquals("")
+	f.clock.currentDay = t.day + 90
+	f.runtime.advance(f.clock.currentDay)
+	f.runtime.customsAction("player", "london", true).assertEquals("")
+	let market = f.trade.findMarket("london", "timber")
+	let base = market.quoteAmount(100, true)
+	let spread = market.pricing.spreadPermille
+	market.pricing.spreadPermille = 0
+	let principal = market.quoteAmount(100, true)
+	market.pricing.spreadPermille = spread
+	(base > principal).assertTrue()
+	let cost = base - principal
+	let commission = civicScale(cost, l.commissionShare)
+	let slippage = cost - commission
+	let commissionOnly = base - civicScale(commission, l.customsCommission)
+	let both = commissionOnly - civicScale(slippage, l.customsSlippage)
+	(both < commissionOnly).assertTrue()
+	f.runtime.amount("player", market, 100, true).assertEquals(commissionOnly)
+	f.rpg.technologies.unlock("player", credit.id, 1450, 100, 0, 0).assertTrue()
+	f.runtime.amount("player", market, 100, true).assertEquals(both)
+	f.rpg.technologies.reconstructAll()
+	f.rpg.technologies.reconstructAll()
+	f.runtime.amount("player", market, 100, true).assertEquals(both)
+	let money = market.money
+	market.money = 0
+	f.runtime.amount("player", market, 100, true).assertEquals(commissionOnly)
+	market.money = money
+	f.runtime.amount("player", market, 100, true).assertEquals(both)
+	l.controlChanged("london")
+	f.runtime.amount("player", market, 100, true).assertEquals(base)

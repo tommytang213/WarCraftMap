@@ -143,8 +143,12 @@ public class FinanceCampaignRuntime
 		// Preview layers can predate a restore/revocation. Resolve the current
 		// earned typed sources without mutating any reconstructed effect layer.
 		let earned = campaign.rpg.technologies.entitlements(owner)
-		let auction = effects.rateAt(earned, "market_transaction_fee_reduction", day)
-		let brokerage = effects.rateAt(earned, "market_slippage_reduction", day)
+		var auction = effects.rateAt(earned, "market_transaction_fee_reduction", day)
+		var brokerage = effects.rateAt(earned, "market_slippage_reduction", day)
+		if operatingCustoms(owner, market.id)
+			auction += ledger().customsCommission
+			if earned.has("modifier", ledger().customsModifier) and market.money > 0
+				brokerage += ledger().customsSlippage
 		destroy earned
 		if auction == 0 and brokerage == 0
 			return original
