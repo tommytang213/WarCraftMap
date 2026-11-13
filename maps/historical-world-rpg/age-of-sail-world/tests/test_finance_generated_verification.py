@@ -256,6 +256,18 @@ class FinanceGeneratedVerificationTests(unittest.TestCase):
         # phantom registration should be required by the finance generator.
         self.assertIsNone(self.verify(source=amended + self.generated))
 
+    def test_indented_duplicate_finance_definition_after_unrelated_function_is_rejected(self):
+        # Wurst permits leading whitespace. The audit must not treat a second
+        # indented declaration as ordinary text after another function.
+        for prefix in ('\tpublic ', '    ', '\t'):
+            with self.subTest(prefix=repr(prefix)):
+                declaration = (prefix + 'function configureGeneratedFinance'
+                               + '(FinanceLedger ledger, FinanceResearchEffects effects)')
+                source = (self.source + '\npublic function unrelated()\n\tskip\n'
+                          + declaration + '\n\tskip\n')
+                with self.assertRaisesRegex(ValueError, 'differs from scenario'):
+                    self.verify(source=source)
+
     def test_matching_output_is_not_release_execution_evidence(self):
         self.assertEqual(set(), finance.verified_bindings(self.f.root))
         self.verify()

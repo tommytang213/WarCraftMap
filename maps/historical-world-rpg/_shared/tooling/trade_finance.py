@@ -106,7 +106,7 @@ def _finance_function_matches(source, expected):
     """
     visible = _wurst_without_comments(source)
     declarations = list(re.finditer(
-        r'(?m)^(?:public[ \t]+)?function[ \t]+configureGeneratedFinance\b[^\n]*', visible))
+        r'(?m)^[ \t]*(?:public[ \t]+)?function[ \t]+configureGeneratedFinance\b[^\n]*', visible))
     if len(declarations) != 1:
         return False
     actual = []
