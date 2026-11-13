@@ -180,7 +180,7 @@ end
 function showPage() end
 function choose(path) ChangeLevel(path, true) end
 function origins()
- add("austria", "Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x")
+ OriginCatalog_OriginCatalog_add(catalog, "austria", "Archduchy of Austria", "europe_central_east", "EuropeCentralEast.w3x", "europe_central_east", "vienna")
 end
 '''
 
@@ -189,18 +189,32 @@ end
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.config = SimpleNamespace(map_config_path=self.root / "package.json", maps=(
-            SimpleNamespace(id="bootstrap_runtime_validation", package_path="AgeOfSailWorld.w3x", bootstrap=True, terrain_ids=()),
-            SimpleNamespace(id="europe_central_east", package_path="EuropeCentralEast.w3x", bootstrap=False, terrain_ids=()),
+            SimpleNamespace(id="bootstrap_runtime_validation", package_path="AgeOfSailWorld.w3x", bootstrap=True, terrain_ids=(), regional_instance_ids=()),
+            SimpleNamespace(id="europe_central_east", package_path="EuropeCentralEast.w3x", bootstrap=False, terrain_ids=(), regional_instance_ids=("europe_central_east",)),
         ))
+        # A one-origin authoritative world keeps the compiled selector check real
+        # without requiring a full campaign setup in this isolated unit fixture.
+        world = {"polities": [{"id": "austria", "name": "Archduchy of Austria",
+                               "capitalSettlementId": "vienna"}],
+                 "settlements": [{"id": "vienna", "legalOwnerPolityId": "austria",
+                                  "regionalInstanceId": "europe_central_east"}]}
+        world_path = self.root / "scenario/world/world.json"
+        world_path.parent.mkdir(parents=True)
+        world_path.write_text(json.dumps(world))
+        project_patch = patch.object(smoke, "PROJECT", self.root)
+        project_patch.start()
+        self.addCleanup(project_patch.stop)
 
     def test_compiled_handoff_rejects_legacy_paths_comments_and_missing_native(self):
         valid = smoke.inspect_root_basename_handoff(self.config, self.LUA)
         self.assertEqual(valid["destinationPackagePath"], "EuropeCentralEast.w3x")
         self.assertEqual(valid["evidenceLevel"], "compiled_text_static_heuristic")
+        self.assertEqual(valid["validatedOriginCount"], 1)
         cases = (
             self.LUA.replace(b'"EuropeCentralEast.w3x"', b'"Maps/EuropeCentralEast.w3x"') + b'\n-- "EuropeCentralEast.w3x"',
             self.LUA + b'\nlegacy = "Maps/EuropeCentralEast.w3x"',
             self.LUA.replace(b'ChangeLevel(path, true)', b'EndGame(true)') + b'\n-- ChangeLevel(path, true)',
+            self.LUA.replace(b'"europe_central_east", "vienna")', b'"europe_central_east", "wrong_settlement")'),
         )
         for script in cases:
             with self.subTest(script=script), self.assertRaises(ValueError):
