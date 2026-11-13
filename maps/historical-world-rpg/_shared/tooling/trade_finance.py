@@ -83,6 +83,18 @@ def configuration(project, world, settlements, authored, trade_records):
     return '\n'.join(lines) + '\n', data | {'effects': effects, 'exchangeIds': list(sites)}, [path, design, Path(__file__)]
 
 
+def _wurst_without_comments(source):
+    """Blank Wurst line/block comments but preserve strings and line layout.
+
+    This is a generated-source lexical check, not an interpreter or substitute
+    for compiling the map. Keep literal quoted IDs available to audit callers.
+    """
+    tokens = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?(?:\*/|\Z)')
+    return tokens.sub(
+        lambda match: re.sub(r'[^\n]', ' ', match.group())
+        if match.group().startswith(('//', '/*')) else match.group(), source)
+
+
 def _finance_function_matches(source, expected):
     """Check the complete canonical finance function, not just its prefix.
 
@@ -92,10 +104,7 @@ def _finance_function_matches(source, expected):
     text inside quoted strings/rawcodes as comments. This is a generated-source
     contract, not a Wurst parser or verification of the logistics implementation.
     """
-    tokens = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?(?:\*/|\Z)')
-    visible = tokens.sub(
-        lambda match: re.sub(r'[^\n]', ' ', match.group())
-        if match.group().startswith(('//', '/*')) else match.group(), source)
+    visible = _wurst_without_comments(source)
     declarations = list(re.finditer(
         r'(?m)^(?:public[ \t]+)?function[ \t]+configureGeneratedFinance\b[^\n]*', visible))
     if len(declarations) != 1:
@@ -113,7 +122,11 @@ def _finance_function_matches(source, expected):
 
 def verify_generated(project, world, settlements, authored, source, catalogue):
     """Reject disconnected recipes and per-identity metadata, even if rehashed."""
-    records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
+    # Only executable registration statements can authorize a finance site.
+    # A comment or quoted documentation example is not a live market.
+    visible = _wurst_without_comments(source)
+    records = [line for line in visible.splitlines() if re.match(
+        r'^\s*runtime\.registerMarketProfile\(', line)]
     expected, expected_catalogue, _inputs = configuration(project, world, settlements, authored, records)
     if (json.dumps(catalogue, sort_keys=True, allow_nan=False) !=
             json.dumps(expected_catalogue, sort_keys=True, allow_nan=False)

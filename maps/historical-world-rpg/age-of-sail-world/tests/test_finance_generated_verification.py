@@ -206,6 +206,56 @@ class FinanceGeneratedVerificationTests(unittest.TestCase):
                 '\tledger.remittanceFee = 0\n')
         self.assertIsNone(self.verify(source=self.source + tail))
 
+    def test_commented_bank_registration_is_not_executable_finance_authority(self):
+        sid = self.f.data['bankNetworks'][0]['settlementIds'][0]
+        line = next(line for line in self.market_source.splitlines()
+                    if f'runtime.registerMarketProfile({json.dumps(sid)},' in line)
+        for commented in ('//' + line, '/*' + line + '*/',
+                          '/* blocked market\n' + line + '\n*/'):
+            with self.subTest(comment=commented[:20]):
+                tampered = self.source.replace(line, commented, 1)
+                self.assertIn('runtime.registerMarketProfile(', tampered)
+                with self.assertRaisesRegex(ValueError, 'bank lacks'):
+                    self.verify(source=tampered)
+
+    def test_commented_canal_material_registration_is_not_accepted(self):
+        work = self.f.data['canalWorks'][0]
+        line = next(line for line in self.market_source.splitlines()
+                    if f'runtime.registerMarketProfile({json.dumps(work["settlementId"])},'
+                       f'{json.dumps(work["good"])},' in line)
+        with self.assertRaisesRegex(ValueError, 'canal geography'):
+            self.verify(self.source.replace(line, '/*' + line + '*/', 1))
+
+    def test_quoted_example_cannot_replace_live_market_registration(self):
+        sid = self.f.data['bankNetworks'][0]['settlementIds'][0]
+        line = next(line for line in self.market_source.splitlines()
+                    if f'runtime.registerMarketProfile({json.dumps(sid)},' in line)
+        quoted = 'string documentation = ' + json.dumps(line.strip())
+        with self.assertRaisesRegex(ValueError, 'bank lacks'):
+            self.verify(self.source.replace(line, quoted, 1))
+
+    def test_comment_markers_in_quoted_metadata_do_not_hide_real_markets(self):
+        for literal in ('"https://example.com/*literal*/"',
+                        '"not // a real comment"', "'/*'", "'//'", 
+                        '"escaped \\" // still text"'):
+            with self.subTest(literal=literal):
+                source = 'string note = ' + literal + '\n' + self.source
+                self.assertIsNone(self.verify(source=source))
+                # Preserve the original complete generated finance function.
+                self.assertEqual(self.generated, finance.configuration(
+                    self.f.root, self.f.world, self.f.settlements,
+                    self.f.authored, self.f.records)[0])
+
+    def test_active_market_after_block_comment_still_qualifies(self):
+        lines = self.market_source.splitlines()
+        first = lines[0]
+        amended = ('/* documentation\n'
+                   'runtime.registerMarketProfile("london","timber",90,1000)\n'
+                   '*/\n' + first + '\n' + '\n'.join(lines[1:]) + '\n')
+        # The positive live call is present outside the comment; no duplicate
+        # phantom registration should be required by the finance generator.
+        self.assertIsNone(self.verify(source=amended + self.generated))
+
     def test_matching_output_is_not_release_execution_evidence(self):
         self.assertEqual(set(), finance.verified_bindings(self.f.root))
         self.verify()
