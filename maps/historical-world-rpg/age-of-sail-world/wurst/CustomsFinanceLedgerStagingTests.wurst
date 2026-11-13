@@ -1,0 +1,103 @@
+package CustomsFinanceLedgerStagingTests
+
+import TradeFinance
+import Wurstunit
+
+/** Synthetic customs authority only. The scenario catalogue and v21-v26
+ * military readers remain disabled until the complete migration is tested. */
+@test function customsSitesAndDetachedForkRetainOnlyImmutableDefinitions()
+	let ledger = new FinanceLedger()
+	ledger.registerSite("london", "europe_west", "correspondents", true)
+	ledger.registerSite("venice", "europe_south", "correspondents", false)
+	ledger.customsNode = "commodity_exchanges"
+	ledger.customsBuilding = "customs_house"
+	ledger.customsModifier = "credit_liquidity"
+	ledger.customsFirstDay = 657072
+	ledger.customsDays = 90
+	ledger.customsWorkers = 10
+	ledger.customsAdministration = 30
+	ledger.siteCount.assertEquals(2)
+	ledger.siteIndex("venice").assertEquals(1)
+	ledger.siteIndex("missing").assertEquals(-1)
+	ledger.sites[0].customsEligible.assertTrue()
+	ledger.sites[1].customsEligible.assertFalse()
+	let active = ledger.customsState(0)
+	active.builder = "england"
+	active.work = 17
+	active.lastDay = 100
+	active.operator = "england"
+	active.through = 464
+	let detached = ledger.fork()
+	(detached != ledger).assertTrue()
+	(detached.sites[0] == ledger.sites[0]).assertTrue()
+	(detached.customsState(0) != active).assertTrue()
+	(detached.customsState(1) != ledger.customsState(1)).assertTrue()
+	detached.customsState(0).builder.assertEquals("")
+	detached.customsState(0).work.assertEquals(0)
+	detached.customsState(0).lastDay.assertEquals(0)
+	detached.customsState(0).operator.assertEquals("")
+	detached.customsState(0).through.assertEquals(0)
+	detached.customsState(0).restored.assertFalse()
+	detached.customsState(0).completed.assertFalse()
+	detached.customsNode.assertEquals("commodity_exchanges")
+	detached.customsBuilding.assertEquals("customs_house")
+	detached.customsModifier.assertEquals("credit_liquidity")
+	detached.customsFirstDay.assertEquals(657072)
+	detached.customsDays.assertEquals(90)
+	detached.customsWorkers.assertEquals(10)
+	detached.customsAdministration.assertEquals(30)
+	detached.customsExpected.assertEquals(-1)
+	detached.customsRestored.assertEquals(0)
+	detached.customsState(0).builder = "france"
+	active.builder.assertEquals("england")
+	destroy detached
+	active.builder.assertEquals("england")
+	destroy ledger
+
+@test function customsCaptureCancelsUnfinishedWorkAndPrepaidOperationOnlyForSite()
+	let ledger = new FinanceLedger()
+	ledger.registerSite("london", "europe_west", "correspondents", true)
+	ledger.registerSite("venice", "europe_south", "correspondents", true)
+	let london = ledger.customsState(0)
+	london.builder = "england"
+	london.work = 15
+	london.lastDay = 100
+	london.operator = "england"
+	london.through = 465
+	let venice = ledger.customsState(1)
+	venice.builder = "venice"
+	venice.work = 7
+	venice.operator = "venice"
+	venice.through = 500
+	ledger.controlChanged("london")
+	london.builder.assertEquals("")
+	london.work.assertEquals(0)
+	london.lastDay.assertEquals(100)
+	london.operator.assertEquals("")
+	london.through.assertEquals(0)
+	venice.builder.assertEquals("venice")
+	venice.work.assertEquals(7)
+	venice.operator.assertEquals("venice")
+	venice.through.assertEquals(500)
+	ledger.controlChanged("unregistered")
+	venice.builder.assertEquals("venice")
+	destroy ledger
+
+@test function customsCaptureKeepsCompletedPhysicalHouseWithoutFreeOperation()
+	let ledger = new FinanceLedger()
+	ledger.registerSite("london", "europe_west", "correspondents", true)
+	let state = ledger.customsState(0)
+	state.builder = "england"
+	state.work = 90
+	state.lastDay = 100
+	state.completed = true
+	state.operator = "england"
+	state.through = 465
+	ledger.controlChanged("london")
+	state.completed.assertTrue()
+	state.builder.assertEquals("england")
+	state.work.assertEquals(90)
+	state.lastDay.assertEquals(100)
+	state.operator.assertEquals("")
+	state.through.assertEquals(0)
+	destroy ledger
