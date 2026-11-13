@@ -1,0 +1,110 @@
+package CustomsCampaignStagingTests
+
+import TradeFinanceTests
+import TradeFinance
+import FinanceCampaignRuntime
+import CivicGovernance
+import PlayableTrade
+import WarcraftRpgRuntime
+import Wurstunit
+
+/** Synthetic direct-call regression fixture only. Active v1 scenario generation
+ * does not register this capability; no v25/26 save reader or player command is
+ * enabled by these tests. */
+class StagedCustomsCampaign
+	FinanceFixture f = new FinanceFixture(false, true)
+	int day
+	construct()
+		day = f.clock.currentDay
+		let l = f.military.finance
+		let i = l.siteIndex("london")
+		(i >= 0).assertTrue()
+		l.sites[i].customsEligible = true
+		l.customsNode = "commodity_exchanges"
+		l.customsBuilding = "customs_house"
+		l.customsModifier = "credit_liquidity"
+		l.customsFirstDay = day - 1
+		l.customsBuildRate = 1000
+		l.customsUpkeepRate = 50
+		l.customsWorkers = 10
+		l.customsDays = 90
+		l.customsAdministration = 30
+		l.customsMaterialGood = "timber"
+		l.customsMaterialUnits = 20
+		l.customsEquipmentGood = "tools"
+		l.customsEquipmentUnits = 10
+		f.military.civic.register(new CivicDistrict("london", "europe_west", 1000, true, 0, 1, 0, 0, 0, "grain", 1, 100), day)
+		f.trade.registerMarket(new RuntimeMarket("london", "tools", 100, 100000, 100, 100))
+		let tech = new RuntimeTechnology("synthetic_customs", "Synthetic Customs", 1450, 1)
+		tech.addUnlock(tech.id, "building", l.customsBuilding)
+		f.rpg.technologies.register(tech).assertTrue()
+		f.rpg.technologies.unlock("player", tech.id, 1450, 100, 0, 0).assertTrue()
+	function state() returns CustomsState
+		return f.military.finance.customsState(f.military.finance.siteIndex("london"))
+
+@test function inactiveV1CustomsCatalogueNeverGrantsAuthorityOrNewCommand()
+	let f = new FinanceFixture(false, true)
+	f.military.finance.customsNode.assertEquals("")
+	f.runtime.customsAccess("player", "london").assertFalse()
+	f.runtime.operatingCustoms("player", "london").assertFalse()
+	f.runtime.customsAction("player", "london", false).contains("Requires").assertTrue()
+	let old = f.military.snapshot()
+	old.startsWith("v20|").assertTrue()
+	old.contains("|J,").assertFalse()
+	old.contains("|H,").assertFalse()
+	f.runtime.advance(f.clock.currentDay + 1)
+	f.military.finance.customsNode.assertEquals("")
+	f.commands.dispatch(Player(0), "/finance customs london").assertTrue()
+	f.resources.output.contains("Use /finance inspect").assertTrue()
+
+@test function stagedCustomsConstructionRejectsUnfundedOrUnlawfulInputsAtomically()
+	let t = new StagedCustomsCampaign()
+	let f = t.f
+	let treasury = f.campaign.countries.treasury[0]
+	let timber = f.trade.findMarket("london", "timber")
+	let tools = f.trade.findMarket("london", "tools")
+	tools.stock = 9
+	f.runtime.customsAction("player", "london", false).contains("Insufficient accessible").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	timber.stock.assertEquals(10000)
+	tools.stock.assertEquals(9)
+	t.state().builder.assertEquals("")
+	tools.stock = 100
+	f.runtime.customsAction("other", "london", false).contains("Requires").assertTrue()
+	f.campaign.countries.treasury[0].assertEquals(treasury)
+	timber.stock.assertEquals(10000)
+	tools.stock.assertEquals(100)
+	t.state().builder.assertEquals("")
+
+@test function stagedCustomsBuildAdvanceAndPrepaidOperationNeedRealPayment()
+	let t = new StagedCustomsCampaign()
+	let f = t.f
+	let treasury = f.campaign.countries.treasury[0]
+	f.runtime.customsAction("player", "london", false).assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(treasury - 100)
+	f.trade.findMarket("london", "timber").stock.assertEquals(9980)
+	f.trade.findMarket("london", "tools").stock.assertEquals(90)
+	t.state().builder.assertEquals("player")
+	f.runtime.customsAction("player", "london", false).contains("already built or under construction").assertTrue()
+	f.clock.currentDay = t.day + 89
+	f.runtime.advance(f.clock.currentDay)
+	t.state().work.assertEquals(89)
+	t.state().completed.assertFalse()
+	f.runtime.customsAction("player", "london", true).contains("Requires a completed").assertTrue()
+	f.clock.currentDay = t.day + 90
+	f.runtime.advance(f.clock.currentDay)
+	t.state().work.assertEquals(90)
+	t.state().completed.assertTrue()
+	f.runtime.operatingCustoms("player", "london").assertFalse()
+	f.runtime.customsAction("player", "london", true).assertEquals("")
+	f.campaign.countries.treasury[0].assertEquals(treasury - 105)
+	t.state().operator.assertEquals("player")
+	t.state().through.assertEquals(t.day + 455)
+	f.runtime.operatingCustoms("player", "london").assertTrue()
+	f.runtime.customsAction("player", "london", true).contains("prepaid operating year").assertTrue()
+	f.clock.currentDay = t.day + 455
+	f.runtime.operatingCustoms("player", "london").assertFalse()
+	f.military.finance.controlChanged("london")
+	t.state().completed.assertTrue()
+	t.state().operator.assertEquals("")
+	t.state().through.assertEquals(0)
