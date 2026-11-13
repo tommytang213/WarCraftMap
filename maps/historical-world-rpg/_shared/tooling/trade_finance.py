@@ -82,6 +82,14 @@ def configuration(project, world, settlements, authored, trade_records):
         lines.append('\tledger.register(new CanalWork(' + ', '.join(args) + '))')
     return '\n'.join(lines) + '\n', data | {'effects': effects, 'exchangeIds': list(sites)}, [path, design, Path(__file__)]
 
+
+def verify_generated(project, world, settlements, authored, source, catalogue):
+    """Reject disconnected recipes and per-identity metadata, even if rehashed."""
+    records = [line for line in source.splitlines() if 'runtime.registerMarketProfile(' in line]
+    expected, expected_catalogue, _inputs = configuration(project, world, settlements, authored, records)
+    if catalogue != expected_catalogue or source.count(expected) != 1:
+        raise ValueError('finance: executable catalogue or exact consumer metadata differs from scenario')
+
 # These are production tests, not a design approval or source-name heuristic.
 # Release consumes only a verified full current-source interpreter transcript.
 REQUIRED_TESTS = {
