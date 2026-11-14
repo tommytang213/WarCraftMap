@@ -3,8 +3,8 @@ package CustomsFinanceLedgerStagingTests
 import TradeFinance
 import Wurstunit
 
-/** Synthetic customs authority only. The scenario catalogue and v21-v26
- * military readers remain disabled until the complete migration is tested. */
+// Synthetic customs authority only. The scenario catalogue and v21-v26
+// military readers remain disabled until the complete migration is tested.
 @test function customsSitesAndDetachedForkRetainOnlyImmutableDefinitions()
 	let ledger = new FinanceLedger()
 	ledger.registerSite("london", "europe_west", "correspondents", true)
