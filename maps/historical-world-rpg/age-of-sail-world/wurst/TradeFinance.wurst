@@ -1,1 +1,280 @@
-../../_shared/wurst/TradeFinance.wurst
+package TradeFinance
+
+import PartyLocations
+import CivicGovernance
+import ResearchEntitlements
+
+/** Named, replaceable passive layer. The era gate belongs to the recipient
+ * activity; historical saves retain completed research without free output. */
+public class FinanceEffect extends CivicEffect
+	int firstDay
+	construct(string kind, string contentId, string metric, int basisPoints, int firstDay)
+		super(kind, contentId, metric, basisPoints)
+		this.firstDay = firstDay
+
+public class FinanceResearchEffects extends CivicResearchEffects
+	construct(TechnologyEffectPort upstream)
+		super(upstream)
+	function rateAt(string owner, string metric, int day) returns int
+		return rateAt(get(owner), metric, day)
+	function rateAt(ResearchEntitlements layer, string metric, int day) returns int
+		var result = 0
+		if layer != null
+			for i = 0 to definitionCount - 1
+				let d = definitions[i] castTo FinanceEffect
+				if d.metric == metric and day >= d.firstDay and layer.has(d.kind, d.contentId)
+					result += d.basisPoints
+		return result
+
+/** Keep a strictly positive existing cost; floor the saving, never the bill.
+ * Integer helpers avoid overflow even at the native currency limit. */
+public function financeCost(int cost, int reduction) returns int
+	if cost <= 0
+		return 0
+	return cost - civicScale(cost, IMinBJ(9999, IMaxBJ(0, reduction)))
+
+public class ExchangeSite
+	string id
+	string provinceId
+	string bankNetwork
+	boolean customsEligible = false
+	construct(string id, string provinceId, string bankNetwork)
+		this.id = id
+		this.provinceId = provinceId
+		this.bankNetwork = bankNetwork
+
+public class CanalWork
+	string id
+	string settlementId
+	// Optional scenario-authored canal freight connection; never generic movement.
+	string freightDestination = ""
+	string freightGoods = ""
+	int freightCapacity = 0
+	int freightFee = 0
+	int freightLabor = 0
+	string prerequisite
+	string good
+	int firstDay
+	int materialUnits
+	int principalCost
+	int financingCost
+	int laborCostPerDay
+	int constructionDays
+	int capacityUnits
+	int laborUnits
+	construct(string id, string settlementId, string prerequisite, string good, int firstDay, int materialUnits, int principalCost, int financingCost, int laborCostPerDay, int constructionDays, int capacityUnits, int laborUnits)
+		this.id = id
+		this.settlementId = settlementId
+		this.prerequisite = prerequisite
+		this.good = good
+		this.firstDay = firstDay
+		this.materialUnits = materialUnits
+		this.principalCost = principalCost
+		this.financingCost = financingCost
+		this.laborCostPerDay = laborCostPerDay
+		this.constructionDays = constructionDays
+		this.capacityUnits = capacityUnits
+		this.laborUnits = laborUnits
+
+/** Immutable supply service anchor from the same physical placement as markets. */
+public class FoodDepot
+	string id
+	string mapId
+	real x
+	real y
+	construct(string id, string mapId, real x, real y)
+		this.id = id
+		this.mapId = mapId
+		this.x = x
+		this.y = y
+
+/** Stable settlement authority, independent of a Warcraft projection. */
+public class CustomsState
+	boolean restored = false
+	string builder = ""
+	int work = 0
+	int lastDay = 0
+	boolean completed = false
+	string operator = ""
+	int through = 0
+
+public class CanalState
+	boolean freightRestored = false
+	int freightDay = 0
+	int freightUsed = 0
+	boolean restored = false
+	string owner = ""
+	int work = 0
+	int lastDay = 0
+	boolean completed = false
+
+public interface FinancePort
+	function workforce(string settlementId, int units) returns boolean
+	function eligible(string owner, string settlementId) returns boolean
+	function technology(string owner, string id) returns boolean
+	function pay(string owner, string settlementId, int money, string good, int units) returns boolean
+
+/** Durable canal works use local stock and treasury. Capture cancels unfinished
+ * works without refund; completed quays remain physical infrastructure. */
+public class FinanceLedger
+	ExchangeSite array[1024] sites
+	int siteCount = 0
+	int customsExpected = -1
+	int customsRestored = 0
+	CustomsState array[1024] customs
+	string customsNode = ""
+	string customsBuilding = ""
+	string customsModifier = ""
+	int customsFirstDay = 0
+	int customsBuildRate = 0
+	int customsUpkeepRate = 0
+	int customsDays = 0
+	int customsWorkers = 0
+	string customsMaterialGood = ""
+	string customsEquipmentGood = ""
+	int customsMaterialUnits = 0
+	int customsEquipmentUnits = 0
+	int customsCommission = 0
+	int customsSlippage = 0
+	int customsAdministration = 0
+	/** Keep generated catalogue entries as calls: inlining these allocations for
+	 * every exchange district needlessly expands the compiled campaign script. */
+	@noinline
+	function registerSite(string id, string provinceId, string bankNetwork, boolean customsEligible)
+		sites[siteCount] = new ExchangeSite(id, provinceId, bankNetwork)
+		sites[siteCount].customsEligible = customsEligible
+		customs[siteCount] = new CustomsState()
+		siteCount++
+	function customsState(int i) returns CustomsState
+		if customs[i] == null
+			customs[i] = new CustomsState()
+		return customs[i]
+	function siteIndex(string id) returns int
+		for i = 0 to siteCount - 1
+			if sites[i].id == id
+				return i
+		return -1
+	CanalWork array[32] projects
+	CanalState array[32] states
+	int count = 0
+	int commissionShare = 0
+	int remittanceFee = 0
+	string bankPrerequisite = ""
+	string foodGood = ""
+	int foodShipment = 0
+	int foodWaste = 0
+	int foodLabor = 0
+	int foodCost = 0
+	int foodRadius = 0
+	FoodDepot array[1024] foodDepots
+	string array[1024] foodSites
+	int foodSiteCount = 0
+	// Immutable land-component rasters shared with physical party navigation.
+	PartyNavigation array[64] foodMaps
+	int foodMapCount = 0
+	function foodDepot(string id) returns FoodDepot
+		for i = 0 to foodSiteCount - 1
+			if foodSites[i] == id
+				return foodDepots[i]
+		return null
+	function site(string id) returns ExchangeSite
+		for i = 0 to siteCount - 1
+			if sites[i].id == id
+				return sites[i]
+		return null
+	function register(CanalWork project)
+		projects[count] = project
+		states[count] = new CanalState()
+		count++
+	function index(string id) returns int
+		for i = 0 to count - 1
+			if projects[i].id == id
+				return i
+		return -1
+	function fork() returns FinanceLedger
+		let copy = new FinanceLedger()
+		copy.customsNode = customsNode
+		copy.customsBuilding = customsBuilding
+		copy.customsModifier = customsModifier
+		copy.customsFirstDay = customsFirstDay
+		copy.customsBuildRate = customsBuildRate
+		copy.customsUpkeepRate = customsUpkeepRate
+		copy.customsDays = customsDays
+		copy.customsWorkers = customsWorkers
+		copy.customsMaterialGood = customsMaterialGood
+		copy.customsEquipmentGood = customsEquipmentGood
+		copy.customsMaterialUnits = customsMaterialUnits
+		copy.customsEquipmentUnits = customsEquipmentUnits
+		copy.customsCommission = customsCommission
+		copy.customsSlippage = customsSlippage
+		copy.customsAdministration = customsAdministration
+		copy.commissionShare = commissionShare
+		copy.remittanceFee = remittanceFee
+		copy.bankPrerequisite = bankPrerequisite
+		copy.foodGood = foodGood
+		copy.foodShipment = foodShipment
+		copy.foodWaste = foodWaste
+		copy.foodLabor = foodLabor
+		copy.foodCost = foodCost
+		copy.foodRadius = foodRadius
+		copy.foodMapCount = foodMapCount
+		for i = 0 to foodMapCount - 1
+			copy.foodMaps[i] = foodMaps[i]
+		copy.foodSiteCount = foodSiteCount
+		for i = 0 to foodSiteCount - 1
+			copy.foodSites[i] = foodSites[i]
+			copy.foodDepots[i] = foodDepots[i]
+		copy.siteCount = siteCount
+		for i = 0 to siteCount - 1
+			copy.sites[i] = sites[i]
+			copy.customs[i] = new CustomsState()
+		for i = 0 to count - 1
+			copy.register(projects[i])
+		return copy
+	function controlChanged(string id)
+		let site = siteIndex(id)
+		if site >= 0
+			let s = customsState(site)
+			if not s.completed
+				s.builder = ""
+				s.work = 0
+			s.operator = ""
+			s.through = 0
+		for i = 0 to count - 1
+			if projects[i].settlementId == id and not states[i].completed
+				states[i].owner = ""
+				states[i].work = 0
+	function start(string owner, string id, int day, FinanceResearchEffects effects, FinancePort port) returns string
+		let i = index(id)
+		if i < 0
+			return "Choose an authored canal works project."
+		let d = projects[i]
+		let s = states[i]
+		if s.completed or s.owner != "" or day < s.lastDay or day < d.firstDay or not port.eligible(owner, d.settlementId) or not port.technology(owner, d.prerequisite)
+			return "Requires an unbuilt canal project, historical availability, lawful administration, local access and its supporting technology."
+		let fee = financeCost(d.financingCost, effects.rateAt(owner, "canal_infrastructure_financing_cost_reduction", day))
+		if not port.workforce(d.settlementId, d.laborUnits) or not port.pay(owner, d.settlementId, d.principalCost + fee, d.good, d.materialUnits)
+			return "Treasury, real canal materials or workforce are insufficient."
+		s.owner = owner
+		s.lastDay = day
+		s.work = 0
+		return ""
+	function advance(int day, FinancePort port)
+		for i = 0 to count - 1
+			let d = projects[i]
+			let s = states[i]
+			while s.lastDay < day and s.owner != "" and not s.completed
+				s.lastDay++
+				if not port.eligible(s.owner, d.settlementId) or not port.technology(s.owner, d.prerequisite)
+					s.owner = ""
+					s.work = 0
+				else if port.workforce(d.settlementId, d.laborUnits) and port.pay(s.owner, d.settlementId, d.laborCostPerDay, "", 0)
+					s.work++
+					if s.work == d.constructionDays
+						s.completed = true
+	ondestroy
+		for i = 0 to siteCount - 1
+			if customs[i] != null
+				destroy customs[i]
+		for i = 0 to count - 1
+			destroy states[i]
