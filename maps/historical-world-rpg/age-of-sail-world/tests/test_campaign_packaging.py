@@ -19,6 +19,7 @@ from package_wurst_campaign import (  # noqa: E402
     _localize_runtime,
     _set_physical_build_title,
     _retain_bootstrap_dependencies,
+    _install_map_dependencies,
     _write_browser_safe_w3x,
     _verify_final_map,
     build_campaign,
@@ -48,6 +49,43 @@ if sys.argv[1] == "build":
         archive.writestr("war3map.lua", lua)
 '''
 FAKE_GRILL = FAKE_GRILL.replace('if sys.argv[1] == "build":', FAKE_EXECUTION + '\nif sys.argv[1] == "build":')
+
+
+class CampaignDependencyTests(unittest.TestCase):
+    def test_maps_copy_only_the_current_test_library_without_another_remote_install(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            tested = root / "tests/compile"
+            dependencies = tested / "_build/dependencies/stdlib"
+            dependencies.mkdir(parents=True)
+            library = dependencies / "Library.wurst"
+            library.write_text("package Library\n// revision used by the fresh suite\n")
+            (tested / "wurst.build").write_text("dependencies:\n- https://example.test/stdlib\n")
+            (tested / "_build/compiler-cache").write_text("must not be reused")
+            (tested.parent / "results.json").write_text("must not be reused")
+            with patch("package_wurst_campaign._run") as run:
+                for name in ("selector", "region"):
+                    destination = root / name / "compile"
+                    _install_map_dependencies("grill", destination, tested, name)
+                    copied = destination / "_build/dependencies/stdlib/Library.wurst"
+                    self.assertEqual(library.read_bytes(), copied.read_bytes())
+                    self.assertEqual((tested / "wurst.build").read_bytes(),
+                                     (destination / "wurst.build").read_bytes())
+                    self.assertEqual(["dependencies"], [p.name for p in (destination / "_build").iterdir()])
+                    copied.write_text("map-local change")
+                    self.assertIn("fresh suite", library.read_text())
+                run.assert_not_called()
+
+    def test_missing_test_library_uses_install_and_failure_propagates(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch("package_wurst_campaign._run") as run:
+                _install_map_dependencies("grill", root / "map", root / "tests", "region")
+                run.assert_called_once_with("Wurst dependency installation [region]",
+                                            ["grill", "install"], root / "map")
+            with patch("package_wurst_campaign._run", side_effect=PackagingError("install failed")):
+                with self.assertRaisesRegex(PackagingError, "install failed"):
+                    _install_map_dependencies("grill", root / "map", root / "tests", "region")
 
 
 class CampaignPackagingTests(unittest.TestCase):
