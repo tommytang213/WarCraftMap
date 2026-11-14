@@ -1,8 +1,10 @@
 name: Wurst typecheck and execution
 
 on:
+  # Temporary validation fallback for conflicted draft PR #536.
+  # Remove repair branch once ordinary pull_request checks can start.
   push:
-    branches: [main]
+    branches: [main, fix/438-hidden-region-chapters-20261018]
     paths:
       - "maps/historical-world-rpg/**"
       - "automation/prepare_wurst_image.sh"
