@@ -333,9 +333,9 @@ class RecoveryTrip
 	storageBytes(trip.source.saves).assertEquals(trip.bytes)
 	recoveryReceipt("replay")
 
-/** A consumed acknowledgement may be shared with another loaded command map.
- * /load retry must still invoke the physical loader for the saved destination,
- * rather than saying success merely because that other map has started. */
+// A consumed acknowledgement may be shared with another loaded command map.
+// /load retry must still invoke the physical loader for the saved destination,
+// rather than saying success merely because that other map has started.
 @test function consumedRecoveryRetryOnAnotherLoadedMapRequiresRealHandoff()
 	let trip = new RecoveryTrip()
 	registerCampaignSaveCommands(trip.commands, trip.active.campaign)
