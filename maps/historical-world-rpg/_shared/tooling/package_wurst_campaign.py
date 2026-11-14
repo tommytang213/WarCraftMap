@@ -829,6 +829,36 @@ def _retain_bootstrap_dependencies(compile_root: Path) -> None:
                 path.unlink()
 
 
+def _set_physical_build_title(build_file: Path, physical: PhysicalMap) -> None:
+    """Keep Grill's map-title override consistent with the materialized W3I.
+
+    The shared normalized wurst.build still contains the scenario-wide title.
+    Grill can apply buildMapData.name when compiling a map, so a regional W3I
+    title alone is insufficient. Preserve the known-working selector settings.
+    """
+    if physical.bootstrap:
+        return
+    lines = build_file.read_text(encoding="utf-8").splitlines(keepends=True)
+    in_map_data = False
+    matches = []
+    for index, line in enumerate(lines):
+        if line.strip() == "buildMapData:" and line == line.lstrip():
+            in_map_data = True
+            continue
+        if in_map_data and line.strip() and line == line.lstrip():
+            break
+        if in_map_data and re.match(r"^[ \t]+name[ \t]*:", line):
+            matches.append(index)
+    if len(matches) != 1:
+        raise PackagingError(f"physical map compiler configuration missing unique buildMapData.name [{physical.id}]")
+    index = matches[0]
+    original = lines[index]
+    prefix = re.match(r"^([ \t]+name[ \t]*:[ \t]*)", original).group(1)
+    newline = "\r\n" if original.endswith("\r\n") else "\n" if original.endswith("\n") else ""
+    lines[index] = prefix + json.dumps(physical.chapter_title, ensure_ascii=False) + newline
+    build_file.write_text("".join(lines), encoding="utf-8")
+
+
 def _install_map_dependencies(executable: str, compile_root: Path, test_compile_root: Path, map_id: str) -> None:
     """Use the library inputs exercised by this build's fresh complete suite.
 
@@ -903,6 +933,7 @@ def build_campaign(manifest_path: Path, grill: str | None = None, clean_first: b
             raise PackagingError(f"physical map materialization stage failed [{physical.id}]: {error}") from error
         _install_map_dependencies(executable, compile_root,
                                   config.project / "_build/wurst-tests/compile", physical.id)
+        _set_physical_build_title(compile_root / "wurst.build", physical)
         _run(f"Wurst compilation [{physical.id}]", [executable, "typecheck"], compile_root)
         _run(f"map assembly [{physical.id}]", [executable, "build", str(Path("map") / map_config.source_map.name)], compile_root)
         archive = _find_archive(compile_root / "_build")

@@ -17,6 +17,7 @@ from package_wurst_campaign import (  # noqa: E402
     _write_campaign,
     _inspect_physical_map,
     _localize_runtime,
+    _set_physical_build_title,
     _retain_bootstrap_dependencies,
     _write_browser_safe_w3x,
     _verify_final_map,
@@ -50,6 +51,32 @@ FAKE_GRILL = FAKE_GRILL.replace('if sys.argv[1] == "build":', FAKE_EXECUTION + '
 
 
 class CampaignPackagingTests(unittest.TestCase):
+    def test_compiler_map_metadata_matches_every_configured_chapter(self):
+        # The real Wurst build config has a second, scenario-wide title.
+        # Keep it consistent with each binary W3I title after dependency reuse.
+        fixtures = (
+            (self.project / "wurst.build", self.manifest),
+            (PROJECT_ROOT.parent / "conformance-campaign/wurst.build",
+             PROJECT_ROOT.parent / "conformance-campaign/physical-maps.json"),
+        )
+        for build_file, manifest in fixtures:
+            original = build_file.read_text(encoding="utf-8")
+            name_line = next(line for line in original.splitlines(keepends=True)
+                             if line.startswith("  name:"))
+            for physical in load_campaign_config(manifest).maps:
+                with self.subTest(campaign=manifest.parent.name, chapter=physical.id):
+                    staged = Path(self.temp.name) / "chapter.wurst.build"
+                    staged.write_text(original, encoding="utf-8")
+                    _set_physical_build_title(staged, physical)
+                    expected = original if physical.bootstrap else original.replace(
+                        name_line, "  name: " + json.dumps(physical.chapter_title, ensure_ascii=False) + "\n", 1)
+                    self.assertEqual(expected, staged.read_text(encoding="utf-8"))
+        malformed = Path(self.temp.name) / "malformed.wurst.build"
+        malformed.write_text('projectName: "no buildMapData"\n', encoding="utf-8")
+        regional = load_campaign_config(self.manifest).maps[1]
+        with self.assertRaisesRegex(PackagingError, "buildMapData.name"):
+            _set_physical_build_title(malformed, regional)
+
     def test_regional_w3i_titles_are_unique_and_preserve_other_binary_fields(self):
         source = (self.project / "map/AgeOfSailWorld.w3x/war3map.w3i").read_bytes()
         original = parse_w3i(source)
