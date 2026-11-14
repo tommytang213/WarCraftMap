@@ -54,3 +54,58 @@ jobs:
           python -m unittest discover \
             -s maps/historical-world-rpg/age-of-sail-world/tests \
             -p 'test_*.py' -v
+
+  # Diagnostics only: export genuine generated reports from a complete exact-head
+  # checkout. This job never awards release readiness or changes validation gates.
+  regenerate-checkpoint-reports:
+    if: github.ref == 'refs/heads/fix/438-hidden-region-chapters-20261018'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regenerate full source reports and record genuine gate exit codes
+        shell: bash
+        run: |
+          project=maps/historical-world-rpg/age-of-sail-world
+          set +e
+          python3 "$project/tooling/requirement_traceability_audit.py" --write
+          trace_rc=$?
+          python3 "$project/tooling/runtime_acceptance.py" --write
+          runtime_rc=$?
+          python3 "$project/tooling/release_blocker_audit.py" --write
+          release_rc=$?
+          set -e
+          for file in \
+            reports/traceability/requirements.json reports/traceability/requirements.md \
+            reports/runtime-acceptance.json reports/runtime-acceptance.md \
+            reports/release-blocker-audit.json reports/release-blocker-audit.md; do
+            test -s "$project/$file" || { echo "Missing generated report: $file"; exit 1; }
+          done
+          {
+            printf 'checkout_commit=%s\n' "$GITHUB_SHA"
+            printf 'traceability_exit=%s\n' "$trace_rc"
+            printf 'runtime_acceptance_exit=%s\n' "$runtime_rc"
+            printf 'release_blocker_exit=%s\n' "$release_rc"
+            printf 'Note: nonzero generator exit codes preserve genuine release blockers.\n'
+          } > "$project/reports/ci-generation-manifest.txt"
+          (cd "$project" && sha256sum \
+            reports/traceability/requirements.json reports/traceability/requirements.md \
+            reports/runtime-acceptance.json reports/runtime-acceptance.md \
+            reports/release-blocker-audit.json reports/release-blocker-audit.md \
+            > reports/ci-generated-sha256.txt)
+          cat "$project/reports/ci-generation-manifest.txt"
+      - name: Preserve exact-head generated report files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr536-report-regeneration
+          path: |
+            maps/historical-world-rpg/age-of-sail-world/reports/traceability/requirements.json
+            maps/historical-world-rpg/age-of-sail-world/reports/traceability/requirements.md
+            maps/historical-world-rpg/age-of-sail-world/reports/runtime-acceptance.json
+            maps/historical-world-rpg/age-of-sail-world/reports/runtime-acceptance.md
+            maps/historical-world-rpg/age-of-sail-world/reports/release-blocker-audit.json
+            maps/historical-world-rpg/age-of-sail-world/reports/release-blocker-audit.md
+            maps/historical-world-rpg/age-of-sail-world/reports/ci-generation-manifest.txt
+            maps/historical-world-rpg/age-of-sail-world/reports/ci-generated-sha256.txt
+          if-no-files-found: error
