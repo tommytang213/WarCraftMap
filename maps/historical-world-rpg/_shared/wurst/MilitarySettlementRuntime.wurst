@@ -89,7 +89,7 @@ class MilitaryRegistrationIndex
 /** One reusable cursor per parse. Read each field once and retain empty fields,
  * including the final optional conflict/attacker fields of a settlement.
  * Count excess fields too, so strict record validation still rejects them. */
-class MilitarySnapshotRecord
+public class MilitarySnapshotRecord
 	string array[26] fields
 	int count = 0
 	function append(string value)

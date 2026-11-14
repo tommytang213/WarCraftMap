@@ -991,6 +991,7 @@ public class RuntimeTechnology
 	string id
 	string name
 	string kind = "technology"
+	string consumerDetails = ""
 	int historicalYear
 	string baseCost
 	string aheadOfTimeCostMultiplier
@@ -1958,6 +1959,8 @@ function technologyText(WarcraftRpgRuntime runtime, string controllerId, int yea
 		let earned = runtime.technologies.isUnlocked(controllerId,technology.id)
 		if earned
 			rows += " (unlocked)"
+		if technology.consumerDetails != ""
+			rows += "\n  " + technology.consumerDetails
 		for j = 0 to technology.unlockCount - 1
 			let entry = technology.unlocks[j]
 			rows += "\n  " + entry.nodeId + ": " + entry.kind + " " + entry.contentId

@@ -49,8 +49,8 @@ class InstitutionCourtFixture
 	let ledger = f.runtime.institutionCourts
 	f.runtime.restore(saved + "|O,port,,0,0,0,0", false).assertFalse()
 	f.runtime.restore(saved + "|J,0|O,port,,0,0,0,0", false).assertFalse()
-	for version = 21 to 26
-		f.runtime.restore(saved.replace("v20|", "v" + I2S(version) + "|"), false).assertFalse()
+	for candidateVersion = 21 to 26
+		f.runtime.restore(saved.replace("v20|", "v" + I2S(candidateVersion) + "|"), false).assertFalse()
 	(f.runtime.institutionCourts == ledger).assertTrue()
 	f.runtime.snapshot().assertEquals(saved)
 	destroy f
