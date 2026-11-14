@@ -10,7 +10,8 @@ import WC3Compatibility
 public class RegionalRepresentation
 	string stableId
 	string regionId
-	int typeId
+	// Wurst reserves .typeId for the instance's class ID, not a Warcraft rawcode.
+	int unitRawcode
 	player owner
 	real x
 	real y
@@ -18,7 +19,7 @@ public class RegionalRepresentation
 	construct(string newStableId, string newRegionId, int newTypeId, player newOwner, real newX, real newY, real newFacing)
 		stableId = newStableId
 		regionId = newRegionId
-		typeId = newTypeId
+		unitRawcode = newTypeId
 		owner = newOwner
 		x = newX
 		y = newY
@@ -53,14 +54,14 @@ public class WarcraftRegionalAdapter
 	/** Construct the replacement only after the registered definition is final. */
 	function materializeHandle(int index)
 		let definition = definitions[index]
-		handles[index] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
+		handles[index] = compatCreateUnit(definition.owner, definition.unitRawcode, definition.x, definition.y, definition.facing)
 
 	function register(RegionalRepresentation definition)
 		let existing = indexOf(definition.stableId)
 		if existing >= 0
 			let previous = definitions[existing]
 			let changedRegion = previous.regionId != definition.regionId
-			let identityChanged = changedRegion or previous.typeId != definition.typeId or previous.owner != definition.owner
+			let identityChanged = changedRegion or previous.unitRawcode != definition.unitRawcode or previous.owner != definition.owner
 			let positionChanged = previous.x != definition.x or previous.y != definition.y
 			let wasLive = identityChanged and hasLiveHandle(existing)
 			if identityChanged
@@ -99,7 +100,7 @@ public class WarcraftRegionalAdapter
 		for i = 0 to count - 1
 			let definition = definitions[i]
 			if definition.regionId == regionId and not hasLiveHandle(i)
-				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
+				handles[i] = compatCreateUnit(definition.owner, definition.unitRawcode, definition.x, definition.y, definition.facing)
 		activeRegionId = regionId
 
 	function activateRegion(string regionId)
@@ -129,7 +130,7 @@ public class WarcraftRegionalAdapter
 		for i = 0 to count - 1
 			let definition = definitions[i]
 			if definition.regionId == activeRegionId and not hasLiveHandle(i)
-				handles[i] = compatCreateUnit(definition.owner, definition.typeId, definition.x, definition.y, definition.facing)
+				handles[i] = compatCreateUnit(definition.owner, definition.unitRawcode, definition.x, definition.y, definition.facing)
 				recovered++
 		return recovered
 

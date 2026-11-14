@@ -22,7 +22,7 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	override function retireHandle(int index)
 		retireCalls++
 		retiredFrom = definitions[index].regionId
-		retiredType = definitions[index].typeId
+		retiredType = definitions[index].unitRawcode
 		live = false
 	override function moveHandle(int index, real x, real y)
 		moveCalls++
@@ -31,7 +31,7 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	override function materializeHandle(int index)
 		materializeCalls++
 		materializedRegion = definitions[index].regionId
-		materializedType = definitions[index].typeId
+		materializedType = definitions[index].unitRawcode
 		materializedOwner = definitions[index].owner
 		live = true
 
@@ -137,7 +137,7 @@ class RecordingRegionalAdapter extends WarcraftRegionalAdapter
 	regional.register(new RegionalRepresentation("guard", "europe_west", 'hrif', Player(0), 10., 20., 0.))
 	regional.materializeCalls.assertEquals(0)
 	regional.live.assertFalse()
-	regional.definitions[0].typeId.assertEquals('hrif')
+	regional.definitions[0].unitRawcode.assertEquals('hrif')
 
 /** Arrivals on the current physical map materialize immediately. Moving out
  * retires the handle; movement into an inactive map remains dormant. */
