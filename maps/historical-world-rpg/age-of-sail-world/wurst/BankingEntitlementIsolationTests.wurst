@@ -8,8 +8,8 @@ function addBankingIsolationUnlock(ResearchEntitlements layer, string node, stri
 	layer.add(entry)
 	destroy entry
 
-/** These exercise the production overload needed by the upstream institutional
- * court consumer. They do not activate a new military snapshot version. */
+// These exercise the production overload needed by the upstream institutional
+// court consumer. They do not activate a new military snapshot version.
 @test function bankingExplicitEntitlementsDoNotReadOrReplaceInstalledLayer()
 	let upstream = new UnboundResearchEffects()
 	let effects = new BankingResearchEffects(upstream)
@@ -65,8 +65,8 @@ function addBankingIsolationUnlock(ResearchEntitlements layer, string node, stri
 	destroy effects
 	destroy upstream
 
-/** A staged court ledger borrows immutable sites but must start with separate,
- * blank authority, not the live policy a save is meant to replace. */
+// A staged court ledger borrows immutable sites but must start with separate,
+// blank authority, not the live policy a save is meant to replace.
 @test function bankingCourtForkPreservesDefinitionsWithoutCopyingLiveAuthority()
 	let ledger = new BankingLedger()
 	let site = new BankingSite("port", 10000)
