@@ -274,6 +274,7 @@ public class FinanceLedger
 						s.completed = true
 	ondestroy
 		for i = 0 to siteCount - 1
-			destroy customs[i]
+			if customs[i] != null
+				destroy customs[i]
 		for i = 0 to count - 1
 			destroy states[i]
