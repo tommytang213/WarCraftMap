@@ -295,8 +295,8 @@ class NavigationFixture
 	destroy progress
 	destroy contract
 
-/** The typed-source qualification adapter is staged before the v26 save
- * migration; ordinary v20 voyage resolution is intentionally unchanged. */
+// The typed-source qualification adapter is staged before the v26 save
+// migration; ordinary v20 voyage resolution is intentionally unchanged.
 @test function typedNavigationQualificationRequiresResearchAndTheRightEquipment()
 	let f = new NavigationFixture(true, true, true)
 	let contract = f.military.voyages
@@ -315,8 +315,8 @@ class NavigationFixture
 	noResearch.military.voyages.addSource(new VoyageSource("test_celestial", noResearch.military.voyages.kind, noResearch.military.voyages.contentId, noResearch.military.voyages.reductionBasisPoints, "", "astronomical_observation"))
 	noResearch.military.qualifiedNavigationSources(noResearch.ship, 0).assertEquals("")
 
-/** Source-qualified voyages require both independent research bindings before
- * schema-26 save output is enabled. Legacy v20 binding remains unchanged. */
+// Source-qualified voyages require both independent research bindings before
+// schema-26 save output is enabled. Legacy v20 binding remains unchanged.
 @test function typedNavigationResearchSourcesBindIndependentlyAndPreserveLegacy()
 	let legacyResearch = new ResearchFixture()
 	let legacyMilitary = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
@@ -347,9 +347,9 @@ class NavigationFixture
 	research.runtime.technologies.bindingStatus(coastal.unlocks[0]).assertEquals(RESEARCH_BOUND)
 	military.snapshot().startsWith("v20|").assertTrue()
 
-/** The typed source serializer is staged for the later v26 writer. It must
- * include *both* fractions even when their combined common refund bucket is
- * zero, but a v20 campaign may not emit a premature |x record. */
+// The typed source serializer is staged for the later v26 writer. It must
+// include both fractions even when their combined common refund bucket is
+// zero, but a v20 campaign may not emit a premature |x record.
 @test function typedNavigationSourceRecordsStayBehindSnapshotVersionGate()
 	let progress = new VoyageProgress()
 	let contract = new VoyageContract("modifier", "legacy_navigation", 2000, 0)
