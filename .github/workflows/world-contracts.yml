@@ -1,8 +1,10 @@
 name: World data contracts
 
 on:
+  # Scoped CI fallback for draft PR #536 while merge conflicts suppress pull_request.
+  # Remove the fix branch once the PR is mergeable to avoid duplicate runs.
   push:
-    branches: [main]
+    branches: [main, fix/438-hidden-region-chapters-20261018]
     paths:
       - "maps/historical-world-rpg/**"
       - "maps/historical-world-rpg/_shared/tooling/validate_world.py"
