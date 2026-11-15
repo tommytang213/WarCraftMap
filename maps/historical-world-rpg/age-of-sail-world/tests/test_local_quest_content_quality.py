@@ -138,5 +138,30 @@ class HarborRescueContentQualityTests(unittest.TestCase):
                     self.assertNotIn(phrase, prose, (family_id, case))
 
 
+    def test_sealed_dispatch_cases_reject_generic_delivery_boilerplate(self):
+        # Source-level editorial regression, not an authoritative in-game receipt.
+        variants = self.runtime.families["sealed_dispatch"]["_variants"]
+        self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+        for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+            self.assertEqual(4, len({
+                json.dumps(v[field], ensure_ascii=False) for v in variants.values()
+            }), field)
+        for case_id, v in variants.items():
+            self.assertNotIn(": " + case_id.capitalize(), v["title"])
+            prose = json.dumps(v, ensure_ascii=False).lower()
+            for template in (
+                "a routine request has become difficult",
+                "two parties describe the same need differently",
+                "ask for accountable help, not an unquestioned errand",
+                "return to the originating settlement and make a witnessed accounting",
+            ):
+                self.assertNotIn(template, prose, case_id)
+
+    def test_bale_shortfall_title_does_not_prejudge_fraud(self):
+        v = self.runtime.families["bales_and_balances"]["_variants"]["scarce"]
+        self.assertEqual("The Unfilled Bale Order", v["title"])
+        self.assertNotIn("false weight", v["summary"].lower())
+
+
 if __name__ == "__main__":
     unittest.main()

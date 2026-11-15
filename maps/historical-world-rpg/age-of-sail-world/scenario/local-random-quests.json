@@ -335,15 +335,15 @@
       "variants": [
         {
           "id": "plain",
-          "title": "A Sealed Dispatch: Plain",
-          "summary": "A routine request has become difficult because local conditions changed.",
-          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "title": "The Unclaimed Packet",
+          "summary": "A sealed instruction has reached its destination, but the receiving clerk is absent and no one will acknowledge custody. Reaching the town is not the same as delivering the packet.",
+          "dialogue": "The desk is empty. I need a name beside this seal, not an assurance that someone must have seen it.",
           "objectives": [
-            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Check the addressee and intact seal against the issuing clerk's dispatch record.",
+            "Hand the packet to its named recipient or an authorized deputy and obtain a receipt; otherwise return it unopened."
           ],
-          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
-          "failure": "Failure records the loss and delays replacement.",
+          "alternate": "If there is no authorized recipient, return the sealed packet to the issuing clerk with an account of the attempted delivery.",
+          "failure": "Leaving an unreceipted packet or breaking its seal cannot be counted as a valid delivery.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -370,15 +370,15 @@
         },
         {
           "id": "contested",
-          "title": "A Sealed Dispatch: Contested",
-          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
-          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "title": "Conflicting Orders",
+          "summary": "Two clerks hold differently sealed instructions covering the same errand. Their disagreement is not proof that either instruction is forged.",
+          "dialogue": "Keep both seals intact. We must learn which office issued each order before anyone acts on it.",
           "objectives": [
-            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Compare the issuing offices, dates, seals and named recipients without opening the packets.",
+            "Deliver only a verified instruction and obtain a receipt naming the packet and its recipient."
           ],
-          "alternate": "Broker a limited compromise if the original remedy is blocked.",
-          "failure": "Escalation closes the offer without granting rewards.",
+          "alternate": "If either order cannot be authenticated, return it intact for clarification rather than accuse a clerk without evidence.",
+          "failure": "Delivering an unauthenticated order or claiming an accusation is proof voids the disputed commission.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -405,15 +405,15 @@
         },
         {
           "id": "urgent",
-          "title": "A Sealed Dispatch: Urgent",
-          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
-          "dialogue": "The Current Civic Authority ask for accountable help, not an unquestioned errand.",
+          "title": "The Changing Watch Roster",
+          "summary": "The watch is being reassigned while its next patrol's sealed instruction remains with the messenger. The departing officer's receipt would not establish that the incoming patrol was informed.",
+          "dialogue": "The old watch is leaving. Find the officer taking duty before this order disappears between the shifts.",
           "objectives": [
-            "Carry a sealed dispatch; obtain a valid receipt or return it intact.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Confirm the incoming receiving officer against the watch clerk's current roster and check the sealed instruction.",
+            "Deliver to the officer actually taking duty and obtain an acknowledgment tied to that roster."
           ],
-          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
-          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "alternate": "If the receiving officer cannot be established, return the packet to the watch clerk for redirection.",
+          "failure": "Passing the instruction to an unidentified guard or relying on an outgoing officer's receipt does not establish handover.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -2086,7 +2086,7 @@
         },
         {
           "id": "scarce",
-          "title": "The Merchant's False Weight",
+          "title": "The Unfilled Bale Order",
           "summary": "A trader cannot fill an agreed order from the remaining sound bales. A buyer fears being charged for weight that will never arrive.",
           "dialogue": "Let us weigh what is actually on the floor, not what the old contract says should be there.",
           "objectives": [
