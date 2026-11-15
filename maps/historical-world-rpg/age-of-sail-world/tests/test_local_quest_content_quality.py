@@ -96,5 +96,41 @@ class HarborRescueContentQualityTests(unittest.TestCase):
             self.assertNotIn("substitute", scarce[family_id]["alternate"].lower())
 
 
+    def test_market_exchange_cases_are_authored_and_market_only(self):
+        # Commerce incidents cannot spawn in settlements without a market.
+        both_market = [s for s in WORLD["settlements"] if "market" in s.get("serviceIds", [])]
+        without_market = [s for s in WORLD["settlements"] if "market" not in s.get("serviceIds", [])]
+        self.assertTrue(both_market)
+        self.assertTrue(without_market)
+        for family_id in ("market_shortfall", "bales_and_balances"):
+            family = self.runtime.families[family_id]
+            for settlement in WORLD["settlements"]:
+                self.assertEqual(
+                    "market" in settlement.get("serviceIds", []),
+                    self.runtime._eligible(settlement, family),
+                    (family_id, settlement["id"]),
+                )
+            variants = family["_variants"]
+            for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+                values = [
+                    json.dumps(variants[case][field], ensure_ascii=False)
+                    for case in ("plain", "contested", "urgent")
+                ]
+                self.assertEqual(3, len(set(values)), (family_id, field))
+            for case in ("plain", "contested", "urgent"):
+                variant = variants[case]
+                self.assertNotIn(": " + case.capitalize(), variant["title"])
+                prose = json.dumps(variant, ensure_ascii=False).lower()
+                for phrase in (
+                    "a routine request has become difficult",
+                    "two parties describe the same need differently",
+                    "a short deadline raises the cost of delay",
+                    "ask for accountable help, not an unquestioned errand",
+                    "return to the originating settlement and make a witnessed accounting",
+                    "the giver is unavailable; use the witnessed alternate authority",
+                ):
+                    self.assertNotIn(phrase, prose, (family_id, case))
+
+
 if __name__ == "__main__":
     unittest.main()
