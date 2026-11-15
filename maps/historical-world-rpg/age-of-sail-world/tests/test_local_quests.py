@@ -12,7 +12,8 @@ WORLD=json.loads((ROOT/"scenario/world/world.json").read_text())
 class LocalQuestTests(unittest.TestCase):
  def setUp(self):
   self.delivered=[]
-  self.runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",reward_adapter=lambda rewards,context:self.delivered.extend(copy.deepcopy(rewards)))
+  self.verified_completion_ids=set()
+  self.runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",reward_adapter=lambda rewards,context:self.delivered.extend(copy.deepcopy(rewards)),completion_verifier=lambda claim:claim["instanceId"] in self.verified_completion_ids)
  def test_complete_catalogue_allocation_and_density_gate(self):
   report=COVERAGE.build(); self.assertEqual("pass",report["status"]); self.assertGreaterEqual(report["catalogue"]["families"],15)
   self.assertGreaterEqual(report["catalogue"]["variants"],60); self.assertEqual(len(WORLD["settlements"]),report["allocation"]["settlements"])
@@ -32,14 +33,62 @@ class LocalQuestTests(unittest.TestCase):
   self.assertTrue(any(x["slot"]==offer["slot"] and x["cycle"]==1 for x in self.runtime.board(offer["settlementId"])))
   self.runtime.advance_day(old["refillDay"]+1)  # an already-refilled terminal record stays inert
  def test_reward_atomicity_exactly_once_and_anti_farming(self):
-  offer=self.runtime.snapshot()["offers"][0]; self.runtime.accept(offer["id"]); self.runtime.resolve(offer["id"],"completed")
+  offer=self.runtime.snapshot()["offers"][0]; self.runtime.accept(offer["id"]); self.verified_completion_ids.add(offer["id"]); self.runtime.resolve(offer["id"],"completed")
   self.assertTrue(self.delivered); checkpoint=self.runtime.snapshot()
   with self.assertRaises(LocalQuestError): self.runtime.resolve(offer["id"],"completed")
   self.assertEqual(checkpoint,self.runtime.snapshot())
+ def test_unverified_completion_cannot_claim_rewards_or_trust_caller_context(self):
+  delivered=[]
+  runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="proof_guard",
+      reward_adapter=lambda rewards,context:delivered.extend(copy.deepcopy(rewards)))
+  offer=runtime.snapshot()["offers"][0]; runtime.accept(offer["id"]); before=runtime.snapshot()
+  forged={"objectivesMet":True,"verified":True,"instanceId":offer["id"]}
+  with self.assertRaisesRegex(LocalQuestError,"authoritative completion verifier"):
+   runtime.resolve(offer["id"],"completed",context=forged)
+  self.assertEqual(before,runtime.snapshot()); self.assertEqual([],delivered)
+  runtime.completion_verifier=lambda claim:{"verified":True}
+  with self.assertRaisesRegex(LocalQuestError,"authoritative objective completion receipts"):
+   runtime.resolve(offer["id"],"completed",context=forged)
+  self.assertEqual(before,runtime.snapshot()); self.assertEqual([],delivered)
+  receipts=set(); seen=[]
+  def verify(claim):
+   seen.append(copy.deepcopy(claim))
+   key=(claim["instanceId"],claim["familyId"],claim["variantId"],claim["acceptedDay"])
+   return key in receipts
+  runtime.completion_verifier=verify
+  with self.assertRaisesRegex(LocalQuestError,"authoritative objective completion receipts"):
+   runtime.resolve(offer["id"],"completed",context=forged)
+  self.assertEqual(before,runtime.snapshot()); self.assertEqual([],delivered)
+  receipts.add((offer["id"],offer["familyId"],offer["variantId"],before["day"]))
+  runtime.resolve(offer["id"],"completed")
+  self.assertTrue(delivered)
+  self.assertEqual("completed",next(o for o in runtime.snapshot()["offers"] if o["id"]==offer["id"])["status"])
+  self.assertEqual(offer["id"],seen[-1]["instanceId"])
+  self.assertIn("objectives",seen[-1])
+  with self.assertRaises(LocalQuestError): runtime.resolve(offer["id"],"completed")
+ def test_missing_reward_adapter_cannot_complete_even_after_proof(self):
+  runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="no_award",
+      completion_verifier=lambda claim:True)
+  offer=runtime.snapshot()["offers"][0]; runtime.accept(offer["id"]); before=runtime.snapshot()
+  with self.assertRaisesRegex(LocalQuestError,"atomic reward adapter"):
+   runtime.resolve(offer["id"],"completed")
+  self.assertEqual(before,runtime.snapshot())
+ def test_pending_save_restores_without_bypassing_proof_guard(self):
+  runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="persist_proof")
+  offer=runtime.snapshot()["offers"][0]; runtime.accept(offer["id"])
+  world=LocalQuestSaveAdapter(runtime).capture_world({"otherState":"preserved"})
+  restored=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="persist_proof")
+  LocalQuestSaveAdapter(restored).restore(world)
+  self.assertEqual(runtime.snapshot(),restored.snapshot())
+  with self.assertRaisesRegex(LocalQuestError,"authoritative completion verifier"):
+   restored.resolve(offer["id"],"completed",context={"verified":True})
+  self.assertEqual(runtime.snapshot(),restored.snapshot())
+
  def test_rejected_reward_rolls_back_and_category_stays_distinct(self):
   def reject(rewards,context): raise RuntimeError("adapter rejected atomic batch")
-  runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="reject",reward_adapter=reject)
-  offer=runtime.snapshot()["offers"][0]; runtime.accept(offer["id"]); checkpoint=runtime.snapshot()
+  verified_ids=set()
+  runtime=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="reject",reward_adapter=reject,completion_verifier=lambda claim:claim["instanceId"] in verified_ids)
+  offer=runtime.snapshot()["offers"][0]; runtime.accept(offer["id"]); verified_ids.add(offer["id"]); checkpoint=runtime.snapshot()
   with self.assertRaisesRegex(RuntimeError,"atomic"): runtime.resolve(offer["id"],"completed")
   self.assertEqual(checkpoint,runtime.snapshot()); self.assertTrue(all(x["category"]=="settlement_local_random" for x in runtime.journal_entries()))
  def test_changed_control_blocked_route_and_unavailable_actor_use_authored_policy(self):

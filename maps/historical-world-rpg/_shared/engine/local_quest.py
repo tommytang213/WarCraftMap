@@ -44,11 +44,14 @@ class LocalQuestRuntime:
     cooldown has elapsed.
     """
 
-    def __init__(self, definitions, settlements, *, campaign_seed, reward_adapter=None, state=None):
+    def __init__(self, definitions, settlements, *, campaign_seed, reward_adapter=None, state=None, completion_verifier=None):
         self.families = _index(definitions.get("families", []), "family")
         self.settlements = _index(settlements, "settlement")
         self.seed = str(campaign_seed)
         self.reward_adapter = reward_adapter
+        # Bind to authoritative objective-event state, never caller-supplied
+        # resolve(context=...) flags. Unbound quests cannot claim completion.
+        self.completion_verifier = completion_verifier
         self._validate_definitions()
         self.state = self.validate_snapshot(state) if state is not None else self._initial_state()
 
@@ -183,8 +186,20 @@ class LocalQuestRuntime:
                 if count >= family["campaignCompletionCap"]: raise LocalQuestError("family anti-farming cap reached")
                 key = f"{instance_id}:completion"
                 if key in self.state["deliveredRewardKeys"]: raise LocalQuestError("local rewards already delivered")
-                if self.reward_adapter is not None:
-                    self.reward_adapter(tuple(copy.deepcopy(variant["rewards"])), copy.deepcopy(dict(context or {})))
+                # The production verifier must resolve all authored objectives
+                # against real action receipts scoped to the accepted instance.
+                # Neither UI completion clicks nor context flags are evidence.
+                if self.completion_verifier is None:
+                    raise LocalQuestError("local quest requires an authoritative completion verifier")
+                claim = {"instanceId": instance_id, "familyId": family["id"],
+                         "variantId": offer["variantId"], "settlementId": offer["settlementId"],
+                         "acceptedDay": offer["acceptedDay"], "currentDay": self.state["day"],
+                         "objectives": copy.deepcopy(variant["objectives"])}
+                if self.completion_verifier(copy.deepcopy(claim)) is not True:
+                    raise LocalQuestError("local quest lacks authoritative objective completion receipts")
+                if self.reward_adapter is None:
+                    raise LocalQuestError("local quest completion requires an atomic reward adapter")
+                self.reward_adapter(tuple(copy.deepcopy(variant["rewards"])), copy.deepcopy(dict(context or {})))
                 self.state["deliveredRewardKeys"].append(key)
                 self.state["familyCompletions"].append({"instanceId": instance_id, "familyId": family["id"],
                                                          "settlementId": offer["settlementId"]})
