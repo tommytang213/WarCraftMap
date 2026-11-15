@@ -99,11 +99,17 @@ class HarborRescueContentQualityTests(unittest.TestCase):
     def test_market_exchange_cases_are_authored_and_market_only(self):
         # Commerce incidents cannot spawn in settlements without a market.
         both_market = [s for s in WORLD["settlements"] if "market" in s.get("serviceIds", [])]
-        without_market = [s for s in WORLD["settlements"] if "market" not in s.get("serviceIds", [])]
         self.assertTrue(both_market)
-        self.assertTrue(without_market)
+        # All 827 real settlements currently have markets. Check the actual
+        # world AND the same real settlement with its market service removed;
+        # do not invent a nonexistent real-world non-market settlement.
+        without_market_service = dict(both_market[0])
+        without_market_service["serviceIds"] = [
+            item for item in both_market[0].get("serviceIds", []) if item != "market"
+        ]
         for family_id in ("market_shortfall", "bales_and_balances"):
             family = self.runtime.families[family_id]
+            self.assertFalse(self.runtime._eligible(without_market_service, family))
             for settlement in WORLD["settlements"]:
                 self.assertEqual(
                     "market" in settlement.get("serviceIds", []),
