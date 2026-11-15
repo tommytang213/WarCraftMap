@@ -190,5 +190,36 @@ class HarborRescueContentQualityTests(unittest.TestCase):
                 self.assertNotIn(filler, text, case)
 
 
+    def test_ledger_disputes_are_distinct_and_admin_eligible(self):
+        # Editorial source gate. Actual hearings, receipts, stability effects
+        # and native Warcraft presentation still need execution evidence.
+        family = self.runtime.families["ledger_in_arrears"]
+        variants = family["_variants"]
+        self.assertEqual(["administration"], family["requiredAnyTags"])
+        admin = [s for s in WORLD["settlements"]
+                 if "administration" in self.runtime.settlement_context(s)]
+        other = [s for s in WORLD["settlements"]
+                 if "administration" not in self.runtime.settlement_context(s)]
+        self.assertTrue(admin)
+        self.assertTrue(other)
+        self.assertTrue(all(self.runtime._eligible(s, family) for s in admin))
+        self.assertTrue(all(not self.runtime._eligible(s, family) for s in other))
+        self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+        for field in ("title", "summary", "dialogue", "objectives",
+                      "alternate", "failure", "strategicAccomplishment"):
+            values = [json.dumps(v[field], ensure_ascii=False) for v in variants.values()]
+            self.assertEqual(4, len(set(values)), "cloned administrative " + field)
+        for case, variant in variants.items():
+            self.assertNotIn(": " + case.capitalize(), variant["title"])
+            prose = json.dumps(variant, ensure_ascii=False).lower()
+            for filler in ("a routine request has become difficult",
+                           "two parties describe the same need differently",
+                           "ask for accountable help, not an unquestioned errand",
+                           "return to the originating settlement and make a witnessed accounting"):
+                self.assertNotIn(filler, prose, case)
+            self.assertEqual(["currency", "experience", "stability"],
+                             [x["kind"] for x in variant["rewards"]])
+
+
 if __name__ == "__main__":
     unittest.main()

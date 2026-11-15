@@ -1683,15 +1683,15 @@
       "variants": [
         {
           "id": "plain",
-          "title": "The Ledger in Arrears: Plain",
-          "summary": "A routine request has become difficult because local conditions changed.",
-          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "title": "The Levy Entered Twice",
+          "summary": "A dues clerk has entered the same paid consignment on two collection lines. The carrier has one receipt, but a second demand is already headed to the household.",
+          "dialogue": "The marks look alike, but a similar mark does not settle a debt. Put the dates beside the receipt before I change the roll.",
           "objectives": [
-            "Reconcile two records; hear an appeal and file a corrected account.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Compare the two levy entries with the payer's dated receipt and the original collector's mark.",
+            "Identify whether they represent one payment or two obligations, then record a witnessed correction without erasing the disputed entry."
           ],
-          "alternate": "The giver is unavailable; use the witnessed alternate authority.",
-          "failure": "Failure records the loss and delays replacement.",
+          "alternate": "If the collector's record cannot be checked, mark the second demand as disputed and defer collection rather than inventing proof of payment.",
+          "failure": "Collecting a second time without evidence leaves the household wronged and the ledger challenge unresolved.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -1715,19 +1715,19 @@
               "temporary": true
             }
           ],
-          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+          "strategicAccomplishment": "A documented duplicate-charge correction reduces the risk of unjust collection and resulting unrest."
         },
         {
           "id": "contested",
-          "title": "The Ledger in Arrears: Contested",
-          "summary": "Two parties describe the same need differently, and evidence must decide the response.",
-          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "title": "Dues on the Shared Harvest",
+          "summary": "Two households brought in a shared harvest, but the dues roll names only one as liable. The collector wants a single debtor while both parties contest how the crop was divided.",
+          "dialogue": "I can enter what they actually shared. I cannot turn a season's harvest bargain into a judgment about who owns the field.",
           "objectives": [
-            "Reconcile two records; hear an appeal and file a corrected account.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Hear both households separately and compare the harvest tally with the collector's stated assessment basis.",
+            "Record a witnessed interim division or identify the part still disputed, without rewriting permanent land rights."
           ],
-          "alternate": "Broker a limited compromise if the original remedy is blocked.",
-          "failure": "Escalation closes the offer without granting rewards.",
+          "alternate": "If neither party accepts the measured split, refer the disputed share for hearing while retaining the undisputed contribution in the roll.",
+          "failure": "Charging the whole levy to one household without examining the division aggravates the dispute and defeats the settlement.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -1751,19 +1751,19 @@
               "temporary": true
             }
           ],
-          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+          "strategicAccomplishment": "An evidenced interim harvest assessment reduces tension without turning a temporary dues ruling into a title judgment."
         },
         {
           "id": "urgent",
-          "title": "The Ledger in Arrears: Urgent",
-          "summary": "A short deadline raises the cost of delay but does not excuse unsafe work.",
-          "dialogue": "The Settlement Office ask for accountable help, not an unquestioned errand.",
+          "title": "The Collector Has Arrived",
+          "summary": "A collector is preparing to seize goods for arrears just as a household produces evidence of an earlier partial payment. Delay may make any later correction useless.",
+          "dialogue": "He may collect what the record supports. But if that receipt is genuine, we must not take the same portion again.",
           "objectives": [
-            "Reconcile two records; hear an appeal and file a corrected account.",
-            "Return to the originating settlement and make a witnessed accounting."
+            "Check the household's receipt against the collector's demand and identify the amount actually outstanding.",
+            "Present the supported balance to the responsible clerk before collection, recording a stay of the disputed portion or a witnessed appeal."
           ],
-          "alternate": "Stabilize the immediate danger and return for a reduced outcome.",
-          "failure": "Expiry preserves the world consequence and starts cooldown.",
+          "alternate": "If the collector cannot be reached in time, lodge the dated appeal with an accountable office and preserve the receipt rather than physically confronting the collection party.",
+          "failure": "Unverified seizure or a falsely cleared debt leaves the accounts contested and the household at risk of further loss.",
           "guidance": {
             "precision": "exact",
             "originPersistent": true,
@@ -1787,7 +1787,7 @@
               "temporary": true
             }
           ],
-          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+          "strategicAccomplishment": "Timely review of a disputed arrears demand limits unrest caused by collecting an unproven balance."
         },
         {
           "id": "scarce",
@@ -1823,7 +1823,7 @@
               "temporary": true
             }
           ],
-          "strategicAccomplishment": "Reconcile two records; hear an appeal and file a corrected account."
+          "strategicAccomplishment": "Documenting the missing evidence avoids imposing an unproven levy while an accountable correction is sought."
         }
       ]
     },
