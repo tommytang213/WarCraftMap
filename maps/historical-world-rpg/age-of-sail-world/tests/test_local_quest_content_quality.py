@@ -221,5 +221,34 @@ class HarborRescueContentQualityTests(unittest.TestCase):
                              [x["kind"] for x in variant["rewards"]])
 
 
+
+    def test_neighbor_aid_and_investigations_are_contextual_not_cloned(self):
+        # Editorial source test only; neither WC3 interaction nor applied effects.
+        expected = {
+            "neighbors_in_need": ["currency", "experience", "settlement_reputation"],
+            "marks_in_dust": ["currency", "experience", "reduced_unrest"],
+        }
+        for family_id, reward_kinds in expected.items():
+            family = self.runtime.families[family_id]
+            variants = family["_variants"]
+            self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+            for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+                values = [json.dumps(v[field], ensure_ascii=False) for v in variants.values()]
+                self.assertEqual(4, len(set(values)), (family_id, field))
+            for case, variant in variants.items():
+                self.assertNotIn(": " + case.capitalize(), variant["title"])
+                self.assertEqual(2, len(variant["objectives"]))
+                self.assertEqual(reward_kinds, [r["kind"] for r in variant["rewards"]])
+                prose = json.dumps(variant, ensure_ascii=False).lower()
+                for boilerplate in (
+                    "a routine request has become difficult",
+                    "two parties describe the same need differently",
+                    "a short deadline raises the cost of delay",
+                    "ask for accountable help, not an unquestioned errand",
+                    "return to the originating settlement and make a witnessed accounting",
+                    "the giver is unavailable; use the witnessed alternate authority",
+                ):
+                    self.assertNotIn(boilerplate, prose, (family_id, case))
+
 if __name__ == "__main__":
     unittest.main()
