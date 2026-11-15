@@ -163,5 +163,32 @@ class HarborRescueContentQualityTests(unittest.TestCase):
         self.assertNotIn("false weight", v["summary"].lower())
 
 
+    def test_maritime_rigging_has_real_distinct_repairs_not_debug_labels(self):
+        # Historical source/editorial gate. Not native proof that a ship, item,
+        # timed hazard, objective receipt or fleet-supply consumer exists.
+        family = self.runtime.families["tide_and_rigging"]
+        variants = family["_variants"]
+        self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+        self.assertEqual({"maritime", "port"}, set(family["requiredAnyTags"]))
+        for settlement in WORLD["settlements"]:
+            is_port = "maritime" in self.runtime.settlement_context(settlement)
+            self.assertEqual(is_port, self.runtime._eligible(settlement, family))
+        for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure",
+                      "strategicAccomplishment"):
+            rows = [json.dumps(v[field], ensure_ascii=False) for v in variants.values()]
+            self.assertEqual(4, len(set(rows)), "repeated maritime " + field)
+        for case, variant in variants.items():
+            self.assertNotIn(": " + case.capitalize(), variant["title"])
+            self.assertIn("trial", " ".join(variant["objectives"]).lower())
+            self.assertEqual(["currency", "experience", "fleet_supply"],
+                             [x["kind"] for x in variant["rewards"]])
+            text = json.dumps(variant, ensure_ascii=False).lower()
+            for filler in ("a routine request has become difficult",
+                           "two parties describe the same need differently",
+                           "ask for accountable help, not an unquestioned errand",
+                           "return to the originating settlement and make a witnessed accounting"):
+                self.assertNotIn(filler, text, case)
+
+
 if __name__ == "__main__":
     unittest.main()
