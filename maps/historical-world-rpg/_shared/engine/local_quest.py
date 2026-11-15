@@ -197,9 +197,21 @@ class LocalQuestRuntime:
                          "objectives": copy.deepcopy(variant["objectives"])}
                 if self.completion_verifier(copy.deepcopy(claim)) is not True:
                     raise LocalQuestError("local quest lacks authoritative objective completion receipts")
-                if self.reward_adapter is None:
-                    raise LocalQuestError("local quest completion requires an atomic reward adapter")
-                self.reward_adapter(tuple(copy.deepcopy(variant["rewards"])), copy.deepcopy(dict(context or {})))
+                # Save rollback does not undo external economy mutations. A real
+                # adapter must durably commit once per transaction ID and return
+                # the same receipt after lost acknowledgements or save reload.
+                if self.reward_adapter is None or not callable(getattr(self.reward_adapter, "deliver_once", None)):
+                    raise LocalQuestError("local quest completion requires a durable idempotent reward adapter")
+                transaction_id = "local_quest_v1:" + hashlib.sha256(
+                    json.dumps([self.seed, key], separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+                ).hexdigest()
+                receipt = self.reward_adapter.deliver_once(
+                    transaction_id, tuple(copy.deepcopy(variant["rewards"])), copy.deepcopy(dict(context or {}))
+                )
+                if (not isinstance(receipt, Mapping)
+                        or receipt.get("transactionId") != transaction_id
+                        or receipt.get("committed") is not True):
+                    raise LocalQuestError("local quest reward adapter lacks a matching durable commit receipt")
                 self.state["deliveredRewardKeys"].append(key)
                 self.state["familyCompletions"].append({"instanceId": instance_id, "familyId": family["id"],
                                                          "settlementId": offer["settlementId"]})
