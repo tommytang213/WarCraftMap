@@ -147,4 +147,18 @@ class LocalQuestTests(unittest.TestCase):
   family=next(x for x in SOURCE["families"] if x["id"]==offer["familyId"]); variant=next(x for x in family["variants"] if x["id"]==offer["variantId"])
   self.assertTrue(variant["alternate"] and variant["failure"]); self.assertEqual("show_authored_alternate",variant["guidance"]["blockedRoutePolicy"])
 
+ def test_road_companions_variants_are_specific_and_not_template_clones(self):
+  family=next(f for f in SOURCE["families"] if f["id"]=="road_companions")
+  self.assertEqual(["plain","contested","urgent","scarce"],[v["id"] for v in family["variants"]])
+  self.assertEqual(4,len({v["title"] for v in family["variants"]}))
+  self.assertEqual(4,len({tuple(v["objectives"]) for v in family["variants"]}))
+  for variant in family["variants"]:
+   with self.subTest(variant=variant["id"]):
+    self.assertNotIn(": "+variant["id"].title(),variant["title"])
+    self.assertNotIn("A routine request has become difficult",variant["summary"])
+    self.assertNotIn("ask for accountable help",variant["dialogue"])
+    self.assertEqual(2,len(variant["objectives"]))
+    for field in ("title","summary","dialogue","alternate","failure"):
+     self.assertTrue(variant[field].strip())
+
 if __name__=="__main__": unittest.main()
