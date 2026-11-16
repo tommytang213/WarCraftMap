@@ -357,9 +357,19 @@ def run_profile(config, sources, profile, max_diagnostics=4):
                 raise InvariantFailure(date.fromisoformat(normal["endDate"]).toordinal(), "persistence",
                                        "execution_equivalence", "world", "normal, accelerated, and resumed states differ")
             if hashes[0] != expected_hashes[seed]:
+                # Keep the golden-state gate strict, but distinguish authored
+                # catalogue drift from changes to the simulated live state.
+                # The source domains are still part of the authoritative full
+                # hash above, including quest IDs used for tick selection.
+                provenance = {key: normal[key] for key in ("fixtureHash", "domains", "sourceCounts")}
+                progression = {key: value for key, value in normal.items()
+                               if key not in ("activeRepresentations", "fixtureHash", "domains", "sourceCounts")}
                 raise InvariantFailure(date.fromisoformat(normal["endDate"]).toordinal(), "persistence",
                                        "normalized_state_hash", f"seed:{seed}",
-                                       "normalized final state does not match the configured fixture hash")
+                                       "normalized final state differs: "
+                                       f"expected={expected_hashes[seed]} observed={hashes[0]} "
+                                       f"provenanceHash={digest(provenance)} "
+                                       f"progressionHash={digest(progression)}")
             runs.append({"seed": seed, "workload": dict(config["workload"]),
                          "initialStateBytes": start_bytes, "finalStateBytes": len(canonical(normal)),
                          "stateGrowthBytes": len(canonical(normal)) - start_bytes,

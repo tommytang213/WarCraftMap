@@ -55,6 +55,11 @@ class FullWorldSoakTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertEqual("normalized_state_hash", result["failures"][0]["invariant"])
         self.assertEqual("seed:1450", result["failures"][0]["entityId"])
+        message = result["failures"][0]["message"]
+        self.assertIn("expected=" + "0" * 64, message)
+        for label in ("observed", "provenanceHash", "progressionHash"):
+            self.assertRegex(message, rf"{label}=[0-9a-f]{{64}}")
+        self.assertNotIn("activeRepresentations", message)
 
     def test_inactive_world_scale_never_expands_active_representation(self):
         profile = self.profiles["smoke"]
