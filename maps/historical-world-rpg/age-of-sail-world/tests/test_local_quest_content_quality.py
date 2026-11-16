@@ -277,5 +277,33 @@ class HarborRescueContentQualityTests(unittest.TestCase):
         self.assertIn("competing claims", " ".join(variants["contested"]["objectives"]))
         self.assertIn("without exposing unseen locations", " ".join(variants["urgent"]["objectives"]))
 
+    def test_quiet_watch_cases_have_distinct_evidence_and_safe_dispositions(self):
+        # Issue #600 source/editorial gate, not proof of production arrest,
+        # watch movement, reduced-crime mutations, or native Warcraft UI.
+        family = self.runtime.families["quiet_watch"]
+        variants = family["_variants"]
+        self.assertEqual(["security"], family["requiredAnyTags"])
+        self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+        for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+            self.assertEqual(4, len({json.dumps(v[field], ensure_ascii=False)
+                                     for v in variants.values()}), field)
+        for case, variant in variants.items():
+            self.assertEqual(2, len(variant["objectives"]), case)
+            self.assertEqual(["currency", "experience", "reduced_crime"],
+                             [reward["kind"] for reward in variant["rewards"]], case)
+            self.assertFalse(variant["guidance"]["undiscoveredLeak"], case)
+            self.assertNotIn(": " + case.capitalize(), variant["title"])
+            prose = json.dumps(variant, ensure_ascii=False).lower()
+            for filler in ("a routine request has become difficult",
+                           "two parties describe the same need differently",
+                           "ask for accountable help, not an unquestioned errand",
+                           "return to the originating settlement and make a witnessed accounting",
+                           "the giver is unavailable; use the witnessed alternate authority"):
+                self.assertNotIn(filler, prose, case)
+        self.assertIn("exposed approach", variants["plain"]["objectives"][1])
+        self.assertIn("authorized detention", variants["contested"]["objectives"][1])
+        self.assertIn("maintaining a guard", variants["urgent"]["objectives"][1])
+
+
 if __name__ == "__main__":
     unittest.main()
