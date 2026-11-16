@@ -183,6 +183,26 @@ class CampaignQuestTests(unittest.TestCase):
         self.assertEqual("failed", next(x for x in failed.snapshot()["quests"] if x["id"] == "pacific_stars_between_islands")["status"])
         self.assertEqual("cancelled", next(x for x in cancelled.snapshot()["quests"] if x["id"] == "east_asia_coastal_record")["status"])
 
+    def test_scoped_rewards_have_a_possible_terminal_route(self):
+        # Check all actual authored restrictions; two individually valid fork
+        # stages do not automatically form a reachable history together.
+        for quest in SOURCE["quests"]:
+            for reward in quest["rewards"]:
+                if "requiresReachedStageIds" in reward:
+                    self.assertTrue(
+                        CAMPAIGN.reward_route_possible(
+                            quest["stages"], set(reward["requiresReachedStageIds"])
+                        ), (quest["id"], reward["id"])
+                    )
+        edited = copy.deepcopy(SOURCE)
+        personal = next(q for q in edited["quests"] if q["id"] == "hang_tuah_personal_quest")
+        office = next(r for r in personal["rewards"] if r["id"] == "hang_tuah_office")
+        office["requiresReachedStageIds"] = ["public_duty", "private_duty"]
+        with self.assertRaisesRegex(AssertionError, "cannot be earned on any terminal path"):
+            CAMPAIGN.validate(edited, WORLD)
+        office["requiresReachedStageIds"] = ["public_duty"]
+        CAMPAIGN.validate(edited, WORLD)
+
     def test_changed_control_absence_and_blocked_route_never_silently_complete(self):
         runtime = QuestEventRuntime(definitions(), extensions=Adapters())
         runtime.activate_quest("southeast_strait_accord")

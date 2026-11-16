@@ -105,12 +105,31 @@ def validate(source, world):
                 assert (isinstance(required, list) and required
                         and all(isinstance(sid, str) and sid in stage_ids for sid in required)
                         and len(set(required)) == len(required))
+                assert reward_route_possible(quest["stages"], set(required)), (
+                    f"quest {quest['id']} reward {reward['id']} cannot be earned on any terminal path"
+                )
             reward_adapters.add(reward["adapter"])
             for kind, ident in reward["refs"]: assert kind in indexes and ident in indexes[kind]
     assert set(coverage["requiredObjectiveKinds"]) <= objective_kinds
     assert set(coverage["requiredGuidance"]) <= guidance_kinds
     assert regions <= used_regions
     assert {"economy", "character", "title", "diplomacy", "discovery", "technology"} <= reward_adapters
+
+
+def reward_route_possible(stages, required):
+    """An outcome's required history must fit at least one full quest route."""
+    by_id = {stage["id"]: stage for stage in stages}
+    pending = [(stages[0]["id"], frozenset())]
+    while pending:
+        current, prior = pending.pop()
+        if current in prior:
+            continue  # A cyclic walk cannot prove a finite valid reward route.
+        reached = prior | {current}
+        successors = by_id[current]["next"]
+        if not successors and required.issubset(reached):
+            return True
+        pending.extend((next_id, reached) for next_id in successors)
+    return False
 
 
 def project(source, world):
