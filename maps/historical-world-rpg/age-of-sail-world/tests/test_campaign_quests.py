@@ -76,6 +76,24 @@ class CampaignQuestTests(unittest.TestCase):
         self.assertEqual(["reckoning"], quest["stages"][1]["next"])
         self.assertEqual(["reckoning"], quest["stages"][2]["next"])
 
+    def test_nzinga_kongo_envoys_references_and_choices(self):
+        quest = next(q for q in SOURCE["quests"] if q["id"] == "nzinga_mbande_personal_quest")
+        self.assertEqual(["character", "nzinga_mbande"], quest["giver"])
+        self.assertEqual(["settlement", "mbanza_kongo"], quest["turnIn"])
+        self.assertEqual(["polity", "kongo_kingdom"], quest["stages"][1]["objectives"][0]["refs"][0])
+        self.assertEqual(["polity", "kongo_kingdom"], quest["rewards"][1]["refs"][0])
+        private = quest["stages"][2]["objectives"][0]
+        self.assertEqual(["settlement", "mbanza_kongo"], private["refs"][0])
+        self.assertEqual("mbanza_kongo", private["guidance"]["settlementId"])
+        self.assertIn("Ndongo", quest["summary"])
+        self.assertIn("Matamba", quest["summary"])
+        self.assertIn("coerced", private["text"])
+        self.assertNotIn("songhai", json.dumps(quest).lower())
+        self.assertNotIn("kilwa", json.dumps(quest).lower())
+        self.assertEqual(["public_duty", "private_duty"], quest["stages"][0]["next"])
+        self.assertEqual(["reckoning"], quest["stages"][1]["next"])
+        self.assertEqual(["reckoning"], quest["stages"][2]["next"])
+
     def test_success_alternate_failed_cancelled_and_unavailable_participant_paths(self):
         # Exercise every regional success path once.
         for quest in (q for q in WORLD["quests"] if q["campaign"]["chainKind"] == "regional"):

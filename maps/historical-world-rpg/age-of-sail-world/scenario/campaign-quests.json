@@ -1671,24 +1671,24 @@
       "id": "nzinga_mbande_personal_quest",
       "region": "africa",
       "chainKind": "personal",
-      "title": "Gold and Monsoon: A Personal Reckoning",
-      "summary": "A recruitable companion weighs private obligations against service, office, and the player's trust.",
+      "title": "Nzinga's Kongo Envoys",
+      "summary": "Nzinga asks for terms of safe passage with Kongo envoys after households flee the fighting in Ndongo. A court seal may protect their journey, but cannot confer her authority over Matamba or excuse a forced return.",
       "giver": [
         "character",
         "nzinga_mbande"
       ],
       "turnIn": [
         "settlement",
-        "kilwa"
+        "mbanza_kongo"
       ],
       "stages": [
         {
           "id": "confidence",
-          "title": "A Confidence",
+          "title": "Letters from Ndongo",
           "objectives": [
             {
               "id": "hear_companion",
-              "text": "Earn the companion's confidence.",
+              "text": "Hear Nzinga's account of a contested safe-conduct letter and identify the displaced households and witnesses it names.",
               "kind": "character",
               "refs": [
                 [
@@ -1705,16 +1705,16 @@
         },
         {
           "id": "public_duty",
-          "title": "Public Duty",
+          "title": "The Kongo Seal",
           "objectives": [
             {
               "id": "serve_office",
-              "text": "Use the companion's office to negotiate a durable answer.",
+              "text": "Present the letter to Kongo's court and seek a witnessed safe-passage agreement that does not transfer the families to another lord.",
               "kind": "diplomacy",
               "refs": [
                 [
                   "polity",
-                  "songhai_kingdom"
+                  "kongo_kingdom"
                 ]
               ]
             }
@@ -1725,22 +1725,22 @@
         },
         {
           "id": "private_duty",
-          "title": "Private Duty",
+          "title": "The Families' Own Word",
           "objectives": [
             {
               "id": "protect_home",
-              "text": "Protect the companion's personal obligation at home.",
+              "text": "Speak with the displaced Ndongo households at Mbanza Kongo, record their chosen destinations, and challenge any coerced return.",
               "kind": "settlement",
               "refs": [
                 [
                   "settlement",
-                  "kilwa"
+                  "mbanza_kongo"
                 ]
               ],
               "guidance": {
                 "precision": "exact",
                 "regionId": "africa",
-                "settlementId": "kilwa"
+                "settlementId": "mbanza_kongo"
               }
             }
           ],
@@ -1750,11 +1750,11 @@
         },
         {
           "id": "reckoning",
-          "title": "The Reckoning",
+          "title": "A Promise Tested",
           "objectives": [
             {
               "id": "settle_loyalty",
-              "text": "Let the companion judge the chosen outcome.",
+              "text": "Return the witnessed agreement or the families' account to Nzinga and hear her decision about their protection.",
               "kind": "character",
               "refs": [
                 [
@@ -1786,7 +1786,7 @@
           "refs": [
             [
               "polity",
-              "songhai_kingdom"
+              "kongo_kingdom"
             ]
           ]
         }
