@@ -161,4 +161,21 @@ class LocalQuestTests(unittest.TestCase):
     for field in ("title","summary","dialogue","alternate","failure"):
      self.assertTrue(variant[field].strip())
 
+
+ def test_tools_recovered_variants_have_distinct_actors_evidence_and_recovery(self):
+  family=next(f for f in SOURCE["families"] if f["id"]=="tools_recovered")
+  variants=family["variants"]
+  self.assertEqual(["plain","contested","urgent","scarce"],[v["id"] for v in variants])
+  for key in ("title","summary","dialogue","alternate","failure"):
+   self.assertEqual(4,len({v[key] for v in variants}),key)
+  self.assertEqual(4,len({tuple(v["objectives"]) for v in variants}))
+  for variant in variants:
+   with self.subTest(variant=variant["id"]):
+    self.assertEqual(2,len(variant["objectives"]))
+    self.assertNotRegex(variant["title"],r": (Plain|Contested|Urgent|Scarce)$")
+    self.assertNotIn("A routine request has become difficult",variant["summary"])
+    self.assertNotIn("ask for accountable help",variant["dialogue"])
+    self.assertTrue(all(x.strip() for x in variant["objectives"]))
+    self.assertEqual(["currency","experience","profession_reputation"],[r["kind"] for r in variant["rewards"]])
+
 if __name__=="__main__": unittest.main()
