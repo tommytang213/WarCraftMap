@@ -305,5 +305,34 @@ class HarborRescueContentQualityTests(unittest.TestCase):
         self.assertIn("maintaining a guard", variants["urgent"]["objectives"][1])
 
 
+    def test_workshop_watch_boundaries_and_routes_are_distinct_authored_cases(self):
+        # Text-only #600 gate; does not prove playable objective/reward effects.
+        expected = {
+            "master_and_apprentice": ["currency", "experience"],
+            "stores_for_watch": ["currency", "experience", "garrison_readiness"],
+            "boundary_stones": ["currency", "experience", "reduced_unrest"],
+            "route_hazards": ["currency", "experience"],
+        }
+        for family_id, kinds in expected.items():
+            variants = self.runtime.families[family_id]["_variants"]
+            self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+            for key in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+                self.assertEqual(4, len({json.dumps(v[key], ensure_ascii=False)
+                                         for v in variants.values()}), (family_id, key))
+            for case, variant in variants.items():
+                self.assertEqual(2, len(variant["objectives"]))
+                self.assertEqual(kinds, [r["kind"] for r in variant["rewards"]])
+                self.assertFalse(variant["guidance"]["undiscoveredLeak"])
+                self.assertNotIn(": " + case.capitalize(), variant["title"])
+                prose = json.dumps(variant, ensure_ascii=False).lower()
+                for filler in ("a routine request has become difficult",
+                               "two parties describe the same need differently",
+                               "a short deadline raises the cost of delay",
+                               "ask for accountable help, not an unquestioned errand",
+                               "return to the originating settlement and make a witnessed accounting",
+                               "the giver is unavailable; use the witnessed alternate authority"):
+                    self.assertNotIn(filler, prose, (family_id, case))
+
+
 if __name__ == "__main__":
     unittest.main()
