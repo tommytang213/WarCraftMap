@@ -65,6 +65,43 @@ class QuestEventRuntimeTests(unittest.TestCase):
   before=bounded.snapshot()
   with self.assertRaisesRegex(QuestEventError,"bounded limit 2"): bounded.process_until(9)
   self.assertEqual(before,bounded.snapshot())
+
+ def test_path_qualified_rewards_are_atomic_and_do_not_change_save_schema(self):
+  data=definitions(); q=data["quests"][0]
+  q["stages"]=[{"id":"port","objectiveIds":["visit"],"nextStageIds":["sea","harbor"]},
+               {"id":"sea","objectiveIds":[],"nextStageIds":[]},
+               {"id":"harbor","objectiveIds":[],"nextStageIds":[]}]
+  q["outcomes"]=[{"id":"shared","kind":"scenario_outcome","outcomeId":"shared","entityRefs":[]},
+                 {"id":"at_sea","kind":"scenario_outcome","outcomeId":"sea_reward","entityRefs":[],"requiresReachedStageIds":["sea"]},
+                 {"id":"at_harbor","kind":"scenario_outcome","outcomeId":"harbor_reward","entityRefs":[],"requiresReachedStageIds":["harbor"]}]
+  for branch,excluded in (("sea","harbor_reward"),("harbor","sea_reward")):
+   rt=QuestEventRuntime(data,extensions=Extensions(),authoritative_state={"money":0,"technologies":[]})
+   rt.activate_quest("voyage"); rt.set_objective_complete("voyage","visit"); rt.advance_quest("voyage",branch)
+   checkpoint=rt.snapshot()
+   with self.assertRaisesRegex(QuestEventError,"invalid referenced"):
+    rt.complete_quest("voyage",context={"invalid":True})
+   self.assertEqual(checkpoint,rt.snapshot())
+   rt.complete_quest("voyage")
+   delivered=rt.snapshot()["externalState"]["technologies"]
+   self.assertEqual(["shared",branch+"_reward"],delivered)
+   self.assertNotIn(excluded,delivered)
+   self.assertEqual(1,rt.snapshot()["schemaVersion"])
+   restored=QuestEventRuntime(data,extensions=Extensions()); restored.restore(rt.snapshot())
+   self.assertEqual(rt.snapshot(),restored.snapshot())
+   with self.assertRaises(QuestEventError): restored.complete_quest("voyage")
+  failed=QuestEventRuntime(data,extensions=Extensions())
+  failed.activate_quest("voyage"); failed.fail_quest("voyage")
+  self.assertEqual([],failed.snapshot()["deliveredOutcomeKeys"])
+
+ def test_outcome_stage_qualification_rejects_unknown_duplicate_and_nonquest_scopes(self):
+  for invalid in ([],["missing"],["sea","sea"],"sea",None):
+   data=definitions(); data["quests"][0]["outcomes"][0]["requiresReachedStageIds"]=invalid
+   with self.subTest(invalid=invalid),self.assertRaisesRegex(QuestEventError,"invalid quest stage history"):
+    QuestEventRuntime(data,extensions=Extensions())
+  data=definitions(); data["events"][1]["outcomes"][0]["requiresReachedStageIds"]=["port"]
+  with self.assertRaisesRegex(QuestEventError,"invalid quest stage history"):
+   QuestEventRuntime(data,extensions=Extensions())
+
  def test_malformed_restore_is_atomic(self):
   before=self.runtime.snapshot(); bad=copy.deepcopy(before); bad["pendingTriggers"]=[{"eventId":"missing","triggerId":"x","key":"x"}]
   with self.assertRaises(QuestEventError): self.runtime.restore(bad)

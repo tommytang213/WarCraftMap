@@ -67,7 +67,7 @@ class QuestEventRuntime:
    if not e["_triggers"]: raise QuestEventError(f"event {eid}: no triggers")
   for owner,r in [("quest",x) for x in self.quests.values()]+[("event",x) for x in self.events.values()]+[("discovery",x) for x in self.discoveries.values()]:
    for p in r.get("prerequisites",[]): self._check_pre(p,owner)
-   for o in r.get("outcomes",[]): self._check_out(o,owner)
+   for o in r.get("outcomes",[]): self._check_out(o,owner,r)
  def _check_pre(self,p,owner):
   if not isinstance(p,Mapping): raise QuestEventError(f"{owner}: malformed prerequisite")
   k=p.get("kind")
@@ -78,8 +78,14 @@ class QuestEventRuntime:
    if q is None or p.get("stageId") not in q["_stages"]: raise QuestEventError(f"{owner}: missing stage reference")
   elif k=="scenario_condition": _id(p.get("conditionId"),owner); _refs(p.get("entityRefs",[]),owner)
   elif k not in {"quest_completed","event_occurred"}: raise QuestEventError(f"{owner}: unsupported prerequisite {k!r}")
- def _check_out(self,o,owner):
+ def _check_out(self,o,owner,record):
   if not isinstance(o,Mapping): raise QuestEventError(f"{owner}: malformed outcome")
+  if "requiresReachedStageIds" in o:
+   stages=o["requiresReachedStageIds"]
+   if (owner!="quest" or not isinstance(stages,list) or not stages or
+       any(not isinstance(sid,str) or sid not in record["_stages"] for sid in stages) or
+       len(set(stages))!=len(stages)):
+    raise QuestEventError("outcome requires invalid quest stage history")
   _id(o.get("id"),owner); k=o.get("kind")
   if k=="start_quest" and o.get("questId") not in self.quests: raise QuestEventError(f"{owner}: missing quest")
   elif k=="advance_quest":
@@ -153,7 +159,8 @@ class QuestEventRuntime:
   if status=="completed":
    stage=q["_stages"][qs["stageId"]]
    if stage.get("nextStageIds") or not set(stage.get("objectiveIds",[])).issubset(qs["completedObjectiveIds"]): raise QuestEventError("quest is not at a completed terminal stage")
-   self._outcomes(s,out,q.get("outcomes",[]),f"quest:{qid}",1,c)
+   eligible=[x for x in q.get("outcomes",[]) if set(x.get("requiresReachedStageIds",[])).issubset(qs["reachedStageIds"])]
+   self._outcomes(s,out,eligible,f"quest:{qid}",1,c)
   qs["status"]=status; self._notify(out,s,f"quest_{status}","quest",qid,stageId=qs["stageId"])
  def enqueue_trigger(self,eid,tid,*,due_time=0,priority=0,occurrence_key=None,context=None):
   if eid not in self.events or tid not in self.events[eid]["_triggers"]: raise QuestEventError("unknown event trigger")

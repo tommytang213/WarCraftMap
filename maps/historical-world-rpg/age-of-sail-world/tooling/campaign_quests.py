@@ -100,6 +100,11 @@ def validate(source, world):
         assert reachable == stage_ids and terminal
         for reward in quest["rewards"]:
             assert reward["adapter"] in ADAPTERS and ID.fullmatch(reward["id"])
+            if "requiresReachedStageIds" in reward:
+                required = reward["requiresReachedStageIds"]
+                assert (isinstance(required, list) and required
+                        and all(isinstance(sid, str) and sid in stage_ids for sid in required)
+                        and len(set(required)) == len(required))
             reward_adapters.add(reward["adapter"])
             for kind, ident in reward["refs"]: assert kind in indexes and ident in indexes[kind]
     assert set(coverage["requiredObjectiveKinds"]) <= objective_kinds
@@ -145,8 +150,14 @@ def project(source, world):
                     "objectiveKinds": sorted({o["kind"] for s in quest["stages"] for o in s["objectives"]}),
                     "historicalEventIds": sorted({o["eventId"] for s in quest["stages"] for o in s["objectives"] if "eventId" in o}),
                     "divergences": copy.deepcopy(quest["divergences"]), "rewards": copy.deepcopy(quest["rewards"])}
-        outcomes = [{"id": r["id"], "kind": "scenario_outcome", "outcomeId": f"quest_{r['adapter']}_{r['effect']}",
-                     "entityRefs": refs(r["refs"])} for r in quest["rewards"]]
+        outcomes = []
+        for reward in quest["rewards"]:
+            entry = {"id": reward["id"], "kind": "scenario_outcome",
+                     "outcomeId": f"quest_{reward['adapter']}_{reward['effect']}",
+                     "entityRefs": refs(reward["refs"])}
+            if "requiresReachedStageIds" in reward:
+                entry["requiresReachedStageIds"] = list(reward["requiresReachedStageIds"])
+            outcomes.append(entry)
         projected.append({"id": quest["id"], "title": quest["title"], "summary": quest["summary"],
           "initialStageId": stages[0]["id"], "stages": stages, "objectives": objectives,
           "prerequisites": [{"kind": "quest_completed", "id": x} for x in quest.get("prerequisiteQuestIds", [])],
