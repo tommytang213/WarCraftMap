@@ -127,8 +127,19 @@ class CampaignQuestTests(unittest.TestCase):
 
     def test_all_personal_branches_select_one_path_scoped_reward_after_restore(self):
         projected = CAMPAIGN.project(SOURCE, WORLD)
-        personal = [q for q in projected["quests"] if q["campaign"]["chainKind"] == "personal"]
-        self.assertEqual(7, len(personal))
+        # The 49 personal-category quests include 42 separately authored
+        # release-story services. Only seven explicit personal chains have
+        # public_duty/private_duty forks and their own scoped rewards.
+        branch_ids = {q["id"] for q in SOURCE["quests"] if q["chainKind"] == "personal"}
+        story_ids = {q["id"] for q in SOURCE["releaseStoryQuests"] if q["category"] == "personal"}
+        self.assertEqual(7, len(branch_ids))
+        self.assertEqual(42, len(story_ids))
+        self.assertFalse(branch_ids & story_ids)
+        projected_personal = {q["id"] for q in projected["quests"]
+                              if q["campaign"]["chainKind"] == "personal"}
+        self.assertEqual(branch_ids | story_ids, projected_personal)
+        personal = [q for q in projected["quests"] if q["id"] in branch_ids]
+        self.assertEqual(branch_ids, {q["id"] for q in personal})
         for quest in personal:
             qid = quest["id"]
             stem = qid.removesuffix("_personal_quest")
