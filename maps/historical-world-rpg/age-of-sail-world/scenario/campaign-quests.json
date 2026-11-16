@@ -2245,24 +2245,24 @@
       "id": "hang_tuah_personal_quest",
       "region": "southeast_asia",
       "chainKind": "personal",
-      "title": "Letters of the Strait: A Personal Reckoning",
-      "summary": "A recruitable companion weighs private obligations against service, office, and the player's trust.",
+      "title": "Hang Tuah and the Malacca Letters",
+      "summary": "Two sets of passage letters carry rival claims about a merchant convoy. Hang Tuah asks whether the court should verify the seal or first protect the crew accused of changing it.",
       "giver": [
         "character",
         "hang_tuah"
       ],
       "turnIn": [
         "settlement",
-        "ayutthaya"
+        "malacca"
       ],
       "stages": [
         {
           "id": "confidence",
-          "title": "A Confidence",
+          "title": "The Sealed Letters",
           "objectives": [
             {
               "id": "hear_companion",
-              "text": "Earn the companion's confidence.",
+              "text": "Hear Hang Tuah's account of the disputed passage letters and identify who carried them.",
               "kind": "character",
               "refs": [
                 [
@@ -2279,16 +2279,16 @@
         },
         {
           "id": "public_duty",
-          "title": "Public Duty",
+          "title": "The Court Seal",
           "objectives": [
             {
               "id": "serve_office",
-              "text": "Use the companion's office to negotiate a durable answer.",
+              "text": "Present the letters to Malacca's court and ask the seal-keepers to distinguish a valid grant from an altered copy.",
               "kind": "diplomacy",
               "refs": [
                 [
                   "polity",
-                  "ayutthaya_kingdom"
+                  "malacca_sultanate"
                 ]
               ]
             }
@@ -2299,22 +2299,22 @@
         },
         {
           "id": "private_duty",
-          "title": "Private Duty",
+          "title": "The Crew\u0027s Account",
           "objectives": [
             {
               "id": "protect_home",
-              "text": "Protect the companion's personal obligation at home.",
+              "text": "Find the accused crew in Malacca, protect their chance to testify, and check the cargo manifest before anyone is punished.",
               "kind": "settlement",
               "refs": [
                 [
                   "settlement",
-                  "ayutthaya"
+                  "malacca"
                 ]
               ],
               "guidance": {
                 "precision": "exact",
                 "regionId": "southeast_asia",
-                "settlementId": "ayutthaya"
+                "settlementId": "malacca"
               }
             }
           ],
@@ -2324,11 +2324,11 @@
         },
         {
           "id": "reckoning",
-          "title": "The Reckoning",
+          "title": "Hang Tuah\u0027s Judgment",
           "objectives": [
             {
               "id": "settle_loyalty",
-              "text": "Let the companion judge the chosen outcome.",
+              "text": "Return to Hang Tuah with the verified seal or the crew's testimony and hear his judgment.",
               "kind": "character",
               "refs": [
                 [
@@ -2360,7 +2360,7 @@
           "refs": [
             [
               "polity",
-              "ayutthaya_kingdom"
+              "malacca_sultanate"
             ]
           ]
         }

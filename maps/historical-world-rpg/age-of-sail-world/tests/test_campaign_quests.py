@@ -60,6 +60,22 @@ class CampaignQuestTests(unittest.TestCase):
         self.assertEqual(set(SOURCE["coverageTargets"]["majorRegions"]), regional)
         self.assertEqual(1, sum(q["campaign"]["chainKind"] == "long" for q in WORLD["quests"]))
 
+
+    def test_hang_tuah_personal_quest_is_grounded_in_malacca(self):
+        quest = next(q for q in SOURCE["quests"] if q["id"] == "hang_tuah_personal_quest")
+        self.assertEqual(["settlement", "malacca"], quest["turnIn"])
+        self.assertEqual(["polity", "malacca_sultanate"], quest["stages"][1]["objectives"][0]["refs"][0])
+        self.assertEqual(["polity", "malacca_sultanate"], quest["rewards"][1]["refs"][0])
+        private = quest["stages"][2]["objectives"][0]
+        self.assertEqual(["settlement", "malacca"], private["refs"][0])
+        self.assertEqual("malacca", private["guidance"]["settlementId"])
+        self.assertIn("seal", quest["summary"].lower())
+        self.assertIn("crew", private["text"].lower())
+        self.assertNotIn("Personal Reckoning", quest["title"])
+        self.assertEqual(["public_duty", "private_duty"], quest["stages"][0]["next"])
+        self.assertEqual(["reckoning"], quest["stages"][1]["next"])
+        self.assertEqual(["reckoning"], quest["stages"][2]["next"])
+
     def test_success_alternate_failed_cancelled_and_unavailable_participant_paths(self):
         # Exercise every regional success path once.
         for quest in (q for q in WORLD["quests"] if q["campaign"]["chainKind"] == "regional"):
