@@ -83,7 +83,7 @@ class QuestEventRuntimeTests(unittest.TestCase):
    self.assertEqual(checkpoint,rt.snapshot())
    rt.complete_quest("voyage")
    delivered=rt.snapshot()["externalState"]["technologies"]
-   self.assertEqual(["shared",branch+"_reward"],delivered)
+   self.assertEqual([branch+"_reward","shared"],delivered)
    self.assertNotIn(excluded,delivered)
    self.assertEqual(1,rt.snapshot()["schemaVersion"])
    restored=QuestEventRuntime(data,extensions=Extensions()); restored.restore(rt.snapshot())
