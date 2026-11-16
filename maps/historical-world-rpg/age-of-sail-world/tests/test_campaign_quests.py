@@ -197,5 +197,30 @@ class CampaignQuestTests(unittest.TestCase):
         self.assertEqual({"track": False, "showOnMap": False}, entry["actions"])
 
 
+    def test_personal_quest_prose_is_distinct_and_situated(self):
+        # Editorial source gate: distinct actors and dilemmas, never generic quest template text.
+        personal = [quest for quest in SOURCE["quests"] if quest["chainKind"] == "personal"]
+        expected = {
+            "leonardo_da_vinci_personal_quest": ("lagoon", "Venice"),
+            "piri_reis_personal_quest": ("soundings", "Aden"),
+            "xu_guangqi_personal_quest": ("grain", "Quanzhou"),
+            "malintzin_personal_quest": ("translated", "Tenochtitlan"),
+            "nzinga_mbande_personal_quest": ("Ndongo", "Kongo"),
+            "hang_tuah_personal_quest": ("letters", "Malacca"),
+            "kamehameha_i_personal_quest": ("Hawaiian", "royal center"),
+        }
+        self.assertEqual(set(expected), {quest["id"] for quest in personal})
+        self.assertEqual(len(personal), len({quest["title"] for quest in personal}))
+        for quest in personal:
+            with self.subTest(quest=quest["id"]):
+                rendered = "\\n".join([quest["title"], quest["summary"]] +
+                    [obj["text"] for stage in quest["stages"] for obj in stage["objectives"]])
+                for term in expected[quest["id"]]:
+                    self.assertIn(term.lower(), rendered.lower())
+                for template in ("A Personal Reckoning", "Earn the companion's confidence",
+                                 "Use the companion's office to negotiate a durable answer",
+                                 "Protect the companion's personal obligation at home"):
+                    self.assertNotIn(template, rendered)
+
 if __name__ == "__main__":
     unittest.main()
