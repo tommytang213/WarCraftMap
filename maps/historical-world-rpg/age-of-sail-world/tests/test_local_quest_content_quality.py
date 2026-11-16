@@ -250,5 +250,32 @@ class HarborRescueContentQualityTests(unittest.TestCase):
                 ):
                     self.assertNotIn(boilerplate, prose, (family_id, case))
 
+
+    def test_edge_of_chart_cases_preserve_known_boundaries_and_distinct_evidence(self):
+        # Issue #600 editorial source gate only. Neither movement, native map
+        # reveal nor survey-world mutation is established by these text checks.
+        family = self.runtime.families["edge_of_the_chart"]
+        variants = family["_variants"]
+        self.assertEqual({"plain", "contested", "urgent", "scarce"}, set(variants))
+        for field in ("title", "summary", "dialogue", "objectives", "alternate", "failure"):
+            self.assertEqual(4, len({json.dumps(v[field], ensure_ascii=False)
+                                     for v in variants.values()}), field)
+        for case, variant in variants.items():
+            self.assertEqual(2, len(variant["objectives"]), case)
+            self.assertEqual(["currency", "experience"],
+                             [reward["kind"] for reward in variant["rewards"]], case)
+            self.assertFalse(variant["guidance"]["undiscoveredLeak"], case)
+            self.assertNotIn(": " + case.capitalize(), variant["title"])
+            prose = json.dumps(variant, ensure_ascii=False).lower()
+            for filler in ("a routine request has become difficult",
+                           "two parties describe the same need differently",
+                           "a short deadline raises the cost of delay",
+                           "ask for accountable help, not an unquestioned errand",
+                           "return to the originating settlement and make a witnessed accounting"):
+                self.assertNotIn(filler, prose, case)
+        self.assertIn("unvisited ground", " ".join(variants["plain"]["objectives"]))
+        self.assertIn("competing claims", " ".join(variants["contested"]["objectives"]))
+        self.assertIn("without exposing unseen locations", " ".join(variants["urgent"]["objectives"]))
+
 if __name__ == "__main__":
     unittest.main()
