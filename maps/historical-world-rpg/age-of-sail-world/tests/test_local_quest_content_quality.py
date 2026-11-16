@@ -334,5 +334,18 @@ class HarborRescueContentQualityTests(unittest.TestCase):
                     self.assertNotIn(filler, prose, (family_id, case))
 
 
+    def test_contested_watch_readiness_requires_an_issued_supply_record(self):
+        # Editorial consistency only; production receipts and actual readiness
+        # effects must still be verified through authoritative integration.
+        case = self.runtime.families["stores_for_watch"]["_variants"]["contested"]
+        self.assertEqual("garrison_readiness", case["rewards"][2]["kind"])
+        self.assertEqual("polity", case["rewards"][2]["scope"])
+        self.assertIn("deliver serviceable supplies", case["strategicAccomplishment"])
+        alternate = case["alternate"].lower()
+        for proof in ("signed emergency allocation", "issue only inspected serviceable gear", "witness"):
+            self.assertIn(proof, alternate)
+        self.assertNotIn("pending a recognized commander's decision", alternate)
+
+
 if __name__ == "__main__":
     unittest.main()
