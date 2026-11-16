@@ -125,6 +125,48 @@ class CampaignQuestTests(unittest.TestCase):
             with self.assertRaises(QuestEventError):
                 restored.complete_quest(quest["id"])
 
+    def test_all_personal_branches_select_one_path_scoped_reward_after_restore(self):
+        projected = CAMPAIGN.project(SOURCE, WORLD)
+        personal = [q for q in projected["quests"] if q["campaign"]["chainKind"] == "personal"]
+        self.assertEqual(7, len(personal))
+        for quest in personal:
+            qid = quest["id"]
+            stem = qid.removesuffix("_personal_quest")
+            by_id = {reward["id"]: reward for reward in quest["outcomes"]}
+            self.assertEqual({stem + "_office", stem + "_loyalty"}, set(by_id))
+            self.assertEqual(["public_duty"], by_id[stem + "_office"]["requiresReachedStageIds"])
+            self.assertEqual(["private_duty"], by_id[stem + "_loyalty"]["requiresReachedStageIds"])
+            if stem in {"nzinga_mbande", "malintzin"}:
+                self.assertEqual("quest_diplomacy_adjust_relations", by_id[stem + "_office"]["outcomeId"])
+            for branch, expected in (("public_duty", stem + "_office"),
+                                     ("private_duty", stem + "_loyalty")):
+                with self.subTest(quest=qid, branch=branch):
+                    definitions = {"quests": [quest], "events": [], "discoveries": []}
+                    runtime = QuestEventRuntime(
+                        definitions, extensions=Adapters(), authoritative_state={"deliveries": []})
+                    runtime.activate_quest(qid)
+                    for stage_id in ("confidence", branch, "reckoning"):
+                        stage = next(x for x in quest["stages"] if x["id"] == stage_id)
+                        for oid in stage["objectiveIds"]:
+                            runtime.set_objective_complete(qid, oid)
+                        if stage_id == "confidence":
+                            runtime.advance_quest(qid, branch)
+                        elif stage_id == branch:
+                            runtime.advance_quest(qid, "reckoning")
+                    ready = runtime.snapshot()
+                    with self.assertRaisesRegex(QuestEventError, "atomic reward"):
+                        runtime.complete_quest(qid, context={"reject_rewards": True})
+                    self.assertEqual(ready, runtime.snapshot())
+                    runtime.complete_quest(qid)
+                    completed = runtime.snapshot()
+                    self.assertEqual(
+                        [expected], [entry[0] for entry in completed["externalState"]["deliveries"]])
+                    restored = QuestEventRuntime(definitions, extensions=Adapters())
+                    restored.restore(completed)
+                    self.assertEqual(completed, restored.snapshot())
+                    with self.assertRaises(QuestEventError):
+                        restored.complete_quest(qid)
+
     def test_success_alternate_failed_cancelled_and_unavailable_participant_paths(self):
         # Exercise every regional success path once.
         for quest in (q for q in WORLD["quests"] if q["campaign"]["chainKind"] == "regional"):
