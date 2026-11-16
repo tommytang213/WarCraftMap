@@ -111,7 +111,15 @@ def local():
  return {"schemaVersion":1,"selectionPolicy":{"algorithm":"sha256_rank_v1","inputs":["campaign_seed","settlement_id","slot","cycle","family_id","variant_id"],"rerollOnBoardOpen":False},"families":families}
 
 def main():
- campaign=ROOT/"scenario/campaign-quests.json"; data=json.loads(campaign.read_text()); data["releaseStoryQuests"]=story(); campaign.write_text(json.dumps(data,indent=2)+"\n")
- (ROOT/"scenario/local-random-quests.json").write_text(json.dumps(local(),indent=2)+"\n")
+ campaign=ROOT/"scenario/campaign-quests.json"
+ local_catalogue=ROOT/"scenario/local-random-quests.json"
+ data=json.loads(campaign.read_text())
+ # One-shot seeding only. Never replace independently authored quality work.
+ # Check both authoritative catalogues before making either write.
+ if "releaseStoryQuests" in data or local_catalogue.exists():
+  raise RuntimeError("Refusing to overwrite authored quest catalogues; edit scenario JSON directly instead of reseeding.")
+ data["releaseStoryQuests"]=story()
+ campaign.write_text(json.dumps(data,indent=2)+"\n")
+ local_catalogue.write_text(json.dumps(local(),indent=2)+"\n")
  print(f"wrote {len(story())} story quests and {sum(len(x['variants']) for x in local()['families'])} local variants")
 if __name__=="__main__": main()
