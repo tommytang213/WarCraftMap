@@ -745,7 +745,15 @@ public class QuestJournalRuntime
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_ACTIVE or questDefinition.graph != null or amount <= 0
 			return false
-		questDefinition.objective=IMinBJ(questDefinition.objectiveTarget,questDefinition.objective+amount)
+		// Clamp before adding: an overflowing signed int must not erase earned
+		// objective progress. Negative progress from historical saves still uses
+		// the existing arithmetic path without an overflowing subtraction.
+		if questDefinition.objective >= questDefinition.objectiveTarget
+			questDefinition.objective = questDefinition.objectiveTarget
+		else if questDefinition.objective >= 0 and amount >= questDefinition.objectiveTarget - questDefinition.objective
+			questDefinition.objective = questDefinition.objectiveTarget
+		else
+			questDefinition.objective=IMinBJ(questDefinition.objectiveTarget,questDefinition.objective+amount)
 		if questDefinition.objective >= questDefinition.objectiveTarget
 			questDefinition.state=QUEST_READY
 		return true
