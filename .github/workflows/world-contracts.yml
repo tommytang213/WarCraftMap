@@ -68,6 +68,15 @@ jobs:
         shell: bash
         run: |
           project=maps/historical-world-rpg/age-of-sail-world
+          # A failing generator can raise before --write. Remove committed reports
+          # first: an old nonempty file must never masquerade as new evidence.
+          rm -f \
+            "$project/reports/traceability/requirements.json" \
+            "$project/reports/traceability/requirements.md" \
+            "$project/reports/runtime-acceptance.json" \
+            "$project/reports/runtime-acceptance.md" \
+            "$project/reports/release-blocker-audit.json" \
+            "$project/reports/release-blocker-audit.md"
           set +e
           python3 "$project/tooling/requirement_traceability_audit.py" --write
           trace_rc=$?
