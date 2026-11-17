@@ -55,6 +55,46 @@ jobs:
             -s maps/historical-world-rpg/age-of-sail-world/tests \
             -p 'test_*.py' -v
 
+      - name: Checkout last green full-world baseline (read-only)
+        if: always() && github.ref == 'refs/heads/fix/438-hidden-region-chapters-20261018'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: 3cc55eb975812e4857ef47bccd506903201dda28
+          path: .pr536-soak-reference
+          persist-credentials: false
+      - name: Compare actual full-world final states with pinned green baseline
+        if: always() && github.ref == 'refs/heads/fix/438-hidden-region-chapters-20261018'
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline=3cc55eb975812e4857ef47bccd506903201dda28
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C .pr536-soak-reference rev-parse HEAD)" = "$baseline"
+          project=maps/historical-world-rpg/age-of-sail-world
+          python3 "$project/tooling/compare_full_world_soak_states.py" \
+            --reference-config ".pr536-soak-reference/$project/scenario/benchmarks/full-world-soak.json" \
+            --candidate-config "$project/scenario/benchmarks/full-world-soak.json" \
+            --profile smoke > "$RUNNER_TEMP/pr536-soak-comparison.json"
+          python3 - "$RUNNER_TEMP/pr536-soak-comparison.json" <<'PY'
+          import json
+          import sys
+
+          report = json.load(open(sys.argv[1], encoding="utf-8"))
+          if not all(row["referenceGoldenMatched"] for row in report["runs"]):
+              raise SystemExit("The pinned historical reference no longer reproduces its golden states")
+          print("Exact historical reference: 3cc55eb975812e4857ef47bccd506903201dda28")
+          print("Source/fixture SHA-256 manifest entries per checkout:", len(report["referenceInputs"]))
+          for row in report["runs"]:
+              print(
+                  f"seed={row['seed']} reference={row['referenceNormalizedHash']} "
+                  f"candidate={row['candidateNormalizedHash']} "
+                  f"candidate_golden={row['candidateGoldenMatched']} "
+                  f"provenance_only={row['provenanceOnlyFieldDrift']} "
+                  f"fixture_only={row['onlyFixtureFingerprintChanged']}"
+              )
+              print("  Changed final-state fields:", sorted(row["changedFields"]))
+          PY
+
   # Diagnostics only: export genuine generated reports from a complete exact-head
   # checkout. This job never awards release readiness or changes validation gates.
   regenerate-checkpoint-reports:
