@@ -470,3 +470,40 @@ function growthReceipt(string caseName)
 	assertBalances(companion, 10, 0, 1, 1, 1)
 	assertBalances(hero, 1, 0, 0, 0, 0)
 	growthReceipt("replay")
+
+@test function questCurrencyTurnInRejectsOverflowAndPreservesStateAcrossSave()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	f.readyForGrowth()
+	f.rpg.journal.currency = 2147483630
+	f.compact.rewardCurrency = 37
+	f.command("/turnin europe_printed_compact hero", false)
+	f.compact.state.assertEquals(QUEST_READY)
+	f.compact.completions.assertEquals(0)
+	f.rpg.journal.currency.assertEquals(2147483630)
+	f.roundTrip()
+	// Exact signed 32-bit ceiling is legal and survives the real save codec.
+	f.compact.rewardCurrency = 17
+	f.command("/turnin europe_printed_compact hero", true)
+	f.rpg.journal.currency.assertEquals(2147483647)
+	f.roundTrip()
+	f.command("/turnin europe_printed_compact hero", false)
+	f.rpg.journal.currency.assertEquals(2147483647)
+
+@test function questCurrencyRejectsNegativeRewardsButRetainsHistoricalNegativeBalances()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	f.readyForGrowth()
+	// Old journal records permit negative values: loading them must not be broken.
+	f.rpg.journal.currency = -10
+	f.compact.rewardCurrency = -1
+	f.command("/turnin europe_printed_compact hero", false)
+	f.compact.state.assertEquals(QUEST_READY)
+	f.rpg.journal.currency.assertEquals(-10)
+	f.roundTrip()
+	f.compact.rewardCurrency = 17
+	f.command("/turnin europe_printed_compact hero", true)
+	f.rpg.journal.currency.assertEquals(7)
+	f.roundTrip()
+	f.command("/turnin europe_printed_compact hero", false)
+	f.rpg.journal.currency.assertEquals(7)

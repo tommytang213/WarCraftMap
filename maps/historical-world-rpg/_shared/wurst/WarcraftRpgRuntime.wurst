@@ -802,6 +802,11 @@ public class QuestJournalRuntime
 		// Validate the entire earned-XP award before committing quest/reward state.
 		if questDefinition.rewardExperience < 0 or (questDefinition.rewardExperience > 0 and not hero.canAwardExperience(questDefinition.rewardExperience))
 			return false
+		// A reward cannot spend currency; guard signed overflow before completing.
+		// Preserve negative balances from validated historical saves so a payout
+		// can recover them without rewriting their existing state.
+		if questDefinition.rewardCurrency < 0 or (currency > 0 and questDefinition.rewardCurrency > 2147483647 - currency)
+			return false
 		questDefinition.state=QUEST_COMPLETE
 		questDefinition.updateGuidance()
 		questDefinition.completions++
