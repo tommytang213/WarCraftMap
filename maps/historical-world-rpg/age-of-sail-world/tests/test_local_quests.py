@@ -84,6 +84,49 @@ class LocalQuestTests(unittest.TestCase):
   self.assertTrue(all(any(x["slot"]==old["slot"] and x["cycle"]==old["cycle"]+1
                           for x in self.runtime.board(old["settlementId"])) for old in offers))
 
+ def test_refill_excludes_a_family_after_its_settlement_cap(self):
+  # An old family can exhaust its own per-settlement cap before this
+  # outstanding offer becomes terminal. The next offer must remain completable.
+  offer=self.runtime.snapshot()["offers"][0]
+  family=self.runtime.families[offer["familyId"]]
+  settlement_id=offer["settlementId"]
+  self.runtime.state["familyCompletions"].extend(
+   {"instanceId":f"historical_cap_{i}", "familyId":family["id"],
+    "settlementId":settlement_id}
+   for i in range(family["campaignCompletionCap"])
+  )
+  self.runtime.accept(offer["id"])
+  self.runtime.resolve(offer["id"],"failed")
+  refill=self.runtime._offer(offer["id"])["refillDay"]
+  self.runtime.advance_day(refill)
+  replacement=[x for x in self.runtime.board(settlement_id) if x["slot"]==offer["slot"]]
+  self.assertEqual(1,len(replacement))
+  self.assertNotEqual(family["id"],replacement[0]["familyId"])
+  self.assertEqual("failed",self.runtime._offer(offer["id"])["status"])
+
+ def test_exhausted_refill_retires_only_its_slot_without_rollback(self):
+  # Completion-cap exhaustion is not a generation failure. Existing offers
+  # remain intact, while exhausted slots stop advertising impossible work.
+  offer=self.runtime.snapshot()["offers"][0]
+  settlement=self.runtime.settlements[offer["settlementId"]]
+  for family in self.runtime.families.values():
+   if self.runtime._eligible(settlement,family):
+    self.runtime.state["familyCompletions"].extend(
+     {"instanceId":f"cap_{family['id']}_{i}", "familyId":family["id"],
+      "settlementId":settlement["id"]}
+     for i in range(family["campaignCompletionCap"])
+    )
+  self.runtime.accept(offer["id"])
+  self.runtime.resolve(offer["id"],"failed")
+  target=self.runtime._offer(offer["id"])["refillDay"]
+  previous=self.runtime.snapshot()
+  self.runtime.advance_day(target)
+  self.assertEqual(target,self.runtime.snapshot()["day"])
+  self.assertIsNone(self.runtime._offer(offer["id"])["refillDay"])
+  self.assertFalse(any(x["slot"]==offer["slot"] for x in self.runtime.board(settlement["id"])))
+  self.assertEqual(len(previous["offers"]),len(self.runtime.snapshot()["offers"]))
+  self.assertEqual(previous["familyCompletions"],self.runtime.snapshot()["familyCompletions"])
+
  def test_reward_atomicity_exactly_once_and_anti_farming(self):
   offer=self.runtime.snapshot()["offers"][0]; self.runtime.accept(offer["id"]); self.verified_completion_ids.add(offer["id"]); self.runtime.resolve(offer["id"],"completed")
   self.assertTrue(self.delivered); checkpoint=self.runtime.snapshot()

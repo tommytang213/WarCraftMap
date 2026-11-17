@@ -121,6 +121,18 @@ class LocalQuestRuntime:
         eligible = [f for f in self.families.values() if f["id"] not in excluded_families and self._eligible(settlement, f)]
         if not eligible:
             raise LocalQuestError(f"settlement {settlement['id']} has no context-valid local family")
+        # Initial allocation has no durable completion history. On refill,
+        # never offer a family that can no longer be completed at this settlement.
+        # Previously issued offers and their stable save identities are untouched.
+        if hasattr(self, "state"):
+            completed = {}
+            for record in self.state["familyCompletions"]:
+                if record["settlementId"] == settlement["id"]:
+                    family_id = record["familyId"]
+                    completed[family_id] = completed.get(family_id, 0) + 1
+            eligible = [f for f in eligible if completed.get(f["id"], 0) < f["campaignCompletionCap"]]
+            if not eligible:
+                return None  # Permanently exhausted slot; do not invent a claimable quest.
         family = min(eligible, key=lambda x: (_rank(self.seed, settlement["id"], slot, cycle, x["id"]), x["id"]))
         variants = list(family["_variants"].values())
         variant = min(variants, key=lambda x: (_rank(self.seed, settlement["id"], slot, cycle, family["id"], x["id"]), x["id"]))
@@ -237,7 +249,8 @@ class LocalQuestRuntime:
             for old in terminal:
                 occupied = {x["familyId"] for x in self.board(old["settlementId"]) if x["slot"] != old["slot"]}
                 new = self._make_offer(self.settlements[old["settlementId"]], old["slot"], old["cycle"] + 1, occupied)
-                self.state["offers"].append(new)
+                if new is not None:
+                    self.state["offers"].append(new)
                 cleared_refills.append((old, old["refillDay"]))
                 old["refillDay"] = None
         except Exception:
