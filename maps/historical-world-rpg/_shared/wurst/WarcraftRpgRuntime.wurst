@@ -697,6 +697,13 @@ public class RuntimeQuest
 		if graph != null
 			destroy graph
 
+/** Invalid campaign dates must never wrap a quest's next eligibility day.
+ * Also reject negative cooldowns instead of allowing instant re-offers. */
+function questCooldownValid(int day, int cooldownDays) returns boolean
+	if day < 0 or cooldownDays < 0
+		return false
+	return cooldownDays <= 2147483647 - day
+
 public class QuestJournalRuntime
 	RuntimeQuest array[2048] quests
 	int count = 0
@@ -820,12 +827,16 @@ public class QuestJournalRuntime
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_ACTIVE
 			return false
+		if not questCooldownValid(day, cooldownDays)
+			return false
 		questDefinition.state=QUEST_FAILED
 		questDefinition.cooldownUntil=day+cooldownDays
 		return true
 	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_READY or not questDefinition.ready() or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
+			return false
+		if not questCooldownValid(day, cooldownDays)
 			return false
 		// Validate the entire earned-XP award before committing quest/reward state.
 		if questDefinition.rewardExperience < 0 or (questDefinition.rewardExperience > 0 and not hero.canAwardExperience(questDefinition.rewardExperience))
