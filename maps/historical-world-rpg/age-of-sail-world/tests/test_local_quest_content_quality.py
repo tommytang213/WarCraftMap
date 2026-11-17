@@ -347,5 +347,19 @@ class HarborRescueContentQualityTests(unittest.TestCase):
         self.assertNotIn("pending a recognized commander's decision", alternate)
 
 
+
+    def test_success_alternates_cannot_claim_unissued_supplies_or_untraded_goods(self):
+        # Editorial assertions only; production receipts/effects remain independent gates.
+        watch = self.runtime.families["stores_for_watch"]["_variants"]["urgent"]
+        self.assertEqual("garrison_readiness", watch["rewards"][2]["kind"])
+        self.assertEqual("polity", watch["rewards"][2]["scope"])
+        for phrase in ("serviceable gear", "witness its issue", "task unfinished"):
+            self.assertIn(phrase, watch["alternate"].lower())
+        market = self.runtime.families["market_shortfall"]["_variants"]["contested"]
+        self.assertEqual("trade_throughput", market["rewards"][2]["kind"])
+        self.assertEqual("polity", market["rewards"][2]["scope"])
+        for phrase in ("delivered allotment", "suspend the sale", "without claiming additional trade throughput"):
+            self.assertIn(phrase, market["alternate"].lower())
+
 if __name__ == "__main__":
     unittest.main()
