@@ -11,6 +11,7 @@ STATE_VERSION = 1
 WORLD_STATE_KEY = "localQuestState"
 _ID = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 _TERMINAL = frozenset({"completed", "failed", "cancelled", "expired"})
+_DEFER_REFILL = object()  # A suitable family is temporarily occupied by another slot.
 
 
 class LocalQuestError(ValueError):
@@ -118,21 +119,27 @@ class LocalQuestRuntime:
         return (not required or bool(tags & required)) and not bool(tags & excluded)
 
     def _make_offer(self, settlement, slot, cycle, excluded_families=()):
-        eligible = [f for f in self.families.values() if f["id"] not in excluded_families and self._eligible(settlement, f)]
-        if not eligible:
+        contextual = [f for f in self.families.values() if self._eligible(settlement, f)]
+        if not contextual:
             raise LocalQuestError(f"settlement {settlement['id']} has no context-valid local family")
-        # Initial allocation has no durable completion history. On refill,
-        # never offer a family that can no longer be completed at this settlement.
-        # Previously issued offers and their stable save identities are untouched.
+        # Keep initial allocation deterministic and unchanged. During refill,
+        # distinguish globally exhausted families from temporarily occupied ones.
         if hasattr(self, "state"):
             completed = {}
             for record in self.state["familyCompletions"]:
                 if record["settlementId"] == settlement["id"]:
                     family_id = record["familyId"]
                     completed[family_id] = completed.get(family_id, 0) + 1
-            eligible = [f for f in eligible if completed.get(f["id"], 0) < f["campaignCompletionCap"]]
+            available = [f for f in contextual if completed.get(f["id"], 0) < f["campaignCompletionCap"]]
+            if not available:
+                return None  # Every context-valid family has reached its cap.
+            eligible = [f for f in available if f["id"] not in excluded_families]
             if not eligible:
-                return None  # Permanently exhausted slot; do not invent a claimable quest.
+                return _DEFER_REFILL  # Retry once another slot releases a family.
+        else:
+            eligible = [f for f in contextual if f["id"] not in excluded_families]
+            if not eligible:
+                raise LocalQuestError(f"settlement {settlement['id']} has no free family for initial allocation")
         family = min(eligible, key=lambda x: (_rank(self.seed, settlement["id"], slot, cycle, x["id"]), x["id"]))
         variants = list(family["_variants"].values())
         variant = min(variants, key=lambda x: (_rank(self.seed, settlement["id"], slot, cycle, family["id"], x["id"]), x["id"]))
@@ -249,6 +256,8 @@ class LocalQuestRuntime:
             for old in terminal:
                 occupied = {x["familyId"] for x in self.board(old["settlementId"]) if x["slot"] != old["slot"]}
                 new = self._make_offer(self.settlements[old["settlementId"]], old["slot"], old["cycle"] + 1, occupied)
+                if new is _DEFER_REFILL:
+                    continue  # Keep the old refill day durable; try on a later advance.
                 if new is not None:
                     self.state["offers"].append(new)
                 cleared_refills.append((old, old["refillDay"]))

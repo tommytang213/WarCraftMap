@@ -104,6 +104,42 @@ class LocalQuestTests(unittest.TestCase):
   self.assertNotEqual(family["id"],replacement[0]["familyId"])
   self.assertEqual("failed",self.runtime._offer(offer["id"])["status"])
 
+ def test_temporarily_occupied_family_defers_refill_without_losing_slot(self):
+  # All other families are exhausted, but one completable family is offered
+  # in a different slot. Defer rather than permanently deleting this slot.
+  grouped={}
+  for item in self.runtime.snapshot()["offers"]:
+   grouped.setdefault(item["settlementId"],[]).append(item)
+  pair=next((items[:2] for items in grouped.values() if len(items)>=2),None)
+  self.assertIsNotNone(pair)
+  old,other=pair
+  settlement=self.runtime.settlements[old["settlementId"]]
+  self.assertNotEqual(old["familyId"],other["familyId"])
+  for family in self.runtime.families.values():
+   if self.runtime._eligible(settlement,family) and family["id"]!=other["familyId"]:
+    self.runtime.state["familyCompletions"].extend(
+     {"instanceId":f"cap_for_defer_{family['id']}_{i}", "familyId":family["id"],
+      "settlementId":settlement["id"]}
+     for i in range(family["campaignCompletionCap"])
+    )
+  self.runtime.accept(old["id"])
+  self.runtime.resolve(old["id"],"failed")
+  due=self.runtime._offer(old["id"])["refillDay"]
+  prior_count=len(self.runtime.snapshot()["offers"])
+  self.runtime.advance_day(due)
+  self.assertEqual(due,self.runtime._offer(old["id"])["refillDay"])
+  self.assertEqual(prior_count,len(self.runtime.snapshot()["offers"]))
+  checkpoint=self.runtime.snapshot()
+  restored=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",state=checkpoint)
+  self.assertEqual(due,restored._offer(old["id"])["refillDay"])
+  self.runtime.accept(other["id"])
+  self.runtime.resolve(other["id"],"failed")
+  self.runtime.advance_day(due+1)
+  replacement=[x for x in self.runtime.board(settlement["id"]) if x["slot"]==old["slot"]]
+  self.assertEqual(1,len(replacement))
+  self.assertEqual(other["familyId"],replacement[0]["familyId"])
+  self.assertIsNone(self.runtime._offer(old["id"])["refillDay"])
+
  def test_exhausted_refill_retires_only_its_slot_without_rollback(self):
   # Completion-cap exhaustion is not a generation failure. Existing offers
   # remain intact, while exhausted slots stop advertising impossible work.
