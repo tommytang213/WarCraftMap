@@ -361,5 +361,27 @@ class HarborRescueContentQualityTests(unittest.TestCase):
         for phrase in ("delivered allotment", "suspend the sale", "without claiming additional trade throughput"):
             self.assertIn(phrase, market["alternate"].lower())
 
+
+    def test_trade_throughput_alternates_require_real_delivery_not_only_refunds_or_approval(self):
+        # Issue #600 editorial gate; this cannot certify production action
+        # receipts, reward adapter effects, or Warcraft III presentation.
+        variants = self.runtime.families["market_shortfall"]["_variants"]
+        evidence = {
+            "plain": ("quantity actually delivered", "refund without delivered goods", "task unfinished"),
+            "urgent": ("witnessed quantity receipt", "reclaim their entire advance", "task remains unfinished"),
+            "scarce": ("witness its delivery", "approval without actual delivery", "unfinished"),
+        }
+        for case, phrases in evidence.items():
+            variant = variants[case]
+            with self.subTest(case=case):
+                self.assertEqual("trade_throughput", variant["rewards"][2]["kind"])
+                self.assertEqual("polity", variant["rewards"][2]["scope"])
+                alternate = variant["alternate"].lower()
+                for phrase in phrases:
+                    self.assertIn(phrase, alternate)
+                self.assertEqual(2, len(variant["objectives"]))
+                self.assertNotIn("context-appropriate material", alternate)
+
+
 if __name__ == "__main__":
     unittest.main()
