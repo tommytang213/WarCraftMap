@@ -50,6 +50,40 @@ class LocalQuestTests(unittest.TestCase):
   old=next(x for x in self.runtime.snapshot()["offers"] if x["id"]==offer["id"]); self.runtime.advance_day(old["refillDay"])
   self.assertTrue(any(x["slot"]==offer["slot"] and x["cycle"]==1 for x in self.runtime.board(offer["settlementId"])))
   self.runtime.advance_day(old["refillDay"]+1)  # an already-refilled terminal record stays inert
+ def test_bad_boolean_day_is_rejected_in_live_state_and_saves(self):
+  before=self.runtime.snapshot()
+  with self.assertRaisesRegex(LocalQuestError,"day cannot move backwards"):
+   self.runtime.advance_day(True)
+  self.assertEqual(before,self.runtime.snapshot())
+  damaged=copy.deepcopy(before); damaged["day"]=True
+  with self.assertRaisesRegex(LocalQuestError,"seed/day is incompatible"):
+   LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",state=damaged)
+
+ def test_refill_batch_rollback_preserves_previous_day_and_offer_slots(self):
+  offers=self.runtime.snapshot()["offers"][:2]
+  for offer in offers:
+   self.runtime.accept(offer["id"]); self.runtime.resolve(offer["id"],"failed")
+  target=max(self.runtime._offer(offer["id"])["refillDay"] for offer in offers)
+  before=self.runtime.snapshot()
+  original=self.runtime._make_offer; attempts=[0]
+  def fail_second_refill(*args,**kwargs):
+   attempts[0]+=1
+   if attempts[0]==2: raise LocalQuestError("refill generation failed")
+   return original(*args,**kwargs)
+  self.runtime._make_offer=fail_second_refill
+  try:
+   with self.assertRaisesRegex(LocalQuestError,"refill generation failed"):
+    self.runtime.advance_day(target)
+  finally:
+   self.runtime._make_offer=original
+  self.assertEqual(2,attempts[0])
+  self.assertEqual(before,self.runtime.snapshot())
+  self.runtime.advance_day(target)
+  self.assertEqual(target,self.runtime.snapshot()["day"])
+  self.assertTrue(all(self.runtime._offer(x["id"])["refillDay"] is None for x in offers))
+  self.assertTrue(all(any(x["slot"]==old["slot"] and x["cycle"]==old["cycle"]+1
+                          for x in self.runtime.board(old["settlementId"])) for old in offers))
+
  def test_reward_atomicity_exactly_once_and_anti_farming(self):
   offer=self.runtime.snapshot()["offers"][0]; self.runtime.accept(offer["id"]); self.verified_completion_ids.add(offer["id"]); self.runtime.resolve(offer["id"],"completed")
   self.assertTrue(self.delivered); checkpoint=self.runtime.snapshot()

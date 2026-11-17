@@ -145,7 +145,8 @@ class LocalQuestRuntime:
         if not isinstance(state, Mapping) or set(state) != required or state.get("schemaVersion") != STATE_VERSION:
             raise LocalQuestError("local quest state schema or fields are invalid")
         result = copy.deepcopy(dict(state))
-        if result["campaignSeed"] != self.seed or not isinstance(result["day"], int) or result["day"] < 0:
+        if (result["campaignSeed"] != self.seed or isinstance(result["day"], bool)
+                or not isinstance(result["day"], int) or result["day"] < 0):
             raise LocalQuestError("local quest seed/day is incompatible")
         offers = _index(result["offers"], "offer")
         occupied = set()
@@ -222,14 +223,29 @@ class LocalQuestRuntime:
             self.state = before
             raise
     def advance_day(self, day):
-        if not isinstance(day, int) or day < self.state["day"]: raise LocalQuestError("day cannot move backwards")
-        self.state["day"] = day
-        terminal = sorted((x for x in self.state["offers"] if x["status"] in _TERMINAL and
-                           x["refillDay"] is not None and x["refillDay"] <= day), key=lambda x:x["id"])
-        for old in terminal:
-            occupied = {x["familyId"] for x in self.board(old["settlementId"]) if x["slot"] != old["slot"]}
-            new = self._make_offer(self.settlements[old["settlementId"]], old["slot"], old["cycle"] + 1, occupied)
-            self.state["offers"].append(new); old["refillDay"] = None
+        if isinstance(day, bool) or not isinstance(day, int) or day < self.state["day"]:
+            raise LocalQuestError("day cannot move backwards")
+        # A failed later refill must not leave an advanced day, duplicate slot,
+        # or half-applied offer batch in the durable world snapshot.
+        previous_day = self.state["day"]
+        previous_offer_count = len(self.state["offers"])
+        cleared_refills = []
+        try:
+            self.state["day"] = day
+            terminal = sorted((x for x in self.state["offers"] if x["status"] in _TERMINAL and
+                               x["refillDay"] is not None and x["refillDay"] <= day), key=lambda x:x["id"])
+            for old in terminal:
+                occupied = {x["familyId"] for x in self.board(old["settlementId"]) if x["slot"] != old["slot"]}
+                new = self._make_offer(self.settlements[old["settlementId"]], old["slot"], old["cycle"] + 1, occupied)
+                self.state["offers"].append(new)
+                cleared_refills.append((old, old["refillDay"]))
+                old["refillDay"] = None
+        except Exception:
+            self.state["day"] = previous_day
+            del self.state["offers"][previous_offer_count:]
+            for offer, refill_day in cleared_refills:
+                offer["refillDay"] = refill_day
+            raise
 
     def journal_entries(self):
         entries=[]
