@@ -112,6 +112,25 @@ class QuestGenerationTests(unittest.TestCase):
                 if obj['id'] == 'protect_home':
                     self.assertEqual('domain_receipt', binding)
 
+    def test_paid_player_research_has_one_explicit_objective_binding(self):
+        key = 'india_stars_and_pepper:advance_navigation'
+        self.assertEqual('research_unlocked', self.runtime['questConditionBindings'][key])
+        self.assertNotIn(key, {row['questId'] + ':' + row['objectiveId'] for row in self.runtime['questIntegrationBlockers']})
+        self.assertIn('"research_unlocked"', self.source)
+        for authority in ('other', None):
+            bindings = copy.deepcopy(self.bindings)
+            bindings['objectives'][key]['authority'] = authority
+            with self.assertRaisesRegex(ValueError, 'research unlock requires'):
+                validate_graphs(self.world['quests'], bindings)
+        world = copy.deepcopy(self.world['quests'])
+        quest = next(q for q in world if q['id'] == 'india_stars_and_pepper')
+        next(o for o in quest['objectives'] if o['id'] == 'advance_navigation')['entityRefs'] = [{'kind': 'settlement', 'id': 'calicut'}]
+        with self.assertRaisesRegex(ValueError, 'research unlock requires'):
+            validate_graphs(world, self.bindings)
+        # Other research-looking objectives still need independent gameplay
+        # conditions. One real consumer must not clear their blockers.
+        self.assertEqual('domain_receipt', self.runtime['questConditionBindings']['east_asia_coastal_record:improve_charts'])
+
     def test_graph_validator_rejects_unknown_and_cyclic_edges_or_duplicate_objectives(self):
         for kind in ('missing', 'cycle', 'duplicate', 'prerequisite'):
             quests = copy.deepcopy(self.world['quests'])

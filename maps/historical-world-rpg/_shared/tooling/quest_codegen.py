@@ -49,13 +49,17 @@ def validate_graphs(quests, bindings):
         ids([p["id"] for p in q["prerequisites"]])
         for o in objectives:
             binding = bindings.get("objectives", {}).get(q["id"] + ":" + o["id"], bindings.get("conditions", {}).get(o["conditionId"]))
-            if not binding or binding.get("adapter") not in {"physical_visit", "domain_receipt"}:
+            if not binding or binding.get("adapter") not in {"physical_visit", "domain_receipt", "research_unlocked"}:
                 raise ValueError(f"quest {q['id']}/{o['id']}: unsupported condition binding {o['conditionId']}")
             refs = o["entityRefs"]
             if not refs or any(not ID.fullmatch(r["kind"]) or not ID.fullmatch(r["id"]) for r in refs):
                 raise ValueError("invalid condition entity references")
             if binding["adapter"] == "physical_visit" and (len(refs) != 1 or refs[0]["kind"] != "settlement"):
                 raise ValueError("physical_visit requires one settlement reference")
+            if binding["adapter"] == "research_unlocked":
+                if (o["conditionId"] != "quest_technology_satisfied" or len(refs) != 1
+                        or refs[0]["kind"] != "technology" or binding.get("authority") != "player"):
+                    raise ValueError("research unlock requires one player-owned technology objective")
             if binding["adapter"] == "domain_receipt":
                 if not binding.get("blocker"):
                     raise ValueError("uninstalled domain condition adapter requires an explicit integration blocker")

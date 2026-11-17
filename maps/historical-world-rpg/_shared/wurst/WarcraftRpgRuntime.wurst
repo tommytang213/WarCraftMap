@@ -781,6 +781,26 @@ public class QuestJournalRuntime
 		q.settleProgress()
 		lastDiagnostic = ""
 		return true
+	/** Only the persisted player research authority may satisfy an explicitly
+	 * marked research objective. A generated domain_receipt blocker remains
+	 * blocked; no caller-provided receipt or mock condition can forge this. */
+	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
+		if research == null or controllerId != "player"
+			return false
+		var changed = false
+		for i = 0 to count - 1
+			let q = quests[i]
+			if q != null and q.state == QUEST_ACTIVE and q.graph != null
+				let stageAtEntry = q.graph.activeStageId
+				for j = 0 to q.graph.objectiveCount - 1
+					let objective = q.graph.objectives[j]
+					let reference = objective.entityRefs
+					if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
+						let technologyId = SubString(reference, 11, StringLength(reference) - 1)
+						if research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
+							q.settleProgress()
+							changed = true
+		return changed
 	/** The caller has just revalidated physical presence. Process the stage
 	 * that was active at entry only; a visit cannot cascade through a chain. */
 	function visit(RuntimeQuest q, InteractionLocation target) returns boolean
@@ -1361,10 +1381,14 @@ public class WarcraftRpgRuntime
 		reconcile("player")
 		return true
 	function research(string controllerId,string id,int year,int paid) returns boolean
-		return technologies.unlock(controllerId,id,year,paid,0,0)
+		let unlocked = technologies.unlock(controllerId,id,year,paid,0,0)
+		if unlocked and journal.syncPlayerResearch(technologies,controllerId)
+			reconcile(controllerId)
+		return unlocked
 	function acceptQuest(string id) returns boolean
 		let accepted=journal.accept(id)
 		if accepted
+			journal.syncPlayerResearch(technologies,"player")
 			journal.track(id)
 			reconcile("player")
 		return accepted
@@ -1382,6 +1406,7 @@ public class WarcraftRpgRuntime
 	function advanceQuest(string id, string stageId) returns boolean
 		let changed = journal.advance(id, stageId)
 		if changed
+			journal.syncPlayerResearch(technologies,"player")
 			reconcile("player")
 		return changed
 	function eligibleActor(int index) returns boolean
