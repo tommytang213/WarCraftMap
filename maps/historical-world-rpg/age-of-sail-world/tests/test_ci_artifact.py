@@ -13,16 +13,30 @@ TYPECHECK_WORKFLOW = REPOSITORY / ".github" / "workflows" / "wurst-typecheck.yml
 
 
 def workflow_step(workflow, name):
-    """Read one named step, stopping at the next peer YAML sequence item."""
+    """Read one named step, stopping at a peer item or dedented YAML content."""
     start = re.search(r"(?m)^( +)- name: " + re.escape(name) + r"\s*$", workflow)
     if start is None:
         raise ValueError("missing workflow step: " + name)
     tail = workflow[start.end():]
-    end = re.search(r"(?m)^" + re.escape(start.group(1)) + r"- ", tail)
+    end = re.search(rf"(?m)^ {{0,{len(start.group(1))}}}[^ \t#\r\n]", tail)
     return tail[:end.start()] if end else tail
 
 
 class MapArtifactWorkflowTests(unittest.TestCase):
+    def test_bounded_failure_annotations_opt_in_only_inside_actual_compiler_containers(self):
+        for path, step in ((WORKFLOW, "Execute complete Wurst suite and package with pinned compiler"),
+                           (TYPECHECK_WORKFLOW, "Execute complete suite, typecheck, and package fixture and content mutation")):
+            source = path.read_text(encoding="utf-8")
+            body = workflow_step(source, step)
+            with self.subTest(workflow=path.name):
+                self.assertEqual(1, source.count("WURST_CI_ANNOTATIONS"))
+                self.assertIn("-e WURST_CI_ANNOTATIONS=true", body)
+                self.assertLess(body.index("docker run"), body.index("-e WURST_CI_ANNOTATIONS=true"))
+                self.assertLess(body.index("-e WURST_CI_ANNOTATIONS=true"), body.index('"$WURST_RUN_IMAGE"'))
+        for path in (REPOSITORY / ".github/workflows").glob("*.yml"):
+            if path not in (WORKFLOW, TYPECHECK_WORKFLOW):
+                self.assertNotIn("WURST_CI_ANNOTATIONS", path.read_text(encoding="utf-8"))
+
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -89,6 +103,22 @@ class MapArtifactWorkflowTests(unittest.TestCase):
     def test_step_boundary_stops_at_unnamed_peer_action(self):
         sample = "      - name: Upload\n        uses: actions/upload-artifact@pin\n      - uses: actions/other@pin\n        if: always()\n"
         self.assertEqual("\n        uses: actions/upload-artifact@pin\n", workflow_step(sample, 'Upload'))
+
+    def test_last_step_stops_before_another_job_with_always(self):
+        sample = ("jobs:\n  build:\n    steps:\n      - name: Upload\n"
+                  "        if: success()\n        uses: actions/upload-artifact@pin\n"
+                  "  diagnostic:\n    if: always()\n    steps:\n"
+                  "      - run: echo notice\n")
+        body = workflow_step(sample, 'Upload')
+        self.assertIn('if: success()', body)
+        self.assertNotIn('always()', body)
+        self.assertNotIn('diagnostic:', body)
+
+    def test_dedented_comments_do_not_hide_an_upload_condition(self):
+        sample = ("      - name: Upload\n        uses: actions/upload-artifact@pin\n"
+                  "# YAML comments do not end a mapping\n\n        if: always()\n"
+                  "  other_job:\n    steps: []\n")
+        self.assertIn('if: always()', workflow_step(sample, 'Upload'))
 
     def test_failed_requirement_gate_retains_only_diagnostics_and_stops_publication(self):
         diagnostics = self.workflow.split('- name: Retain requirement diagnostics', 1)[1].split('- name:', 1)[0]

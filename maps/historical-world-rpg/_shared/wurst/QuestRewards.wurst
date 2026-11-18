@@ -39,15 +39,25 @@ public class QuestRewardBatch
 	private RuntimeQuest prepared = null
 	private string array[32] grants
 	private int grantCount = 0
+	private string committedResearch = ""
 	construct(string questId, TechnologyRuntime technologies)
 		this.questId = questId
 		this.technologies = technologies
+	/** Transfers ownership, including rejection when the bounded batch is full. */
 	function add(QuestRewardOutcome outcome)
 		if count >= 32
+			destroy outcome
 			malformed = true
 			return
 		outcomes[count] = outcome
 		count++
+	ondestroy
+		for i = 0 to count - 1
+			destroy outcomes[i]
+	function consumeCommittedResearch() returns string
+		let result = committedResearch
+		committedResearch = ""
+		return result
 	function problem(RuntimeQuest definition) returns string
 		if malformed or count == 0 or definition == null or definition.id != questId or definition.graph == null or technologies == null
 			return "Authored rewards blocked: invalid reward batch."
@@ -79,6 +89,7 @@ public class QuestRewardBatch
 	function prepare(RuntimeQuest definition) returns string
 		prepared = null
 		grantCount = 0
+		committedResearch = ""
 		if definition == null or definition.state != QUEST_READY or not definition.ready()
 			return "Authored rewards blocked: quest is not ready."
 		let issue = problem(definition)
@@ -101,5 +112,6 @@ public class QuestRewardBatch
 		for i = 0 to grantCount - 1
 			technologies.unlockedKeys[technologies.unlockedCount] = "player:" + grants[i]
 			technologies.unlockedCount++
+			committedResearch += grants[i] + "~"
 		prepared = null
 		grantCount = 0

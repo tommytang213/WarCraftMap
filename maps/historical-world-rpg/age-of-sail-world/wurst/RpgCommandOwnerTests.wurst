@@ -58,6 +58,7 @@ class OwnerFixture
 		let calls = effects.calls
 		let reads = resources.reads
 		let writes = resources.writes
+		output.last = ""
 		commands.dispatch(sender, command).assertTrue()
 		output.last.assertEquals("Only the campaign player can change equipment or quest choices.")
 		rpg.captureState().assertEquals(before)
@@ -84,8 +85,11 @@ function checkOwnerBoundary(player sender)
 	f.owner("/queststage choice left")
 	f.definition.graph.activeStageId.assertEquals("left")
 	let saved = f.rpg.captureState()
-	f.rpg.restoreState(saved).assertTrue()
-	f.rpg.captureState().assertEquals(saved)
+	let restored = new OwnerFixture()
+	restored.definition.state.assertEquals(QUEST_OFFERED)
+	restored.rpg.restoreState(saved).assertTrue()
+	restored.rpg.captureState().assertEquals(saved)
+	restored.definition.graph.activeStageId.assertEquals("left")
 
 @test function sharedRpgCommandsRejectForeignPlayerWithoutMutation()
 	checkOwnerBoundary(Player(1))

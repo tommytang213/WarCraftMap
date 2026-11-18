@@ -212,16 +212,19 @@ sys.exit(int(os.environ.get('CHECKS_' + command.upper() + '_STATUS', '0')))
             transport.LimitedStream(io.BytesIO(b'oversized')).read(100)
 
     def test_archive_limits_traversal_links_and_unexpected_files(self):
-        for name, kind, size in (('../escape', tarfile.REGTYPE, 0), ('execution.log', tarfile.SYMTYPE, 0),
-                                  ('compile/map.w3x', tarfile.REGTYPE, 0),
-                                  ('execution.log', tarfile.REGTYPE, transport.MAX_FILE_BYTES + 1)):
-            stream = io.BytesIO()
-            with tarfile.open(fileobj=stream, mode='w') as archive:
-                member = tarfile.TarInfo(name)
-                member.type, member.size = kind, size
-                archive.addfile(member)
-            stream.seek(0)
-            with self.subTest(name=name, kind=kind), self.assertRaises(ValueError):
+        cases = (('../escape', tarfile.REGTYPE, 0, 'unsafe evidence path'),
+                 ('execution.log', tarfile.SYMTYPE, 0, 'unexpected execution archive entry'),
+                 ('compile/map.w3x', tarfile.REGTYPE, 0, 'unexpected execution archive entry'),
+                 ('execution.log', tarfile.REGTYPE, transport.MAX_FILE_BYTES + 1,
+                  'execution archive exceeds transport limit'))
+        for name, kind, size, diagnostic in cases:
+            member = tarfile.TarInfo(name)
+            member.type, member.size = kind, size
+            # Deliberately header-only: reject metadata before consuming a body.
+            # The Python 3.14 runner requires fileobj for nonzero regular files;
+            # allocating the oversized body would defeat this bounded test.
+            stream = io.BytesIO(member.tobuf() + b'\0' * (2 * tarfile.BLOCKSIZE))
+            with self.subTest(name=name, kind=kind), self.assertRaisesRegex(ValueError, diagnostic):
                 transport.unpack(stream, self.root / 'unpack')
 
     def container_packaging_result(self, status, transcript, *, fixture_status=0, fixture_logs=None):

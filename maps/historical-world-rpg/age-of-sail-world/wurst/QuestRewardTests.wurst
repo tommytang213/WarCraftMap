@@ -363,3 +363,105 @@ function historicallyReady(RuntimeQuest definition)
 	f.base.ports.output.contains("Quest turn-in was not completed").assertTrue()
 	f.base.ports.output.contains("requirements are not met").assertTrue()
 	f.base.ports.output.contains("Action completed.").assertFalse()
+
+function rewardObserver(string id, string technology) returns RuntimeQuest
+	let observer = new RuntimeQuest(id, id, "test")
+	observer.turnInId = "calicut"
+	observer.graph = new QuestGraph("observe", "")
+	observer.graph.addStage(new QuestStage("observe", "Observe", "owned~", ""))
+	observer.graph.addObjective(new QuestObjective("owned", "Own research", "quest_technology_satisfied", "technology:" + technology + "~", "research_unlocked"))
+	return observer
+
+function rewardOrderPermutation(boolean reverse)
+	let f = new RewardFixture()
+	f.ready("left")
+	let observer = rewardObserver("newly_ready", "standardized_charts")
+	observer.rewardCurrency = 13
+	f.base.rpg.journal.register(observer)
+	f.base.rpg.journal.accept(observer.id).assertTrue()
+	let ready = new RuntimeQuest("already_ready", "Already ready", "test")
+	ready.turnInId = "calicut"
+	ready.state = QUEST_READY
+	ready.objective = 1
+	ready.rewardCurrency = 11
+	f.base.rpg.journal.register(ready)
+	if reverse
+		f.base.rpg.journal.quests[0] = observer
+		f.base.rpg.journal.quests[1] = f.definition
+	f.command("/interact calicut")
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+	ready.state.assertEquals(QUEST_COMPLETE)
+	observer.state.assertEquals(QUEST_READY)
+	observer.completions.assertEquals(0)
+	f.base.rpg.journal.currency.assertEquals(18)
+	// A later, fresh physical interaction may turn in the newly ready quest.
+	f.command("/interact calicut")
+	observer.state.assertEquals(QUEST_COMPLETE)
+	observer.completions.assertEquals(1)
+	f.base.rpg.journal.currency.assertEquals(31)
+
+@test function rewardInteractionFreezesReadyCandidatesInEitherJournalOrder()
+	rewardOrderPermutation(false)
+	rewardOrderPermutation(true)
+
+@test function rewardWithNoNewGrantDoesNotSynchronizePreviouslyOwnedResearch()
+	let f = new RewardFixture()
+	f.base.rpg.technologies.unlockedKeys[0] = "player:standardized_charts"
+	f.base.rpg.technologies.unlockedCount = 1
+	f.ready("left")
+	let observer = rewardObserver("old_research", "standardized_charts")
+	f.base.rpg.journal.register(observer)
+	// Pending own delivery, not acceptance-triggered research synchronization.
+	f.base.rpg.journal.accept(observer.id).assertTrue()
+	f.turnIn()
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+	f.base.rpg.technologies.unlockedCount.assertEquals(1)
+	observer.state.assertEquals(QUEST_ACTIVE)
+	observer.graph.completedObjectiveIds.assertEquals("")
+
+@test function rewardNewGrantSynchronizesOnlyMatchingEntryStageNotOtherPreownedTargets()
+	let f = new RewardFixture()
+	f.base.rpg.technologies.unlockedKeys[0] = "player:celestial_navigation"
+	f.base.rpg.technologies.unlockedCount = 1
+	f.definition.authoredRewards.add(new QuestRewardOutcome("already_owned", "quest_technology_complete_research", "celestial_navigation", ""))
+	f.ready("left")
+	let old = rewardObserver("preowned", "celestial_navigation")
+	f.base.rpg.journal.register(old)
+	f.base.rpg.journal.accept(old.id).assertTrue()
+	let fresh = rewardObserver("fresh", "standardized_charts")
+	fresh.graph.stages[0].nextStageIds = "later~"
+	fresh.graph.addStage(new QuestStage("later", "Later", "later_owned~", ""))
+	fresh.graph.addObjective(new QuestObjective("later_owned", "Own again", "quest_technology_satisfied", "technology:standardized_charts~", "research_unlocked"))
+	f.base.rpg.journal.register(fresh)
+	f.base.rpg.journal.accept(fresh.id).assertTrue()
+	f.turnIn()
+	old.state.assertEquals(QUEST_ACTIVE)
+	old.graph.completedObjectiveIds.assertEquals("")
+	fresh.graph.activeStageId.assertEquals("later")
+	fresh.graph.completedObjectiveIds.assertEquals("owned~")
+	fresh.state.assertEquals(QUEST_ACTIVE)
+	f.base.rpg.technologies.unlockedCount.assertEquals(2)
+	f.definition.authoredRewards.consumeCommittedResearch().assertEquals("")
+
+int destroyedRewardOutcomes = 0
+class OwnedRewardOutcome extends QuestRewardOutcome
+	construct()
+		super("owned", "quest_technology_complete_research", "target", "")
+	ondestroy
+		destroyedRewardOutcomes++
+
+@test function questOwnsRewardBatchOutcomesIncludingRejectedOverflow()
+	destroyedRewardOutcomes = 0
+	let research = new TechnologyRuntime(null)
+	let definition = new RuntimeQuest("owner", "Owner", "test")
+	definition.authoredRewards = new QuestRewardBatch(definition.id, research)
+	for i = 0 to 32
+		definition.authoredRewards.add(new OwnedRewardOutcome())
+	destroyedRewardOutcomes.assertEquals(1)
+	definition.authoredRewards.count.assertEquals(32)
+	definition.authoredRewards.malformed.assertTrue()
+	destroy definition
+	destroyedRewardOutcomes.assertEquals(33)
+	// The reward batch borrows, rather than owns, campaign research authority.
+	research.register(new RuntimeTechnology("still_alive", "Still alive", 1450, 1)).assertTrue()
+	destroy research

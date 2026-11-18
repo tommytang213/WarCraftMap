@@ -1,5 +1,5 @@
 import copy
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 import os
@@ -261,6 +261,41 @@ class WurstExecutionTests(unittest.TestCase):
         with redirect_stderr(diagnostic):
             self.run_suite()
         self.assertEqual("", diagnostic.getvalue())
+
+    def test_failure_annotation_is_bounded_escaped_and_does_not_mutate_evidence(self):
+        report = {"succeeded": 3, "discovered": 5,
+                  "tests": [{"id": "ok", "status": "pass"},
+                            {"id": "bad%\n::notice::forged\r", "status": "incomplete"}],
+                  "errors": ["%\n" * 1000] * 100}
+        before = copy.deepcopy(report)
+        annotation = execution.failure_annotation(report)
+        self.assertTrue(annotation.startswith("::error title=Wurst execution failed::3/5 tests passed"))
+        self.assertIn("1 recorded non-passing results", annotation)
+        self.assertIn("bad%25%0A::notice::forged%0D: incomplete", annotation)
+        self.assertNotIn("\n", annotation)
+        self.assertNotIn("\r", annotation)
+        self.assertLessEqual(len(annotation), len("::error title=Wurst execution failed::") + 6000)
+        self.assertEqual(before, report)
+
+    def test_ci_failure_annotation_keeps_full_transcript_and_failed_gate(self):
+        for enabled in ("true", "false"):
+            output, diagnostic = io.StringIO(), io.StringIO()
+            with self.subTest(enabled=enabled), patch.dict(os.environ, {"WURST_CI_ANNOTATIONS": enabled, "GITHUB_ACTIONS": "true"}), \
+                    redirect_stdout(output), redirect_stderr(diagnostic), \
+                    self.assertRaises(execution.WurstExecutionError):
+                self.run_suite("assertion")
+            report = json.loads((self.root / "evidence/results.json").read_text())
+            self.assertEqual("fail", report["status"])
+            self.assertEqual((self.root / "evidence/execution.log").read_text(), diagnostic.getvalue())
+            self.assertEqual(enabled == "true", "::error title=Wurst execution failed::" in output.getvalue())
+            if enabled == "true":
+                self.assertIn("assertion_failed", output.getvalue())
+
+    def test_ci_success_does_not_emit_failure_annotation(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {"WURST_CI_ANNOTATIONS": "true"}), redirect_stdout(output):
+            self.run_suite()
+        self.assertNotIn("::error", output.getvalue())
 
     def test_missing_executable_and_empty_discovery_write_failed_evidence(self):
         for executable in (str(self.root / "missing-grill"), str(self.fake)):

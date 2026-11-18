@@ -784,7 +784,7 @@ function prepareQuestCheck(AuthoredFixture f, boolean owned)
 	prepareQuestCheck(unowned, false)
 	unowned.command("/questcheck " + unowned.compact.id, false)
 
-@test function explicitQuestCheckContinuesAfterCurrentCodecRestore()
+@test function explicitQuestCheckContinuesAfterRpgSnapshotRestore()
 	let f = new AuthoredFixture()
 	prepareQuestCheck(f, true)
 	f.command("/questcheck " + f.compact.id, true)

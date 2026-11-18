@@ -47,6 +47,11 @@ public class LandArmyRuntime
 			let s = ledger.arsenals[i]
 			if s.lastDay == 0
 				s.lastDay = day
+			// An unowned office without a project has no daily transaction.
+			// Preserve its history and cursor semantics; active states still run
+			// every paid interval, and reload reconciliation remains below.
+			if s.owner == "" and s.projectOwner == "" and s.lastDay < day
+				s.lastDay = day
 			while s.lastDay < day
 				s.lastDay++
 				let at = s.lastDay

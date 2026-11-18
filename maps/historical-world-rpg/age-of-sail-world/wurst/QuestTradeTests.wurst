@@ -107,9 +107,14 @@ public class QuestTradeFixture
 	function personal() returns TradeStore
 		return trade.findStore("player_ship_hold")
 	function reject(string command)
+		reject(command, "")
+	function reject(string command, string expected)
 		let economy = trade.capture()
 		let quests = rpg.captureState()
+		ports.output = ""
 		dispatch(command)
+		if expected != ""
+			ports.output.assertEquals(expected)
 		trade.capture().assertEquals(economy)
 		rpg.captureState().assertEquals(quests)
 
@@ -165,21 +170,23 @@ public class QuestTradeFixture
 	let f = new QuestTradeFixture()
 	f.accept()
 	f.select("calicut", "pepper")
-	f.reject("/trade buy 0")
+	f.reject("/trade buy 0", "Quantity must be a positive whole number.")
 	f.personal().money = 0
-	f.reject("/trade buy 10")
+	f.reject("/trade buy 10", "Funds are insufficient.")
 	f.personal().money = 1000
 	f.actors.exists = false
-	f.reject("/trade buy 10")
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
 	f.actors.exists = true
 	f.actors.actorX = 99999.
-	f.reject("/trade buy 10")
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
 	f.actors.moveTo(f.rpg.interactions.get("calicut"))
 	f.military.settlements[0].controllerId = "portugal"
-	f.reject("/trade buy 10")
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
 	f.select("calicut", "pepper")
 	let before = f.state.captureAuthoritativeState()
+	f.ports.output = ""
 	f.commands.dispatch(Player(1), "/trade buy 10").assertTrue()
+	f.ports.output.assertEquals("Trade selection is unavailable. Select a local market and cargo store again.")
 	f.state.captureAuthoritativeState().assertEquals(before)
 	f.pending()
 	// A fresh selection honors changed-world control, rather than initial ownership.
@@ -212,22 +219,24 @@ public class QuestTradeFixture
 	(decoded != "").assertTrue()
 	lastAuthorityValue(decoded, "trade").assertEquals(economy)
 	lastAuthorityValue(decoded, "rpg").assertEquals(quests)
-	f.trade.reconstruct(lastAuthorityValue(decoded, "trade")).assertTrue()
-	f.rpg.restoreState(lastAuthorityValue(decoded, "rpg")).assertTrue()
-	f.completed()
-	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
-	f.rpg.questEvent(f.questDefinition.id, "trade_pepper", "trade_commit_1").assertFalse()
-	f.trade.capture().assertEquals(economy)
-	f.rpg.captureState().assertEquals(quests)
-	f.select("calicut", "pepper")
-	f.trade.nextTransaction = 1
-	f.reject("/trade buy 10")
-	f.ports.output.assertEquals("Transaction already processed.")
-	f.trade.nextTransaction = 2
-	f.dispatch("/trade buy 10")
-	f.personal().quantity("pepper").assertEquals(20)
-	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
-	f.completed()
+	let restored = new QuestTradeFixture()
+	restored.pending()
+	restored.trade.reconstruct(lastAuthorityValue(decoded, "trade")).assertTrue()
+	restored.rpg.restoreState(lastAuthorityValue(decoded, "rpg")).assertTrue()
+	restored.completed()
+	restored.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	restored.rpg.questEvent(restored.questDefinition.id, "trade_pepper", "trade_commit_1").assertFalse()
+	restored.trade.capture().assertEquals(economy)
+	restored.rpg.captureState().assertEquals(quests)
+	restored.select("calicut", "pepper")
+	restored.trade.nextTransaction = 1
+	restored.reject("/trade buy 10", "Transaction already processed.")
+	restored.ports.output.assertEquals("Transaction already processed.")
+	restored.trade.nextTransaction = 2
+	restored.dispatch("/trade buy 10")
+	restored.personal().quantity("pepper").assertEquals(20)
+	restored.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	restored.completed()
 
 @test function unrelatedTradeObjectiveRemainsUnavailableInJournalAndEventGate()
 	let f = new QuestTradeFixture()
@@ -237,3 +246,23 @@ public class QuestTradeFixture
 	journalText(f.rpg).contains("Progress unavailable: condition integration pending.").assertTrue()
 	f.rpg.questEvent("unrelated_trade", "trade_pepper", "trade_commit_1").assertFalse()
 	f.pending()
+
+@test function duplicateQuestReceiptRejectsAnActualCommittedTradeBeforeNewReceiptSucceeds()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	// Seed a previously consumed identity with an incomplete objective so the
+	// duplicate gate, not completed-objective or missing live proof, is tested.
+	f.questDefinition.graph.processedReceiptIds = "trade_commit_1~"
+	f.questDefinition.graph.completedObjectiveIds.assertEquals("")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	f.personal().quantity("pepper").assertEquals(10)
+	f.trade.nextTransaction.assertEquals(2)
+	f.questDefinition.graph.completedObjectiveIds.assertEquals("")
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	f.personal().quantity("pepper").assertEquals(20)
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~trade_commit_2~")
+	f.completed()

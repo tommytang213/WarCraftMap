@@ -697,6 +697,8 @@ public class RuntimeQuest
 		updateGuidance()
 
 	ondestroy
+		if authoredRewards != null
+			destroy authoredRewards
 		if graph != null
 			destroy graph
 
@@ -797,6 +799,10 @@ public class QuestJournalRuntime
 	 * Check only the entry stage of this quest; action-triggered checks must
 	 * never sweep unrelated quests or reuse a receipt as research evidence. */
 	function syncQuestResearch(RuntimeQuest q, TechnologyRuntime research, string controllerId) returns boolean
+		return syncQuestResearchTargets(q, research, controllerId, "")
+	/** Empty filter preserves ordinary research synchronization; reward delivery
+	 * supplies only the newly committed IDs, never pre-existing ownership. */
+	private function syncQuestResearchTargets(RuntimeQuest q, TechnologyRuntime research, string controllerId, string targets) returns boolean
 		if research == null or controllerId != "player" or q == null or q.state != QUEST_ACTIVE or q.graph == null
 			return false
 		var changed = false
@@ -806,9 +812,17 @@ public class QuestJournalRuntime
 			let reference = objective.entityRefs
 			if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
 				let technologyId = SubString(reference, 11, StringLength(reference) - 1)
-				if research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
+				if (targets == "" or questHas(targets, technologyId)) and research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
 					q.settleProgress()
 					changed = true
+		return changed
+	function syncNewPlayerResearch(TechnologyRuntime research, string targets) returns boolean
+		if targets == ""
+			return false
+		var changed = false
+		for i = 0 to count - 1
+			if syncQuestResearchTargets(quests[i], research, "player", targets)
+				changed = true
 		return changed
 	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
 		var changed = false
@@ -1467,6 +1481,11 @@ public class WarcraftRpgRuntime
 		let target = interactions.resolve(actor, sender, requested)
 		if target == null
 			return false
+		// Freeze the interaction entry frontier: a reward may make another
+		// quest ready, but cannot authorize its turn-in in this same delivery.
+		boolean array[2048] readyAtEntry
+		for i = 0 to journal.count - 1
+			readyAtEntry[i] = journal.quests[i].state == QUEST_READY
 		var changed = false
 		if visits != null
 			changed = visits.recordVisit(target)
@@ -1484,7 +1503,7 @@ public class WarcraftRpgRuntime
 				journal.track(q.id)
 				changed = true
 			else if q.state == QUEST_READY
-				if atTurnIn
+				if atTurnIn and readyAtEntry[i]
 					if commitQuestTurnIn(sender, q, actor, day, 30)
 						changed = true
 					else if q.authoredRewards != null and journal.lastDiagnostic != ""
@@ -1519,7 +1538,7 @@ public class WarcraftRpgRuntime
 		if not result and definition.authoredRewards != null and journal.lastDiagnostic == ""
 			journal.lastDiagnostic = "Quest turn-in was not completed: requirements are not met."
 		if result and definition.authoredRewards != null
-			journal.syncPlayerResearch(technologies, "player")
+			journal.syncNewPlayerResearch(technologies, definition.authoredRewards.consumeCommittedResearch())
 		return result
 	function turnInQuest(player sender,string id,string heroId,int day,int cooldownDays) returns boolean
 		journal.lastDiagnostic = ""

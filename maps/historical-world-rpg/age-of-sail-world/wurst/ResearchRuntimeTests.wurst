@@ -637,6 +637,7 @@ function rejectForeignResearchCommand(player sender)
 			command = "/unlock pike_and_shot"
 		else if alias == 2
 			command = "/institution pike_and_shot"
+		f.output.last = ""
 		f.commands.dispatch(sender, command).assertTrue()
 		f.output.last.assertEquals("Only the campaign player can commit research.")
 		f.resources.reads.assertEquals(reads)
@@ -672,6 +673,10 @@ function rejectForeignResearchCommand(player sender)
 	let paid = f.resources.balance
 	let committedWrites = f.resources.writes
 	let completed = f.runtime.captureState()
+	f.runtime.restoreState(before).assertTrue()
+	f.runtime.technologies.isUnlocked("player", "pike_and_shot").assertFalse()
+	q.state.assertEquals(QUEST_ACTIVE)
+	q.graph.completedObjectiveIds.assertEquals("")
 	codecRestore(f, completed, CAMPAIGN_SAVE_SCHEMA_CURRENT)
 	f.resources.balance.assertEquals(paid)
 	f.resources.writes.assertEquals(committedWrites)

@@ -63,6 +63,7 @@ jobs:
             -e MAP_PROJECT \
             -e RELEASE_ARTIFACT \
             -e WURST_IMAGE \
+            -e WURST_CI_ANNOTATIONS=true \
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \

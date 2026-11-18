@@ -12,7 +12,7 @@ from unittest.mock import patch
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / '_shared/tooling'))
 from package_wurst_map import PackagingError, generate, load_config
-from quest_codegen import validate_graphs, emit_quests
+from quest_codegen import validate_graphs, emit_quests, trade_quest_bindings, consultation_quest_bindings
 
 
 class QuestGenerationTests(unittest.TestCase):
@@ -166,6 +166,36 @@ class QuestGenerationTests(unittest.TestCase):
             with self.assertRaisesRegex(PackagingError, 'no generated market/commodity'):
                 generate(self.config, Path(directory))
 
+    def test_binding_prepasses_reject_non_object_rows_with_the_key(self):
+        for value in (None, [], "invalid", 1, True):
+            changed = copy.deepcopy(self.bindings)
+            changed['objectives']['unused:objective'] = value
+            for check in (trade_quest_bindings, consultation_quest_bindings, validate_graphs):
+                with self.subTest(value=value, check=check.__name__), self.assertRaisesRegex(ValueError, 'unused:objective.*object'):
+                    check(self.world['quests'], changed)
+
+    def test_same_stage_trade_objectives_must_not_share_an_ambiguous_receipt(self):
+        quests = copy.deepcopy(self.world['quests'])
+        bindings = copy.deepcopy(self.bindings)
+        q = next(q for q in quests if q['id'] == 'india_stars_and_pepper')
+        objective = copy.deepcopy(next(o for o in q['objectives'] if o['id'] == 'trade_pepper'))
+        objective['id'] = 'second_trade'
+        q['objectives'].append(objective)
+        next(s for s in q['stages'] if s['id'] == 'market_measure')['objectiveIds'].append('second_trade')
+        bindings['objectives'][q['id'] + ':second_trade'] = copy.deepcopy(bindings['objectives'][q['id'] + ':trade_pepper'])
+        with self.assertRaisesRegex(ValueError, 'cannot share a committed trade binding'):
+            validate_graphs(quests, bindings)
+
+    def test_packager_accepts_an_actual_industry_only_market_pair(self):
+        market, good = next(pair for pair in self.runtime['industry']['markets']
+                            if f'runtime.registerMarketProfile("{pair[0]}","{pair[1]}",' not in self.source)
+        rows = copy.deepcopy(self.runtime['questTradeBindings'])
+        rows[0].update(marketId=market, commodityId=good)
+        with tempfile.TemporaryDirectory() as directory, patch('package_wurst_map.trade_quest_bindings', return_value=rows):
+            generate(self.config, Path(directory))
+            generated = (Path(directory) / 'ScenarioData.wurst').read_text()
+            self.assertIn(f'"{market}", "{good}"))', generated)
+
     def test_local_consultation_binding_is_exact_and_has_a_real_location(self):
         key = 'india_stars_and_pepper:consult_pilot_guild'
         rows = self.runtime['questConsultationBindings']
@@ -174,7 +204,9 @@ class QuestGenerationTests(unittest.TestCase):
                               providerName="Calicut's pilot guild", locationId='calicut',
                               institutionId='renaissance_humanism')], rows)
         rpg_function = self.source.split('public function configureGeneratedRpg(WarcraftRpgRuntime runtime)', 1)[1].split('\npublic function ', 1)[0]
-        self.assertIn('runtime.registerConsultation(new QuestConsultationBinding(', rpg_function)
+        arguments = ', '.join(json.dumps(rows[0][key]) for key in
+                              ('questId', 'stageId', 'objectiveId', 'providerId', 'providerName', 'locationId', 'institutionId'))
+        self.assertIn('runtime.registerConsultation(new QuestConsultationBinding(' + arguments + '))', rpg_function)
         for field, value in [('stageId', 'consult_king'), ('institutionId', 'missing'),
                              ('providerId', 'bad-id'), ('providerId', 'a' * 57), ('providerName', 'bad\\nname')]:
             changed = copy.deepcopy(self.bindings)

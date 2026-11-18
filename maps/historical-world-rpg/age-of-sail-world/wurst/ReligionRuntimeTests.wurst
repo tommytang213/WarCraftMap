@@ -118,6 +118,7 @@ function configured(TestReligionEffects effects) returns ReligionRuntime
 		player sender=null
 		if i==0
 			sender=Player(1)
+		output.message=""
 		registry.dispatch(sender,"/convert new_faith").assertTrue()
 		output.message.assertEquals("Only the campaign player can change personal faith.")
 		runtime.captureState().assertEquals(initial)
@@ -148,14 +149,30 @@ function configured(TestReligionEffects effects) returns ReligionRuntime
 	restored.captureState().assertEquals(saved)
 	restored.currencyUnits.assertEquals(60)
 	restored.conversionHistory.assertEquals(runtime.conversionHistory)
+	// Make the reverse action genuinely eligible: guard rejection, not missing
+	// conversion rules or cooldown, must protect the restored campaign.
+	restored.registerConversion(new ReligionConversionRule("new_faith","old_faith",10,100,10,"return accepted"))
+	restored.campaignTick += 100
+	let eligible = restored.captureState()
 	let restoredClears=restoredEffects.clears
 	let restoredApplications=restoredEffects.applications
 	let restoredAmount=restoredEffects.lastAmount
 	let restoredRegistry=new CommandRegistry(false,6,new CommandText(),output)
 	registerReligion(restoredRegistry,restored)
-	restoredRegistry.dispatch(Player(1),"/convert old_faith").assertTrue()
-	restoredRegistry.dispatch(null,"/convert old_faith").assertTrue()
-	restored.captureState().assertEquals(saved)
-	restoredEffects.clears.assertEquals(restoredClears)
-	restoredEffects.applications.assertEquals(restoredApplications)
-	restoredEffects.lastAmount.assertEquals(restoredAmount)
+	for i=0 to 1
+		player sender=null
+		if i==0
+			sender=Player(1)
+		output.message=""
+		restoredRegistry.dispatch(sender,"/convert old_faith").assertTrue()
+		output.message.assertEquals("Only the campaign player can change personal faith.")
+		restored.captureState().assertEquals(eligible)
+		restoredEffects.clears.assertEquals(restoredClears)
+		restoredEffects.applications.assertEquals(restoredApplications)
+		restoredEffects.lastAmount.assertEquals(restoredAmount)
+	output.message=""
+	restoredRegistry.dispatch(Player(0),"/convert old_faith").assertTrue()
+	output.message.contains("Faith changed.").assertTrue()
+	restored.primaryFaithId.assertEquals("old_faith")
+	restored.currencyUnits.assertEquals(50)
+	restored.conversionHistory.contains("return accepted").assertTrue()

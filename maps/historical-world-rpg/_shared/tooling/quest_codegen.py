@@ -25,16 +25,29 @@ def committed_trade_binding(quest, objective, binding):
             "marketId": binding["marketId"], "commodityId": binding["commodityId"]}
 
 
+def objective_binding_rows(bindings):
+    rows = bindings.get("objectives", {})
+    if not isinstance(rows, dict):
+        raise ValueError("quest objective bindings must be an object")
+    for key, row in rows.items():
+        if not isinstance(row, dict):
+            raise ValueError(f"quest objective binding {key!r} must be an object")
+    return rows.items()
+
+
 def trade_quest_bindings(quests, bindings):
     objectives = {q["id"] + ":" + o["id"]: (q, o) for q in quests for o in q["objectives"]}
     result = []
-    for key, binding in bindings.get("objectives", {}).items():
+    for key, binding in objective_binding_rows(bindings):
         if binding.get("consumer") == "local_consultation":
             continue
         if "consumer" in binding:
             if key not in objectives:
                 raise ValueError("committed trade objective does not exist")
             result.append(committed_trade_binding(*objectives[key], binding))
+    identities = [(row['questId'], row['stageId'], row['marketId'], row['commodityId']) for row in result]
+    if len(identities) != len(set(identities)):
+        raise ValueError("multiple objectives in one quest stage cannot share a committed trade binding")
     if len(result) > 64:
         raise ValueError("committed trade binding capacity exceeded")
     return result
@@ -44,7 +57,7 @@ def consultation_quest_bindings(quests, bindings):
     objectives = {q["id"] + ":" + o["id"]: (q, o) for q in quests for o in q["objectives"]}
     result = []
     expected = {"adapter", "consumer", "stageId", "providerId", "providerName", "locationId", "institutionId"}
-    for key, binding in bindings.get("objectives", {}).items():
+    for key, binding in objective_binding_rows(bindings):
         if binding.get("consumer") != "local_consultation":
             continue
         if key not in objectives:

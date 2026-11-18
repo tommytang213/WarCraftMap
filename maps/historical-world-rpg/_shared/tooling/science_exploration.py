@@ -205,6 +205,40 @@ def _barometric_authored(project):
             and len(nodes) == 1 and BAROMETRIC_UNLOCK in nodes[0]['unlocks'])
 
 
+CALCULUS_COMPARISON = 'calculusOnlyRegisteredResearchCommitsExactWorkAgainstMatchedControl'
+CALCULUS_TESTS = {
+    CALCULUS_COMPARISON,
+    'calculusFundedWorkResumesAfterSnapshotAndUnfundedDaysAddNothing',
+    'calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity',
+    'unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills',
+    'scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+CALCULUS_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                   'science_advance', 'science_pay', 'science_complete'}
+CALCULUS_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_calculus_methods'}
+
+
+def _calculus_authored(project):
+    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    path = (project / data['designSource']).resolve()
+    path.relative_to(project.resolve())
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'calculus_methods' or e['unlock'] == CALCULUS_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((project / 'scenario/world/world.json').read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'calculus_methods']
+    return (effect['nodeId'] == 'calculus_methods'
+            and effect['unlock'] == CALCULUS_UNLOCK
+            and effect['metric'] == 'research_generation_efficiency'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 500
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'controlled_scholarly_research_centers'
+            and len(nodes) == 1 and CALCULUS_UNLOCK in nodes[0]['unlocks'])
+
+
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     """Only current complete pinned execution can close this exact finding."""
     if execution is None or execution_log is None or revision is None:
@@ -242,6 +276,15 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
                 and BOTANICAL_PROBES <= set(probes.get(comparative, []))
                 and _botanical_authored(project)):
             bound.add(('modifier', 'progression_botanical_collecting'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    comparative = prefix + CALCULUS_COMPARISON
+    try:
+        if (CALCULUS_TESTS <= passed
+                and comparative in coverage.get('calculus_research', [])
+                and CALCULUS_PROBES <= set(probes.get(comparative, []))
+                and _calculus_authored(project)):
+            bound.add(('modifier', 'progression_calculus_methods'))
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
         pass
     return bound

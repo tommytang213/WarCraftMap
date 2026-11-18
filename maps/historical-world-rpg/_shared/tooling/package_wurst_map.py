@@ -788,9 +788,6 @@ def generate(config: BuildConfig, generated: Path) -> None:
     else:
         trade_lines.append("\tskip")
     for binding in quest_trades:
-        market_prefix = f'\truntime.registerMarketProfile("{binding["marketId"]}","{binding["commodityId"]}",'
-        if not any(line.startswith(market_prefix) for line in trade_records):
-            raise PackagingError("quest committed trade binding has no generated market/commodity")
         values = ", ".join(json.dumps(binding[k]) for k in ("questId", "stageId", "objectiveId", "marketId", "commodityId"))
         trade_lines.append(f"\truntime.registerQuestTrade(new QuestTradeBinding({values}))")
     runtime["questTradeBindings"] = quest_trades
@@ -903,11 +900,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
         land_wurst = land_payload['wurst']
         land_sources = [content_path(config.project, name) for name in land_payload['sources']]
     industry_sources = []
+    industry_market_pairs = set()
     industry_wurst = '\npublic function configureGeneratedIndustry(IndustryLedger ledger, IndustryResearchEffects effects)\n\tskip\n\npublic function configureGeneratedIndustryMarkets(PlayableTradeRuntime runtime)\n\tskip\n'
     industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
     if industry_builder:
         payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
         runtime['industry'] = payload['catalog']
+        industry_market_pairs = {tuple(pair) for pair in payload['catalog']['markets']}
         industry_wurst = payload['wurst']
         industry_sources = [content_path(config.project, name) for name in payload['sources']]
         runtime['tradeMarketCount'] += sum(
@@ -915,6 +914,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
             for ident, good in payload['catalog']['markets'])
         if runtime['tradeMarketCount'] > 16384:
             raise PackagingError('industry: trade authority capacity exceeded')
+    # Industry can register otherwise absent output markets. Validate only
+    # after both real registration sources are available, never invent a pair.
+    for binding in quest_trades:
+        prefix = f'\truntime.registerMarketProfile("{binding["marketId"]}","{binding["commodityId"]}",'
+        if (not any(line.startswith(prefix) for line in trade_records)
+                and (binding['marketId'], binding['commodityId']) not in industry_market_pairs):
+            raise PackagingError("quest committed trade binding has no generated market/commodity")
     wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst + courts_wurst
     wurst = wurst.replace('import UnstuckRecovery\n', 'import BankingOperations\nimport Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
