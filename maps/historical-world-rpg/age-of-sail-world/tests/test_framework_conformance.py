@@ -194,6 +194,21 @@ class FrameworkConformanceTests(unittest.TestCase):
                      for p in (category / "_shared").rglob("*") if p.is_file() and "__pycache__" not in p.parts}
             self.assertEqual(before, after)
 
+    def test_git_porcelain_exception_is_exact_token_and_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            category = Path(tmp)
+            copy_category(category)
+            replay = category / "_shared/tooling/focused_wurst_replay.py"
+            self.assertIn('"--porcelain"', replay.read_text())
+            self.assertEqual([], audit(category))
+            with replay.open("a") as stream:
+                stream.write('\nGOOD = "porcelain"\nOTHER = "grain"\n')
+            (category / "_shared/tooling/other.py").write_text('FLAG = "--porcelain"\n')
+            errors = audit(category)
+            self.assertTrue(any("tooling/focused_wurst_replay.py" in error and "'porcelain'" in error for error in errors))
+            self.assertTrue(any("tooling/focused_wurst_replay.py" in error and "'grain'" in error for error in errors))
+            self.assertTrue(any("tooling/other.py" in error and "'porcelain'" in error for error in errors))
+
     def test_campaign_wts_newline_exception_is_exact(self):
         with tempfile.TemporaryDirectory() as tmp:
             category = Path(tmp)

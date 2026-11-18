@@ -1,9 +1,10 @@
-"""No compiler subprocesses: focused replay failure contract tests."""
+"""Focused replay contracts; no real compiler subprocesses."""
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -59,22 +60,30 @@ class FocusedReplayTests(unittest.TestCase):
             def source(*args):
                 return {'sourceTreeSha256': 'changed'} if failure == 'source_drift' and calls else identity
 
+            def assemble(*args):
+                if failure == 'assembly_compiler_drift':
+                    compiler.write_bytes(b'replaced compiler')
+                return root
+
             packages = ['A', 'B'] if failure != 'missing' else ['Missing']
             with patch.object(replay.subprocess, 'check_output', return_value=str(project.parent)), \
                  patch.object(replay, 'require_local_tooling'), \
                  patch.object(replay, 'clean_revision', side_effect=clean), \
                  patch.object(replay, 'source_identity', side_effect=source), \
-                 patch.object(replay, 'assemble', return_value=root), \
+                 patch.object(replay, 'assemble', side_effect=assemble), \
                  patch.object(replay, 'PINNED_COMPILER_SHA256', replay.sha(b'compiler')), \
                  patch.object(replay, 'compiler_identity', return_value={'sha256': 'wrong' if failure == 'compiler' else replay.sha(b'compiler')}), \
-                 patch.object(replay.subprocess, 'run', side_effect=run):
+                 patch.object(replay, 'run_launcher', side_effect=run):
                 code = replay.replay(project, base / 'out', 'a' * 40, packages, launcher, compiler, base, timeout=1)
             report = json.loads((base / 'out/results.json').read_text())
             if failure:
                 self.assertEqual(code, 1)
                 self.assertFalse(report['completed'])
                 self.assertTrue(report['errors'])
-                self.assertFalse(any(command[-1] == 'B' for command in calls))
+                expected = ([] if failure in {'revision', 'missing', 'assembly_compiler_drift'}
+                            else ['typecheck'] if failure in {'typecheck_exit', 'typecheck_drift', 'source_drift', 'compiler'}
+                            else ['typecheck', 'A'])
+                self.assertEqual([command[-1] for command in calls], expected)
             else:
                 self.assertEqual(code, 0, report)
                 self.assertTrue(report['completed'])
@@ -87,9 +96,37 @@ class FocusedReplayTests(unittest.TestCase):
 
     def test_fail_closed_cases(self):
         for failure in ['revision', 'missing', 'suite_exit', 'malformed', 'timeout',
-                        'typecheck_drift', 'dependency_drift', 'source_drift', 'typecheck_exit', 'compiler']:
+                        'assembly_compiler_drift', 'typecheck_drift', 'dependency_drift', 'source_drift', 'typecheck_exit', 'compiler']:
             with self.subTest(failure=failure):
                 self.run_case(failure)
+
+    def test_timeout_kills_owned_group_and_reaps_launcher(self):
+        from unittest.mock import MagicMock
+        process = MagicMock()
+        process.pid = 314159
+        process.wait.side_effect = [subprocess.TimeoutExpired(['launcher'], 1), -9]
+        with patch.object(replay.subprocess, 'Popen') as popen, patch.object(replay.os, 'killpg') as kill:
+            popen.return_value.__enter__.return_value = process
+            with self.assertRaises(subprocess.TimeoutExpired):
+                replay.run_launcher(['launcher'], cwd=Path('.'), env={}, stdout=None, timeout=1)
+            self.assertTrue(popen.call_args.kwargs['start_new_session'])
+            kill.assert_called_once_with(process.pid, replay.signal.SIGKILL)
+            self.assertEqual(process.wait.call_count, 2)
+
+    @unittest.skipUnless(replay.os.name == 'posix', 'POSIX process groups required')
+    def test_timeout_stops_descendant_before_it_can_write(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            marker = root / 'survived'
+            child = f"import time; from pathlib import Path; time.sleep(0.6); Path({str(marker)!r}).touch()"
+            parent = f"import subprocess, sys; p=subprocess.Popen([sys.executable, '-c', {child!r}]); print('started', flush=True); p.wait()"
+            with (root / 'partial.log').open('w') as log:
+                with self.assertRaises(subprocess.TimeoutExpired):
+                    replay.run_launcher([sys.executable, '-c', parent], cwd=root,
+                                        env=replay.os.environ.copy(), stdout=log, timeout=0.3)
+            time.sleep(0.7)
+            self.assertIn('started', (root / 'partial.log').read_text())
+            self.assertFalse(marker.exists())
 
     def test_clean_revision_checks_actual_head_and_untracked_files(self):
         for head, status in [('b' * 40, ''), ('a' * 40, '?? unknown')]:

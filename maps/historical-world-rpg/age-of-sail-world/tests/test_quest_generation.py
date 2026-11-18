@@ -187,15 +187,28 @@ class QuestGenerationTests(unittest.TestCase):
             validate_graphs(quests, bindings)
 
     def test_packager_accepts_an_actual_industry_only_market_pair(self):
+        def pairs(source, function_pattern):
+            functions = re.finditer(r'(?m)^(?:public )?function (\w+)\([^\n]*\)\n(.*?)(?=^(?:public )?function |\Z)', source, re.S)
+            return {pair for match in functions if re.fullmatch(function_pattern, match[1])
+                    for pair in re.findall(r'runtime\.registerMarketProfile\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,', match[2])}
+        ordinary = pairs(self.source, r'configureGeneratedTrade\d*')
+        industry = pairs(self.source, 'configureGeneratedIndustryMarkets')
         market, good = next(pair for pair in self.runtime['industry']['markets']
-                            if f'runtime.registerMarketProfile("{pair[0]}","{pair[1]}",' not in self.source)
+                            if tuple(pair) in industry - ordinary)
+        self.assertNotIn((market, good), ordinary)
+        self.assertIn((market, good), industry)
         rows = copy.deepcopy(self.runtime['questTradeBindings'])
         rows[0].update(marketId=market, commodityId=good)
         with tempfile.TemporaryDirectory() as directory, patch('package_wurst_map.trade_quest_bindings', return_value=rows):
             generate(self.config, Path(directory))
             generated = (Path(directory) / 'ScenarioData.wurst').read_text()
             self.assertIn(f'"{market}", "{good}"))', generated)
-            self.assertIn(f'runtime.registerMarketProfile("{market}", "{good}", ', generated)
+            self.assertIn((market, good), pairs(generated, 'configureGeneratedIndustryMarkets'))
+            self.assertNotIn((market, good), pairs(generated, r'configureGeneratedTrade\d*'))
+            # Comma spacing cannot change emitter ownership.
+            spaced = re.sub(r',\s*', ',  ', generated)
+            self.assertEqual(pairs(generated, r'configureGeneratedTrade\d*'), pairs(spaced, r'configureGeneratedTrade\d*'))
+            self.assertEqual(pairs(generated, 'configureGeneratedIndustryMarkets'), pairs(spaced, 'configureGeneratedIndustryMarkets'))
 
     def test_local_consultation_binding_is_exact_and_has_a_real_location(self):
         key = 'india_stars_and_pepper:consult_pilot_guild'

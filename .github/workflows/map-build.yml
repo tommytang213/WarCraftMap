@@ -104,6 +104,7 @@ jobs:
             ready) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
             blocked)
               echo "ready=false" >> "$GITHUB_OUTPUT"
+              python3 maps/historical-world-rpg/age-of-sail-world/tooling/print_release_blockers.py --diagnostics "$artifact_dir/diagnostics" --summary "$GITHUB_STEP_SUMMARY"
               if [ "${GITHUB_HEAD_REF:-}" = "fix/dot-wc3-continuation-20261118" ] || [ "${GITHUB_REF:-}" = "refs/heads/fix/dot-wc3-continuation-20261118" ]; then
                 echo "::notice::Candidate publication blocked by release audits; this continuation run is logs-only."
                 echo "**Candidate publication: blocked.** No player candidate was published. This continuation run skips artifact/cache uploads; reports are not downloadable. Inspect the validation logs for audit diagnostics." >> "$GITHUB_STEP_SUMMARY"

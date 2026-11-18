@@ -6,14 +6,28 @@ Warcraft acceptance claims. Do not use its report as `wurst_execution` evidence.
 
 Run from a clean committed checkout with an existing local Grill launcher,
 pinned compiler jar and offline bootstrap `_build` directory containing
-`common.j`, `blizzard.j` and `dependencies/wurstStdlib2`. All paths are explicit:
+`common.j`, `blizzard.j` and `dependencies/wurstStdlib2`. All paths are explicit. `--compiler` selects the JAR to verify, **not** the JAR
+Grill launches. For the existing extracted Grill installation, set
+`JAVA_TOOL_OPTIONS="-Duser.home=/absolute/extracted/home"` and supply
+`/absolute/extracted/home/.wurst/grill` and
+`/absolute/extracted/home/.wurst/wurst-compiler/wurstscript.jar` as the launcher
+and compiler. Both the launcher JVM and compiler child inherit that Java home
+property. Preserve any other explicitly required JVM options. Do not point
+`--compiler` at an unrelated copy while leaving Grill on its default installation;
+a different launcher layout must be configured and verified separately. The
+runner checks the supplied JAR again after assembly and rejects mismatching
+transcript identity, but cannot certify arbitrary launcher's selection before
+it executes.
+
+Example (with the same configured extracted home):
 
 ```sh
 python maps/historical-world-rpg/_shared/tooling/focused_wurst_replay.py \
   --project maps/historical-world-rpg/age-of-sail-world \
   --revision FULL_40_CHARACTER_HEAD \
   --out /absolute/new/evidence-directory \
-  --executable /absolute/grill --compiler /absolute/wurstscript.jar \
+  --executable /absolute/extracted/home/.wurst/grill \
+  --compiler /absolute/extracted/home/.wurst/wurst-compiler/wurstscript.jar \
   --bootstrap /absolute/prepared/_build \
   --package QuestRewardTests --package AuthoredQuestTests --timeout 600
 ```
@@ -39,7 +53,10 @@ image, and does not assert Docker execution.
 
 Requested packages must each have nonzero discovery. Any exit failure, timeout,
 missing/malformed result, compiler mismatch or drift fails the replay and skips
-remaining packages. `completed: true` requires all requested suites. Logs and
+remaining packages. On POSIX, each launcher gets a dedicated session; a timeout
+kills its process group (including the compiler JVM) and reaps the launcher.
+Non-POSIX execution is rejected rather than claiming descendant cleanup. This
+does not contain a deliberately detached child process. `completed: true` requires all requested suites. Logs and
 `results.json` survive execution failures; invalid output locations or an
 existing evidence directory are rejected before writing. Reports are focused
 local evidence only. No archived report or full-gate implementation is changed.

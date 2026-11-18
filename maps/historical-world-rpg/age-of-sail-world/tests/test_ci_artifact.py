@@ -1,4 +1,6 @@
 import re
+import shlex
+import json
 import os
 import subprocess
 import tempfile
@@ -22,6 +24,24 @@ def workflow_step(workflow, name):
     return tail[:end.start()] if end else tail
 
 
+def docker_annotation_enabled(body):
+    # Shell removes escaped newlines before interpreting comments. Only inspect
+    # the resulting docker command, not comments or later shell statements.
+    joined = body.replace("\\\n", "")
+    commands = [line.strip() for line in joined.splitlines()
+                if line.strip().startswith('docker run ')]
+    if len(commands) != 1 or '"$WURST_RUN_IMAGE"' not in commands[0]:
+        return False
+    try:
+        prefix = commands[0].split('"$WURST_RUN_IMAGE"', 1)[0] + '"$WURST_RUN_IMAGE"'
+        args = shlex.split(prefix, comments=True)
+        image = args.index('$WURST_RUN_IMAGE')
+    except ValueError:
+        return False
+    return any(args[index:index + 2] == ['-e', 'WURST_CI_ANNOTATIONS=true']
+               for index in range(2, image - 1))
+
+
 class MapArtifactWorkflowTests(unittest.TestCase):
     def test_bounded_failure_annotations_opt_in_only_inside_actual_compiler_containers(self):
         for path, step in ((WORKFLOW, "Execute complete Wurst suite and package with pinned compiler"),
@@ -30,9 +50,10 @@ class MapArtifactWorkflowTests(unittest.TestCase):
             body = workflow_step(source, step)
             with self.subTest(workflow=path.name):
                 self.assertEqual(1, source.count("WURST_CI_ANNOTATIONS"))
-                self.assertRegex(body, r"(?<!\S)-e\s+WURST_CI_ANNOTATIONS=true(?=\s|$)")
-                self.assertLess(body.index("docker run"), body.index("-e WURST_CI_ANNOTATIONS=true"))
-                self.assertLess(body.index("-e WURST_CI_ANNOTATIONS=true"), body.index('"$WURST_RUN_IMAGE"'))
+                self.assertTrue(docker_annotation_enabled(body))
+                commented = body.replace('-e WURST_CI_ANNOTATIONS=true', '# -e WURST_CI_ANNOTATIONS=true')
+                self.assertFalse(docker_annotation_enabled(commented))
+                self.assertFalse(docker_annotation_enabled(body.replace('WURST_CI_ANNOTATIONS=true', 'WURST_CI_ANNOTATIONS=false')))
         for path in (REPOSITORY / ".github/workflows").glob("*.yml"):
             if path not in (WORKFLOW, TYPECHECK_WORKFLOW):
                 self.assertNotIn("WURST_CI_ANNOTATIONS", path.read_text(encoding="utf-8"))
@@ -49,14 +70,23 @@ class MapArtifactWorkflowTests(unittest.TestCase):
             with self.subTest(head=head, ref=ref), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 (root / "candidate-status").write_text("blocked")
+                (root / "diagnostics").mkdir()
+                (root / "diagnostics/requirement-traceability.json").write_text(json.dumps({
+                    "format": "warcraftmap_requirement_traceability_v1",
+                    "blockers": [{"id": "REQ-BLOCKED", "class": "unreachable",
+                                  "message": "An actionable failure."}]}))
                 env = dict(os.environ, artifact_dir=directory, GITHUB_HEAD_REF=head,
                            GITHUB_REF=ref, GITHUB_OUTPUT=str(root / "output"),
                            GITHUB_STEP_SUMMARY=str(root / "summary"))
                 result = subprocess.run(["bash", "-eu", "-c", shell], env=env,
-                                        text=True, capture_output=True, check=True)
+                                        text=True, capture_output=True, check=True, cwd=REPOSITORY)
                 summary = (root / "summary").read_text()
                 self.assertEqual("ready=false\n", (root / "output").read_text())
                 self.assertIn("No player candidate was published.", summary)
+                self.assertIn("blocker details cannot be listed", summary)
+                self.assertIn("Release blocker excerpt", result.stdout)
+                self.assertIn("REQ-BLOCKED [unreachable] An actionable failure.", result.stdout)
+                self.assertIn("REQ-BLOCKED [unreachable] An actionable failure.", summary)
                 self.assertEqual(logs_only, "reports are not downloadable" in summary)
                 self.assertEqual(not logs_only, "diagnostics artifact" in result.stdout)
                 self.assertEqual(not logs_only, "age-of-sail-requirement-diagnostics artifact" in summary)
@@ -208,7 +238,7 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                     self.assertEqual(expected, status.read_text().strip())
                     output = out / 'github-output'
                     summary = out / 'github-summary'
-                    host_result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True,
+                    host_result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True, cwd=REPOSITORY,
                                                  env={**environment, 'artifact_dir': str(out), 'GITHUB_OUTPUT': str(output),
                                                       'GITHUB_STEP_SUMMARY': str(summary)})
                     self.assertEqual(0, host_result.returncode, host_result.stderr)

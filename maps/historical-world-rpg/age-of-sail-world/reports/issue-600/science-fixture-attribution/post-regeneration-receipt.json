@@ -1,0 +1,44 @@
+{
+  "scope": "Separate post-regeneration read-only consistency, not pre-existing freshness or execution acceptance",
+  "sourceIdentity": {
+    "sourceRevision": "21e0bf122defae9cba3d7803a8eecd913ec88810",
+    "sourceTreeSha256": "b752250e895a5ad026c449266b89a3d1753ab949515568d2f279af17b36dbcef"
+  },
+  "commands": [
+    {
+      "name": "trace-check",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "tooling/requirement_traceability_audit.py",
+        "--check",
+        "--source-revision",
+        "21e0bf122defae9cba3d7803a8eecd913ec88810"
+      ],
+      "exitCode": 0,
+      "expected": 0,
+      "seconds": 3.347,
+      "logSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c"
+    },
+    {
+      "name": "freshness",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_release_blocker_audit.py",
+        "-k",
+        "test_checked_in_machine_and_human_reports_are_current"
+      ],
+      "exitCode": 0,
+      "expected": 0,
+      "seconds": 50.147,
+      "logSha256": "5bcff650bce764f77871c118a252b7b5fac18e50868f388d0bfe2f637e471722"
+    }
+  ],
+  "completed": true,
+  "sourcesUnchanged": true
+}

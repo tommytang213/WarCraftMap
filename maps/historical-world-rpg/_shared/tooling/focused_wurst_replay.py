@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 from pathlib import Path
 import re
 import shutil
@@ -71,6 +73,25 @@ def assemble(project, out, bootstrap):
     return root
 
 
+def run_launcher(command, *, cwd, env, stdout, timeout):
+    """Own the launcher session so timeout also stops its compiler descendants."""
+    if os.name != "posix":
+        raise ValueError("focused replay requires POSIX process-group containment")
+    with subprocess.Popen(command, cwd=cwd, env=env, stdout=stdout,
+                          stderr=subprocess.STDOUT, start_new_session=True) as process:
+        try:
+            returncode = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # Kill the owned group, not just Grill: its JVM inherits this group.
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.wait()
+            raise
+    return subprocess.CompletedProcess(command, returncode)
+
+
 def replay(project, out, revision, packages, executable, compiler, bootstrap, timeout=600):
     # Never overwrite prior evidence. Output must be outside the source checkout.
     project, out = project.resolve(), out.resolve()
@@ -96,6 +117,8 @@ def replay(project, out, revision, packages, executable, compiler, bootstrap, ti
         root = assemble(project, out, bootstrap)
         frozen = snapshot(root, executable, compiler)
         report["frozen"] = frozen
+        if frozen["compiler"] != PINNED_COMPILER_SHA256:
+            raise ValueError("assembled compiler differs from pinned compiler")
         tests = discover(root)
         expected = {p: [t for t in tests if t["id"].startswith(f"wurst/{p}.wurst:")] for p in packages}
         if any(not rows for rows in expected.values()):
@@ -118,8 +141,7 @@ def replay(project, out, revision, packages, executable, compiler, bootstrap, ti
             report["suites"].append(entry)
             try:
                 with (out / f"{name}.log").open("w") as log:
-                    result = subprocess.run(command, cwd=root, env=env, stdout=log,
-                                            stderr=subprocess.STDOUT, timeout=timeout)
+                    result = run_launcher(command, cwd=root, env=env, stdout=log, timeout=timeout)
                 entry["returnCode"] = result.returncode
             except subprocess.TimeoutExpired:
                 entry["issues"].append("process timeout")

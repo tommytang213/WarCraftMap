@@ -13,6 +13,15 @@ NUMBERS = {'equipmentCost': 1000000, 'equipmentUnits': 10000, 'equipmentDays': 3
            'weatherPeriod': 365, 'weatherDays': 365}
 
 
+def design_source_path(project, relative):
+    """Only scenario JSON is an authored design input covered by source identity."""
+    path = (project / relative).resolve()
+    scoped = path.relative_to(project.resolve() / 'scenario')
+    if path.suffix != '.json' or '__pycache__' in scoped.parts:
+        raise ValueError('science: design source must be tracked scenario JSON')
+    return path
+
+
 def configuration(project, world, settlements, authored, trade_records):
     path = project / 'scenario/progression/science-exploration.json'
     header = '\npublic function configureGeneratedScience(ScienceLedger ledger, ScienceResearchEffects effects)\n'
@@ -21,9 +30,7 @@ def configuration(project, world, settlements, authored, trade_records):
     data = json.loads(path.read_text())
     if data.get('schemaVersion') != 1:
         raise ValueError('science: invalid schema')
-    design_path = project / data['designSource']
-    if not design_path.resolve().is_relative_to(project.resolve()):
-        raise ValueError('science: design source escapes scenario')
+    design_path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(design_path.read_text())['effects'] if e['metric'] in METRICS]
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if {e['metric'] for e in effects} != set(METRICS) or len(effects) != 3:
@@ -165,8 +172,7 @@ BOTANICAL_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_botanical_coll
 def _botanical_authored(project):
     """Recognize only the approved overland source, not a sibling science metric."""
     data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
-    path = (project / data['designSource']).resolve()
-    path.relative_to(project.resolve())
+    path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'botanical_collecting' or e['unlock'] == BOTANICAL_UNLOCK]
     if len(effects) != 1:
@@ -186,8 +192,7 @@ def _botanical_authored(project):
 def _barometric_authored(project):
     """The approved identity and coefficient, never inferred from a similar metric."""
     data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
-    path = (project / data['designSource']).resolve()
-    path.relative_to(project.resolve())
+    path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'barometric_measurement'
                or e['unlock'] == BAROMETRIC_UNLOCK]
@@ -221,8 +226,7 @@ CALCULUS_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_calculus_method
 
 def _calculus_authored(project):
     data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
-    path = (project / data['designSource']).resolve()
-    path.relative_to(project.resolve())
+    path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'calculus_methods' or e['unlock'] == CALCULUS_UNLOCK]
     if len(effects) != 1:

@@ -103,16 +103,31 @@ class ScienceCompilationTests(unittest.TestCase):
         from unittest.mock import patch
         prefix = 'wurst/ScienceExplorationTests.wurst:'
         name = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
-        report = dict(tests=[dict(id=prefix + t, status='pass') for t in CHEMICAL_TESTS],
+        identity = {'sourceRevision': 'revision', 'sourceTreeSha256': 'synthetic-tree'}
+        report = dict(sourceIdentity=identity,
+                      tests=[dict(id=prefix + t, status='pass') for t in CHEMICAL_TESTS],
                       productionCoverage={'tests': {name: ['science_registration', 'science_action',
                         'science_advance', 'science_pay', 'science_complete', 'dispatch']}})
         self.assertEqual(set(), verified_bindings(PROJECT))
         with patch('integration_evidence.verify_execution_coverage', side_effect=ValueError('stale')):
             self.assertEqual(set(), verified_bindings(PROJECT, report, b'log', 'revision'))
         # Synthetic audit protocol only, never execution evidence.
-        with patch('integration_evidence.verify_execution_coverage'):
+        with patch('integration_evidence.verify_execution_coverage', return_value={}), \
+                patch('integration_evidence.source_identity', return_value=identity) as current_identity:
             self.assertEqual({('modifier', 'progression_chemical_classification')},
                              verified_bindings(PROJECT, report, b'log', 'revision'))
+            current_identity.assert_called_once_with(PROJECT, 'revision')
+            # Mock only the audit protocol: absent/stale source attribution must
+            # still fail the production final identity recheck.
+            missing = copy.deepcopy(report)
+            del missing['sourceIdentity']
+            self.assertEqual(set(), verified_bindings(PROJECT, missing, b'log', 'revision'))
+            stale = copy.deepcopy(report)
+            stale['sourceIdentity']['sourceTreeSha256'] = 'old-tree'
+            self.assertEqual(set(), verified_bindings(PROJECT, stale, b'log', 'revision'))
+            current_identity.return_value = dict(identity, sourceTreeSha256='changed-after-verification')
+            self.assertEqual(set(), verified_bindings(PROJECT, report, b'log', 'revision'))
+            current_identity.return_value = identity
             for probe in report['productionCoverage']['tests'][name][:]:
                 invalid = copy.deepcopy(report)
                 invalid['productionCoverage']['tests'][name].remove(probe)

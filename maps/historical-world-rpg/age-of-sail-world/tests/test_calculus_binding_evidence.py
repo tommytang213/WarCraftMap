@@ -3,6 +3,7 @@ import copy
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -20,6 +21,16 @@ CALCULUS = ('modifier', 'progression_calculus_methods')
 CLASSIFICATION = ('modifier', 'progression_chemical_classification')
 BAROMETRIC = ('modifier', 'progression_barometric_measurement')
 SIBLING = PREFIX + science.BAROMETRIC_COMPARISON
+
+
+REQUIRED_CALCULUS_TESTS = {
+    'calculusOnlyRegisteredResearchCommitsExactWorkAgainstMatchedControl',
+    'calculusFundedWorkResumesAfterSnapshotAndUnfundedDaysAddNothing',
+    'calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity',
+    'unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills',
+    'scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
 
 
 class CalculusBindingEvidenceTests(unittest.TestCase):
@@ -71,6 +82,31 @@ class CalculusBindingEvidenceTests(unittest.TestCase):
     def bindings(self, report=None, log=None):
         return science.verified_bindings(PROJECT, report, log, self.revision)
 
+    def test_design_sources_cannot_escape_identity_scoped_scenario_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = Path(directory)
+            (project / 'scenario/progression').mkdir(parents=True)
+            config = project / 'scenario/progression/science-exploration.json'
+            for relative in ('reports/design.json', 'scenario/__pycache__/design.json',
+                             'scenario/design.pyc', '../outside.json'):
+                with self.subTest(relative=relative):
+                    config.write_text(json.dumps({'schemaVersion': 1, 'designSource': relative}))
+                    with self.assertRaises(ValueError):
+                        science.configuration(project, {}, [], {}, [])
+                    for helper in (science._calculus_authored, science._barometric_authored,
+                                   science._botanical_authored):
+                        with self.assertRaises(ValueError):
+                            helper(project)
+            valid = project / 'scenario/progression/design.json'
+            valid.write_text('{}')
+            self.assertEqual(valid, science.design_source_path(project, 'scenario/progression/design.json'))
+            (project / 'reports').mkdir()
+            target = project / 'reports/outside.json'
+            target.write_text('{}')
+            (project / 'scenario/redirect.json').symlink_to(target)
+            with self.assertRaises(ValueError):
+                science.design_source_path(project, 'scenario/redirect.json')
+
     def test_exact_calculus_finding_closes_and_sibling_science_recognition_is_preserved(self):
         report, log = self.transcript()
         self.assertEqual({CALCULUS, BAROMETRIC, CLASSIFICATION}, self.bindings(report, log))
@@ -100,14 +136,16 @@ class CalculusBindingEvidenceTests(unittest.TestCase):
         # A successful, rehashed focused transcript still cannot close findings.
         report, log = self.transcript(omitted_test=self.expected[0]['id'])
         self.assertEqual(set(), self.bindings(report, log))
-        for name in science.CALCULUS_TESTS:
+        self.assertEqual(REQUIRED_CALCULUS_TESTS, science.CALCULUS_TESTS)
+        for name in REQUIRED_CALCULUS_TESTS:
             report, log = self.transcript(fail_test=PREFIX + name)
             self.assertEqual(set(), self.bindings(report, log))
 
     def test_named_calculus_guard_is_independent_of_full_coverage_rejection(self):
         report, log = self.transcript()
         coverage = evidence.verify_execution_coverage(report, log, PROJECT, self.revision)
-        for name in science.CALCULUS_TESTS:
+        self.assertEqual(REQUIRED_CALCULUS_TESTS, science.CALCULUS_TESTS)
+        for name in REQUIRED_CALCULUS_TESTS:
             with self.subTest(name=name):
                 missing = copy.deepcopy(report)
                 missing['tests'] = [row for row in missing['tests'] if row['id'] != PREFIX + name]
