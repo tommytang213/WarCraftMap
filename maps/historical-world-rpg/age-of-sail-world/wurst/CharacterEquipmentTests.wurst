@@ -144,15 +144,15 @@ public class EquipmentFixture
 	let output = new EquipmentCommandOutput()
 	let commands = new CommandRegistry(false, 6, new CommandText(), output)
 	registerRpgRuntimeCommands(commands, f.rpg).assertEquals("")
-	commands.dispatch(null, "/equip alpha coat").assertTrue()
+	commands.dispatch(Player(0), "/equip alpha coat").assertTrue()
 	output.last.assertEquals("Action completed.")
-	commands.dispatch(null, "/equip beta coat").assertTrue()
+	commands.dispatch(Player(0), "/equip beta coat").assertTrue()
 	output.last.assertEquals("Action completed.")
 	f.itemAt("alpha", "chest").assertEquals("coat")
 	f.itemAt("beta", "chest").assertEquals("coat")
 	let before = f.rpg.captureState()
 	let writes = f.natives.totalWrites
-	commands.dispatch(null, "/equip gamma coat").assertTrue()
+	commands.dispatch(Player(0), "/equip gamma coat").assertTrue()
 	output.last.assertEquals("Requirements are not met here.")
 	commands.dispatch(null, "/inventory").assertTrue()
 	output.last.startsWith(f.rpg.inventorySummary("alpha")+"\n").assertTrue()
@@ -167,7 +167,7 @@ public class EquipmentFixture
 	output.last.assertEquals("Invalid arguments. Usage: /inventory [HERO]")
 	f.rpg.captureState().assertEquals(before)
 	f.natives.totalWrites.assertEquals(writes)
-	commands.dispatch(null, "/unequip beta chest").assertTrue()
+	commands.dispatch(Player(0), "/unequip beta chest").assertTrue()
 	output.last.assertEquals("Action completed.")
 	f.itemAt("alpha", "chest").assertEquals("coat")
 	f.itemAt("beta", "chest").assertEquals("")
@@ -501,7 +501,7 @@ class EquipmentEligibilityFixture
 		let beta = f.natives.life[1]
 		let gamma = f.natives.life[2]
 		let feedback = output.calls
-		commands.dispatch(null, value).assertTrue()
+		commands.dispatch(Player(0), value).assertTrue()
 		output.calls.assertEquals(feedback + 1)
 		(StringLength(output.last) < 128).assertTrue()
 		if success

@@ -11,7 +11,65 @@ def ids(values):
     return "".join(x + "~" for x in values)
 
 
+def committed_trade_binding(quest, objective, binding):
+    expected = {"adapter", "consumer", "stageId", "marketId", "commodityId"}
+    if (set(binding) != expected or binding.get("consumer") != "committed_trade"
+            or binding.get("adapter") != "domain_receipt"
+            or objective["conditionId"] != "quest_trade_satisfied"
+            or any(not isinstance(binding.get(k), str) or not ID.fullmatch(binding[k])
+                   for k in ("stageId", "marketId", "commodityId"))
+            or objective["entityRefs"] != [{"kind": "settlement", "id": binding["marketId"]}]
+            or not any(s["id"] == binding["stageId"] and objective["id"] in s["objectiveIds"] for s in quest["stages"])):
+        raise ValueError("committed trade requires an exact stage/objective, settlement and commodity binding")
+    return {"questId": quest["id"], "stageId": binding["stageId"], "objectiveId": objective["id"],
+            "marketId": binding["marketId"], "commodityId": binding["commodityId"]}
+
+
+def trade_quest_bindings(quests, bindings):
+    objectives = {q["id"] + ":" + o["id"]: (q, o) for q in quests for o in q["objectives"]}
+    result = []
+    for key, binding in bindings.get("objectives", {}).items():
+        if binding.get("consumer") == "local_consultation":
+            continue
+        if "consumer" in binding:
+            if key not in objectives:
+                raise ValueError("committed trade objective does not exist")
+            result.append(committed_trade_binding(*objectives[key], binding))
+    if len(result) > 64:
+        raise ValueError("committed trade binding capacity exceeded")
+    return result
+
+
+def consultation_quest_bindings(quests, bindings):
+    objectives = {q["id"] + ":" + o["id"]: (q, o) for q in quests for o in q["objectives"]}
+    result = []
+    expected = {"adapter", "consumer", "stageId", "providerId", "providerName", "locationId", "institutionId"}
+    for key, binding in bindings.get("objectives", {}).items():
+        if binding.get("consumer") != "local_consultation":
+            continue
+        if key not in objectives:
+            raise ValueError("consultation objective does not exist")
+        q, o = objectives[key]
+        if (set(binding) != expected or binding["adapter"] != "domain_receipt"
+                or o["conditionId"] != "quest_institution_satisfied"
+                or any(not isinstance(binding.get(k), str) or not ID.fullmatch(binding[k])
+                       for k in ("stageId", "providerId", "locationId", "institutionId"))
+                or len(binding["providerId"]) > 56
+                or not isinstance(binding["providerName"], str) or not 1 <= len(binding["providerName"]) <= 80
+                or any(ord(c) < 32 for c in binding["providerName"])
+                or o["entityRefs"] != [{"kind": "institution", "id": binding["institutionId"]}]
+                or not any(s["id"] == binding["stageId"] and o["id"] in s["objectiveIds"] for s in q["stages"])):
+            raise ValueError("consultation requires exact stage/objective, institution, provider and location binding")
+        result.append({"questId": q["id"], "objectiveId": o["id"], **{k: binding[k] for k in
+                       ("stageId", "providerId", "providerName", "locationId", "institutionId")}})
+    if len(result) > 64 or len({row["providerId"] for row in result}) != len(result):
+        raise ValueError("consultation providers must be unique and within capacity")
+    return result
+
+
 def validate_graphs(quests, bindings):
+    trade_quest_bindings(quests, bindings)
+    consultation_quest_bindings(quests, bindings)
     quest_ids = {q["id"] for q in quests}
     ids([q["id"] for q in quests])
     result, blockers = {}, []
@@ -61,14 +119,20 @@ def validate_graphs(quests, bindings):
                         or refs[0]["kind"] != "technology" or binding.get("authority") != "player"):
                     raise ValueError("research unlock requires one player-owned technology objective")
             if binding["adapter"] == "domain_receipt":
-                if not binding.get("blocker"):
-                    raise ValueError("uninstalled domain condition adapter requires an explicit integration blocker")
-                blockers.append({"questId": q["id"], "objectiveId": o["id"], "conditionId": o["conditionId"], "reason": binding["blocker"]})
+                if "consumer" in binding:
+                    if binding is not bindings.get("objectives", {}).get(q["id"] + ":" + o["id"]):
+                        raise ValueError("committed trade consumer must be objective-specific")
+                    if binding.get("consumer") != "local_consultation":
+                        committed_trade_binding(q, o, binding)
+                else:
+                    if not binding.get("blocker"):
+                        raise ValueError("uninstalled domain condition adapter requires an explicit integration blocker")
+                    blockers.append({"questId": q["id"], "objectiveId": o["id"], "conditionId": o["conditionId"], "reason": binding["blocker"]})
             result[q["id"] + ":" + o["id"]] = binding["adapter"]
     return result, blockers
 
 
-def emit_quests(quests, bindings, ws):
+def emit_quests(quests, bindings, ws, reward_batches=None):
     lines = []
     def guidance(name, d):
         precision = d.get("precision", "hidden")
@@ -95,6 +159,9 @@ def emit_quests(quests, bindings, ws):
                 lines.append("\t" + guidance(obj + ".guidance", j["destinations"][o["id"]]))
         if j.get("turnInDestination"):
             lines.append("\t" + guidance(name + ".graph.turnInGuidance", j["turnInDestination"]))
+        if reward_batches is not None and q["id"] in reward_batches:
+            from quest_rewards import emit as emit_rewards
+            lines += emit_rewards(name, q["id"], reward_batches[q["id"]], ws)
         # Existing bounded XP remains separately accountable from authored rewards.
         lines += [f'\t{name}.rewardExperience=100', f'\truntime.journal.register({name})']
     return lines

@@ -12,6 +12,16 @@ WORKFLOW = REPOSITORY / ".github" / "workflows" / "map-build.yml"
 TYPECHECK_WORKFLOW = REPOSITORY / ".github" / "workflows" / "wurst-typecheck.yml"
 
 
+def workflow_step(workflow, name):
+    """Read one named step, stopping at the next peer YAML sequence item."""
+    start = re.search(r"(?m)^( +)- name: " + re.escape(name) + r"\s*$", workflow)
+    if start is None:
+        raise ValueError("missing workflow step: " + name)
+    tail = workflow[start.end():]
+    end = re.search(r"(?m)^" + re.escape(start.group(1)) + r"- ", tail)
+    return tail[:end.start()] if end else tail
+
+
 class MapArtifactWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -49,12 +59,36 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertIn('path: ${{ runner.temp }}/age-of-sail-release', self.workflow)
         self.assertIn('set -eu', self.workflow)
         self.assertNotIn('continue-on-error:', self.workflow)
-        player_upload = self.workflow.split('- name: Upload Age of Sail campaign', 1)[1]
+        player_upload = workflow_step(self.workflow, 'Upload Age of Sail campaign')
         self.assertNotIn('always()', player_upload)
         for step in ('Create versioned player files', 'Confirm verified release payload and evidence',
                      'Upload Age of Sail campaign'):
-            body = self.workflow.split('- name: ' + step, 1)[1].split('- name:', 1)[0]
+            body = workflow_step(self.workflow, step)
             self.assertIn("if: steps.candidate.outputs.ready == 'true'", body)
+
+    def test_upload_contract_ignores_later_always_step(self):
+        original = self.workflow
+        try:
+            self.workflow += "\n      - name: Independent diagnostic notice\n        if: always()\n        run: echo diagnostics\n"
+            self.test_upload_uses_the_copied_verified_payload_and_checkout_revision()
+        finally:
+            self.workflow = original
+
+    def test_upload_contract_still_rejects_always_in_upload_step(self):
+        original = self.workflow
+        body = workflow_step(original, 'Upload Age of Sail campaign')
+        guarded = "if: steps.candidate.outputs.ready == 'true'"
+        self.assertIn(guarded, body)
+        try:
+            self.workflow = original.replace(body, body.replace(guarded, "if: always() && steps.candidate.outputs.ready == 'true'", 1), 1)
+            with self.assertRaisesRegex(AssertionError, "always"):
+                self.test_upload_uses_the_copied_verified_payload_and_checkout_revision()
+        finally:
+            self.workflow = original
+
+    def test_step_boundary_stops_at_unnamed_peer_action(self):
+        sample = "      - name: Upload\n        uses: actions/upload-artifact@pin\n      - uses: actions/other@pin\n        if: always()\n"
+        self.assertEqual("\n        uses: actions/upload-artifact@pin\n", workflow_step(sample, 'Upload'))
 
     def test_failed_requirement_gate_retains_only_diagnostics_and_stops_publication(self):
         diagnostics = self.workflow.split('- name: Retain requirement diagnostics', 1)[1].split('- name:', 1)[0]

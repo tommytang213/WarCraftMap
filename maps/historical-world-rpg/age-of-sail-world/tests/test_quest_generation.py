@@ -7,6 +7,7 @@ import re
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT.parent / '_shared/tooling'))
@@ -130,6 +131,78 @@ class QuestGenerationTests(unittest.TestCase):
         # Other research-looking objectives still need independent gameplay
         # conditions. One real consumer must not clear their blockers.
         self.assertEqual('domain_receipt', self.runtime['questConditionBindings']['east_asia_coastal_record:improve_charts'])
+
+    def test_committed_trade_binding_is_objective_scoped_and_uses_real_market(self):
+        key = 'india_stars_and_pepper:trade_pepper'
+        self.assertEqual('domain_receipt', self.runtime['questConditionBindings'][key])
+        self.assertEqual([dict(questId='india_stars_and_pepper', stageId='market_measure',
+                               objectiveId='trade_pepper', marketId='calicut', commodityId='pepper')],
+                         self.runtime['questTradeBindings'])
+        blockers = {row['questId'] + ':' + row['objectiveId'] for row in self.runtime['questIntegrationBlockers']}
+        self.assertNotIn(key, blockers)
+        self.assertNotIn('india_stars_and_pepper:consult_pilot_guild', blockers)
+        self.assertIn('india_stars_and_pepper:meet_krishnadevaraya', blockers)
+        self.assertIn('runtime.registerMarketProfile("calicut","pepper",', self.source)
+        self.assertIn('runtime.registerQuestTrade(new QuestTradeBinding("india_stars_and_pepper", "market_measure", "trade_pepper", "calicut", "pepper"))', self.source)
+        for field, value in [('stageId', 'consult_pilots'), ('marketId', 'cochin'),
+                             ('commodityId', 'bad-id'), ('consumer', 'generic_trade')]:
+            changed = copy.deepcopy(self.bindings)
+            changed['objectives'][key][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'committed trade'):
+                validate_graphs(self.world['quests'], changed)
+        changed = copy.deepcopy(self.bindings)
+        changed['objectives']['unknown:trade_pepper'] = changed['objectives'].pop(key)
+        with self.assertRaisesRegex(ValueError, 'does not exist'):
+            validate_graphs(self.world['quests'], changed)
+        changed = copy.deepcopy(self.bindings)
+        changed['conditions']['quest_trade_satisfied'] = changed['objectives'].pop(key)
+        with self.assertRaisesRegex(ValueError, 'objective-specific'):
+            validate_graphs(self.world['quests'], changed)
+
+    def test_packager_rejects_syntactically_valid_missing_trade_commodity(self):
+        rows = copy.deepcopy(self.runtime['questTradeBindings'])
+        rows[0]['commodityId'] = 'nonexistent_commodity'
+        with tempfile.TemporaryDirectory() as directory, patch('package_wurst_map.trade_quest_bindings', return_value=rows):
+            with self.assertRaisesRegex(PackagingError, 'no generated market/commodity'):
+                generate(self.config, Path(directory))
+
+    def test_local_consultation_binding_is_exact_and_has_a_real_location(self):
+        key = 'india_stars_and_pepper:consult_pilot_guild'
+        rows = self.runtime['questConsultationBindings']
+        self.assertEqual([dict(questId='india_stars_and_pepper', stageId='consult_pilots',
+                              objectiveId='consult_pilot_guild', providerId='calicut_pilot_guild',
+                              providerName="Calicut's pilot guild", locationId='calicut',
+                              institutionId='renaissance_humanism')], rows)
+        rpg_function = self.source.split('public function configureGeneratedRpg(WarcraftRpgRuntime runtime)', 1)[1].split('\npublic function ', 1)[0]
+        self.assertIn('runtime.registerConsultation(new QuestConsultationBinding(', rpg_function)
+        for field, value in [('stageId', 'consult_king'), ('institutionId', 'missing'),
+                             ('providerId', 'bad-id'), ('providerId', 'a' * 57), ('providerName', 'bad\\nname')]:
+            changed = copy.deepcopy(self.bindings)
+            changed['objectives'][key][field] = value.replace('\\n', '\n')
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'consultation'):
+                validate_graphs(self.world['quests'], changed)
+        changed = copy.deepcopy(self.bindings)
+        changed['objectives'][key]['providerId'] = 'a' * 56
+        validate_graphs(self.world['quests'], changed)
+        changed['objectives']['missing:consult'] = changed['objectives'].pop(key)
+        with self.assertRaisesRegex(ValueError, 'does not exist'):
+            validate_graphs(self.world['quests'], changed)
+        rows = copy.deepcopy(rows)
+        rows[0]['locationId'] = 'nonexistent_location'
+        with tempfile.TemporaryDirectory() as directory, patch('package_wurst_map.consultation_quest_bindings', return_value=rows):
+            with self.assertRaisesRegex(PackagingError, 'no generated settlement location'):
+                generate(self.config, Path(directory))
+
+    def test_generated_reward_batches_are_scoped_and_leave_unsupported_siblings_explicit(self):
+        catalog = self.runtime['questRewardIntegration']
+        self.assertEqual({'india_stars_and_pepper', 'ocean_of_accounts'}, set(catalog['batches']))
+        self.assertEqual(302, len(catalog['legacyGenericRewardQuestIds']))
+        registrations = re.findall(r'([a-zA-Z0-9]+)\.authoredRewards=new QuestRewardBatch\("([^"\n]+)",runtime.technologies\)', self.source)
+        self.assertEqual(set(catalog['batches']), {ident for _, ident in registrations})
+        self.assertEqual(2, len(registrations))
+        for name, ident in registrations:
+            self.assertEqual(len(catalog['batches'][ident]), self.source.count(name + '.authoredRewards.add('))
+        self.assertIn('unsupported_quest_economy_adjust_treasury', self.source)
 
     def test_graph_validator_rejects_unknown_and_cyclic_edges_or_duplicate_objectives(self):
         for kind in ('missing', 'cycle', 'duplicate', 'prerequisite'):

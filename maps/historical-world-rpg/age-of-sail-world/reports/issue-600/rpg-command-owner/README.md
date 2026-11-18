@@ -1,0 +1,7 @@
+# Campaign-owner equipment and quest choices
+
+Source `af02dad86918fb9685be3de561a22d557fa95e7e`. The registered command router forwards the sender after command/arity validation. `/equip`, `/unequip`, `/accept` and `/queststage` previously called shared campaign mutation APIs without checking that identity. Their command boundary now rejects missing or foreign senders before resource reads or mutation. Direct runtime APIs, read-only screens and physical interaction paths remain unchanged.
+
+Two new registered-command tests exercise all four commands for both foreign and missing senders, asserting unchanged RPG snapshot, resource reads/writes and research-effect calls. The campaign owner then successfully equips, unequips, accepts and selects an authored branch, preserving state through restore. Existing valid owner fixtures explicitly identify Player(0); their other assertions are unchanged.
+
+Pinned compiler focused validation passed 53/53: owner boundary2, authored quests26, character equipment13, equipment sets3, hero starting profiles5 and item definitions4. Original verified ca94 compiler assembly was copied and every changed/new Wurst input refreshed from this exact source; hashes and source identity are retained. Independent static review approved the source. No full current-head suite or native Warcraft acceptance is claimed. Earlier PR601 CI at e0c1ac3c does not cover this follow-up.

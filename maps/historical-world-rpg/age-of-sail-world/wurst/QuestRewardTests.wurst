@@ -1,0 +1,365 @@
+package QuestRewardTests
+
+import QuestRewards
+import QuestStages
+import QuestTradeTests
+import AuthoredQuestTests
+import ResearchRuntimeTests
+import WarcraftRpgRuntime
+import CommandRouter
+import CampaignTimeline
+import ManagementScreenPauseController
+import CampaignSaveManager
+import PlayableCampaignRuntime
+
+class RewardClockRestoration
+	CampaignClock previous = getCampaignClock()
+	ManagementScreenPauseController pauses = null
+	construct()
+		if previous != null
+			pauses = previous.managementPause
+	function restore()
+		installCampaignClock(previous, pauses)
+
+class RewardEffects extends UnboundResearchEffects
+	int calls = 0
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		calls++
+		super.replaceResearchEntitlements(result)
+
+function rewardCommand(CommandRegistry commands, CampaignClock clock, player sender, string text)
+	let previous = getCampaignClock()
+	ManagementScreenPauseController pauses = null
+	if previous != null
+		pauses = previous.managementPause
+	installCampaignClock(clock, null)
+	commands.dispatch(sender, text).assertTrue()
+	installCampaignClock(previous, pauses)
+
+/** Explicitly synthetic supported-only story, using generated technology,
+ * local actors, real registered commands and the real reward transaction. */
+class RewardFixture
+	QuestTradeFixture base = new QuestTradeFixture()
+	RuntimeQuest definition = new RuntimeQuest("synthetic_research_reward", "Synthetic research reward", "test")
+	ResearchResources resources = new ResearchResources()
+	RewardEffects effects = new RewardEffects()
+	construct()
+		definition.giverId = "calicut"
+		definition.turnInId = "calicut"
+		definition.graph = new QuestGraph("start", "")
+		definition.graph.addStage(new QuestStage("start", "Start", "visit~", "left~right~"))
+		definition.graph.addStage(new QuestStage("left", "Left", "left_visit~", ""))
+		definition.graph.addStage(new QuestStage("right", "Right", "right_visit~", ""))
+		definition.graph.addObjective(new QuestObjective("visit", "Visit", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+		definition.graph.addObjective(new QuestObjective("left_visit", "Visit left", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+		definition.graph.addObjective(new QuestObjective("right_visit", "Visit right", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+		definition.rewardExperience = 100
+		definition.rewardCurrency = 7
+		definition.authoredRewards = new QuestRewardBatch(definition.id, base.rpg.technologies)
+		definition.authoredRewards.add(new QuestRewardOutcome("charts", "quest_technology_complete_research", "standardized_charts", ""))
+		base.rpg.journal.count = 0
+		base.rpg.journal.register(definition)
+		resources.controller = "other"
+		base.rpg.researchResources = resources
+		base.rpg.technologies.effects = effects
+	function command(string text)
+		rewardCommand(base.commands, base.clock, Player(0), text)
+	function ready(string side)
+		command("/accept synthetic_research_reward")
+		command("/interact calicut")
+		command("/queststage synthetic_research_reward " + side)
+		command("/interact calicut")
+		definition.state.assertEquals(QUEST_READY)
+	function turnIn()
+		command("/turnin synthetic_research_reward trader")
+	function reject()
+		let saved = base.rpg.captureState()
+		let money = base.trade.capture()
+		let calls = effects.calls
+		turnIn()
+		base.rpg.captureState().assertEquals(saved)
+		base.trade.capture().assertEquals(money)
+		effects.calls.assertEquals(calls)
+		resources.reads.assertEquals(0)
+		resources.writes.assertEquals(0)
+	function document(string rpgState) returns string
+		return "v2;autosave=1|1|8:1001011;partyLocations=v1;map=middle_east_india;region=middle_east_india;world=instance:india;players=origin:vijayanagara_empire,allegiance:vijayanagara_empire,settlement:calicut;quests=;discovery=v1|r,middle_east_india|s,calicut;orders=;trade=" + base.trade.capture() + ";diplomacy=v1;rewards=v1;rpg=" + rpgState + ";militarySettlements=v1;religion=v1;piracy=v1;clock=" + base.clock.captureState()
+
+@test function earnedResearchRewardGrantsOnlyTargetToPlayerWithoutPaymentOrPrerequisites()
+	let f = new RewardFixture()
+	f.ready("left")
+	let money = f.base.trade.capture()
+	f.base.rpg.technologies.isUnlocked("player", "standardized_charts").assertFalse()
+	f.base.rpg.technologies.isUnlocked("player", "celestial_navigation").assertFalse()
+	f.base.rpg.technologies.isUnlocked("player", "movable_type_printing").assertFalse()
+	f.turnIn()
+	f.base.ports.output.assertEquals("Action completed.")
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+	f.definition.completions.assertEquals(1)
+	f.base.rpg.journal.currency.assertEquals(7)
+	f.base.rpg.heroes.heroes[0].cumulativeExperience().assertEquals(100)
+	f.base.rpg.technologies.isUnlocked("player", "standardized_charts").assertTrue()
+	f.base.rpg.technologies.isUnlocked("other", "standardized_charts").assertFalse()
+	f.base.rpg.technologies.isUnlocked("player", "celestial_navigation").assertFalse()
+	f.base.rpg.technologies.isUnlocked("player", "movable_type_printing").assertFalse()
+	f.effects.get("player").has("modifier", "fleet_navigation_efficiency").assertTrue()
+	f.base.trade.capture().assertEquals(money)
+	f.resources.balance.assertEquals(100000)
+	f.resources.reads.assertEquals(0)
+	f.resources.writes.assertEquals(0)
+	f.reject()
+	let saved = f.base.rpg.captureState()
+	let codec = new PlayableCampaignCodec(f.base.clock)
+	let payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "earned reward", f.document(saved))
+	let decoded = codec.decodeMigrateAndValidate(payload, "manual_01")
+	lastAuthorityValue(decoded, "rpg").assertEquals(saved)
+	let restored = new RewardFixture()
+	restored.base.rpg.restoreState(lastAuthorityValue(decoded, "rpg")).assertTrue()
+	restored.base.rpg.captureState().assertEquals(saved)
+	restored.base.rpg.technologies.unlockedCount.assertEquals(1)
+	// The campaign loader reconciles projection layers after restoring authority.
+	restored.base.rpg.reconcile("player")
+	restored.base.rpg.captureState().assertEquals(saved)
+	restored.effects.get("player").has("modifier", "fleet_navigation_efficiency").assertTrue()
+	restored.reject()
+
+@test function researchRewardWaitsForReadyOwnerAndFreshLocalTurnIn()
+	let f = new RewardFixture()
+	f.reject()
+	f.command("/accept synthetic_research_reward")
+	f.reject()
+	f.command("/interact calicut")
+	f.command("/queststage synthetic_research_reward left")
+	f.command("/interact calicut")
+	let saved = f.base.rpg.captureState()
+	let calls = f.effects.calls
+	rewardCommand(f.base.commands, f.base.clock, Player(1), "/turnin synthetic_research_reward trader")
+	rewardCommand(f.base.commands, f.base.clock, null, "/turnin synthetic_research_reward trader")
+	f.base.rpg.captureState().assertEquals(saved)
+	f.effects.calls.assertEquals(calls)
+	f.base.actors.actorX = 99999.
+	f.reject()
+	f.base.actors.moveTo(f.base.rpg.interactions.get("calicut"))
+	f.base.actors.invalidateAt = f.base.actors.reads + 2
+	f.reject()
+	f.base.actors.invalidateAt = 0
+	f.turnIn()
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+
+@test function reachedStageSubsetExcludesUnchosenUnsupportedRewardButBlocksChosenSibling()
+	let left = new RewardFixture()
+	left.definition.authoredRewards.outcomes[0].requiredStages = "start~left~"
+	left.definition.authoredRewards.add(new QuestRewardOutcome("undefined_credit", "quest_economy_adjust_treasury", "", "right~"))
+	left.ready("left")
+	left.turnIn()
+	left.definition.state.assertEquals(QUEST_COMPLETE)
+	let right = new RewardFixture()
+	right.definition.authoredRewards.outcomes[0].requiredStages = "start~left~"
+	right.definition.authoredRewards.add(new QuestRewardOutcome("undefined_credit", "quest_economy_adjust_treasury", "", "right~"))
+	right.ready("right")
+	right.reject()
+	right.base.rpg.journal.lastDiagnostic.contains("undefined_credit").assertTrue()
+	right.base.rpg.technologies.unlockedCount.assertEquals(0)
+
+@test function unknownTargetAndRewardOverflowRejectWholeBatchBeforeAnyAward()
+	let missing = new RewardFixture()
+	missing.definition.authoredRewards.add(new QuestRewardOutcome("missing", "quest_technology_complete_research", "unknown_research", ""))
+	missing.ready("left")
+	missing.reject()
+	missing.base.rpg.journal.lastDiagnostic.contains("unknown or invalid research").assertTrue()
+	missing.base.rpg.technologies.unlockedCount.assertEquals(0)
+	let overflow = new RewardFixture()
+	overflow.ready("left")
+	overflow.definition.rewardCurrency = 2147483647
+	overflow.base.rpg.journal.currency = 1
+	overflow.reject()
+	overflow.definition.rewardCurrency = 0
+	overflow.definition.rewardExperience = 2147483647
+	overflow.base.rpg.heroes.heroes[0].experience = 1
+	overflow.reject()
+	overflow.base.rpg.technologies.unlockedCount.assertEquals(0)
+
+@test function fullResearchCapacityRejectsWithoutPartialCompletion()
+	let f = new RewardFixture()
+	f.ready("left")
+	// Capacity-only negative fixture; no claim that duplicate keys form a save.
+	for i = 0 to 2047
+		f.base.rpg.technologies.unlockedKeys[i] = "other:standardized_charts"
+	f.base.rpg.technologies.unlockedCount = 2048
+	f.reject()
+	f.base.rpg.journal.lastDiagnostic.contains("capacity exceeded").assertTrue()
+	f.definition.state.assertEquals(QUEST_READY)
+
+/** Only arrange already-earned objective state. No mock condition is used as
+ * evidence that a currently unsupported story action has been implemented. */
+function historicallyReady(RuntimeQuest definition)
+	definition.graph.activate()
+	var current = definition.graph.stage(definition.graph.activeStageId)
+	for depth = 0 to 15
+		let objectives = new QuestIds(current.objectiveIds)
+		for i = 0 to objectives.count - 1
+			definition.graph.completeObjective(objectives.ids[i]).assertTrue()
+		destroy objectives
+		if current.nextStageIds == ""
+			definition.settleProgress()
+			definition.state.assertEquals(QUEST_READY)
+			return
+		// Completing a stage automatically follows its sole successor. Only
+		// choose explicitly when the authored graph is still at a fork.
+		if definition.graph.activeStageId == current.id
+			let next = new QuestIds(current.nextStageIds)
+			definition.graph.advance(next.ids[0]).assertTrue()
+			destroy next
+		current = definition.graph.stage(definition.graph.activeStageId)
+
+@test function bothGeneratedResearchBearingQuestsBlockTheirWholeUnsupportedBatches()
+	let stars = new QuestTradeFixture()
+	historicallyReady(stars.questDefinition)
+	let before = stars.rpg.captureState()
+	rewardCommand(stars.commands, stars.clock, Player(0), "/turnin india_stars_and_pepper trader")
+	stars.rpg.captureState().assertEquals(before)
+	stars.rpg.journal.lastDiagnostic.contains("calicut_credit").assertTrue()
+	journalText(stars.rpg).contains("Authored rewards blocked:").assertTrue()
+	stars.rpg.technologies.isUnlocked("player", "standardized_charts").assertFalse()
+	let clocks = new RewardClockRestoration()
+	let accounts = new AuthoredFixture()
+	registerRpgRuntimeCommands(accounts.commands, accounts.rpg).assertEquals("")
+	accounts.rpg.journal.quests[0] = accounts.accounts
+	historicallyReady(accounts.accounts)
+	let saved = accounts.rpg.captureState()
+	rewardCommand(accounts.commands, accounts.state.clock, Player(0), "/turnin ocean_of_accounts hero")
+	accounts.rpg.captureState().assertEquals(saved)
+	accounts.rpg.journal.lastDiagnostic.contains("world_ledger_credit").assertTrue()
+	journalText(accounts.rpg).contains("Authored rewards blocked:").assertTrue()
+	accounts.rpg.technologies.isUnlocked("player", "standardized_charts").assertFalse()
+	clocks.restore()
+
+@test function unrelatedGeneratedQuestKeepsItsExistingGenericRewardPath()
+	let clocks = new RewardClockRestoration()
+	let f = new AuthoredFixture()
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	(f.compact.authoredRewards == null).assertTrue()
+	historicallyReady(f.compact)
+	f.move(f.compact.turnInId)
+	rewardCommand(f.commands, f.state.clock, Player(0), "/turnin europe_printed_compact hero")
+	f.compact.state.assertEquals(QUEST_COMPLETE)
+	f.rpg.journal.currency.assertEquals(37)
+	clocks.restore()
+
+@test function completedOldSaveNeverRetroactivelyGrantsNewResearchRewards()
+	let f = new RewardFixture()
+	f.ready("left")
+	f.definition.state = QUEST_COMPLETE
+	f.definition.completions = 1
+	let saved = f.base.rpg.captureState()
+	let restored = new RewardFixture()
+	restored.base.rpg.restoreState(saved).assertTrue()
+	restored.base.rpg.technologies.unlockedCount.assertEquals(0)
+	restored.base.rpg.captureState().assertEquals(saved)
+	restored.reject()
+	restored.base.rpg.technologies.unlockedCount.assertEquals(0)
+
+@test function duplicateAndAlreadyOwnedResearchRewardsDoNotDuplicateCompletionKeys()
+	let f = new RewardFixture()
+	f.definition.authoredRewards.add(new QuestRewardOutcome("same_charts", "quest_technology_complete_research", "standardized_charts", ""))
+	f.ready("left")
+	f.turnIn()
+	f.base.rpg.technologies.unlockedCount.assertEquals(1)
+	let owned = new RewardFixture()
+	owned.base.rpg.technologies.unlockedKeys[0] = "player:standardized_charts"
+	owned.base.rpg.technologies.unlockedCount = 1
+	owned.ready("left")
+	owned.turnIn()
+	owned.definition.state.assertEquals(QUEST_COMPLETE)
+	owned.base.rpg.technologies.unlockedCount.assertEquals(1)
+
+@test function earnedPlayerResearchUpdatesMatchingActiveObjectiveWithoutAnotherReward()
+	let f = new RewardFixture()
+	let observer = new RuntimeQuest("research_observer", "Research observer", "test")
+	observer.graph = new QuestGraph("observe", "")
+	observer.graph.addStage(new QuestStage("observe", "Observe", "charts_observed~", ""))
+	observer.graph.addObjective(new QuestObjective("charts_observed", "Own charts", "quest_technology_satisfied", "technology:standardized_charts~", "research_unlocked"))
+	f.base.rpg.journal.register(observer)
+	f.command("/accept research_observer")
+	observer.state.assertEquals(QUEST_ACTIVE)
+	f.ready("left")
+	f.turnIn()
+	observer.state.assertEquals(QUEST_READY)
+	observer.completions.assertEquals(0)
+	f.base.rpg.journal.currency.assertEquals(7)
+	f.base.rpg.technologies.unlockedCount.assertEquals(1)
+
+@test function physicalTurnInUsesSameOwnerPresenceGrantAndObserverSynchronization()
+	let f = new RewardFixture()
+	let observer = new RuntimeQuest("research_observer", "Research observer", "test")
+	observer.graph = new QuestGraph("observe", "")
+	observer.graph.addStage(new QuestStage("observe", "Observe", "charts_observed~", ""))
+	observer.graph.addObjective(new QuestObjective("charts_observed", "Own charts", "quest_technology_satisfied", "technology:standardized_charts~", "research_unlocked"))
+	f.base.rpg.journal.register(observer)
+	f.command("/accept research_observer")
+	f.ready("left")
+	let saved = f.base.rpg.captureState()
+	rewardCommand(f.base.commands, f.base.clock, Player(1), "/interact calicut")
+	f.base.rpg.captureState().assertEquals(saved)
+	f.base.ports.output.contains("Only the campaign player").assertTrue()
+	rewardCommand(f.base.commands, f.base.clock, null, "/interact calicut")
+	f.base.rpg.captureState().assertEquals(saved)
+	f.base.actors.invalidateAt = f.base.actors.reads + 3
+	f.command("/interact calicut")
+	f.base.rpg.captureState().assertEquals(saved)
+	f.base.ports.output.contains("no longer present").assertTrue()
+	f.base.actors.invalidateAt = 0
+	f.command("/interact calicut")
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+	observer.state.assertEquals(QUEST_READY)
+	observer.completions.assertEquals(0)
+	f.base.rpg.journal.currency.assertEquals(7)
+	f.base.rpg.technologies.unlockedCount.assertEquals(1)
+	f.resources.reads.assertEquals(0)
+	f.resources.writes.assertEquals(0)
+
+@test function physicalBlockedRewardFeedbackDoesNotHideLegitimateOtherVisitProgress()
+	let f = new RewardFixture()
+	f.definition.authoredRewards.add(new QuestRewardOutcome("undefined_credit", "quest_economy_adjust_treasury", "", ""))
+	f.ready("left")
+	let visitor = new RuntimeQuest("other_visit", "Other visit", "test")
+	visitor.graph = new QuestGraph("visit", "")
+	visitor.graph.addStage(new QuestStage("visit", "Visit", "visit_here~", ""))
+	visitor.graph.addObjective(new QuestObjective("visit_here", "Visit here", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+	f.base.rpg.journal.register(visitor)
+	f.command("/accept other_visit")
+	let xp = f.base.rpg.heroes.heroes[0].cumulativeExperience()
+	f.command("/interact calicut")
+	f.definition.state.assertEquals(QUEST_READY)
+	f.definition.completions.assertEquals(0)
+	f.base.rpg.technologies.unlockedCount.assertEquals(0)
+	f.base.rpg.journal.currency.assertEquals(0)
+	f.base.rpg.heroes.heroes[0].cumulativeExperience().assertEquals(xp)
+	visitor.state.assertEquals(QUEST_READY)
+	f.base.ports.output.contains("Other interaction progress was recorded.").assertTrue()
+	f.base.ports.output.contains("undefined_credit").assertTrue()
+	f.base.ports.output.contains("Authored rewards blocked:").assertTrue()
+	f.base.ports.output.contains("Action completed.").assertFalse()
+
+@test function physicalOrdinaryRewardOverflowRemainsVisibleAlongsideOtherVisitProgress()
+	let f = new RewardFixture()
+	f.base.rpg.journal.currency = 2147483647
+	f.ready("left")
+	let visitor = new RuntimeQuest("other_visit", "Other visit", "test")
+	visitor.graph = new QuestGraph("visit", "")
+	visitor.graph.addStage(new QuestStage("visit", "Visit", "visit_here~", ""))
+	visitor.graph.addObjective(new QuestObjective("visit_here", "Visit here", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+	f.base.rpg.journal.register(visitor)
+	f.command("/accept other_visit")
+	let xp = f.base.rpg.heroes.heroes[0].cumulativeExperience()
+	f.command("/interact calicut")
+	f.definition.state.assertEquals(QUEST_READY)
+	f.definition.completions.assertEquals(0)
+	f.base.rpg.technologies.unlockedCount.assertEquals(0)
+	f.base.rpg.journal.currency.assertEquals(2147483647)
+	f.base.rpg.heroes.heroes[0].cumulativeExperience().assertEquals(xp)
+	visitor.state.assertEquals(QUEST_READY)
+	f.base.ports.output.contains("Other interaction progress was recorded.").assertTrue()
+	f.base.ports.output.contains("Quest turn-in was not completed").assertTrue()
+	f.base.ports.output.contains("requirements are not met").assertTrue()
+	f.base.ports.output.contains("Action completed.").assertFalse()

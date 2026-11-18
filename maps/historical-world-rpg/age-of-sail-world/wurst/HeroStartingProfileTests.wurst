@@ -49,7 +49,7 @@ function assertStart(RecruitmentFixture f, string id, int level, string skills, 
 	// An existing level-gated consumer sees the new authority immediately.
 	let equipment = f.rpg.inventory.getItem("token")
 	equipment.requiredLevel = level
-	f.commands.dispatch(null, "/equip " + id + " token").assertTrue()
+	f.commands.dispatch(Player(0), "/equip " + id + " token").assertTrue()
 	f.rpg.inventory.equippedCount.assertEquals(1)
 	f.hero.awardExperience(heroNextLevelExperience(level) - 1).assertTrue()
 	f.hero.level.assertEquals(level)

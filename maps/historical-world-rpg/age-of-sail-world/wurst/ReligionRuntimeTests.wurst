@@ -101,3 +101,61 @@ function configured(TestReligionEffects effects) returns ReligionRuntime
 	runtime.overview(false).indexOf("mixed_council").assertEquals(-1)
 	runtime.setContext("polity","persecution","old_faith","state_church","mixed_region")
 	(runtime.overview(true).indexOf("Policy: persecution")>=0).assertTrue()
+
+@test function registeredConversionRejectsForeignAndNullWithoutMutatingPersonalFaith()
+	let effects=new TestReligionEffects()
+	let runtime=configured(effects)
+	let output=new ReligionOutput()
+	let registry=new CommandRegistry(false,6,new CommandText(),output)
+	registerReligion(registry,runtime)
+	let initial=runtime.captureState()
+	let history=runtime.conversionHistory
+	let clears=effects.clears
+	let applications=effects.applications
+	let amount=effects.lastAmount
+	runtime.lastDiagnostic="unchanged diagnostic"
+	for i=0 to 1
+		player sender=null
+		if i==0
+			sender=Player(1)
+		registry.dispatch(sender,"/convert new_faith").assertTrue()
+		output.message.assertEquals("Only the campaign player can change personal faith.")
+		runtime.captureState().assertEquals(initial)
+		runtime.primaryFaithId.assertEquals("old_faith")
+		runtime.currencyUnits.assertEquals(100)
+		runtime.conversionHistory.assertEquals(history)
+		runtime.lastDiagnostic.assertEquals("unchanged diagnostic")
+		effects.clears.assertEquals(clears)
+		effects.applications.assertEquals(applications)
+		effects.lastAmount.assertEquals(amount)
+		// Read-only overview commands retain their existing audience.
+		registry.dispatch(sender,"/faith").assertTrue()
+		(output.message.indexOf("Personal investment")>=0).assertTrue()
+		registry.dispatch(sender,"/religion").assertTrue()
+		(output.message.indexOf("Policy: pluralism")>=0).assertTrue()
+		runtime.captureState().assertEquals(initial)
+		effects.clears.assertEquals(clears)
+	registry.dispatch(Player(0),"/convert new_faith").assertTrue()
+	(output.message.indexOf("Faith changed.")>=0).assertTrue()
+	runtime.primaryFaithId.assertEquals("new_faith")
+	runtime.currencyUnits.assertEquals(60)
+	(runtime.conversionHistory.indexOf("old allies disapprove")>=0).assertTrue()
+	(effects.clears>clears).assertTrue()
+	let saved=runtime.captureState()
+	let restoredEffects=new TestReligionEffects()
+	let restored=configured(restoredEffects)
+	restored.restoreState(saved).assertTrue()
+	restored.captureState().assertEquals(saved)
+	restored.currencyUnits.assertEquals(60)
+	restored.conversionHistory.assertEquals(runtime.conversionHistory)
+	let restoredClears=restoredEffects.clears
+	let restoredApplications=restoredEffects.applications
+	let restoredAmount=restoredEffects.lastAmount
+	let restoredRegistry=new CommandRegistry(false,6,new CommandText(),output)
+	registerReligion(restoredRegistry,restored)
+	restoredRegistry.dispatch(Player(1),"/convert old_faith").assertTrue()
+	restoredRegistry.dispatch(null,"/convert old_faith").assertTrue()
+	restored.captureState().assertEquals(saved)
+	restoredEffects.clears.assertEquals(restoredClears)
+	restoredEffects.applications.assertEquals(restoredApplications)
+	restoredEffects.lastAmount.assertEquals(restoredAmount)

@@ -1,0 +1,136 @@
+package QuestConsultationTests
+
+import QuestTradeTests
+import QuestConsultation
+import QuestStages
+import WarcraftRpgRuntime
+import PlayableCampaignRuntime
+import CampaignSaveManager
+import CampaignTimeline
+import ManagementScreenPauseController
+
+function pilotStage() returns QuestTradeFixture
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	f.dispatch("/trade buy 10")
+	f.dispatch("/queststage india_stars_and_pepper consult_pilots")
+	f.questDefinition.graph.activeStageId.assertEquals("consult_pilots")
+	return f
+
+function observations(QuestTradeFixture f)
+	f.questDefinition.graph.completedObjectiveIds.assertEquals("trade_pepper~consult_pilot_guild~")
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~consult_calicut_pilot_guild~")
+	f.questDefinition.graph.stageComplete("consult_pilots", f.questDefinition.graph.completedObjectiveIds).assertTrue()
+
+@test function registeredConsultationObtainsObservationsAndExposesNavigationResearch()
+	let f = pilotStage()
+	journalText(f.rpg).contains("Consult Calicut's pilot guild at calicut: /consult calicut_pilot_guild").assertTrue()
+	let economy = f.trade.capture()
+	f.dispatch("/consult calicut_pilot_guild")
+	f.ports.output.assertEquals("Obtained observations from Calicut's pilot guild.")
+	observations(f)
+	f.trade.capture().assertEquals(economy)
+	f.reject("/consult calicut_pilot_guild")
+	f.dispatch("/queststage india_stars_and_pepper chart_monson")
+	f.questDefinition.graph.activeStageId.assertEquals("chart_monson")
+	questHas(f.questDefinition.graph.completedObjectiveIds, "advance_navigation").assertFalse()
+
+@test function consultationCannotInventAcceptanceOrCrossTheRoyalBranch()
+	let f = new QuestTradeFixture()
+	f.reject("/consult calicut_pilot_guild")
+	f.accept()
+	f.reject("/consult calicut_pilot_guild")
+	f.select("calicut", "pepper")
+	f.dispatch("/trade buy 10")
+	f.dispatch("/queststage india_stars_and_pepper consult_king")
+	f.reject("/consult calicut_pilot_guild")
+	journalText(f.rpg).contains("Progress unavailable: condition integration pending.").assertTrue()
+	f.reject("/consult unknown_provider")
+
+@test function consultationRequiresCampaignPlayerAndFreshPhysicalPresence()
+	let f = pilotStage()
+	let before = f.rpg.captureState()
+	f.commands.dispatch(Player(1), "/consult calicut_pilot_guild").assertTrue()
+	f.rpg.captureState().assertEquals(before)
+	f.commands.dispatch(null, "/consult calicut_pilot_guild").assertTrue()
+	f.rpg.captureState().assertEquals(before)
+	f.actors.actorX = 99999.
+	f.reject("/consult calicut_pilot_guild")
+	f.actors.moveTo(f.rpg.interactions.get("calicut"))
+	f.actors.exists = false
+	f.reject("/consult calicut_pilot_guild")
+	f.actors.exists = true
+	f.rpg.heroes.heroes[0].incapacitated = true
+	f.reject("/consult calicut_pilot_guild")
+	f.rpg.heroes.heroes[0].incapacitated = false
+	f.state.loadedPhysicalMap = "europe_west"
+	f.reject("/consult calicut_pilot_guild")
+	f.state.loadedPhysicalMap = "middle_east_india"
+	// First lookup succeeds, commit-time observation invalidates presence.
+	f.actors.invalidateAt = f.actors.reads + 2
+	f.reject("/consult calicut_pilot_guild")
+	f.actors.invalidateAt = 0
+	f.dispatch("/consult calicut_pilot_guild")
+	observations(f)
+
+@test function neutralGuildConsultationSurvivesChangedAllegianceAndController()
+	let f = pilotStage()
+	f.state.identity.changeAllegiance("portugal").assertTrue()
+	f.military.settlements[0].controllerId = "ming"
+	f.dispatch("/consult calicut_pilot_guild")
+	observations(f)
+
+@test function GenericVisitInstitutionPossessionAndForgedReceiptAreNotConsultation()
+	let f = pilotStage()
+	let before = f.questDefinition.graph.completedObjectiveIds
+	let previousClock = getCampaignClock()
+	ManagementScreenPauseController previousPauses = null
+	if previousClock != null
+		previousPauses = previousClock.managementPause
+	installCampaignClock(f.clock, null)
+	f.dispatch("/interact calicut")
+	installCampaignClock(previousClock, previousPauses)
+	f.questDefinition.graph.completedObjectiveIds.assertEquals(before)
+	// Pre-existing institution ownership is a negative control, not service proof.
+	f.rpg.technologies.unlockedKeys[f.rpg.technologies.unlockedCount] = "player:renaissance_humanism"
+	f.rpg.technologies.unlockedCount++
+	f.rpg.technologies.isUnlocked("player", "renaissance_humanism").assertTrue()
+	f.rpg.journal.syncPlayerResearch(f.rpg.technologies, "player")
+	f.questDefinition.graph.completedObjectiveIds.assertEquals(before)
+	f.rpg.questEvent("india_stars_and_pepper", "consult_pilot_guild", "consult_calicut_pilot_guild").assertFalse()
+	f.questDefinition.id = "other_quest"
+	journalText(f.rpg).contains("Progress unavailable: condition integration pending.").assertTrue()
+	f.reject("/consult calicut_pilot_guild")
+
+@test function consultationReceiptRoundTripsCurrentCodecWithoutReplay()
+	let f = pilotStage()
+	f.dispatch("/consult calicut_pilot_guild")
+	observations(f)
+	let saved = f.rpg.captureState()
+	let document = "v2;autosave=1|1|8:1001011;partyLocations=v1;map=middle_east_india;region=middle_east_india;world=instance:india;players=origin:vijayanagara_empire,allegiance:vijayanagara_empire,settlement:calicut;quests=;discovery=v1|r,middle_east_india|s,calicut;orders=;trade=" + f.trade.capture() + ";diplomacy=v1;rewards=v1;rpg=" + saved + ";militarySettlements=v1;religion=v1;piracy=v1;clock=" + f.clock.captureState()
+	let codec = new PlayableCampaignCodec(f.clock)
+	let payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "pilot observations", document)
+	let decoded = codec.decodeMigrateAndValidate(payload, "manual_01")
+	lastAuthorityValue(decoded, "rpg").assertEquals(saved)
+	let restored = new QuestTradeFixture()
+	// Adding an unrelated provider ahead of this one cannot reinterpret its saved receipt.
+	let provider = restored.rpg.consultations.bindings[0]
+	restored.rpg.registerConsultation(new QuestConsultationBinding("unrelated", "stage", "objective", "other_provider", "Other provider", "cochin", "renaissance_humanism"))
+	restored.rpg.consultations.bindings[0] = restored.rpg.consultations.bindings[1]
+	restored.rpg.consultations.bindings[1] = provider
+	restored.rpg.restoreState(lastAuthorityValue(decoded, "rpg")).assertTrue()
+	observations(restored)
+	restored.reject("/consult calicut_pilot_guild")
+	restored.rpg.questEvent("india_stars_and_pepper", "consult_pilot_guild", "consult_calicut_pilot_guild").assertFalse()
+	restored.rpg.captureState().assertEquals(saved)
+
+@test function providerOrderDoesNotChangeReceiptIdentityOrRewrapAuthority()
+	let f = pilotStage()
+	let provider = f.rpg.consultations.bindings[0]
+	f.rpg.registerConsultation(new QuestConsultationBinding("unrelated", "stage", "objective", "other_provider", "Other provider", "cochin", "renaissance_humanism"))
+	f.rpg.consultations.bindings[0] = f.rpg.consultations.bindings[1]
+	f.rpg.consultations.bindings[1] = provider
+	f.rpg.journal.conditions.supports("unsupported").assertFalse()
+	f.dispatch("/consult calicut_pilot_guild")
+	observations(f)

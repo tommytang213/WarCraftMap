@@ -31,7 +31,7 @@ public class SetParityFixture
 		rpg.heroes.register(hero)
 		natives.represent(index, index + 1, 100)
 	function action(string command)
-		commands.dispatch(null, command).assertTrue()
+		commands.dispatch(Player(0), command).assertTrue()
 		output.last.assertEquals("Action completed.")
 	function check(string heroId, string setId, int pieces, string expected)
 		let resolved = rpg.inventory.resolveSet(heroId, setId)

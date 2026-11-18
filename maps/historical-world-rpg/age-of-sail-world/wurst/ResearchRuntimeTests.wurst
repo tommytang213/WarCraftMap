@@ -1,6 +1,7 @@
 package ResearchRuntimeTests
 
 import WarcraftRpgRuntime
+import QuestStages
 import CombatEffects
 import ExactRational
 import MilitaryTraditionLayer
@@ -21,15 +22,19 @@ public class ResearchResources implements ResearchCommandResources
 	string controller="player"
 	int balance=100000
 	int writes=0
+	int reads=0
 	boolean useLiveClock=false
 	WarcraftResearchResources live=new WarcraftResearchResources()
 	override function controllerId(player sender) returns string
+		reads++
 		return controller
 	override function year() returns int
+		reads++
 		if useLiveClock
 			return live.year()
 		return 1450
 	override function gold(player sender) returns int
+		reads++
 		return balance
 	override function setGold(player sender,int amount)
 		balance=amount
@@ -88,7 +93,7 @@ public class ResearchFixture
 		let calls=effects.calls
 		let playerPower=effects.playerPower
 		let otherPower=effects.otherPower
-		commands.dispatch(null,command).assertTrue()
+		commands.dispatch(Player(0),command).assertTrue()
 		output.last.assertEquals("Requirements are not met here.")
 		runtime.captureState().assertEquals(before)
 		resources.balance.assertEquals(funds)
@@ -105,7 +110,7 @@ public class ResearchFixture
 		let unlocks=runtime.technologies.unlockedCount
 		let playerPower=effects.playerPower
 		let otherPower=effects.otherPower
-		commands.dispatch(null,command).assertTrue()
+		commands.dispatch(Player(0),command).assertTrue()
 		output.last.assertEquals("Action completed.")
 		resources.balance.assertEquals(funds-cost)
 		resources.writes.assertEquals(writes+1)
@@ -295,7 +300,7 @@ function historicalResearchReceipt(string caseName)
 	f.commands=new CommandRegistry(false,6,new CommandText(),f.output)
 	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
 	f.resources.balance=864
-	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.commands.dispatch(Player(0),"/research pike_and_shot").assertTrue()
 	f.output.last.assertEquals("Action completed.")
 	f.resources.balance.assertEquals(0)
 	f.resources.writes.assertEquals(1)
@@ -315,7 +320,7 @@ function historicalResearchReceipt(string caseName)
 	registerRpgRuntimeCommands(f.commands,f.runtime).assertEquals("")
 	f.resources.balance=863
 	let before=f.runtime.captureState()
-	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.commands.dispatch(Player(0),"/research pike_and_shot").assertTrue()
 	f.output.last.assertEquals("Requirements are not met here.")
 	f.runtime.captureState().assertEquals(before)
 	f.resources.writes.assertEquals(0)
@@ -357,7 +362,7 @@ function historicalResearchReceipt(string caseName)
 	pike.baseCost="90.0000005"
 	f.reject("/research pike_and_shot")
 	f.resources.balance=91
-	f.commands.dispatch(null,"/unlock pike_and_shot").assertTrue()
+	f.commands.dispatch(Player(0),"/unlock pike_and_shot").assertTrue()
 	f.output.last.assertEquals("Action completed.")
 	f.resources.balance.assertEquals(0)
 	f.resources.writes.assertEquals(1)
@@ -377,7 +382,7 @@ function historicalResearchReceipt(string caseName)
 	let pending=f.runtime.captureState()
 	let savedDate=clock.captureState()
 	f.resources.balance=1000
-	f.commands.dispatch(null,"/research pike_and_shot").assertTrue()
+	f.commands.dispatch(Player(0),"/research pike_and_shot").assertTrue()
 	f.resources.balance.assertEquals(136)
 	let completed=f.runtime.captureState()
 	clock.advanceTo(536907).assertTrue()
@@ -535,7 +540,7 @@ function entitlementReceipt(string caseName)
 	let previous=GetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP)
 	SetPlayerState(Player(0),PLAYER_STATE_RESOURCE_FOOD_CAP,80)
 	f.completions("|u,player,mobile_field_artillery|u,player,statistical_administration|u,player,standing_army_system")
-	f.commands.dispatch(null,"/research mass_army_logistics").assertTrue()
+	f.commands.dispatch(Player(0),"/research mass_army_logistics").assertTrue()
 	f.output.last.assertEquals("Action completed.")
 	f.resources.balance.assertEquals(100000-13884)
 	production.get("player").has("policy","mass_conscription").assertTrue()
@@ -610,3 +615,71 @@ function entitlementReceipt(string caseName)
 	f.effects.unrelatedModifier.assertEquals(47)
 	f.effects.oneTimeGrants.assertEquals(0)
 	destroy layer
+
+function rejectForeignResearchCommand(player sender)
+	let f = new ResearchFixture()
+	let q = new RuntimeQuest("research_owner", "Research authority", "regional")
+	q.graph = new QuestGraph("study", "")
+	q.graph.addStage(new QuestStage("study", "Study", "pike~", ""))
+	q.graph.addObjective(new QuestObjective("pike", "Complete research", "quest_technology_satisfied", "technology:pike_and_shot~", "research_unlocked"))
+	f.runtime.journal.register(q)
+	f.runtime.acceptQuest(q.id).assertTrue()
+	let before = f.runtime.captureState()
+	let funds = f.resources.balance
+	let reads = f.resources.reads
+	let writes = f.resources.writes
+	let calls = f.effects.calls
+	let playerPower = f.effects.playerPower
+	let otherPower = f.effects.otherPower
+	for alias = 0 to 2
+		var command = "/research pike_and_shot"
+		if alias == 1
+			command = "/unlock pike_and_shot"
+		else if alias == 2
+			command = "/institution pike_and_shot"
+		f.commands.dispatch(sender, command).assertTrue()
+		f.output.last.assertEquals("Only the campaign player can commit research.")
+		f.resources.reads.assertEquals(reads)
+		f.resources.balance.assertEquals(funds)
+		f.resources.writes.assertEquals(writes)
+		f.effects.calls.assertEquals(calls)
+		f.effects.playerPower.assertEquals(playerPower)
+		f.effects.otherPower.assertEquals(otherPower)
+		f.runtime.captureState().assertEquals(before)
+		q.graph.completedObjectiveIds.assertEquals("")
+		q.state.assertEquals(QUEST_ACTIVE)
+	let unlocks = f.runtime.technologies.unlockedCount
+	let cost = f.runtime.technologies.cost("pike_and_shot", f.resources.year(), 0, 0)
+	f.commands.dispatch(Player(0), "/research pike_and_shot").assertTrue()
+	f.output.last.assertEquals("Action completed.")
+	f.resources.balance.assertEquals(funds - cost)
+	f.resources.writes.assertEquals(writes + 1)
+	f.runtime.technologies.isUnlocked("player", "pike_and_shot").assertTrue()
+	f.runtime.technologies.unlockedCount.assertEquals(unlocks + 1)
+	f.effects.lastController.assertEquals("player")
+	let earned = f.runtime.technologies.entitlements("player")
+	f.effects.get("player").identities().assertEquals(earned.identities())
+	destroy earned
+	// Unlock and quest reconciliation both replace the same entitlements.
+	// The generic no-quest succeed helper expects only the unlock replacement.
+	f.effects.calls.assertEquals(calls + 2)
+	f.effects.playerPower.assertEquals(playerPower + f.runtime.technologies.get("pike_and_shot").unlockCount)
+	f.effects.otherPower.assertEquals(otherPower)
+	f.effects.oneTimeGrants.assertEquals(0)
+	f.reject("/research pike_and_shot")
+	q.state.assertEquals(QUEST_READY)
+	q.graph.completedObjectiveIds.assertEquals("pike~")
+	let paid = f.resources.balance
+	let committedWrites = f.resources.writes
+	let completed = f.runtime.captureState()
+	codecRestore(f, completed, CAMPAIGN_SAVE_SCHEMA_CURRENT)
+	f.resources.balance.assertEquals(paid)
+	f.resources.writes.assertEquals(committedWrites)
+	q.state.assertEquals(QUEST_READY)
+	q.graph.completedObjectiveIds.assertEquals("pike~")
+
+@test function researchCommandsRejectAnotherPlayerBeforeResourcesAndQuestMutation()
+	rejectForeignResearchCommand(Player(1))
+
+@test function researchCommandsRejectMissingSenderBeforeResourcesAndQuestMutation()
+	rejectForeignResearchCommand(null)

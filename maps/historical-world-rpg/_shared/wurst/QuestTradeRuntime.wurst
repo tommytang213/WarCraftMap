@@ -1,0 +1,59 @@
+package QuestTradeRuntime
+
+import QuestStages
+import WarcraftRpgRuntime
+
+/** Immutable scenario-owned qualification. No settlement or story IDs belong
+ * in the shared transaction engine. */
+public class QuestTradeBinding
+	string questId
+	string stageId
+	string objectiveId
+	string marketId
+	string commodityId
+	construct(string questId, string stageId, string objectiveId, string marketId, string commodityId)
+		this.questId = questId
+		this.stageId = stageId
+		this.objectiveId = objectiveId
+		this.marketId = marketId
+		this.commodityId = commodityId
+	function matches(string questDefinition, string stage, QuestObjective objective) returns boolean
+		return questDefinition == questId and stage == stageId and objective.id == objectiveId and objective.conditionId == "quest_trade_satisfied" and objective.binding == "domain_receipt" and objective.entityRefs == "settlement:" + marketId + "~"
+
+/** Receipt authority exists only during the synchronous committed exchange
+ * callback. Quotes, selections, transfers and historical transaction replay
+ * never create proof. Persisted quest graph receipts retain completion. */
+public class QuestTradeRuntime implements QuestConditionAuthority
+	QuestTradeBinding array[64] bindings
+	int count = 0
+	QuestConditionAuthority other = null
+	private int proof = -1
+	private string receipt = ""
+	function register(QuestTradeBinding binding)
+		if count < 64
+			bindings[count] = binding
+			count++
+	override function supports(string conditionId) returns boolean
+		return (count > 0 and conditionId == "quest_trade_satisfied") or (other != null and other.supports(conditionId))
+	override function supportsObjective(string questId, string stageId, QuestObjective objective) returns boolean
+		for i = 0 to count - 1
+			if bindings[i].matches(questId, stageId, objective)
+				return true
+		return other != null and other.supportsObjective(questId, stageId, objective)
+	override function validates(string questId, string stageId, QuestObjective objective, string receiptId) returns boolean
+		if proof >= 0 and proof < count and receiptId == receipt and bindings[proof].matches(questId, stageId, objective)
+			return true
+		return other != null and other.validates(questId, stageId, objective, receiptId)
+	function committed(WarcraftRpgRuntime rpg, player sender, string marketId, string commodityId, string controllerId, string side, int quantity, int serial)
+		if rpg == null or sender != Player(0) or quantity <= 0 or serial < 1 or controllerId == "" or (side != "buy" and side != "sell")
+			return
+		for i = 0 to count - 1
+			let binding = bindings[i]
+			if binding.marketId == marketId and binding.commodityId == commodityId
+				let questDefinition = rpg.journal.get(binding.questId)
+				if questDefinition != null and questDefinition.graph != null and questDefinition.graph.activeStageId == binding.stageId
+					proof = i
+					receipt = "trade_commit_" + I2S(serial)
+					rpg.questEvent(binding.questId, binding.objectiveId, receipt)
+					proof = -1
+					receipt = ""

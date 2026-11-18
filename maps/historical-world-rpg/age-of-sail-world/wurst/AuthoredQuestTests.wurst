@@ -25,6 +25,8 @@ class RecordedQuestConditions implements QuestConditionAuthority
 	boolean available = true
 	override function supports(string conditionId) returns boolean
 		return available and (conditionId == "quest_diplomacy_satisfied" or conditionId == "quest_institution_satisfied" or conditionId == "quest_discovery_satisfied")
+	override function supportsObjective(string questId, string stageId, QuestObjective objective) returns boolean
+		return supports(objective.conditionId)
 	override function validates(string questId, string stageId, QuestObjective objective, string receiptId) returns boolean
 		return questId == this.questId and stageId == this.stageId and objective.id == objectiveId and objective.conditionId == conditionId and objective.entityRefs == refs and receipt == receiptId
 
@@ -102,7 +104,7 @@ public class AuthoredFixture
 		actors.py = target.y
 	function command(string text, boolean accepted)
 		let before = rpg.captureState()
-		commands.dispatch(null, text).assertTrue()
+		commands.dispatch(Player(0), text).assertTrue()
 		if accepted
 			output.last.assertEquals("Action completed.")
 		else
@@ -725,3 +727,75 @@ class ResearchKnowledgeOnlyVisit implements InteractionVisitListener
 	f.compact.graph.completedObjectiveIds.assertEquals("")
 	f.compact.graph.activeStageId.assertEquals("first")
 	f.compact.state.assertEquals(QUEST_ACTIVE)
+
+/** Synthetic consecutive research stages exercise the generic continuation command. */
+function prepareQuestCheck(AuthoredFixture f, boolean owned)
+	registerRpgRuntimeCommands(f.commands, f.rpg).assertEquals("")
+	let technology = new RuntimeTechnology("check_navigation", "Check navigation", 1450, 1)
+	f.rpg.technologies.register(technology).assertTrue()
+	if owned
+		f.rpg.research("player", "check_navigation", 1450, 1).assertTrue()
+	destroy f.compact.graph
+	f.compact.graph = new QuestGraph("first", "")
+	f.compact.graph.addStage(new QuestStage("first", "First", "first_check~", "second~"))
+	f.compact.graph.addStage(new QuestStage("second", "Second", "second_check~", "third~"))
+	f.compact.graph.addStage(new QuestStage("third", "Third", "third_check~", ""))
+	f.compact.graph.addObjective(new QuestObjective("first_check", "First", "quest_technology_satisfied", "technology:check_navigation~", "research_unlocked"))
+	f.compact.graph.addObjective(new QuestObjective("second_check", "Second", "quest_technology_satisfied", "technology:check_navigation~", "research_unlocked"))
+	f.compact.graph.addObjective(new QuestObjective("third_check", "Third", "quest_technology_satisfied", "technology:check_navigation~", "research_unlocked"))
+	f.rpg.journal.accept(f.compact.id).assertTrue()
+
+@test function explicitQuestCheckAdvancesOneStageAndLeavesOtherQuestsUnchanged()
+	let f = new AuthoredFixture()
+	prepareQuestCheck(f, true)
+	let other = new RuntimeQuest("other_check", "Other", "regional")
+	other.graph = new QuestGraph("study", "")
+	other.graph.addStage(new QuestStage("study", "Study", "check~", ""))
+	other.graph.addObjective(new QuestObjective("check", "Check", "quest_technology_satisfied", "technology:check_navigation~", "research_unlocked"))
+	f.rpg.journal.register(other)
+	f.rpg.journal.accept(other.id).assertTrue()
+	let before = f.rpg.captureState()
+	journalText(f.rpg).contains("/questcheck " + f.compact.id).assertTrue()
+	f.rpg.captureState().assertEquals(before)
+	f.command("/questcheck " + f.compact.id, true)
+	f.compact.graph.completedObjectiveIds.assertEquals("first_check~")
+	f.compact.graph.activeStageId.assertEquals("second")
+	f.command("/questcheck " + f.compact.id, true)
+	f.compact.graph.completedObjectiveIds.assertEquals("first_check~second_check~")
+	f.compact.graph.activeStageId.assertEquals("third")
+	f.command("/questcheck " + f.compact.id, true)
+	f.compact.state.assertEquals(QUEST_READY)
+	f.compact.completions.assertEquals(0)
+	f.rpg.journal.currency.assertEquals(0)
+	other.graph.completedObjectiveIds.assertEquals("")
+	other.state.assertEquals(QUEST_ACTIVE)
+	f.command("/questcheck " + f.compact.id, false)
+
+@test function explicitQuestCheckRejectsForeignNullUnownedAndUnknownWithoutMutation()
+	let f = new AuthoredFixture()
+	prepareQuestCheck(f, true)
+	let before = f.rpg.captureState()
+	f.commands.dispatch(Player(1), "/questcheck " + f.compact.id).assertTrue()
+	f.rpg.captureState().assertEquals(before)
+	f.commands.dispatch(null, "/questcheck " + f.compact.id).assertTrue()
+	f.rpg.captureState().assertEquals(before)
+	f.command("/questcheck absent_quest", false)
+	let unowned = new AuthoredFixture()
+	prepareQuestCheck(unowned, false)
+	unowned.command("/questcheck " + unowned.compact.id, false)
+
+@test function explicitQuestCheckContinuesAfterCurrentCodecRestore()
+	let f = new AuthoredFixture()
+	prepareQuestCheck(f, true)
+	f.command("/questcheck " + f.compact.id, true)
+	let saved = f.rpg.captureState()
+	let restored = new AuthoredFixture()
+	prepareQuestCheck(restored, false)
+	restored.rpg.restoreState(saved).assertTrue()
+	restored.rpg.reconcile("player")
+	restored.compact.graph.activeStageId.assertEquals("second")
+	restored.command("/questcheck " + restored.compact.id, true)
+	restored.compact.graph.completedObjectiveIds.assertEquals("first_check~second_check~")
+	restored.command("/questcheck " + restored.compact.id, true)
+	restored.compact.state.assertEquals(QUEST_READY)
+	restored.compact.completions.assertEquals(0)
