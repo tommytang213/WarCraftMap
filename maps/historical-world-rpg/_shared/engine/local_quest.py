@@ -169,6 +169,7 @@ class LocalQuestRuntime:
             raise LocalQuestError("local quest seed/day is incompatible")
         offers = _index(result["offers"], "offer")
         occupied = set()
+        live_slots = set()
         for offer in offers.values():
             settlement = self.settlements.get(offer.get("settlementId")); family = self.families.get(offer.get("familyId"))
             if settlement is None or family is None or offer.get("variantId") not in family["_variants"]:
@@ -178,6 +179,13 @@ class LocalQuestRuntime:
             key = (settlement["id"], offer.get("slot"), offer.get("cycle"))
             if key in occupied: raise LocalQuestError("duplicate local quest slot cycle")
             occupied.add(key)
+            # Older terminal cycles remain valid history, but two live cycles
+            # cannot advertise or accept work in the same settlement board slot.
+            if offer["status"] in {"offered", "active"}:
+                live_key = (settlement["id"], offer.get("slot"))
+                if live_key in live_slots:
+                    raise LocalQuestError("multiple live offers in one settlement slot")
+                live_slots.add(live_key)
         if len(result["deliveredRewardKeys"]) != len(set(result["deliveredRewardKeys"])):
             raise LocalQuestError("duplicate delivered reward key")
         return result

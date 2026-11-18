@@ -44,6 +44,29 @@ class LocalQuestTests(unittest.TestCase):
   self.assertEqual(before,replacement.snapshot())
   self.assertEqual(before,LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed").snapshot())
   self.assertNotEqual(before,LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="other_seed").snapshot())
+ def test_saved_overlapping_live_cycles_fail_without_mutating_current_world(self):
+  # Damaged saves must not expose two payable offers in one board slot.
+  before=self.runtime.snapshot()
+  first=before["offers"][0]
+  damaged=copy.deepcopy(before)
+  duplicate=copy.deepcopy(first)
+  duplicate["cycle"]=first["cycle"]+1
+  duplicate["id"]=f"local_{first['settlementId']}_{first['slot']}_{duplicate['cycle']}"
+  damaged["offers"].append(duplicate)
+  with self.assertRaisesRegex(LocalQuestError,"multiple live offers in one settlement slot"):
+   LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",state=damaged)
+  with self.assertRaisesRegex(LocalQuestError,"multiple live offers in one settlement slot"):
+   LocalQuestSaveAdapter(self.runtime).restore({WORLD_STATE_KEY:damaged})
+  self.assertEqual(before,self.runtime.snapshot())
+
+  # Retained terminal history with a replacement offer must still restore.
+  self.runtime.accept(first["id"])
+  self.runtime.resolve(first["id"],"failed")
+  self.runtime.advance_day(self.runtime._offer(first["id"])["refillDay"])
+  valid=self.runtime.snapshot()
+  restored=LocalQuestRuntime(SOURCE,WORLD["settlements"],campaign_seed="test_seed",state=valid)
+  self.assertEqual(valid,restored.snapshot())
+
  def test_explicit_terminal_cooldown_is_only_refill_path(self):
   offer=self.runtime.snapshot()["offers"][0]; self.runtime.accept(offer["id"]); self.runtime.resolve(offer["id"],"failed")
   board=self.runtime.board(offer["settlementId"]); self.runtime.advance_day(1); self.assertEqual(board,self.runtime.board(offer["settlementId"]))
