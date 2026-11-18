@@ -190,7 +190,7 @@ class QuestGenerationTests(unittest.TestCase):
         def pairs(source, function_pattern):
             functions = re.finditer(r'(?m)^(?:public )?function (\w+)\([^\n]*\)\n(.*?)(?=^(?:public )?function |\Z)', source, re.S)
             return {pair for match in functions if re.fullmatch(function_pattern, match[1])
-                    for pair in re.findall(r'runtime\.registerMarketProfile\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,', match[2])}
+                    for pair in re.findall(r'(?m)^[ \t]*runtime\.registerMarketProfile\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,', match[2])}
         ordinary = pairs(self.source, r'configureGeneratedTrade\d*')
         industry = pairs(self.source, 'configureGeneratedIndustryMarkets')
         market, good = next(pair for pair in self.runtime['industry']['markets']
@@ -209,6 +209,9 @@ class QuestGenerationTests(unittest.TestCase):
             spaced = re.sub(r',\s*', ',  ', generated)
             self.assertEqual(pairs(generated, r'configureGeneratedTrade\d*'), pairs(spaced, r'configureGeneratedTrade\d*'))
             self.assertEqual(pairs(generated, 'configureGeneratedIndustryMarkets'), pairs(spaced, 'configureGeneratedIndustryMarkets'))
+            commented = re.sub(r'(?m)^([ \t]*)(runtime\.registerMarketProfile\()', r'\1// \2', generated)
+            self.assertEqual(set(), pairs(commented, 'configureGeneratedIndustryMarkets'))
+            self.assertEqual(set(), pairs(commented, r'configureGeneratedTrade\d*'))
 
     def test_local_consultation_binding_is_exact_and_has_a_real_location(self):
         key = 'india_stars_and_pepper:consult_pilot_guild'

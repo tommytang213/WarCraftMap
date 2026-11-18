@@ -1,6 +1,7 @@
 """Validate real scenario compilation. Production mutations run in Wurst tests."""
 import copy
 import json
+import shutil
 from pathlib import Path
 import sys
 import tempfile
@@ -97,6 +98,46 @@ class ScienceCompilationTests(unittest.TestCase):
                 data = copy.deepcopy(contract); change(data)
                 (root / contract_path).write_text(json.dumps(data))
                 with self.assertRaises(ValueError): self.compile(root)
+
+    def test_fixed_science_inputs_reject_directory_links(self):
+        import science_exploration as science
+        from unittest.mock import patch
+        files = ('scenario/progression/science-exploration.json',
+                 'scenario/progression/gameplay-effect-design.json',
+                 'scenario/progression/chemical-classification.json',
+                 'scenario/naval/navigation-efficiency.json',
+                 'scenario/world/world.json')
+        for directory in ('progression', 'naval', 'world'):
+            with self.subTest(directory=directory), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / 'project'
+                for name in files:
+                    dest = root / name
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes((PROJECT / name).read_bytes())
+                external = Path(tmp) / 'external'
+                shutil.move(str(root / 'scenario' / directory), external)
+                (root / 'scenario' / directory).symlink_to(external, target_is_directory=True)
+                if directory in ('progression', 'naval'):
+                    with self.assertRaisesRegex(ValueError, 'links are not supported'):
+                        self.compile(root)
+                if directory in ('progression', 'world'):
+                    for helper in (science._calculus_authored, science._barometric_authored,
+                                   science._botanical_authored):
+                        with self.assertRaisesRegex(ValueError, 'links are not supported'):
+                            helper(root)
+                if directory == 'progression':
+                    prefix = 'wurst/ScienceExplorationTests.wurst:'
+                    comparison = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
+                    identity = {'sourceRevision': 'revision', 'sourceTreeSha256': 'synthetic'}
+                    report = dict(sourceIdentity=identity,
+                        tests=[dict(id=prefix + t, status='pass') for t in science.CHEMICAL_TESTS],
+                        productionCoverage={'tests': {comparison: ['science_registration', 'science_action',
+                            'science_advance', 'science_pay', 'science_complete', 'dispatch']}})
+                    # Synthetic verification deliberately passes: chemical's own
+                    # fixed-path resolver must still reject this directory alias.
+                    with patch('integration_evidence.verify_execution_coverage', return_value={}), \
+                            patch('integration_evidence.source_identity', return_value=identity):
+                        self.assertEqual(set(), science.verified_bindings(root, report, b'log', 'revision'))
 
     def test_observation_binding_requires_verified_complete_execution_and_exact_traces(self):
         from science_exploration import verified_bindings, CHEMICAL_TESTS

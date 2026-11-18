@@ -81,10 +81,41 @@ class BlockerExcerptTests(unittest.TestCase):
                 'format': 'age_of_sail_release_blocker_report_v2', 'findings': [], 'taxonomy': None}))
             self.assertEqual(diagnostic.render(root).count('blocker details cannot be listed'), 2)
 
+    def test_release_totals_include_synthetic_blockers_without_details(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write(root, 'release', [self.row('BLOCK', severity='campaign_blocker', disposition='unresolved')])
+            path = root / 'release-blocker-audit.json'
+            report = json.loads(path.read_text())
+            report['unresolvedCampaignBlockers'] = 20
+            path.write_text(json.dumps(report))
+            text = diagnostic.render(root)
+            self.assertIn('release: 20 blocking entries; showing 1.', text)
+            self.assertIn('19 blocking entries have no finding details', text)
+            self.assertIn('19 additional blocking entries omitted', text)
+            report['findings'] = []
+            path.write_text(json.dumps(report))
+            self.assertIn('20 blocking entries; showing 0.', diagnostic.render(root))
+            self.assertIn('20 additional blocking entries omitted', diagnostic.render(root))
+
+    def test_invalid_totals_and_unknown_severity_fail_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write(root, 'release', [self.row('BLOCK', severity='campaign_blocker', disposition='unresolved')])
+            path = root / 'release-blocker-audit.json'
+            report = json.loads(path.read_text())
+            for total in (True, -1, 0, '20', 1.5):
+                invalid = dict(report, unresolvedCampaignBlockers=total)
+                path.write_text(json.dumps(invalid))
+                self.assertIn('release: report unavailable', diagnostic.render(root))
+            report['findings'][0]['severity'] = 'unknown'
+            path.write_text(json.dumps(report))
+            self.assertIn('release: report unavailable', diagnostic.render(root))
+
     def test_checked_in_reports_use_supported_formats(self):
-        rows = diagnostic.load_rows(PROJECT / 'reports/traceability/requirements.json', 'traceability')
+        rows, total = diagnostic.load_rows(PROJECT / 'reports/traceability/requirements.json', 'traceability')
         self.assertTrue(rows)
-        rows = diagnostic.load_rows(PROJECT / 'reports/release-blocker-audit.json', 'release')
+        rows, total = diagnostic.load_rows(PROJECT / 'reports/release-blocker-audit.json', 'release')
         self.assertTrue(rows)
 
 

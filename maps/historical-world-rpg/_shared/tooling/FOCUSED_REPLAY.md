@@ -53,7 +53,7 @@ image, and does not assert Docker execution.
 
 Requested packages must each have nonzero discovery. Any exit failure, timeout,
 missing/malformed result, compiler mismatch or drift fails the replay and skips
-remaining packages. On POSIX, each launcher gets a dedicated session; a timeout
+remaining packages. On POSIX, each launcher gets a dedicated session; a timeout or keyboard interruption
 kills its process group (including the compiler JVM) and reaps the launcher.
 Non-POSIX execution is rejected rather than claiming descendant cleanup. This
 does not contain a deliberately detached child process. `completed: true` requires all requested suites. Logs and

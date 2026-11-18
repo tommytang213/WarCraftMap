@@ -19,12 +19,27 @@ def branch_mentions_are_diagnostic_only(filename, text):
         # Only this already-blocked summary arm can mention the branch in shell.
         prefix = ('            blocked)\n'
                   '              echo "ready=false" >> "$GITHUB_OUTPUT"\n'
-                  '              python3 maps/historical-world-rpg/age-of-sail-world/tooling/print_release_blockers.py --diagnostics "$artifact_dir/diagnostics" --summary "$GITHUB_STEP_SUMMARY"\n')
+                  '              if ! python3 maps/historical-world-rpg/age-of-sail-world/tooling/print_release_blockers.py --diagnostics "$artifact_dir/diagnostics" --summary "$GITHUB_STEP_SUMMARY"; then\n'
+                  '                echo "::warning::Blocker excerpt unavailable; candidate remains blocked. See validation logs."\n'
+                  '              fi\n')
         fragment = prefix + SUMMARY_GUARD
         if text.count(fragment) == 1:
             permitted.add(text[:text.index(fragment) + len(prefix)].count('\n'))
-    return all(line.startswith('        if: ') or index in permitted
-               for index, line in enumerate(text.splitlines()) if BRANCH in line)
+    # Only conditions on actual upload steps, or the explicit logs-only notice,
+    # may exclude this branch. Validation steps must never inherit an exemption.
+    for match in re.finditer(r'(?m)^      - (.*?)(?=^      - |\Z)', text, re.DOTALL):
+        step = match.group(0)
+        upload = bool(re.search(r'(?m)^        uses: actions/upload-artifact@', step) or
+                      re.search(r'^      - uses: actions/upload-artifact@', step))
+        notice = (filename == 'map-build.yml' and step.startswith('      - name: Explain diagnostic-only artifact policy\n')
+                  and all(not line.strip() or line.startswith(('      - name:', '        if:', '        run:', '          echo '))
+                          for line in step.splitlines()))
+        if (upload and not re.search(r'(?m)^        run:', step)) or notice:
+            start = text[:match.start()].count('\n')
+            for offset, line in enumerate(step.splitlines()):
+                if line.startswith('        if: '):
+                    permitted.add(start + offset)
+    return all(index in permitted for index, line in enumerate(text.splitlines()) if BRANCH in line)
 
 class DiagnosticArtifactGuardTests(unittest.TestCase):
     def test_every_artifact_upload_excludes_diagnostic_pr_and_manual_ref(self):
@@ -58,6 +73,15 @@ class DiagnosticArtifactGuardTests(unittest.TestCase):
             header = text.split('\njobs:\n', 1)[0]
             self.assertNotIn(BRANCH, header)
             self.assertTrue(branch_mentions_are_diagnostic_only(path.name, text), path.name)
+
+    def test_validation_steps_cannot_exclude_diagnostic_branch(self):
+        text = (ROOT / '.github/workflows/map-build.yml').read_text()
+        for label in ('Run mandatory validation', 'Compile sources'):
+            changed = text + '\n      - name: ' + label + '\n        if: ' + GUARD + '\n        run: python3 validate.py\n'
+            self.assertFalse(branch_mentions_are_diagnostic_only('map-build.yml', changed))
+        changed = text.replace('      - name: Explain diagnostic-only artifact policy',
+                               '      - name: Skip validation on continuation')
+        self.assertFalse(branch_mentions_are_diagnostic_only('map-build.yml', changed))
 
     def test_summary_exception_cannot_allow_other_branch_shell_or_triggers(self):
         text = (ROOT / '.github/workflows/map-build.yml').read_text()

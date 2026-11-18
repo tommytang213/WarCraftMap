@@ -106,6 +106,17 @@ class CalculusBindingEvidenceTests(unittest.TestCase):
             (project / 'scenario/redirect.json').symlink_to(target)
             with self.assertRaises(ValueError):
                 science.design_source_path(project, 'scenario/redirect.json')
+            # Even links resolving BACK into scenario are unsafe when an alias
+            # or intermediate hop is not covered by source_identity.
+            (project / 'reports/back.json').symlink_to(valid)
+            (project / 'design-alias').symlink_to(valid)
+            (project / 'scenario/chain.json').symlink_to(project / 'reports/back.json')
+            (project / 'scenario/inside.json').symlink_to(valid)
+            (project / 'scenario/linked_directory').symlink_to(valid.parent, target_is_directory=True)
+            for relative in ('reports/back.json', 'design-alias', 'scenario/chain.json',
+                             'scenario/inside.json', 'scenario/linked_directory/design.json'):
+                with self.subTest(alias=relative), self.assertRaises(ValueError):
+                    science.design_source_path(project, relative)
 
     def test_exact_calculus_finding_closes_and_sibling_science_recognition_is_preserved(self):
         report, log = self.transcript()

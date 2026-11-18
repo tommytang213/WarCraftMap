@@ -4,7 +4,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
-import time
+import os
+import select
 import unittest
 from unittest.mock import patch
 
@@ -100,33 +101,65 @@ class FocusedReplayTests(unittest.TestCase):
             with self.subTest(failure=failure):
                 self.run_case(failure)
 
-    def test_timeout_kills_owned_group_and_reaps_launcher(self):
+    @unittest.skipUnless(replay.os.name == 'posix', 'POSIX process groups required')
+    def test_timeout_and_cancel_kill_owned_group_and_reap_launcher(self):
         from unittest.mock import MagicMock
-        process = MagicMock()
-        process.pid = 314159
-        process.wait.side_effect = [subprocess.TimeoutExpired(['launcher'], 1), -9]
-        with patch.object(replay.subprocess, 'Popen') as popen, patch.object(replay.os, 'killpg') as kill:
-            popen.return_value.__enter__.return_value = process
-            with self.assertRaises(subprocess.TimeoutExpired):
-                replay.run_launcher(['launcher'], cwd=Path('.'), env={}, stdout=None, timeout=1)
-            self.assertTrue(popen.call_args.kwargs['start_new_session'])
-            kill.assert_called_once_with(process.pid, replay.signal.SIGKILL)
-            self.assertEqual(process.wait.call_count, 2)
+        for error in (subprocess.TimeoutExpired(['launcher'], 1), KeyboardInterrupt()):
+            with self.subTest(error=type(error).__name__):
+                process = MagicMock()
+                process.pid = 314159
+                process.wait.side_effect = [error, -9]
+                with patch.object(replay.subprocess, 'Popen') as popen, patch.object(replay.os, 'killpg') as kill:
+                    popen.return_value.__enter__.return_value = process
+                    with self.assertRaises(type(error)) as raised:
+                        replay.run_launcher(['launcher'], cwd=Path('.'), env={}, stdout=None, timeout=1)
+                    self.assertIs(raised.exception, error)
+                    self.assertTrue(popen.call_args.kwargs['start_new_session'])
+                    kill.assert_called_once_with(process.pid, replay.signal.SIGKILL)
+                    self.assertEqual(process.wait.call_count, 2)
 
     @unittest.skipUnless(replay.os.name == 'posix', 'POSIX process groups required')
-    def test_timeout_stops_descendant_before_it_can_write(self):
+    def test_timeout_closes_ready_descendants_inherited_pipe(self):
+        # The descendant reports readiness and holds stdout open until killed.
+        # EOF, not a guessed sleep/absent marker, proves its descriptor closed.
+        # Deadlines only bound a broken test; timeout is injected after readiness.
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            marker = root / 'survived'
-            child = f"import time; from pathlib import Path; time.sleep(0.6); Path({str(marker)!r}).touch()"
-            parent = f"import subprocess, sys; p=subprocess.Popen([sys.executable, '-c', {child!r}]); print('started', flush=True); p.wait()"
-            with (root / 'partial.log').open('w') as log:
-                with self.assertRaises(subprocess.TimeoutExpired):
-                    replay.run_launcher([sys.executable, '-c', parent], cwd=root,
-                                        env=replay.os.environ.copy(), stdout=log, timeout=0.3)
-            time.sleep(0.7)
-            self.assertIn('started', (root / 'partial.log').read_text())
-            self.assertFalse(marker.exists())
+            read_fd, write_fd = os.pipe()
+            real_popen = subprocess.Popen
+            launched = []
+            child = "import os, signal; os.write(1, b'R'); signal.pause()"
+            parent = f"import subprocess, sys; p=subprocess.Popen([sys.executable, '-c', {child!r}]); p.wait()"
+            def start(*args, **kwargs):
+                process = real_popen(*args, **kwargs)
+                launched.append(process)
+                real_wait = process.wait
+                def wait(timeout=None):
+                    if timeout is not None:
+                        self.assertTrue(select.select([read_fd], [], [], 10)[0], 'descendant never became ready')
+                        self.assertEqual(b'R', os.read(read_fd, 1))
+                        raise subprocess.TimeoutExpired(args[0], timeout)
+                    return real_wait(timeout=10)
+                process.wait = wait
+                return process
+            try:
+                with os.fdopen(write_fd, 'wb') as output:
+                    with patch.object(replay.subprocess, 'Popen', side_effect=start):
+                        with self.assertRaises(subprocess.TimeoutExpired):
+                            replay.run_launcher([sys.executable, '-c', parent], cwd=root,
+                                                env=os.environ.copy(), stdout=output, timeout=1)
+                self.assertTrue(select.select([read_fd], [], [], 10)[0], 'descendant retained output after cleanup')
+                self.assertEqual(b'', os.read(read_fd, 1))
+            finally:
+                # Even a deliberately broken cleanup implementation must not
+                # leave this test's own child process behind.
+                for process in launched:
+                    try:
+                        os.killpg(process.pid, replay.signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    real_popen.wait(process, timeout=10)
+                os.close(read_fd)
 
     def test_clean_revision_checks_actual_head_and_untracked_files(self):
         for head, status in [('b' * 40, ''), ('a' * 40, '?? unknown')]:

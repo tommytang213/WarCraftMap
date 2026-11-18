@@ -247,6 +247,26 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                         self.assertIn('Candidate publication: blocked', summary.read_text())
                         self.assertIn('No player candidate was published', summary.read_text())
 
+    def test_renderer_failure_preserves_blocked_notice_and_ready_false(self):
+        host = 'case "$(cat ' + textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]
+                                              .split('\n      - name:', 1)[0])
+        for branch in ('fix/dot-wc3-continuation-20261118', 'other'):
+            with self.subTest(branch=branch), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / 'candidate-status').write_text('blocked')
+                output = root / 'output'; summary = root / 'summary'
+                result = subprocess.run(['bash', '-ec', 'python3() { return 9; }\n' + host],
+                    cwd=REPOSITORY, text=True, capture_output=True,
+                    env={**os.environ, 'artifact_dir': str(root), 'GITHUB_OUTPUT': str(output),
+                         'GITHUB_STEP_SUMMARY': str(summary), 'GITHUB_HEAD_REF': branch, 'GITHUB_REF': ''})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(output.read_text(), 'ready=false\n')
+                self.assertIn('::warning::Blocker excerpt unavailable', result.stdout)
+                self.assertIn('::notice::Candidate publication blocked', result.stdout)
+                self.assertIn('Candidate publication: blocked', summary.read_text())
+                if branch.startswith('fix/'):
+                    self.assertIn('reports are not downloadable', summary.read_text())
+
     def test_missing_or_unknown_publication_status_fails_ci(self):
         host = 'case "$(cat ' + textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]
                                               .split('\n      - name:', 1)[0])

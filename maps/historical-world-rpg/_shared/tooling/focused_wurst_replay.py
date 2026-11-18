@@ -74,15 +74,16 @@ def assemble(project, out, bootstrap):
 
 
 def run_launcher(command, *, cwd, env, stdout, timeout):
-    """Own the launcher session so timeout also stops its compiler descendants."""
+    """Own the launcher session so timeout/cancellation also stop descendants."""
     if os.name != "posix":
         raise ValueError("focused replay requires POSIX process-group containment")
     with subprocess.Popen(command, cwd=cwd, env=env, stdout=stdout,
                           stderr=subprocess.STDOUT, start_new_session=True) as process:
         try:
             returncode = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            # Kill the owned group, not just Grill: its JVM inherits this group.
+        except (subprocess.TimeoutExpired, KeyboardInterrupt):
+            # Kill the owned group on timeout or cancellation, then re-raise
+            # the original exception. Grill's JVM inherits this process group.
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:

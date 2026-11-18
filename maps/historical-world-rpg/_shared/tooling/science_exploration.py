@@ -14,16 +14,25 @@ NUMBERS = {'equipmentCost': 1000000, 'equipmentUnits': 10000, 'equipmentDays': 3
 
 
 def design_source_path(project, relative):
-    """Only scenario JSON is an authored design input covered by source identity."""
-    path = (project / relative).resolve()
-    scoped = path.relative_to(project.resolve() / 'scenario')
-    if path.suffix != '.json' or '__pycache__' in scoped.parts:
-        raise ValueError('science: design source must be tracked scenario JSON')
+    """Use a direct scenario JSON path, never an untracked alias/link chain."""
+    if not isinstance(relative, str):
+        raise ValueError('science: design source must be a relative scenario JSON path')
+    scoped = Path(relative)
+    if (scoped.is_absolute() or not scoped.parts or scoped.parts[0] != 'scenario'
+            or '..' in scoped.parts or '__pycache__' in scoped.parts or scoped.suffix != '.json'):
+        raise ValueError('science: design source must be a direct scenario JSON path')
+    path = project.resolve()
+    for part in scoped.parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError('science: design source links are not supported')
+    if path.resolve() != path:
+        raise ValueError('science: design source changed its resolved path')
     return path
 
 
 def configuration(project, world, settlements, authored, trade_records):
-    path = project / 'scenario/progression/science-exploration.json'
+    path = design_source_path(project, 'scenario/progression/science-exploration.json')
     header = '\npublic function configureGeneratedScience(ScienceLedger ledger, ScienceResearchEffects effects)\n'
     if not path.is_file():
         return header + '\tskip\n', {}, []
@@ -35,7 +44,7 @@ def configuration(project, world, settlements, authored, trade_records):
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if {e['metric'] for e in effects} != set(METRICS) or len(effects) != 3:
         raise ValueError('science: missing effect contract')
-    observation_path = project / 'scenario/progression/chemical-classification.json'
+    observation_path = design_source_path(project, 'scenario/progression/chemical-classification.json')
     observation = None
     if observation_path.is_file():
         observation = json.loads(observation_path.read_text())
@@ -65,7 +74,7 @@ def configuration(project, world, settlements, authored, trade_records):
     templates = {x['id']: x['warcraftUnitTypeId'] for x in world['militaryRuntimeTemplates']}
     positions = {x['id']: x for x in settlements}
     zones = {x['id']: x for x in world['navigationZones']}
-    nav = json.loads((project / 'scenario/naval/navigation-efficiency.json').read_text())
+    nav = json.loads((design_source_path(project, 'scenario/naval/navigation-efficiency.json')).read_text())
     for i, d in enumerate(data['sites']):
         if d['id'] in ids or d['metric'] not in METRICS or d['capability'] != METRICS[d['metric']]:
             raise ValueError('science: duplicate site or unsupported capability')
@@ -171,14 +180,14 @@ BOTANICAL_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_botanical_coll
 
 def _botanical_authored(project):
     """Recognize only the approved overland source, not a sibling science metric."""
-    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
     path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'botanical_collecting' or e['unlock'] == BOTANICAL_UNLOCK]
     if len(effects) != 1:
         return False
     effect = effects[0]
-    world = json.loads((project / 'scenario/world/world.json').read_text())
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'botanical_collecting']
     return (effect['nodeId'] == 'botanical_collecting'
             and effect['unlock'] == BOTANICAL_UNLOCK
@@ -191,7 +200,7 @@ def _botanical_authored(project):
 
 def _barometric_authored(project):
     """The approved identity and coefficient, never inferred from a similar metric."""
-    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
     path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'barometric_measurement'
@@ -199,7 +208,7 @@ def _barometric_authored(project):
     if len(effects) != 1:
         return False
     effect = effects[0]
-    world = json.loads((project / 'scenario/world/world.json').read_text())
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'barometric_measurement']
     return (effect['nodeId'] == 'barometric_measurement'
             and effect['unlock'] == BAROMETRIC_UNLOCK
@@ -225,14 +234,14 @@ CALCULUS_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_calculus_method
 
 
 def _calculus_authored(project):
-    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
     path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'calculus_methods' or e['unlock'] == CALCULUS_UNLOCK]
     if len(effects) != 1:
         return False
     effect = effects[0]
-    world = json.loads((project / 'scenario/world/world.json').read_text())
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'calculus_methods']
     return (effect['nodeId'] == 'calculus_methods'
             and effect['unlock'] == CALCULUS_UNLOCK
@@ -263,7 +272,7 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     bound = set()
     if CHEMICAL_TESTS <= passed and required <= set(probes.get(comparative, [])):
         try:
-            contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
+            contract = json.loads((design_source_path(project, 'scenario/progression/chemical-classification.json')).read_text())
             bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
         except (ValueError, OSError, KeyError, TypeError):
             return set()
