@@ -1,3 +1,4 @@
+# The isolated Dot diagnostic branch retains logs only: artifact allowance is unverified.
 name: Age of Sail campaign artifact
 
 on:
@@ -109,7 +110,7 @@ jobs:
           esac
 
       - name: Retain requirement diagnostics even when publication is blocked
-        if: always()
+        if: always() && github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-requirement-diagnostics-${{ github.run_number }}
@@ -153,7 +154,7 @@ jobs:
           test -s "$artifact_dir/BUILD_VERSION.txt"
 
       - name: Upload Age of Sail campaign
-        if: steps.candidate.outputs.ready == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+        if: steps.candidate.outputs.ready == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/main') && github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-world-release-candidate-${{ env.RELEASE_VERSION_PREFIX }}.${{ github.run_number }}
@@ -161,3 +162,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
+
+      - name: Explain diagnostic-only artifact policy
+        if: always() && (github.head_ref == 'fix/dot-wc3-continuation-20261118' || github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118')
+        run: |
+          echo "::notice::Diagnostic branch: no workflow artifact or cache uploads. Earlier artifact-download references do not apply to this run."
+          echo "**Diagnostic branch policy:** only CI logs and job summaries are retained. No downloadable workflow artifacts or release candidate are provided; any earlier artifact references do not apply. Native acceptance remains separate." >> "$GITHUB_STEP_SUMMARY"

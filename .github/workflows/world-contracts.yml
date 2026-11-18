@@ -1,3 +1,4 @@
+# The isolated Dot diagnostic branch retains logs only: artifact allowance is unverified.
 name: World data contracts
 
 on:
@@ -156,6 +157,7 @@ jobs:
             > reports/ci-generated-sha256.txt)
           cat "$project/reports/ci-generation-manifest.txt"
       - name: Preserve exact-head generated report files
+        if: github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@v4
         with:
           name: pr536-report-regeneration

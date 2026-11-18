@@ -790,23 +790,28 @@ public class QuestJournalRuntime
 		return true
 	/** Only the persisted player research authority may satisfy an explicitly
 	 * marked research objective. A generated domain_receipt blocker remains
-	 * blocked; no caller-provided receipt or mock condition can forge this. */
-	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
-		if research == null or controllerId != "player"
+	 * blocked; no caller-provided receipt or mock condition can forge this.
+	 * Check only the entry stage of this quest; action-triggered checks must
+	 * never sweep unrelated quests or reuse a receipt as research evidence. */
+	function syncQuestResearch(RuntimeQuest q, TechnologyRuntime research, string controllerId) returns boolean
+		if research == null or controllerId != "player" or q == null or q.state != QUEST_ACTIVE or q.graph == null
 			return false
 		var changed = false
+		let stageAtEntry = q.graph.activeStageId
+		for j = 0 to q.graph.objectiveCount - 1
+			let objective = q.graph.objectives[j]
+			let reference = objective.entityRefs
+			if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
+				let technologyId = SubString(reference, 11, StringLength(reference) - 1)
+				if research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
+					q.settleProgress()
+					changed = true
+		return changed
+	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
+		var changed = false
 		for i = 0 to count - 1
-			let q = quests[i]
-			if q != null and q.state == QUEST_ACTIVE and q.graph != null
-				let stageAtEntry = q.graph.activeStageId
-				for j = 0 to q.graph.objectiveCount - 1
-					let objective = q.graph.objectives[j]
-					let reference = objective.entityRefs
-					if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
-						let technologyId = SubString(reference, 11, StringLength(reference) - 1)
-						if research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
-							q.settleProgress()
-							changed = true
+			if syncQuestResearch(quests[i], research, controllerId)
+				changed = true
 		return changed
 	/** The caller has just revalidated physical presence. Process the stage
 	 * that was active at entry only; a visit cannot cascade through a chain. */
@@ -1399,7 +1404,7 @@ public class WarcraftRpgRuntime
 	function acceptQuest(string id) returns boolean
 		let accepted=journal.accept(id)
 		if accepted
-			journal.syncPlayerResearch(technologies,"player")
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
 			journal.track(id)
 			reconcile("player")
 		return accepted
@@ -1412,12 +1417,13 @@ public class WarcraftRpgRuntime
 	function questEvent(string id, string objectiveId, string receiptId) returns boolean
 		let changed = journal.recordEvent(id, objectiveId, receiptId)
 		if changed
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
 			reconcile("player")
 		return changed
 	function advanceQuest(string id, string stageId) returns boolean
 		let changed = journal.advance(id, stageId)
 		if changed
-			journal.syncPlayerResearch(technologies,"player")
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
 			reconcile("player")
 		return changed
 	function eligibleActor(int index) returns boolean
@@ -1450,12 +1456,14 @@ public class WarcraftRpgRuntime
 				q.state = QUEST_OFFERED
 				q.resetProgress()
 			if atGiver and q.state == QUEST_OFFERED and journal.accept(q.id)
+				journal.syncQuestResearch(q,technologies,"player")
 				journal.track(q.id)
 				changed = true
 			else if q.state == QUEST_READY
 				if atTurnIn and journal.turnIn(q.id, heroes.heroes[actor], day, 30)
 					changed = true
 			else if journal.visit(q, target)
+				journal.syncQuestResearch(q,technologies,"player")
 				changed = true
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
@@ -2136,6 +2144,9 @@ class RecruitHeroCommand implements CommandHandler
 		this.runtime=runtime
 		this.output=output
 	override function execute(player sender,string arguments)
+		if sender != Player(0)
+			output.show(sender,"Only the campaign player can recruit heroes.")
+			return
 		if runtime.heroes.recruit(arguments)
 			let hero=runtime.heroes.get(arguments)
 			output.show(sender,hero.name+" joined your strategic roster. Use assignments to choose who enters the active field group.")

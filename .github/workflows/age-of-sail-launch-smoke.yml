@@ -1,3 +1,4 @@
+# The isolated Dot diagnostic branch retains logs only: artifact allowance is unverified.
 name: Age of Sail retail launch smoke (diagnostic only)
 
 # Manual only: identity/harness edits must not trigger a 17-map build or a player
@@ -98,6 +99,7 @@ jobs:
           PY
 
       - name: Upload diagnostic W3N, never a player release candidate
+        if: github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-LAUNCH-SMOKE-NOT-RELEASE-${{ github.run_number }}
