@@ -1492,7 +1492,6 @@ public class WarcraftRpgRuntime
 		for i = 0 to journal.count - 1
 			let q = journal.quests[i]
 			let atGiver = target.matches(q.giverId)
-			let atTurnIn = target.matches(q.turnInId)
 			// Refill only an eligible local offer, never unrelated quests during
 			// a rejected request or a repeated treasure collection.
 			if atGiver and q.canRefill(day)
@@ -1502,15 +1501,19 @@ public class WarcraftRpgRuntime
 				journal.syncQuestResearch(q,technologies,"player")
 				journal.track(q.id)
 				changed = true
-			else if q.state == QUEST_READY
-				if atTurnIn and readyAtEntry[i]
-					if commitQuestTurnIn(sender, q, actor, day, 30)
-						changed = true
-					else if q.authoredRewards != null and journal.lastDiagnostic != ""
-						lastInteractionRewardDiagnostic += q.title + ": " + journal.lastDiagnostic + "\n"
-			else if journal.visit(q, target)
+			else if q.state != QUEST_READY and journal.visit(q, target)
 				journal.syncQuestResearch(q,technologies,"player")
 				changed = true
+		// Complete the physical visit pass before any reward can unlock another
+		// quest's visit stage. Both journal orders therefore stop at that new
+		// stage until a later interaction. Explicit turn-in still syncs at once.
+		for i = 0 to journal.count - 1
+			let q = journal.quests[i]
+			if readyAtEntry[i] and q.state == QUEST_READY and target.matches(q.turnInId)
+				if commitQuestTurnIn(sender, q, actor, day, 30)
+					changed = true
+				else if q.authoredRewards != null and journal.lastDiagnostic != ""
+					lastInteractionRewardDiagnostic += q.title + ": " + journal.lastDiagnostic + "\n"
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
 			if t.resolution != null and target.kind == "region" and t.regionId == target.eventId

@@ -243,7 +243,7 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     """Only current complete pinned execution can close this exact finding."""
     if execution is None or execution_log is None or revision is None:
         return set()
-    from integration_evidence import verify_execution_coverage
+    from integration_evidence import verify_execution_coverage, source_identity
     from wurst_execution import WurstExecutionError
     try:
         coverage = verify_execution_coverage(execution, execution_log, project, revision)
@@ -258,8 +258,11 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     comparative = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
     bound = set()
     if CHEMICAL_TESTS <= passed and required <= set(probes.get(comparative, [])):
-        contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
-        bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+        try:
+            contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
+            bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+        except (ValueError, OSError, KeyError, TypeError):
+            return set()
     comparative = prefix + BAROMETRIC_COMPARISON
     try:
         if (BAROMETRIC_TESTS <= passed
@@ -287,4 +290,13 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
             bound.add(('modifier', 'progression_calculus_methods'))
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
         pass
+    # Authored helpers reopen scenario files after coverage verification. Reject
+    # persistent mid-call source changes, including changes in a later branch
+    # after an earlier binding was accepted. This cooperative-worktree guard is
+    # not an atomic snapshot against an adversarial change-and-revert writer.
+    try:
+        if source_identity(project, revision) != execution.get('sourceIdentity'):
+            return set()
+    except (ValueError, OSError, KeyError, TypeError):
+        return set()
     return bound

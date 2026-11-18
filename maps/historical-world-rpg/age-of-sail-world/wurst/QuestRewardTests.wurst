@@ -465,3 +465,36 @@ class OwnedRewardOutcome extends QuestRewardOutcome
 	// The reward batch borrows, rather than owns, campaign research authority.
 	research.register(new RuntimeTechnology("still_alive", "Still alive", 1450, 1)).assertTrue()
 	destroy research
+
+function rewardVisitOrderPermutation(boolean reverse, boolean explicitTurnIn)
+	let f = new RewardFixture()
+	f.ready("left")
+	let observer = rewardObserver("research_then_visit", "standardized_charts")
+	observer.graph.stages[0].nextStageIds = "local~"
+	observer.graph.addStage(new QuestStage("local", "Visit after research", "visit~", ""))
+	observer.graph.addObjective(new QuestObjective("visit", "Visit locally", "quest_travel_satisfied", "settlement:calicut~", "physical_visit"))
+	f.base.rpg.journal.register(observer)
+	f.base.rpg.journal.accept(observer.id).assertTrue()
+	if reverse
+		f.base.rpg.journal.quests[0] = observer
+		f.base.rpg.journal.quests[1] = f.definition
+	if explicitTurnIn
+		f.turnIn()
+	else
+		f.command("/interact calicut")
+	f.definition.state.assertEquals(QUEST_COMPLETE)
+	observer.state.assertEquals(QUEST_ACTIVE)
+	observer.graph.activeStageId.assertEquals("local")
+	observer.graph.completedObjectiveIds.assertEquals("owned~")
+	observer.completions.assertEquals(0)
+	f.command("/interact calicut")
+	observer.state.assertEquals(QUEST_READY)
+	observer.graph.completedObjectiveIds.assertEquals("owned~visit~")
+	observer.completions.assertEquals(0)
+
+@test function rewardGrantCannotVisitNewStageDuringSameInteractionInEitherOrder()
+	rewardVisitOrderPermutation(false, false)
+	rewardVisitOrderPermutation(true, false)
+
+@test function explicitRewardTurnInStillSynchronizesNewResearchImmediately()
+	rewardVisitOrderPermutation(false, true)

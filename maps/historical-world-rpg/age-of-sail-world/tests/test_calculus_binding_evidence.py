@@ -104,6 +104,45 @@ class CalculusBindingEvidenceTests(unittest.TestCase):
             report, log = self.transcript(fail_test=PREFIX + name)
             self.assertEqual(set(), self.bindings(report, log))
 
+    def test_named_calculus_guard_is_independent_of_full_coverage_rejection(self):
+        report, log = self.transcript()
+        coverage = evidence.verify_execution_coverage(report, log, PROJECT, self.revision)
+        for name in science.CALCULUS_TESTS:
+            with self.subTest(name=name):
+                missing = copy.deepcopy(report)
+                missing['tests'] = [row for row in missing['tests'] if row['id'] != PREFIX + name]
+                with patch.object(evidence, 'verify_execution_coverage', return_value=coverage):
+                    expected = {CLASSIFICATION}
+                    if name not in science.BAROMETRIC_TESTS:
+                        expected.add(BAROMETRIC)
+                    self.assertEqual(expected, self.bindings(missing, log))
+
+    def test_authored_reads_cannot_keep_bindings_after_source_identity_changes(self):
+        report, log = self.transcript()
+        botanical = PREFIX + science.BOTANICAL_COMPARISON
+        for name in science.BOTANICAL_TESTS:
+            if not any(row['id'] == PREFIX + name for row in report['tests']):
+                report['tests'].append({'id': PREFIX + name, 'status': 'pass'})
+        report['productionCoverage']['tests'][botanical] = sorted(science.BOTANICAL_PROBES)
+        coverage = {'calculus_research': [COMPARISON], 'barometric_voyage': [SIBLING],
+                    'botanical_survey': [botanical]}
+        for helper in ('_calculus_authored', '_barometric_authored', '_botanical_authored'):
+            changed = [False]
+            def authored(_):
+                changed[0] = True
+                return True
+            def identity(*_):
+                return {} if changed[0] else self.identity
+            with self.subTest(helper=helper), \
+                    patch.object(evidence, 'verify_execution_coverage', return_value=coverage), \
+                    patch.object(science, helper, side_effect=authored), \
+                    patch.object(evidence, 'source_identity', side_effect=identity):
+                self.assertEqual(set(), self.bindings(report, log))
+                self.assertTrue(changed[0])
+        with patch.object(evidence, 'verify_execution_coverage', return_value=coverage), \
+                patch.object(evidence, 'source_identity', side_effect=OSError('source unavailable')):
+            self.assertEqual(set(), self.bindings(report, log))
+
     def test_hazard_payment_supply_and_commit_must_execute_in_the_comparison(self):
         self.assertEqual(science.CALCULUS_PROBES, set(self.contract['systems']['calculus_research']))
         for probe in science.CALCULUS_PROBES:

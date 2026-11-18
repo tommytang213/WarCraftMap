@@ -195,6 +195,7 @@ class QuestGenerationTests(unittest.TestCase):
             generate(self.config, Path(directory))
             generated = (Path(directory) / 'ScenarioData.wurst').read_text()
             self.assertIn(f'"{market}", "{good}"))', generated)
+            self.assertIn(f'runtime.registerMarketProfile("{market}", "{good}", ', generated)
 
     def test_local_consultation_binding_is_exact_and_has_a_real_location(self):
         key = 'india_stars_and_pepper:consult_pilot_guild'

@@ -269,8 +269,9 @@ class WurstExecutionTests(unittest.TestCase):
                   "errors": ["%\n" * 1000] * 100}
         before = copy.deepcopy(report)
         annotation = execution.failure_annotation(report)
-        self.assertTrue(annotation.startswith("::error title=Wurst execution failed::3/5 tests passed"))
+        self.assertTrue(annotation.startswith("::error title=Wurst execution failed::Recorded results: 3/5 passed"))
         self.assertIn("1 recorded non-passing results", annotation)
+        self.assertIn("Result collection incomplete", annotation)
         self.assertIn("bad%25%0A::notice::forged%0D: incomplete", annotation)
         self.assertNotIn("\n", annotation)
         self.assertNotIn("\r", annotation)

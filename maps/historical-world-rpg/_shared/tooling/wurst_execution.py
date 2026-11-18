@@ -27,8 +27,11 @@ TESTS_PER_PROCESS = 100
 def failure_annotation(report: dict) -> str:
     """Bounded CI diagnostic only; never substitutes for execution evidence."""
     failed = [row for row in report.get("tests", []) if row.get("status") != "pass"]
-    parts = [f"{report.get('succeeded', 0)}/{report.get('discovered', 0)} tests passed; "
+    rows = report.get("tests", [])
+    parts = [f"Recorded results: {report.get('succeeded', 0)}/{report.get('discovered', 0)} passed; "
              f"{len(failed)} recorded non-passing results."]
+    if len(rows) < report.get("discovered", 0):
+        parts.append("Result collection incomplete; consult retained transcript for earlier shard results.")
     parts += [f"{row.get('id', '?')}: {row.get('status', '?')}"[:500] for row in failed[:8]]
     parts += [str(error)[:500] for error in report.get("errors", [])[:8]]
     # Escape workflow-command data, including newlines in malformed source IDs.

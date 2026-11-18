@@ -30,12 +30,36 @@ class MapArtifactWorkflowTests(unittest.TestCase):
             body = workflow_step(source, step)
             with self.subTest(workflow=path.name):
                 self.assertEqual(1, source.count("WURST_CI_ANNOTATIONS"))
-                self.assertIn("-e WURST_CI_ANNOTATIONS=true", body)
+                self.assertRegex(body, r"(?<!\S)-e\s+WURST_CI_ANNOTATIONS=true(?=\s|$)")
                 self.assertLess(body.index("docker run"), body.index("-e WURST_CI_ANNOTATIONS=true"))
                 self.assertLess(body.index("-e WURST_CI_ANNOTATIONS=true"), body.index('"$WURST_RUN_IMAGE"'))
         for path in (REPOSITORY / ".github/workflows").glob("*.yml"):
             if path not in (WORKFLOW, TYPECHECK_WORKFLOW):
                 self.assertNotIn("WURST_CI_ANNOTATIONS", path.read_text(encoding="utf-8"))
+
+    def test_blocked_summary_matches_artifact_availability(self):
+        body = workflow_step(WORKFLOW.read_text(), "Execute complete Wurst suite and package with pinned compiler")
+        start = body.index('case "$(cat "$artifact_dir/candidate-status")" in')
+        shell = textwrap.dedent(body[start:body.index("\n          esac", start) + len("\n          esac")])
+        for head, ref, logs_only in (
+            ("fix/dot-wc3-continuation-20261118", "refs/pull/601/merge", True),
+            ("", "refs/heads/fix/dot-wc3-continuation-20261118", True),
+            ("other", "refs/pull/1/merge", False),
+        ):
+            with self.subTest(head=head, ref=ref), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "candidate-status").write_text("blocked")
+                env = dict(os.environ, artifact_dir=directory, GITHUB_HEAD_REF=head,
+                           GITHUB_REF=ref, GITHUB_OUTPUT=str(root / "output"),
+                           GITHUB_STEP_SUMMARY=str(root / "summary"))
+                result = subprocess.run(["bash", "-eu", "-c", shell], env=env,
+                                        text=True, capture_output=True, check=True)
+                summary = (root / "summary").read_text()
+                self.assertEqual("ready=false\n", (root / "output").read_text())
+                self.assertIn("No player candidate was published.", summary)
+                self.assertEqual(logs_only, "reports are not downloadable" in summary)
+                self.assertEqual(not logs_only, "diagnostics artifact" in result.stdout)
+                self.assertEqual(not logs_only, "age-of-sail-requirement-diagnostics artifact" in summary)
 
     @classmethod
     def setUpClass(cls):
