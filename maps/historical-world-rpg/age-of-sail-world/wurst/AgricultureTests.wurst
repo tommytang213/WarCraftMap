@@ -451,23 +451,21 @@ class AgricultureFixture
 	control.staple.stock.assertEquals(900)
 	treated.equipment.stock.assertEquals(100)
 	treated.local.knowledge.assertEquals(0)
-
-@test function agriculturalGranaryReliefRoundsOnceOnSmallStoredStock()
-	let treated=new AgricultureFixture()
-	let control=new AgricultureFixture()
-	treated.unlock("agrarian_improvement")
-	control.unlock("agrarian_improvement")
-	treated.action("granary",true)
-	treated.local.arable=false
-	control.local.arable=false
-	treated.staple.stock=21
-	control.staple.stock=21
-	treated.advance(365)
-	control.advance(365)
+	let smallTreated=new AgricultureFixture()
+	let smallControl=new AgricultureFixture()
+	smallTreated.unlock("agrarian_improvement")
+	smallControl.unlock("agrarian_improvement")
+	smallTreated.action("granary",true)
+	smallTreated.local.arable=false
+	smallControl.local.arable=false
+	smallTreated.staple.stock=21
+	smallControl.staple.stock=21
+	smallTreated.advance(365)
+	smallControl.advance(365)
 	// 21 * 10% * (1 - 10%) floors once to 1; ordinary loss floors to 2.
-	treated.staple.stock.assertEquals(20)
-	control.staple.stock.assertEquals(19)
-	treated.local.knowledge.assertEquals(0)
+	smallTreated.staple.stock.assertEquals(20)
+	smallControl.staple.stock.assertEquals(19)
+	smallTreated.local.knowledge.assertEquals(0)
 
 @test function agriculturalTenureHarvestAndTaxBeatMatchedElectedControl()
 	let treated=new AgricultureFixture()
