@@ -139,6 +139,63 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
         for content in ('mass_conscription','common_wagon_train','supply_efficiency'):
             self.assertTrue(any(f'mass_army_logistics:' in r['message'] and content in r['message'] for r in rows))
 
+    def test_research_reason_distinguishes_missing_mapping_from_unverified_declaration(self):
+        rows = {row['id']: row for row in audit._audit_research_bindings()}
+        declared = rows['RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY']
+        absent = rows['RESEARCH-UNBOUND-MASS-ARMY-LOGISTICS-MODIFIER-SUPPLY-EFFICIENCY']
+        self.assertIn('declared mapping', declared['message'])
+        self.assertIn('same-revision execution has not verified', declared['message'])
+        self.assertIn('no declared gameplay consumer mapping', absent['message'])
+        for row in (declared, absent):
+            self.assertEqual('campaign_blocker', row['severity'])
+            self.assertEqual('missing_runtime_integration', row['class'])
+            self.assertEqual('unresolved', row['disposition'])
+            self.assertIn(row['id'], audit.render_markdown(self.report))
+            self.assertIn(row, self.report['findings'])
+        self.assertEqual(238, self.report['unresolvedCampaignBlockers'])
+
+    def test_missing_or_stale_mapping_is_not_called_a_declared_consumer(self):
+        original = audit._load
+        path = audit.PROJECT / 'scenario/progression/gameplay-effect-design.json'
+        target = 'RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY'
+        path_is_file = Path.is_file
+        for mode in ('missing_contract', 'stale_mapping'):
+            def changed(candidate):
+                data = original(candidate)
+                if candidate == path and mode == 'stale_mapping':
+                    data = copy.deepcopy(data)
+                    next(effect for effect in data['effects']
+                         if effect['unlock'] == {'kind': 'building', 'contentId': 'granary'})['nodeId'] = 'stale_node'
+                return data
+            def exists(candidate):
+                return False if mode == 'missing_contract' and candidate == path else path_is_file(candidate)
+            with self.subTest(mode=mode), patch.object(audit, '_load', side_effect=changed), \
+                 patch.object(Path, 'is_file', exists):
+                row = next(row for row in audit._audit_research_bindings() if row['id'] == target)
+                self.assertIn('no declared gameplay consumer mapping', row['message'])
+
+    def test_research_reason_remains_unverified_for_missing_stale_and_partial_execution(self):
+        from test_agriculture_evidence import selection_evidence
+        target = 'RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY'
+        args = dict(execution=selection_evidence(), execution_log=b'protocol fixture', revision='a' * 40)
+        with patch('integration_evidence.verify_execution_coverage', side_effect=ValueError('stale source')):
+            stale = {row['id']: row for row in audit._audit_research_bindings(**args)}
+        self.assertIn('declared mapping', stale[target]['message'])
+        self.assertIn(target, {row['id'] for row in audit._audit_research_bindings()})
+        partial = copy.deepcopy(args)
+        partial['execution']['tests'].pop()
+        with patch('integration_evidence.verify_execution_coverage', return_value={}):
+            incomplete = {row['id']: row for row in audit._audit_research_bindings(**partial)}
+            verified = {row['id']: row for row in audit._audit_research_bindings(**args)}
+        self.assertIn('declared mapping', incomplete[target]['message'])
+        self.assertNotIn(target, verified)
+        self.assertEqual(set(stale) - {
+            'RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY',
+            'RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-POLICY-LAND-TENURE-REFORM',
+            'RESEARCH-UNBOUND-AGRICULTURAL-MECHANIZATION-POLICY-ENCLOSURE',
+            'RESEARCH-UNBOUND-AGRICULTURAL-SOCIETIES-POLICY-PROGRESSION-AGRICULTURAL-SOCIETIES',
+        }, set(verified))
+
     def test_unknown_critical_class_cannot_escape_unclassified_gate(self):
         finding = audit._finding("INJECT-UNKNOWN-CRITICAL", "start_failure", "fixture/unknown",
                                  "unknown failure")

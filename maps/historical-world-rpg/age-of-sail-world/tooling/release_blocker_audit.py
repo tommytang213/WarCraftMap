@@ -122,6 +122,49 @@ def _verified_industry_bindings(execution=None, execution_log=None, revision=Non
     return {(e['unlock']['kind'], e['unlock']['contentId']) for e in industry_contract(PROJECT)['catalog']['effects']}
 
 
+def _declared_research_mappings(world):
+    """Identify authored mappings, without treating declarations as executed consumers.
+
+    Only exact typed unlocks on the named research node count. A stale or
+    missing contract therefore cannot explain away an unverified binding.
+    """
+    nodes = {row['id']: row for row in world['technologies'] + world['institutions']}
+    declared = set()
+
+    def include(node_id, unlock):
+        node = nodes.get(node_id)
+        if (node and isinstance(unlock, dict) and isinstance(unlock.get('kind'), str)
+                and isinstance(unlock.get('contentId'), str) and unlock in node['unlocks']):
+            declared.add((unlock['kind'], unlock['contentId']))
+
+    for relative in ('scenario/progression/gameplay-effect-design.json',
+                     'scenario/progression/administrative-contracts.json',
+                     'scenario/progression/central-banking-effects.json',
+                     'scenario/progression/commercial-courts-effects.json'):
+        path = PROJECT / relative
+        if path.is_file():
+            contract = _load(path)
+            if contract.get('schemaVersion') == 1:
+                for effect in contract.get('effects', []):
+                    include(effect.get('nodeId'), effect.get('unlock'))
+    for relative in ('scenario/progression/chemical-classification.json',
+                     'scenario/progression/dispatch-contract.json'):
+        path = PROJECT / relative
+        if path.is_file():
+            contract = _load(path)
+            if contract.get('schemaVersion') == 1:
+                effect = contract.get('effect', contract)
+                include(effect.get('nodeId'), effect.get('unlock'))
+    path = PROJECT / 'scenario/naval/recruitment.json'
+    if path.is_file():
+        contract = _load(path)
+        if contract.get('schemaVersion') == 1:
+            for blueprint in contract.get('blueprints', []):
+                include(blueprint.get('nodeId'),
+                        {'kind': 'unit', 'contentId': blueprint.get('contentId')})
+    return declared
+
+
 def _audit_research_bindings(*, execution=None, execution_log=None, revision=None):
     # Definition retention and successful entitlement delivery cannot establish
     # gameplay consumers. Keep each missing typed consumer accountable at release.
@@ -153,11 +196,16 @@ def _audit_research_bindings(*, execution=None, execution_log=None, revision=Non
     bound |= verified_land(PROJECT, execution, execution_log, revision)
     from agriculture_catalog import verified_bindings as verified_agriculture
     bound |= verified_agriculture(PROJECT, execution, execution_log, revision)
+    world = _load(PROJECT / 'scenario/world/world.json')
+    declared = _declared_research_mappings(world)
     return [_finding(
         'RESEARCH-UNBOUND-' + '-'.join(row[key] for key in ('nodeId', 'kind', 'contentId')).upper().replace('_', '-'),
         'missing_runtime_integration', 'scenario/world/world.json',
-        f"{row['nodeId']}: {row['kind']} {row['contentId']} is unbound; no gameplay consumer")
-        for row in research_integration_blockers(_load(PROJECT / 'scenario/world/world.json'), bound)]
+        (f"{row['nodeId']}: {row['kind']} {row['contentId']} has a declared mapping; "
+         "same-revision execution has not verified a gameplay consumer"
+         if (row['kind'], row['contentId']) in declared else
+         f"{row['nodeId']}: {row['kind']} {row['contentId']} has no declared gameplay consumer mapping in audited contracts"))
+        for row in research_integration_blockers(world, bound)]
 
 
 def only_unbound_research_blocks(report, *, execution=None, execution_log=None, revision=None):
