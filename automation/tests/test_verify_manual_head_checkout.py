@@ -90,13 +90,19 @@ class ManualHeadCheckoutTests(unittest.TestCase):
 
     def test_workflow_scopes_preflight_and_preserves_upload_guards(self):
         workflow = WORKFLOW.read_text()
+        preflight = workflow.split("      - name: Bind manual validation to frozen repository head\n", 1)[1].split("      - name: ", 1)[0]
         self.assertIn("required: false", workflow)
         self.assertIn(
             "if: github.event_name == 'workflow_dispatch' && "
-            "github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118'",
-            workflow,
+            "inputs.expected_head_sha != ''",
+            preflight,
         )
-        self.assertIn("run: bash automation/verify_manual_head_checkout.sh", workflow)
+        self.assertIn("EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}", preflight)
+        self.assertIn("run: bash automation/verify_manual_head_checkout.sh", preflight)
+        # A dispatch without the optional SHA does not invoke the helper; a
+        # wrong-ref opt-in invokes it and is rejected by its repository/ref gate.
+        self.assertNotIn("github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118'", preflight)
+        self.assertIn("${GITHUB_REF:-} != refs/heads/fix/dot-wc3-continuation-20261118", SCRIPT.read_text())
         self.assertIn("github.head_ref != 'fix/dot-wc3-continuation-20261118'", workflow)
         self.assertIn("github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'", workflow)
 

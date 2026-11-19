@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       expected_head_sha:
-        description: Frozen full commit SHA of the continuation branch to validate
+        description: Optional frozen continuation head SHA; supplying it enables exact-head preflight
         required: false
         type: string
 
@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Bind manual validation to frozen repository head
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118'
+        if: github.event_name == 'workflow_dispatch' && inputs.expected_head_sha != ''
         env:
           EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
         run: bash automation/verify_manual_head_checkout.sh
