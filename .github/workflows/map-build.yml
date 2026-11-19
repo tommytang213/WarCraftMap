@@ -16,6 +16,11 @@ on:
       - "automation/prepare_wurst_image.sh"
       - ".github/workflows/map-build.yml"
   workflow_dispatch:
+    inputs:
+      expected_head_sha:
+        description: Frozen full commit SHA of the continuation branch to validate
+        required: false
+        type: string
 
 # Keep PR verification and final main checks, but do not rebuild each agent branch
 # twice (once for its push and again for pull_request). New PR commits cancel
@@ -38,6 +43,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Bind manual validation to frozen repository head
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118'
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: bash automation/verify_manual_head_checkout.sh
 
       - name: Validate canonical source and contracts
         run: |
