@@ -155,6 +155,8 @@ def _declared_research_mappings(world):
             if contract.get('schemaVersion') == 1:
                 effect = contract.get('effect', contract)
                 include(effect.get('nodeId'), effect.get('unlock'))
+                if relative == 'scenario/progression/dispatch-contract.json':
+                    include(contract.get('relayNodeId'), contract.get('relayUnlock'))
     path = PROJECT / 'scenario/naval/recruitment.json'
     if path.is_file():
         contract = _load(path)

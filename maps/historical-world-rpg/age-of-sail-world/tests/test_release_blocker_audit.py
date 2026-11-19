@@ -174,6 +174,19 @@ class ReleaseBlockerAuditTests(unittest.TestCase):
                 row = next(row for row in audit._audit_research_bindings() if row['id'] == target)
                 self.assertIn('no declared gameplay consumer mapping', row['message'])
 
+    def test_dispatch_relay_prerequisite_is_declared_but_missing_contract_is_not(self):
+        target = 'RESEARCH-UNBOUND-COURIER-RELAYS-MODIFIER-PROGRESSION-COURIER-RELAYS'
+        current = next(row for row in audit._audit_research_bindings() if row['id'] == target)
+        self.assertIn('declared mapping', current['message'])
+        self.assertIn('same-revision execution has not verified', current['message'])
+        path = audit.PROJECT / 'scenario/progression/dispatch-contract.json'
+        original = Path.is_file
+        with patch.object(Path, 'is_file', lambda candidate: False if candidate == path else original(candidate)):
+            missing = next(row for row in audit._audit_research_bindings() if row['id'] == target)
+        self.assertIn('no declared gameplay consumer mapping', missing['message'])
+        self.assertEqual({key: value for key, value in current.items() if key != 'message'},
+                         {key: value for key, value in missing.items() if key != 'message'})
+
     def test_research_reason_remains_unverified_for_missing_stale_and_partial_execution(self):
         from test_agriculture_evidence import selection_evidence
         target = 'RESEARCH-UNBOUND-AGRARIAN-IMPROVEMENT-BUILDING-GRANARY'
