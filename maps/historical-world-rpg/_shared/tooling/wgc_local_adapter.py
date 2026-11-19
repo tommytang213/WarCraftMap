@@ -90,7 +90,9 @@ def command(config, bundle, game_root, game_exe, map_file, wgc_file):
 def log_events(before: bytes, after: bytes, map_filename: str):
     # Read only new content from the explicitly selected War3Log. Export counts,
     # never raw lines, user paths, account details or Blizzard dump files.
-    new = after[len(before):] if after.startswith(before) else after
+    if not after.startswith(before):
+        raise ValueError("War3Log changed or truncated during native diagnostic")
+    new = after[len(before):]
     text = new.decode("utf-8", errors="replace")
     events = {"openingMap": 0, "playedLoaderEntry": 0}
     for line in text.splitlines():
