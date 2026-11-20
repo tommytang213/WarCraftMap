@@ -54,6 +54,7 @@ jobs:
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
+              apt-get install -y --no-install-recommends git || echo 'Optional Git inspection tool unavailable; build continues.'
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
               validation_status=0
