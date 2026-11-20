@@ -1,0 +1,69 @@
+{
+  "scope": "source-only report freshness, not native/release acceptance",
+  "sourceIdentity": {
+    "sourceRevision": "6b6a3dacc58fe59876bb9066b5024fc46b9f401c",
+    "sourceTreeSha256": "54bc0d7c4ac665d4721cb36798bc9d42c7637e292e850ee8b60c951de192c762"
+  },
+  "commands": [
+    {
+      "name": "runtime",
+      "command": [
+        "tooling/runtime_acceptance.py",
+        "--write",
+        "--source-revision",
+        "6b6a3dacc58fe59876bb9066b5024fc46b9f401c"
+      ],
+      "exitCode": 1,
+      "expected": 1,
+      "seconds": 0.29,
+      "logSha256": "80ef4609202503bc2cd36265df9d0b2889fa5e88da0aab9fb851dddda5939371"
+    },
+    {
+      "name": "release",
+      "command": [
+        "tooling/release_blocker_audit.py",
+        "--write",
+        "--source-revision",
+        "6b6a3dacc58fe59876bb9066b5024fc46b9f401c"
+      ],
+      "exitCode": 1,
+      "expected": 1,
+      "seconds": 24.356,
+      "logSha256": "3197c6f593227afbf2311baa3a2f2ed6f1981d7ba453d30944f4ab5d3a53628f"
+    },
+    {
+      "name": "trace",
+      "command": [
+        "tooling/requirement_traceability_audit.py",
+        "--write",
+        "--check",
+        "--source-revision",
+        "6b6a3dacc58fe59876bb9066b5024fc46b9f401c"
+      ],
+      "exitCode": 0,
+      "expected": 0,
+      "seconds": 3.654,
+      "logSha256": "06a201412f97b67e9b49dd697b916a7e2386e14abed77a24d294425063de8a3c"
+    },
+    {
+      "name": "freshness",
+      "command": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_release_blocker_audit.py",
+        "-k",
+        "test_checked_in_machine_and_human_reports_are_current"
+      ],
+      "exitCode": 0,
+      "expected": 0,
+      "seconds": 47.188,
+      "logSha256": "e31d7a42aa28e9182b6f737c914aa18306db27e76ab1eb43811aef5590e81ab2"
+    }
+  ],
+  "completed": true,
+  "sourcesUnchanged": true
+}

@@ -4,6 +4,7 @@ import LandArmyEffects
 import LandArmyRuntime
 import ScienceExploration
 import CivicGovernance
+import CivicCampaignRuntime
 import CampaignTimeline
 import PlayableCampaignRuntime
 import PlayableCountryInteractions
@@ -679,3 +680,114 @@ function bayonetDamage(LandFixture f, string attacker, string target, string att
 	destroy hit
 	destroy equipment
 	destroy layer
+
+
+class IdleLandEconomy extends CampaignCivicEconomy
+	int controllerReads = 0
+	construct(PlayableCampaignState campaign, PlayableTradeRuntime trade)
+		super(campaign, trade)
+	override function controller(string id) returns string
+		controllerReads++
+		return super.controller(id)
+
+class IdleLandMilitary extends MilitarySettlementRuntime
+	int refreshes = 0
+	construct()
+		super(new RecordingMilitaryAdapter())
+	override function refreshLandReload()
+		refreshes++
+		super.refreshLandReload()
+
+class IdleLandFixture
+	CampaignClock clock = new CampaignClock(529237, 700000, 649041, 1.)
+	PlayableCampaignState campaign = new PlayableCampaignState(null, clock)
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	IdleLandMilitary military = new IdleLandMilitary()
+	IdleLandEconomy economy = new IdleLandEconomy(campaign, trade)
+	LandArmyRuntime runtime = new LandArmyRuntime(campaign, trade)
+	construct()
+		campaign.setMilitarySettlementRuntime(military)
+		military.land.register("idle", clock.currentDay)
+		runtime.economy = economy
+	function state() returns ArsenalState
+		return military.land.arsenals[0]
+
+@test function idleLandJumpMatchesDailyAuthorityWithoutControllerReads()
+	let jump = new IdleLandFixture()
+	let daily = new IdleLandFixture()
+	jump.state().serial = 7
+	daily.state().serial = 7
+	jump.state().restored = true
+	daily.state().restored = true
+	let start = jump.clock.currentDay
+	let refreshes = jump.military.refreshes
+	// Exercise the real daily API over a bounded interval, including its
+	// final reload refresh on EVERY call. The full 4000-day temporal case
+	// below uses the exact old empty-state transition, not 4000 redundant
+	// full-runtime refresh traversals inside the interpreter deadline.
+	jump.runtime.advance(start + 16)
+	for day = start + 1 to start + 16
+		daily.runtime.advance(day)
+	jump.military.snapshot().assertEquals(daily.military.snapshot())
+	jump.military.refreshes.assertEquals(refreshes + 1)
+	daily.military.refreshes.assertEquals(refreshes + 16)
+	jump.runtime.advance(start + 4000)
+	// In the original body both owner-dependent branches are false, the
+	// pure controller/profile lookups change nothing, and only lastDay++
+	// mutates an empty state's authority. Model those exact remaining
+	// transitions while retaining every other field for full comparison.
+	while daily.state().lastDay < start + 4000
+		daily.state().lastDay++
+	jump.state().lastDay.assertEquals(start + 4000)
+	jump.state().serial.assertEquals(7)
+	jump.state().restored.assertTrue()
+	jump.military.snapshot().assertEquals(daily.military.snapshot())
+	jump.economy.controllerReads.assertEquals(0)
+	daily.economy.controllerReads.assertEquals(0)
+	jump.military.refreshes.assertEquals(refreshes + 2)
+	let saved = jump.military.snapshot()
+	jump.runtime.advance(start + 4000)
+	jump.runtime.advance(start + 3999)
+	jump.military.snapshot().assertEquals(saved)
+	jump.military.refreshes.assertEquals(refreshes + 4)
+
+@test function idleLandInitializationAndRetainedFieldsOnlyAdvanceCursor()
+	let f = new IdleLandFixture()
+	let s = f.state()
+	// Even inactive in-memory remnants are not normalized or cleared by this
+	// optimization. Existing save validation remains independently strict.
+	s.lastDay = 0
+	s.ready = 12
+	s.upkeepThrough = 34
+	s.work = 56
+	s.officeBillPaid = true
+	s.serial = 78
+	s.restored = true
+	f.runtime.advance(649050)
+	s.lastDay.assertEquals(649050)
+	f.runtime.advance(649060)
+	s.lastDay.assertEquals(649060)
+	s.ready.assertEquals(12)
+	s.upkeepThrough.assertEquals(34)
+	s.work.assertEquals(56)
+	s.officeBillPaid.assertTrue()
+	s.serial.assertEquals(78)
+	s.restored.assertTrue()
+	f.economy.controllerReads.assertEquals(0)
+
+@test function idleLandCanFundOfficeAndProjectAfterJumpWithoutRetroactiveWork()
+	let f = new LandFixture()
+	f.allResearch()
+	f.advance(4000)
+	f.arsenal().lastDay.assertEquals(f.day + 4000)
+	f.action("policy")
+	f.arsenal().ready.assertEquals(f.day + 4090)
+	f.advance(4090)
+	f.action("commission")
+	f.arsenal().work.assertEquals(0)
+	f.advance(4091)
+	f.arsenal().work.assertEquals(10800)
+	f.advance(4174)
+	(f.military.forceIndex("artillery:district:1") >= 0).assertTrue()
+	f.arsenal().projectOwner.assertEquals("")
+	f.arsenal().serial.assertEquals(1)

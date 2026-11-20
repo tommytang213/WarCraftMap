@@ -35,6 +35,7 @@ class RecruitmentPorts implements CommandOutput, ResearchCommandResources, Techn
 		return RESEARCH_UNBOUND
 
 class RecruitmentStorage implements CampaignSaveStorage
+	int writes = 0
 	string payload = ""
 	override function contains(string slotId) returns boolean
 		return payload != ""
@@ -42,6 +43,7 @@ class RecruitmentStorage implements CampaignSaveStorage
 		return payload
 	override function writeTransactional(string slotId, string payload) returns boolean
 		this.payload = payload
+		writes++
 		return true
 	override function diagnostic() returns string
 		return ""
@@ -71,13 +73,17 @@ public class RecruitmentFixture
 		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
 		initial = rpg.captureState()
 	function reject(string command, string expected)
+		rejectAs(Player(0), command, expected)
+	function rejectAs(player sender, string command, string expected)
 		let before = state.captureAuthoritativeState()
 		let beforeRpg = rpg.captureState()
 		let balance = ports.balance
 		let writes = ports.resourceWrites
 		let effects = ports.effects
 		let messages = ports.messages
-		commands.dispatch(null, command).assertTrue()
+		let saved = storage.payload
+		let saveWrites = storage.writes
+		commands.dispatch(sender, command).assertTrue()
 		ports.last.assertEquals(expected)
 		(StringLength(ports.last) <= 96).assertTrue()
 		ports.messages.assertEquals(messages + 1)
@@ -86,8 +92,10 @@ public class RecruitmentFixture
 		ports.balance.assertEquals(balance)
 		ports.resourceWrites.assertEquals(writes)
 		ports.effects.assertEquals(effects)
+		storage.payload.assertEquals(saved)
+		storage.writes.assertEquals(saveWrites)
 	function recruit()
-		commands.dispatch(null, "/recruit " + hero.id).assertTrue()
+		commands.dispatch(Player(0), "/recruit " + hero.id).assertTrue()
 		hero.recruited.assertTrue()
 		hero.assignment.assertEquals("reserve")
 		ports.last.startsWith(hero.name + " joined your strategic roster.").assertTrue()
@@ -285,3 +293,30 @@ function bothBoundaries(RecruitmentFixture f)
 	f.at(f.hero.availabilityStartDay + 1, false)
 	f.hero.availabilityEndDay = f.hero.availabilityStartDay - 1
 	f.at(f.hero.availabilityStartDay, false)
+
+function rejectedRecruitmentOwner(player sender)
+	let f = windowFixture()
+	f.clock.advanceTo(f.hero.availabilityStartDay).assertTrue()
+	f.hero.startingProfile = new HeroStartingProfile(5, "", "", "")
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "before-recruitment").assertTrue()
+	let payload = f.storage.payload
+	let problem = f.rpg.heroes.lastRecruitmentProblem
+	f.rejectAs(sender, "/recruit window", "Only the campaign player can recruit heroes.")
+	f.rejectAs(sender, "/hire window", "Only the campaign player can recruit heroes.")
+	f.storage.payload.assertEquals(payload)
+	f.rpg.heroes.lastRecruitmentProblem.assertEquals(problem)
+	f.hero.recruited.assertFalse()
+	f.rpg.heroes.strategicRosterSize().assertEquals(0)
+	// Rejection cannot consume or corrupt the owner's first-recruitment profile.
+	f.recruit()
+	f.hero.level.assertEquals(5)
+	f.saves.save(SAVE_SLOT_MANUAL, 1, "owner-recruited").assertTrue()
+	let recruited = f.rpg.captureState()
+	f.saves.load(SAVE_SLOT_MANUAL, 1).assertTrue()
+	f.rpg.captureState().assertEquals(recruited)
+
+@test function recruitmentRejectsAnotherPlayerWithoutAuthorityOrPersistenceMutation()
+	rejectedRecruitmentOwner(Player(1))
+
+@test function recruitmentRejectsMissingSenderWithoutAuthorityOrPersistenceMutation()
+	rejectedRecruitmentOwner(null)

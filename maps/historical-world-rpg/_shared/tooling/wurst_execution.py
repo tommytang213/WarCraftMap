@@ -24,6 +24,22 @@ FORMAT = "warcraftmap_wurst_execution_v1"
 TESTS_PER_PROCESS = 100
 
 
+def failure_annotation(report: dict) -> str:
+    """Bounded CI diagnostic only; never substitutes for execution evidence."""
+    failed = [row for row in report.get("tests", []) if row.get("status") != "pass"]
+    rows = report.get("tests", [])
+    parts = [f"Recorded results: {report.get('succeeded', 0)}/{report.get('discovered', 0)} passed; "
+             f"{len(failed)} recorded non-passing results."]
+    if len(rows) < report.get("discovered", 0):
+        parts.append("Result collection incomplete; consult retained transcript for earlier shard results.")
+    parts += [f"{row.get('id', '?')}: {row.get('status', '?')}"[:500] for row in failed[:8]]
+    parts += [str(error)[:500] for error in report.get("errors", [])[:8]]
+    # Escape workflow-command data, including newlines in malformed source IDs.
+    # Bound after expansion too; the retained transcript remains complete.
+    message = " | ".join(parts).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    return "::error title=Wurst execution failed::" + message[:6000]
+
+
 class WurstExecutionError(RuntimeError):
     pass
 
@@ -307,6 +323,8 @@ def execute_tests(compile_root: Path, executable: str, evidence_dir: Path,
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"Wurst execution: {report['succeeded']}/{report['discovered']} passed; evidence: {report_path}")
     if report["status"] != "pass":
+        if os.environ.get("WURST_CI_ANNOTATIONS") == "true":
+            print(failure_annotation(report), flush=True)
         # CI builds in disposable containers. Surface the actual failed test
         # and interpreter diagnostic before their private evidence is removed.
         # Keep the transcript/evidence and fail-closed result unchanged.

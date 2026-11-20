@@ -13,6 +13,8 @@ import ScienceExploration
 import CivicGovernance
 import LandArmyEffects
 import QuestStages
+import QuestRewards
+import QuestConsultation
 import HeroProgression
 import HeroAllocationDefinitions
 
@@ -637,6 +639,7 @@ public class PlayerInventory
 
 public class RuntimeQuest
 	QuestGraph graph = null
+	QuestRewardBatch authoredRewards = null
 	string id
 	string title
 	string kind
@@ -694,6 +697,8 @@ public class RuntimeQuest
 		updateGuidance()
 
 	ondestroy
+		if authoredRewards != null
+			destroy authoredRewards
 		if graph != null
 			destroy graph
 
@@ -778,7 +783,7 @@ public class QuestJournalRuntime
 		let objective = graph.objective(objectiveId)
 		if objective == null or not graph.activeObjective(objectiveId) or questHas(graph.processedReceiptIds, receiptId) or objective.binding != "domain_receipt"
 			return false
-		if conditions == null or not conditions.supports(objective.conditionId)
+		if conditions == null or not conditions.supportsObjective(id, graph.activeStageId, objective)
 			lastDiagnostic = "Condition integration unavailable: " + objective.conditionId
 			return false
 		if not conditions.validates(id, graph.activeStageId, objective, receiptId)
@@ -790,23 +795,40 @@ public class QuestJournalRuntime
 		return true
 	/** Only the persisted player research authority may satisfy an explicitly
 	 * marked research objective. A generated domain_receipt blocker remains
-	 * blocked; no caller-provided receipt or mock condition can forge this. */
-	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
-		if research == null or controllerId != "player"
+	 * blocked; no caller-provided receipt or mock condition can forge this.
+	 * Check only the entry stage of this quest; action-triggered checks must
+	 * never sweep unrelated quests or reuse a receipt as research evidence. */
+	function syncQuestResearch(RuntimeQuest q, TechnologyRuntime research, string controllerId) returns boolean
+		return syncQuestResearchTargets(q, research, controllerId, "")
+	/** Empty filter preserves ordinary research synchronization; reward delivery
+	 * supplies only the newly committed IDs, never pre-existing ownership. */
+	private function syncQuestResearchTargets(RuntimeQuest q, TechnologyRuntime research, string controllerId, string targets) returns boolean
+		if research == null or controllerId != "player" or q == null or q.state != QUEST_ACTIVE or q.graph == null
+			return false
+		var changed = false
+		let stageAtEntry = q.graph.activeStageId
+		for j = 0 to q.graph.objectiveCount - 1
+			let objective = q.graph.objectives[j]
+			let reference = objective.entityRefs
+			if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
+				let technologyId = SubString(reference, 11, StringLength(reference) - 1)
+				if (targets == "" or questHas(targets, technologyId)) and research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
+					q.settleProgress()
+					changed = true
+		return changed
+	function syncNewPlayerResearch(TechnologyRuntime research, string targets) returns boolean
+		if targets == ""
 			return false
 		var changed = false
 		for i = 0 to count - 1
-			let q = quests[i]
-			if q != null and q.state == QUEST_ACTIVE and q.graph != null
-				let stageAtEntry = q.graph.activeStageId
-				for j = 0 to q.graph.objectiveCount - 1
-					let objective = q.graph.objectives[j]
-					let reference = objective.entityRefs
-					if q.graph.activeStageId == stageAtEntry and q.graph.activeObjective(objective.id) and objective.binding == "research_unlocked" and objective.conditionId == "quest_technology_satisfied" and reference.startsWith("technology:") and reference.indexOf("~") == StringLength(reference) - 1
-						let technologyId = SubString(reference, 11, StringLength(reference) - 1)
-						if research.isUnlockedOfKind(controllerId, technologyId, "technology") and q.graph.completeObjective(objective.id)
-							q.settleProgress()
-							changed = true
+			if syncQuestResearchTargets(quests[i], research, "player", targets)
+				changed = true
+		return changed
+	function syncPlayerResearch(TechnologyRuntime research, string controllerId) returns boolean
+		var changed = false
+		for i = 0 to count - 1
+			if syncQuestResearch(quests[i], research, controllerId)
+				changed = true
 		return changed
 	/** The caller has just revalidated physical presence. Process the stage
 	 * that was active at entry only; a visit cannot cascade through a chain. */
@@ -833,6 +855,7 @@ public class QuestJournalRuntime
 		questDefinition.cooldownUntil=day+cooldownDays
 		return true
 	function turnIn(string id, RpgHero hero, int day, int cooldownDays) returns boolean
+		lastDiagnostic = ""
 		let questDefinition=get(id)
 		if questDefinition == null or questDefinition.state != QUEST_READY or not questDefinition.ready() or questDefinition.completions >= questDefinition.completionCap or hero == null or not hero.recruited or hero.incapacitated
 			return false
@@ -846,6 +869,10 @@ public class QuestJournalRuntime
 		// can recover them without rewriting their existing state.
 		if questDefinition.rewardCurrency < 0 or (currency > 0 and questDefinition.rewardCurrency > 2147483647 - currency)
 			return false
+		if questDefinition.authoredRewards != null
+			lastDiagnostic = questDefinition.authoredRewards.prepare(questDefinition)
+			if lastDiagnostic != ""
+				return false
 		questDefinition.state=QUEST_COMPLETE
 		questDefinition.updateGuidance()
 		questDefinition.completions++
@@ -853,6 +880,8 @@ public class QuestJournalRuntime
 		currency+=questDefinition.rewardCurrency
 		if questDefinition.rewardExperience > 0
 			hero.awardExperience(questDefinition.rewardExperience)
+		if questDefinition.authoredRewards != null
+			questDefinition.authoredRewards.commitPrepared(questDefinition)
 		return true
 	function refill(int day)
 		for i = 0 to count - 1
@@ -1239,6 +1268,8 @@ public class WarcraftRpgRuntime
 	HeroRoster heroes = new HeroRoster()
 	PlayerInventory inventory = new PlayerInventory()
 	QuestJournalRuntime journal = new QuestJournalRuntime()
+	QuestConsultationRuntime consultations = new QuestConsultationRuntime()
+	string lastInteractionRewardDiagnostic = ""
 	TreasureRuntime treasures = new TreasureRuntime()
 	PhysicalInteractionContext interactions = new PhysicalInteractionContext()
 	InteractionVisitListener visits = null
@@ -1250,6 +1281,11 @@ public class WarcraftRpgRuntime
 	construct(TechnologyEffectPort effects)
 		technologies = new TechnologyRuntime(effects)
 		interactions.actors = new WarcraftInteractionActors(heroes)
+	function registerConsultation(QuestConsultationBinding binding)
+		if consultations.count == 0
+			consultations.other = journal.conditions
+			journal.conditions = consultations
+		consultations.register(binding)
 	function setProjectionPort(RpgProjectionPort value)
 		projections=value
 	/** The strategic roster belongs to the single campaign player, independently
@@ -1399,7 +1435,7 @@ public class WarcraftRpgRuntime
 	function acceptQuest(string id) returns boolean
 		let accepted=journal.accept(id)
 		if accepted
-			journal.syncPlayerResearch(technologies,"player")
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
 			journal.track(id)
 			reconcile("player")
 		return accepted
@@ -1412,12 +1448,19 @@ public class WarcraftRpgRuntime
 	function questEvent(string id, string objectiveId, string receiptId) returns boolean
 		let changed = journal.recordEvent(id, objectiveId, receiptId)
 		if changed
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
+			reconcile("player")
+		return changed
+	/** Explicitly check only the named quest entry stage against earned research. */
+	function checkQuestResearch(string id) returns boolean
+		let changed = journal.syncQuestResearch(journal.get(id), technologies, "player")
+		if changed
 			reconcile("player")
 		return changed
 	function advanceQuest(string id, string stageId) returns boolean
 		let changed = journal.advance(id, stageId)
 		if changed
-			journal.syncPlayerResearch(technologies,"player")
+			journal.syncQuestResearch(journal.get(id),technologies,"player")
 			reconcile("player")
 		return changed
 	function eligibleActor(int index) returns boolean
@@ -1431,32 +1474,46 @@ public class WarcraftRpgRuntime
 	/** Resolve again at commit; no tracked marker, previous check or saved
 	 * assignment is a capability to mutate at a requested target. */
 	function interact(player sender, string requested, int day) returns boolean
+		lastInteractionRewardDiagnostic = ""
 		let actor = localActor(sender, requested)
 		if actor < 0 or not eligibleActor(actor)
 			return false
 		let target = interactions.resolve(actor, sender, requested)
 		if target == null
 			return false
+		// Freeze the interaction entry frontier: a reward may make another
+		// quest ready, but cannot authorize its turn-in in this same delivery.
+		boolean array[2048] readyAtEntry
+		for i = 0 to journal.count - 1
+			readyAtEntry[i] = journal.quests[i].state == QUEST_READY
 		var changed = false
 		if visits != null
 			changed = visits.recordVisit(target)
 		for i = 0 to journal.count - 1
 			let q = journal.quests[i]
 			let atGiver = target.matches(q.giverId)
-			let atTurnIn = target.matches(q.turnInId)
 			// Refill only an eligible local offer, never unrelated quests during
 			// a rejected request or a repeated treasure collection.
 			if atGiver and q.canRefill(day)
 				q.state = QUEST_OFFERED
 				q.resetProgress()
 			if atGiver and q.state == QUEST_OFFERED and journal.accept(q.id)
+				journal.syncQuestResearch(q,technologies,"player")
 				journal.track(q.id)
 				changed = true
-			else if q.state == QUEST_READY
-				if atTurnIn and journal.turnIn(q.id, heroes.heroes[actor], day, 30)
-					changed = true
-			else if journal.visit(q, target)
+			else if q.state != QUEST_READY and journal.visit(q, target)
+				journal.syncQuestResearch(q,technologies,"player")
 				changed = true
+		// Complete the physical visit pass before any reward can unlock another
+		// quest's visit stage. Both journal orders therefore stop at that new
+		// stage until a later interaction. Explicit turn-in still syncs at once.
+		for i = 0 to journal.count - 1
+			let q = journal.quests[i]
+			if readyAtEntry[i] and q.state == QUEST_READY and target.matches(q.turnInId)
+				if commitQuestTurnIn(sender, q, actor, day, 30)
+					changed = true
+				else if q.authoredRewards != null and journal.lastDiagnostic != ""
+					lastInteractionRewardDiagnostic += q.title + ": " + journal.lastDiagnostic + "\n"
 		for i=0 to treasures.count-1
 			let t=treasures.treasures[i]
 			if t.resolution != null and target.kind == "region" and t.regionId == target.eventId
@@ -1468,8 +1525,29 @@ public class WarcraftRpgRuntime
 		if changed
 			reconcile("player")
 		return changed
+	/** Shared post-presence transaction boundary for explicit and physical turn-in.
+	 * Visits may have changed the world; scoped authored batches recheck presence
+	 * before committing and synchronize research only after complete success. */
+	function commitQuestTurnIn(player sender, RuntimeQuest definition, int actor, int day, int cooldownDays) returns boolean
+		journal.lastDiagnostic = ""
+		if definition.authoredRewards != null
+			if sender != Player(0)
+				journal.lastDiagnostic = "Only the campaign player can turn in authored rewards."
+				return false
+			if actor < 0 or actor >= heroes.count or not eligibleActor(actor) or interactions.resolve(actor, sender, definition.turnInId) == null
+				journal.lastDiagnostic = "Authored rewards blocked: field character is no longer present."
+				return false
+		let result = journal.turnIn(definition.id, heroes.heroes[actor], day, cooldownDays)
+		if not result and definition.authoredRewards != null and journal.lastDiagnostic == ""
+			journal.lastDiagnostic = "Quest turn-in was not completed: requirements are not met."
+		if result and definition.authoredRewards != null
+			journal.syncNewPlayerResearch(technologies, definition.authoredRewards.consumeCommittedResearch())
+		return result
 	function turnInQuest(player sender,string id,string heroId,int day,int cooldownDays) returns boolean
+		journal.lastDiagnostic = ""
 		let q=journal.get(id)
+		if q != null and q.authoredRewards != null and sender != Player(0)
+			return false
 		let actor = heroes.indexOf(heroId)
 		if q == null or q.turnInId == "" or actor < 0 or not eligibleActor(actor)
 			return false
@@ -1480,7 +1558,7 @@ public class WarcraftRpgRuntime
 		let target = interactions.resolve(actor, sender, q.turnInId)
 		if target == null
 			return false
-		let result=journal.turnIn(id,heroes.get(heroId),day,cooldownDays)
+		let result=commitQuestTurnIn(sender,q,actor,day,cooldownDays)
 		if result
 			if visits != null
 				visits.recordVisit(target)
@@ -1988,12 +2066,19 @@ public function journalText(WarcraftRpgRuntime runtime) returns string
 					let objective = graph.objectives[j]
 					if graph.activeObjective(objective.id)
 						rows += "\n" + objective.description
-						if objective.binding == "domain_receipt" and (runtime.journal.conditions == null or not runtime.journal.conditions.supports(objective.conditionId))
+						if questDefinition.state == QUEST_ACTIVE and objective.binding == "research_unlocked"
+							rows += " (Check earned research: /questcheck " + questDefinition.id + ")"
+						rows += runtime.consultations.hint(questDefinition.id, graph.activeStageId, objective)
+						if objective.binding == "domain_receipt" and (runtime.journal.conditions == null or not runtime.journal.conditions.supportsObjective(questDefinition.id, graph.activeStageId, objective))
 							rows += " (Progress unavailable: condition integration pending.)"
 				if questDefinition.state == QUEST_READY
 					rows += "\nReturn to " + questDefinition.turnInId + " to turn in."
 				else if graph.stageComplete(graph.activeStageId, graph.completedObjectiveIds)
 					rows += "\nChoose the next stage with /queststage " + questDefinition.id + " STAGE: " + graph.stage(graph.activeStageId).nextStageIds
+			if questDefinition.authoredRewards != null and questDefinition.state != QUEST_COMPLETE
+				let issue = questDefinition.authoredRewards.problem(questDefinition)
+				if issue != ""
+					rows += "\n" + issue
 	return rows
 
 public function showJournal(player viewer, WarcraftRpgRuntime runtime)
@@ -2136,6 +2221,9 @@ class RecruitHeroCommand implements CommandHandler
 		this.runtime=runtime
 		this.output=output
 	override function execute(player sender,string arguments)
+		if sender != Player(0)
+			output.show(sender,"Only the campaign player can recruit heroes.")
+			return
 		if runtime.heroes.recruit(arguments)
 			let hero=runtime.heroes.get(arguments)
 			output.show(sender,hero.name+" joined your strategic roster. Use assignments to choose who enters the active field group.")
@@ -2167,6 +2255,9 @@ class RpgActionCommand implements CommandHandler
 		this.action=action
 		this.output=output
 	override function execute(player sender,string arguments)
+		if (action == "equip" or action == "unequip" or action == "accept" or action == "queststage" or action == "questcheck") and sender != Player(0)
+			output.show(sender,"Only the campaign player can change equipment or quest choices.")
+			return
 		let cut=arguments.indexOf(" ")
 		var first=arguments
 		var second=""
@@ -2180,6 +2271,9 @@ class RpgActionCommand implements CommandHandler
 		else if action == "unequip"
 			ok=runtime.unequipItem(first,second)
 		else if action == "research"
+			if sender != Player(0)
+				output.show(sender,"Only the campaign player can commit research.")
+				return
 			let resources=runtime.researchResources
 			let year=resources.year()
 			let cost=runtime.technologies.costFor(resources.controllerId(sender),first,year,0,0)
@@ -2188,14 +2282,28 @@ class RpgActionCommand implements CommandHandler
 				ok=runtime.research(resources.controllerId(sender),first,year,cost)
 				if ok
 					resources.setGold(sender,available-cost)
+		else if action == "consult"
+			output.show(sender,runtime.consultations.consult(runtime,sender,first))
+			return
 		else if action == "accept"
 			ok=runtime.acceptQuest(first)
+		else if action == "questcheck"
+			ok=runtime.checkQuestResearch(first)
 		else if action == "queststage"
 			ok=runtime.advanceQuest(first,second)
 		else if action == "turnin"
 			ok=runtime.turnInQuest(sender,first,second,getCampaignDay(),30)
+			if not ok and runtime.journal.lastDiagnostic != ""
+				output.show(sender,runtime.journal.lastDiagnostic)
+				return
 		else if action == "interact"
 			ok=runtime.interact(sender,first,getCampaignDay())
+			if runtime.lastInteractionRewardDiagnostic != ""
+				if ok
+					output.show(sender,"Other interaction progress was recorded. Some quest turn-ins were blocked.\n" + runtime.lastInteractionRewardDiagnostic)
+				else
+					output.show(sender,runtime.lastInteractionRewardDiagnostic)
+				return
 		if ok
 			output.show(sender,"Action completed.")
 		else
@@ -2251,10 +2359,16 @@ public function registerRpgRuntimeCommands(CommandRegistry commands,WarcraftRpgR
 	problem=commands.register("accept","","accept QUEST","Accept an offered quest.","Accepts and tracks a currently available quest.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"accept",commands.output))
 	if problem != ""
 		return problem
+	problem=commands.register("questcheck","","questcheck QUEST","Check earned research for an active quest.","Checks only the named quest current stage. Repeat for later research stages; does not buy research or turn in rewards.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"questcheck",commands.output))
+	if problem != ""
+		return problem
 	problem=commands.register("queststage","","queststage QUEST STAGE","Choose a quest branch.","Requires all current objectives and an authored successor stage. The journal lists available choices.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"queststage",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("turnin","","turnin QUEST HERO","Turn in a completed quest.","Requires the named field character at the authored turn-in location, then awards persistent rewards.",2,2,COMMAND_RELEASE,new RpgActionCommand(runtime,"turnin",commands.output))
+	if problem != ""
+		return problem
+	problem=commands.register("consult","","consult PROVIDER","Obtain observations from a local quest provider.","Requires the matching active objective and a field character at the provider location shown in the journal. Visiting or owning an institution is not a consultation.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"consult",commands.output))
 	if problem != ""
 		return problem
 	problem=commands.register("interact","investigate,search","interact LOCATION","Interact with a nearby world location.","Requires a local field character; advances matching quests and clues and discovers eligible treasure at its actual location.",1,1,COMMAND_RELEASE,new RpgActionCommand(runtime,"interact",commands.output))

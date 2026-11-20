@@ -1,3 +1,4 @@
+# The isolated Dot diagnostic branch retains logs only: artifact allowance is unverified.
 name: Large-world and multi-century stress
 on:
   pull_request:
@@ -80,6 +81,7 @@ jobs:
       - name: Validate extended minimum-target budgets from the same manifest
         run: python3 maps/historical-world-rpg/age-of-sail-world/tooling/check_final_performance_budgets.py --profile minimum_target
       - uses: actions/upload-artifact@v4
+        if: github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         with:
           name: maximum-reasonable-world-summary
           path: maps/historical-world-rpg/age-of-sail-world/_build/stress/maximum-reasonable.json
@@ -90,6 +92,7 @@ jobs:
             --profile complete_multi_century \
             --summary-out maps/historical-world-rpg/age-of-sail-world/_build/stress/full-world-multi-century.json
       - uses: actions/upload-artifact@v4
+        if: github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         with:
           name: full-world-multi-century-summary
           path: maps/historical-world-rpg/age-of-sail-world/_build/stress/full-world-multi-century.json

@@ -776,7 +776,7 @@ Counts are unique stable IDs; per-map assignments, missing/extra/changed IDs and
 | geographic-areas | 7 | None | fail |
 | geographic-anchors | 19 | None | fail |
 | logical-boundaries | 6 | None | fail |
-| quest-locations | 20 | None | fail |
+| quest-locations | 21 | None | fail |
 
 ## Final artifact byte composition
 

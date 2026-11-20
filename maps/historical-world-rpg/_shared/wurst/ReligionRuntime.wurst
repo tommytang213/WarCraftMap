@@ -310,6 +310,9 @@ public class ReligionConversionCommand implements CommandHandler
 		this.runtime=runtime
 		this.output=output
 	override function execute(player sender,string arguments)
+		if sender != Player(0)
+			output.show(sender,"Only the campaign player can change personal faith.")
+			return
 		if runtime.convert(arguments)
 			output.show(sender,"Faith changed. "+runtime.overview(true))
 		else

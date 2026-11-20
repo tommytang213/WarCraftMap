@@ -1,0 +1,1019 @@
+{
+  "format": "warcraftmap_focused_replay_v1",
+  "completed": true,
+  "scope": "focused local toolchain only; not full gate, native or release acceptance",
+  "bootstrapScope": "caller-supplied offline bootstrap; frozen before typecheck; no provenance assertion",
+  "sourceRevision": "6b6a3dacc58fe59876bb9066b5024fc46b9f401c",
+  "requestedPackages": [
+    "InstalledCommandHelpTests",
+    "QuestRewardTests",
+    "ScienceExplorationTests"
+  ],
+  "suites": [
+    {
+      "package": "typecheck",
+      "command": [
+        "/workspace/scratch/d496e51c7d30/wc3-pinned-toolchain/root/home/wurstuser/.wurst/grill",
+        "typecheck"
+      ],
+      "returnCode": 0,
+      "issues": [],
+      "compiler": {
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "executionImage": null,
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      }
+    },
+    {
+      "package": "InstalledCommandHelpTests",
+      "command": [
+        "/workspace/scratch/d496e51c7d30/wc3-pinned-toolchain/root/home/wurstuser/.wurst/grill",
+        "test",
+        "InstalledCommandHelpTests"
+      ],
+      "returnCode": 0,
+      "issues": [],
+      "compiler": {
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "executionImage": null,
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "tests": [
+        {
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+          "line": 128,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+          "line": 173,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+          "line": 199,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+          "line": 232,
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "package": "QuestRewardTests",
+      "command": [
+        "/workspace/scratch/d496e51c7d30/wc3-pinned-toolchain/root/home/wurstuser/.wurst/grill",
+        "test",
+        "QuestRewardTests"
+      ],
+      "returnCode": 0,
+      "issues": [],
+      "compiler": {
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "executionImage": null,
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "tests": [
+        {
+          "id": "wurst/QuestRewardTests.wurst:earnedResearchRewardGrantsOnlyTargetToPlayerWithoutPaymentOrPrerequisites",
+          "line": 88,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:researchRewardWaitsForReadyOwnerAndFreshLocalTurnIn",
+          "line": 126,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:reachedStageSubsetExcludesUnchosenUnsupportedRewardButBlocksChosenSibling",
+          "line": 149,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:unknownTargetAndRewardOverflowRejectWholeBatchBeforeAnyAward",
+          "line": 164,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:fullResearchCapacityRejectsWithoutPartialCompletion",
+          "line": 182,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:bothGeneratedResearchBearingQuestsBlockTheirWholeUnsupportedBatches",
+          "line": 215,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:unrelatedGeneratedQuestKeepsItsExistingGenericRewardPath",
+          "line": 237,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:completedOldSaveNeverRetroactivelyGrantsNewResearchRewards",
+          "line": 249,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:duplicateAndAlreadyOwnedResearchRewardsDoNotDuplicateCompletionKeys",
+          "line": 262,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:earnedPlayerResearchUpdatesMatchingActiveObjectiveWithoutAnotherReward",
+          "line": 276,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:physicalTurnInUsesSameOwnerPresenceGrantAndObserverSynchronization",
+          "line": 292,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:physicalBlockedRewardFeedbackDoesNotHideLegitimateOtherVisitProgress",
+          "line": 321,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:physicalOrdinaryRewardOverflowRemainsVisibleAlongsideOtherVisitProgress",
+          "line": 344,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:rewardInteractionFreezesReadyCandidatesInEitherJournalOrder",
+          "line": 403,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:rewardWithNoNewGrantDoesNotSynchronizePreviouslyOwnedResearch",
+          "line": 407,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:rewardNewGrantSynchronizesOnlyMatchingEntryStageNotOtherPreownedTargets",
+          "line": 422,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:questOwnsRewardBatchOutcomesIncludingRejectedOverflow",
+          "line": 453,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:rewardGrantCannotVisitNewStageDuringSameInteractionInEitherOrder",
+          "line": 495,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/QuestRewardTests.wurst:explicitRewardTurnInStillSynchronizesNewResearchImmediately",
+          "line": 499,
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "package": "ScienceExplorationTests",
+      "command": [
+        "/workspace/scratch/d496e51c7d30/wc3-pinned-toolchain/root/home/wurstuser/.wurst/grill",
+        "test",
+        "ScienceExplorationTests"
+      ],
+      "returnCode": 0,
+      "issues": [],
+      "compiler": {
+        "sha256": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145",
+        "grillVersion": "1.4.0.0-2c676dd",
+        "expectedImage": "frotty/wurstscript@sha256:ea428badd326df6f16f5d3857f7aadc100dbaacfbdb8fbac026933ab369fbb5a",
+        "executionImage": null,
+        "version": "1.9.0.0-nightly-1-gedd2e5e74"
+      },
+      "tests": [
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
+          "line": 101,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
+          "line": 132,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills",
+          "line": 157,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:scienceRejectionsCoverResearchEquipmentHistoryInstitutionRouteActorAccessAndResources",
+          "line": 184,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket",
+          "line": 233,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact",
+          "line": 256,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters",
+          "line": 298,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl",
+          "line": 334,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:chemicalQualifiedWorkRejectsMissingFacilitiesStaffInputsTechnologyAndUnauthorizedControl",
+          "line": 356,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:chemicalNamedSourceCompositionRoundingRepeatGrantsAndAheadOfTimeAccess",
+          "line": 397,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:chemicalActiveAbstractResumeCaptureAndMalformedLoadPreserveExactAuthority",
+          "line": 451,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource",
+          "line": 484,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:barometricOnlyRegisteredVoyageCommitsExactStormLossAgainstMatchedControl",
+          "line": 553,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:barometricCalmWeatherAndUnfundedDaysCannotCreateAvoidanceOrPartialBills",
+          "line": 595,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:barometricVoyageRejectsMissingInstrumentsTechnologyVesselRouteAndLawfulControl",
+          "line": 633,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:barometricFractionsResumeReconstructAndCaptureWithPlayerAiParity",
+          "line": 676,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:barometricFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch",
+          "line": 719,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalOnlyRegisteredSurveyCommitsExactHazardLossAgainstMatchedControl",
+          "line": 789,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalUnfundedDaysCannotCreateAvoidanceFractionsOrPartialBills",
+          "line": 846,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalSurveyRejectsMissingEquipmentResearchFormationRouteAndLawfulControl",
+          "line": 883,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalFractionsResumeReconstructAndCaptureWithPlayerAiParity",
+          "line": 935,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalNamedSourcesDeduplicateAndUnrelatedResearchCannotReduceSurveyLoss",
+          "line": 979,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:botanicalFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch",
+          "line": 1011,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:calculusOnlyRegisteredResearchCommitsExactWorkAgainstMatchedControl",
+          "line": 1076,
+          "status": "pass"
+        },
+        {
+          "id": "wurst/ScienceExplorationTests.wurst:calculusFundedWorkResumesAfterSnapshotAndUnfundedDaysAddNothing",
+          "line": 1121,
+          "status": "pass"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "sourceIdentity": {
+    "sourceRevision": "6b6a3dacc58fe59876bb9066b5024fc46b9f401c",
+    "sourceTreeSha256": "54bc0d7c4ac665d4721cb36798bc9d42c7637e292e850ee8b60c951de192c762"
+  },
+  "frozen": {
+    "inputs": {
+      "_build/blizzard.j": "b6db172525d7b106781337252efcba4f56bceb16bb4832680ad07dea052e6e26",
+      "_build/common.j": "7561e8be53a01c7105aec9a09b707ac168495a412d059e68e39e24dcf92f8fbb",
+      "wurst/AbstractSettlementTests.wurst": "9a8efdc1320e7b7e6b2eb16fd3f4705f823129dd3b2de9e6ce873e0b6ef31f98",
+      "wurst/Agriculture.wurst": "f252214f84c7ec41f1d384ca43a3a335b07ceeed97ad9794deae1c491cc891f6",
+      "wurst/AgricultureTests.wurst": "c9ef881082364c2f21b8238a25f565d17947759d1bbfa28ae4f74b5b39005199",
+      "wurst/ArmyFoodLogistics.wurst": "d6eaed8bae9632cb642519e12a109dd3c3fa4087c4db82d1f6d874864a4c0e27",
+      "wurst/ArmyFoodLogisticsTests.wurst": "07ecf330331622a25fe28277d566c266dfa9332ba68d7b5c84375f30427a9641",
+      "wurst/AuthoredQuestTests.wurst": "76d5f9a393e6ef1fd895c380c94c3c3d2371818035348900c38003e297a5a29c",
+      "wurst/BankingCampaignRuntime.wurst": "9d4d406ab8e75364a5ec45c412dc5181a221c2840a7e63479d97f8b0d8d0a9de",
+      "wurst/BankingEntitlementIsolationTests.wurst": "71a2d0e94aac48134803bbb5df37911a1c9513c3fb3cd7f670274ea109ce0a1e",
+      "wurst/BankingOperations.wurst": "01cf4679bf3d298b8b61b7c19c6f071d90b3d54af550c2fca919d54d6663f1e0",
+      "wurst/BankingOperationsTests.wurst": "39e1c58683bb80da43cba77e31840c730d13237e2bcc59166f8890ac3f7e6755",
+      "wurst/Bootstrap.wurst": "69b5a317d232b8578d95aa2446c66b737eebcdfaaa4051a79f6c701326309e53",
+      "wurst/BoundaryArrival.wurst": "5d528518dba6bf3c2116e11c4f11afde5393d5744373f3f68e222aa47015ce8d",
+      "wurst/BoundaryArrivalTests.wurst": "1c34d747668d1efd8d9358bb726f39a65e75bd6b3d6212b5a2387d3543de5407",
+      "wurst/CampaignAgriculture.wurst": "3cec2dbbd17c3b7cac93ed3e688d22a73b75adf8b493e7f3624613eb7c001664",
+      "wurst/CampaignAuthorityPerformanceTests.wurst": "c66195704cd69c9723e7f67ce7923795eb56a14aab29f6190e1fb0134381e612",
+      "wurst/CampaignAutosaveLifecycleTests.wurst": "42be114f9de808ec46860e8659fab4b3264f08c168900ad8a4c95f29aa13fd64",
+      "wurst/CampaignAutosaveScheduler.wurst": "17203ebd488b168012d46b27cd71454a4955226052179832aa414b2272738412",
+      "wurst/CampaignAutosaveSchedulerTests.wurst": "252890a9043704ee94d1bd85c1713a0fdc8ceec9df03e63889b25cb29037e112",
+      "wurst/CampaignHandoff.wurst": "a71a099a48bbadaec4c9b5dbea88383fd2950f24ff949aa2ce48673785db45f7",
+      "wurst/CampaignLoadTransactionTests.wurst": "68d1a3d869aa6fbaca88e577ba0e0b5e6606b03637a1bb5f850d8d8cf111133b",
+      "wurst/CampaignPiracyAuthority.wurst": "6852a3a99a271f8ded452bc5bd4fc3c18acc816c5107f35fe2e65c0c8ad5bb97",
+      "wurst/CampaignRecoveryTests.wurst": "269d7d470c69486a8ec60a39ea17504deed02256d761fa1c9b94a1cb2a8f1947",
+      "wurst/CampaignRegistration.wurst": "0a66e877b7507eea1c429bf815647af90444465007cf9e7849b779157402ea15",
+      "wurst/CampaignSaveManager.wurst": "48e6f7dc416bf03e8f6895d4569bbd0222ea68d2f2ca4bac33c9c221654fe6ce",
+      "wurst/CampaignSaveManagerTests.wurst": "b0c6cae9d0018669527baeb78e3c842872e984b4090515b128ae78b601ce51ad",
+      "wurst/CampaignStartupTests.wurst": "ecc871c0aaa0a7aa33d6cffeaba90d41dc8d401b2445312bfed21b8e45c11298",
+      "wurst/CampaignTimeline.wurst": "b29f305ccb5f4cc9f16f83bc358f9b200f8d020f09777f5d5624f6d8cf907dfe",
+      "wurst/CampaignTimelineTests.wurst": "e6cd9ec9e6e4634fe8b5b8f4aa5b8824f255c1f74b685de8a62630b9c161468b",
+      "wurst/CampaignUnstuck.wurst": "a1fd73ecf77bc8227cfecb9af6b0648458f2c43f197a799c60a02538bdfe08d6",
+      "wurst/CargoBalances.wurst": "b15fcad0a50402bb51be25211a416348aacf9480a45c705be9e4e3fb8abd6d41",
+      "wurst/CargoProvenance.wurst": "6bec7e6e70bc13d9b2ef65468d171b8de8c6f41de9c24f1eeb8f33e5979b5e8c",
+      "wurst/CharacterAvailability.wurst": "ca46c6758da569d28ac1bc6b97d1e70f1c781105be5983cd1d9469fe2bc61d01",
+      "wurst/CharacterEquipmentTests.wurst": "69dcca9191dc46644fe8e29a0d30e64f4bf87f3db04673daa55b8fe9da3f5351",
+      "wurst/CharteredCompaniesTests.wurst": "0f0b9523a988ea9c4bce3bba362b9b53a94e7cb994957147a52e65dd9ff632e4",
+      "wurst/CivicCampaignRuntime.wurst": "203e336de7b8122b4648f75763c9f1cb4f822e791b6c422aaa2df8ec7a1a7e87",
+      "wurst/CivicGovernance.wurst": "3c71c00f33a0e216d6f77ac0b62a16b6e3284c2937af10bf709f9efe6134db63",
+      "wurst/CivicGovernanceTests.wurst": "e5f9115c9dc51e2581ad6a1384433c5c4dd62a21973af647857f83aead7ddf6f",
+      "wurst/CombatEffects.wurst": "5306c3bc6fe9e91ae126b975d96583b09edfc185e2bad9b2513ea0418ffc2693",
+      "wurst/CommandMapContext.wurst": "3857551cfd4c9d0b03f04cb4981ab9f2547c49c9a4781d60793d337eb1be5bab",
+      "wurst/CommandMapTransportTests.wurst": "3862dfb25c784c531a63e033ccb9245da9ddf519905a339994af53ee9dfcd552",
+      "wurst/CommandRouter.wurst": "e2dfe152c97cef40c181e93f07f115b15fcb9a473cde905b5be2e98fe8ee4d74",
+      "wurst/CommandRouterTests.wurst": "485019b7dcd773828c4758dff908bcc563199709214e0fc572a216476aab1e13",
+      "wurst/CommercialCourts.wurst": "bfb3d148906d9b340d6a587e0ff21867a29187cfb6bdd4b466db31d4c911e9f9",
+      "wurst/ConflictPeaceIntegrationTests.wurst": "14738764e11476589b0506e934d48abcb65ad0c31305195543ea0f7d13307568",
+      "wurst/ConformanceData.wurst": "e9067f700d4a175e25fed56b7f1406781a3b3dd958ab93a1eca14adcfd0a741a",
+      "wurst/CountryDiplomacyScreen.wurst": "b0a61823970fe4298d64b363fbe99febc77987115e41921ed2e4e8dbf922f9ff",
+      "wurst/CountryDiplomacyScreenTests.wurst": "c766d0c4722af38ae077a6f249b47dab2dbc6c749e41d0cc104b20ecafaddcc4",
+      "wurst/CustomsCampaignStagingTests.wurst": "a8897fa7a7dc812c99af9dab6617fb4c84e2f266d7c0bdfb000a69b467f21cda",
+      "wurst/CustomsFinanceLedgerStagingTests.wurst": "b600c16e14b9f0e7c3436394db3e2e92faa0c42a02eb44d73c9ec1265d7b9721",
+      "wurst/CustomsSnapshotCompatibilityTests.wurst": "cb3c61937a6b17c6f61248f0946868f70ea256779f06df28b42fe896e3a74f04",
+      "wurst/DiscoveryKnowledge.wurst": "c433fbf1e79d15c8217ea6da620064bcd74c2b6f3282377f0df3c8fbae9d46a8",
+      "wurst/DispatchTests.wurst": "b3d0e39466517f63366989a140fa5bdf8aee5600797e81b404b05debb6b737da",
+      "wurst/EquipmentItems.wurst": "036b000f5d205874d3d579038ba5db12255cec5bd45c24b1a0abd2440f39df73",
+      "wurst/EquipmentSetTests.wurst": "735e54c17984af3d43a8326d25595c2a976c031436aca1d251cf7ea60b84953f",
+      "wurst/EquipmentSetVectorsTests.wurst": "33e0deb9105b5d0550c101fdb71ca39a4e41948a699026357708bc7b45b6d2a9",
+      "wurst/EquipmentSets.wurst": "b9c94b0350a3ecc9d28fc876a4169ba4f2263c5bd40942297094d262f7927e29",
+      "wurst/ExactNatural.wurst": "1c69c29e5c4571b31b5edc2f475ae0e475f054421fa3c2154937d59e07a0e3d0",
+      "wurst/ExactNaturalTests.wurst": "ca84416acfdfbbce50b6b8ee852fe5772dfe92e576ed23db78a613192f2c8639",
+      "wurst/ExactRational.wurst": "b5b8aa761ddce23169ab77fdadbaf3d7d3c11b3d9fd05259aaa4abed9fd0e0a7",
+      "wurst/ExactRationalTests.wurst": "2af53059815a5bfb078a046aa2c37cc8079244b6150213c2bafaac9b5c816d55",
+      "wurst/FinanceCampaignRuntime.wurst": "441e02dffd18b64c27854504df36143cfbcdde87f6b78c4f67f7a26427d6b910",
+      "wurst/FrameworkConformanceTests.wurst": "54e82dce4bc6a7cb831a030e937afaf653ff96e8677c6573e677185f4d3e6bc4",
+      "wurst/FrameworkPorts.wurst": "dd7c72d530d2d26c9b8a122a20a64d58d74c0dbd8f123c6c1b9cfd6b95cfc4cd",
+      "wurst/HeroAllocationDefinitions.wurst": "c5294e67cf0eb01a9e86c80c399f25ea77c7f013c1ed13b7d0a425d0827860e6",
+      "wurst/HeroAllocationTests.wurst": "034e2c29deee0f9864cb367234ca329821677d24d72bac9508716fb9365d088d",
+      "wurst/HeroAllocationVectorsTests.wurst": "845506aae727888159d61885d9a237edfdd525eadeaefc948d7e400e95f38204",
+      "wurst/HeroDefeatLifecycleTests.wurst": "2f9d3b3b158fbdca399593331cdb3ecfac7ba065827e1257f0da7fe704a5deff",
+      "wurst/HeroEarnedGrowthTests.wurst": "af6f9138cb5c09a220f27b581032ed9ac5468f8dc26b558fb21814a113afcc63",
+      "wurst/HeroProgression.wurst": "0f70e0a0f40d3511865008bd601eb40dfe59a98c6137235dd8db76e08778f9b7",
+      "wurst/HeroProgressionVectorsTests.wurst": "3499125e67fd3ffd9176f3d62ebd97381d97be328961ecb6e713ec5a90a52c42",
+      "wurst/HeroStartingProfileTests.wurst": "53f67552a51cfb5a32da032f6340fa1dd3935ad2aff28ef6aa701d6c5af887c1",
+      "wurst/Industry.wurst": "0470a6eaaf4e31dfb7a89418c3f49300108df3f2d1615b66a5adedbd7b1eb8d0",
+      "wurst/IndustryCampaignRuntime.wurst": "11d7151e1efd802b921c6c125b5cfd31e6f52f5b2cf519082ce234acb303d749",
+      "wurst/IndustryTests.wurst": "408386d7cccb717476100bee3842be63aaacd12ce43c2bb8a23032c27cfd7474",
+      "wurst/InstalledCommandHelpTests.wurst": "cd19a30958d726be7ec8feca80f01e6e1aa6836d6316f1d20232bd752668bc50",
+      "wurst/InstalledGodModeTests.wurst": "797c1075d783e59279fa27490d03e5ed164b90d3ea39d5fe84d954e872349911",
+      "wurst/InstitutionCourtLifecycleTests.wurst": "eb5cd0f3247f412469cb15b079a63e62f8e479a8def4975929bf99556d71885e",
+      "wurst/ItemComparisonVectorsTests.wurst": "859699fa4c4b120201994a38fd9750a75ca25870dd3f8ceb7e161ffc8fed3279",
+      "wurst/ItemDefinitionTests.wurst": "fc2fbd3ddb58f6b4477b89430506b446a0e7bd8750e1a36c0edfca8ee22db8ff",
+      "wurst/LandArmyEffects.wurst": "6ff527618b08fb6bdf65223db358c64d82ad5d6b287ed8f11594457fc4f5a279",
+      "wurst/LandArmyEffectsTests.wurst": "be4ddad7f5eda69ce1bb8f419590989f0b3e6c63eead2b97e4734da528e15613",
+      "wurst/LandArmyRuntime.wurst": "9d8ca59ec14a4d38515420fa7ca9efa56896fec2a029c1a2b4403ac816905b20",
+      "wurst/LiveRecoveryTests.wurst": "0322e8562b6d5d780b25a80ae2c1bcae5de699e53c3f040d7987e3c0c5c9156b",
+      "wurst/LiveTradeAccess.wurst": "b7ad97e5df2c1e6a1af2b29e64a4d8f2104dc7645579576347d0093aef36b8fc",
+      "wurst/LocalBattleBenchmark.wurst": "00f5188b59662220ddc0ecad3bbd6f547cdc2a0686f4c61ae45714247ab0617d",
+      "wurst/ManagementCommandTests.wurst": "c1074156705feb7209f5adea846ad0a8887acb6ff25901bcf3d60f29f5db8c85",
+      "wurst/ManagementScreenPauseController.wurst": "82e72e7cb7e746a6e5590a82eb3e1754733b77f021c1e9dd332004e11afbb20a",
+      "wurst/ManagementScreenPauseControllerTests.wurst": "6197a43e8bb688721d76d55ed077eced7616135a3167a93d89a94e5779d83476",
+      "wurst/MapDiscoveryScreen.wurst": "968035063da297243ee4af28c0e7523b921ff271047339a465c38c2b6af20d15",
+      "wurst/MapDiscoveryScreenTests.wurst": "a2f5cc88ea1cf1aa0353d87cae68d933e5143dc16587555b35613c69bab68ffb",
+      "wurst/MilitaryCombatEvents.wurst": "b2b4e3bb5d4dd292dcf43e07a44ad5d9dd4e4b82a4f4e6da0d10cfe25d9057f0",
+      "wurst/MilitaryCombatEventsTests.wurst": "00a5c2eee4a10fdc03224337002499feecfac73dbcd8e18b6fed6ccc9e3d1852",
+      "wurst/MilitaryOrderEvents.wurst": "fe20339109c3c5a4ab844be42d2e0a3cd446aff1cbde9d32c7473b550305a9b2",
+      "wurst/MilitaryOrderEventsTests.wurst": "47bd76e3f5bc964c1ff94a81bdc3b59c2f2023eb2c3ced57c8694c9f794cafbc",
+      "wurst/MilitarySettlementRuntime.wurst": "19a0550ac0af248165d701f882c43542f053eb788c4eeffa5e8cdab3a70bfaf1",
+      "wurst/MilitarySettlementRuntimeTests.wurst": "018898ed68945fb65fc5c0b1f0a66b0ed1ed37935a4342abe7eff6065461e4b9",
+      "wurst/MilitarySnapshotValidationTests.wurst": "a5f5fdcaec00ce3ffb8f89169cb3f4152297c724e48953f04d3d2ce80e15826b",
+      "wurst/MilitaryTraditionLayer.wurst": "6986893046969d68f859cb25dba6f9f8eacac24835d1604cbbbdb88aabcc4c0f",
+      "wurst/MixedCargoTests.wurst": "2ac4be48b9c0c5627bb6331b93305f73130a93ec274de9878d5832384db1fe80",
+      "wurst/MixedCargoVectorsTests.wurst": "a749af6c577450bc894c3ae98807a2f796a6e87567d03efcc0eb0764d5dd030f",
+      "wurst/NativeSaveRegressionFixture.wurst": "9834c8fdd8b2fa63e24b26c7f519962f0758c3e42a8649e0db0151ca545d43ce",
+      "wurst/NavalCampaignRuntime.wurst": "8ca3f66cc079f747c6e79522047201254bd5d2da21ea8d63cec09601035a451e",
+      "wurst/NavalServices.wurst": "122e1fcbd6ef3249ff69140cefb9284739d61f414fc429bee283c440224c0543",
+      "wurst/NavalServicesTests.wurst": "ae863a297072bb0f305aca782cf45f6b401898220cb42bfeab4393bdb1740eed",
+      "wurst/NavigationEfficiencyTests.wurst": "f58df6fd7a8acb01c829525d1d62b257c3eecb5559926ffd2b4ef84322b8bcf4",
+      "wurst/NewCampaignOriginSelectionTests.wurst": "c176d713cdf8ea938e50f522c8e58b24b3ee2c98ad8b8e2c8b5de75224614d05",
+      "wurst/PartyLocationTests.wurst": "1c30200cf457fb16620b952a8bf059a15383344714edf7059038344c5eb3480c",
+      "wurst/PartyLocations.wurst": "cffe73f48c50af7d2ea8d10e40dc723109d50043e5b86d237bc014d8588d2ddf",
+      "wurst/PhysicalInteraction.wurst": "84c5bdc00c3e20177e5d55556251f37b37e3e37725d4a9dfa76bdc7d363193da",
+      "wurst/PiracyCommandTests.wurst": "572109b607de2db4df49e9e85d9795b49a13591ccc372f892ab2f4c44d75cc5c",
+      "wurst/PlayableCampaignRuntime.wurst": "e535b464b651d2cfa29569078fbc944e8aa74fe12dd6dd1107ce38b62cb9197b",
+      "wurst/PlayableCampaignRuntimeTests.wurst": "5a4c4fecc04b156475a9c31c8897834cdd4cb6cfeb99a3b5b37947d5e73376cb",
+      "wurst/PlayableCountryInteractions.wurst": "260792f84fadb4b0d57f8c1b6b88f2fcdda1467605f3f052c0ab3e7ade9e6aaa",
+      "wurst/PlayablePiracy.wurst": "75e6fe7de12ca29e0a1273c3439d32f19e61d97996442d8f3a1e404aed3f0845",
+      "wurst/PlayablePiracyTests.wurst": "c821839c643d7d91deacd742c775c3a44eff2506de8ef579f3e35bb7071ef45d",
+      "wurst/PlayableTrade.wurst": "b87b272df4c547c5a2e987ee3c610c95c329155dc4f1e6a44147bd4e5fa8047d",
+      "wurst/PlayableTradeTests.wurst": "acd48fe82db3bdf191cf19867e3dfe31ee6ce111b60fbd0bbf550e41d0db5175",
+      "wurst/PlayerGodMode.wurst": "af5c25f1c48f1d0432699310b4cb191971d662d249e56330f3b74ab36f9d6f0b",
+      "wurst/PlayerGodModeTests.wurst": "1339750da6d529a6251e137299fe1eb9146a51b801e8a7ec9da6008755e06bf6",
+      "wurst/PrizeCombat.wurst": "f2cc5ee46140e8f29181d4e179c1e429301c3027e316a5f8b59d3d74d7b16f45",
+      "wurst/QuestConsultation.wurst": "c51f39e5051a6f3b8a50350b01382053aecb510541a721aafd7b0d8554697ea6",
+      "wurst/QuestConsultationTests.wurst": "696c7ed377b7e6f3e72817555f6170e9028ab3b75b40c03363fb5b7a58e34599",
+      "wurst/QuestNavigation.wurst": "862daaff5d68935347f161b6b0e9ea0c4f7254caf363b2762a1acdfca83dac41",
+      "wurst/QuestNavigationTests.wurst": "fde78bc2767240782a38bacb44a37ee20cbe3fb780da86aedb67501d763ddff8",
+      "wurst/QuestRewardTests.wurst": "b0b073a08b2035bf0d803b014b771527c468c8b38655d3ae87fd7e737a55123b",
+      "wurst/QuestRewards.wurst": "91bd35771b73c8c3534360f4b0452b8bb46361d8d4881c53ced38f73126307ae",
+      "wurst/QuestStages.wurst": "2041a8e10fa6adb1495080d97287580cea997e4bcc58eb97231aac51a3a7a36f",
+      "wurst/QuestTradeRuntime.wurst": "62220892dabf8a94f6382ebd923c82faa46d4c1e6444f4981682c6d8f5a3704f",
+      "wurst/QuestTradeTests.wurst": "eff5d8071737a21bec70194017e7f177bb1eb99d18231c0bb8fc6f1e4571b26c",
+      "wurst/RecruitmentWindowTests.wurst": "6d625563a7e84a93d77cf9215dd153ae7cec27571ce8055e05c11d9dc1c9b357",
+      "wurst/ReligionRuntime.wurst": "7b46ec1c6d0caf824d7aca9ec55f582b2c1df839ead7a677b1bc1b026a8b372c",
+      "wurst/ReligionRuntimeTests.wurst": "a3540be01e807f7ff8167f710f1aa16ec83836620678df44f94081bb83f0c2b4",
+      "wurst/RemoteRegionAuthorityTests.wurst": "b763181d8c28b32197091f6398b6b3a4f1b4d309c09012a5d334cedd3ae3a0d5",
+      "wurst/RemoteRegionManagement.wurst": "984309cca639c123da67970eeebd633fe33c9ff054830c59a01094c0c4cb9c9b",
+      "wurst/ResearchCost.wurst": "8061a7a82b2f98a913c3d11a7e6bfdca4be8544def0a659690047aba267e021b",
+      "wurst/ResearchCostTests.wurst": "c2f42386e2106d9cab90066b0da6c785d40a7e8851a3af94f0b69a552880aa12",
+      "wurst/ResearchEntitlements.wurst": "b40f325e5a6eb8e998f064300cb5beec05b2f6f783fd8e7c3e76487dd158cd74",
+      "wurst/ResearchRuntimeTests.wurst": "342d1e0f92b4243b43cb81069186f53f84a3034d4166d9e64b99953e01b86e16",
+      "wurst/RpgCommandOwnerTests.wurst": "f7697a0bc5cf3ca23cf9e382250924956eee187a7b94a8d2d133a46ac3172a61",
+      "wurst/RpgInteractionTests.wurst": "adab21d4e83cf7ac590286b72d014d25a38d8d1093ff0e00f55e424b836f3ae5",
+      "wurst/RuntimeProtection.wurst": "b19438805770e6c4ca35deaa92d47021657fa8271cdc74aaa45b075718dfc9cf",
+      "wurst/ScenarioData.wurst": "d00a32f333cff958d4a21921cc92bdf9cbe58a1530adb65899ff95faa481ac33",
+      "wurst/ScenarioSettings.wurst": "ec3531af4de06db159d547ed78b8ee0cbe0e22e7c1cd73b8c3c7cfd1cdc5e063",
+      "wurst/ScienceCampaignRuntime.wurst": "67a72c47e8fc88b4171952875818fed5cde9756bf1a83c76f909d1548a9ce41a",
+      "wurst/ScienceExploration.wurst": "dcab170e6a7a42ffc658301955a0e24786bbd5231907a7311068957ff7d6df30",
+      "wurst/ScienceExplorationTests.wurst": "1079996fcabcc586d7557676944618ad5ca56e354b5ea105682d55842540ed11",
+      "wurst/TradeCommandTests.wurst": "85e2589d926e82a83282792fb2228040b912fe50aa5d8262932d06d76bb3041c",
+      "wurst/TradeFinance.wurst": "4e567dd7de59c8dddb4c3b118b436f7a38f36a1708530f7c7ad04b6027693faa",
+      "wurst/TradeFinanceTests.wurst": "f9eb5db499417b69b07f628ac49cb4e08921d863de3a9eaac28a5e08780560e3",
+      "wurst/TradePricing.wurst": "6de7d51b51717e00c91454473a4dd88387afbefc6bd5221047246ebb8b687e12",
+      "wurst/TradePricingTests.wurst": "0a4e39cb7fde48b0c6c53b1ebe6fdb278de240c3a2dd77bac01341a778f4a0af",
+      "wurst/TradePricingVectorsTests.wurst": "c2aeb6a3a24a94bfd3d60389177483232fc9ae28c9dff78beb216a971c3486dd",
+      "wurst/TradeSnapshotTests.wurst": "994c6ea3c9a8835289ad349deac54a3a2ef41aa9f7098bc7217ce9e9c9da3928",
+      "wurst/TreasureRandom.wurst": "f1443c9c50d56549b0a76fea2650296a7c441628d4224bb76ab3e8871712894e",
+      "wurst/TreasureResolution.wurst": "1432a88a5a41c22881f9a75abe3ff1e596d0289d36bbed5244f7b51a7a16922c",
+      "wurst/TreasureResolutionTests.wurst": "4fdcfbc3fcc1e05925adc8eae001cdd531a11a1b0b7f9765a1f33511795c3e75",
+      "wurst/TreasureVectorsTests.wurst": "70547ad3194f5f6e0c9fb8c681f000073b9fd6af7bae110b740bee59fca4f82c",
+      "wurst/UnstuckRecovery.wurst": "25572010deef6fd66f25a2c8229753f2c2afe151eadbeb2b23fcf9d3f5bc18f7",
+      "wurst/UnstuckRecoveryTests.wurst": "e0fb38e15fafd0dac2bde5ca3c2ce9b4a195913c2352f82c468f79ebb3dbd864",
+      "wurst/VisitKnowledgeTests.wurst": "c8ab1e0f3b5ab17596d1a57c02dcadd0f979479ac8f9272c6febe670be4066cc",
+      "wurst/VoyageCommands.wurst": "1f15194d00c3b5030fbb3ea844ba692d70095922e3dbaffe0637dabdeeece176",
+      "wurst/VoyageNavigation.wurst": "188760fbe36cc980f95b378825d30618b9e40e0b57950c27c4f82ed0182a2c0f",
+      "wurst/WC3Compatibility.wurst": "18e48350fe412e847b3877534e695179177fad18f243cdf707b282412c8a75a1",
+      "wurst/WC3CompatibilityCompileFixture.wurst": "ad91a9b4e5b08130773aa6311afe69dc44f0069ff1ce948b427e97236214f4bb",
+      "wurst/WarcraftCampaignSaveStorageTests.wurst": "9a06d9b4240f8938e14d150582c8a0b1af3ab169b08a9b7eb0ed59fe73743884",
+      "wurst/WarcraftRecoveryRuntime.wurst": "704b836780a1fa17b5dd6e8c61513c47dcfad515fd3496e3ea121fd76f430185",
+      "wurst/WarcraftRegionalRuntime.wurst": "028f7731e9f887abb53d6d20e2bf6f793de004a8fd6b5b187c02fefd7a648e60",
+      "wurst/WarcraftRegionalRuntimeTests.wurst": "a6035cd43116a17c8009a257e4e65383336f170d40dff070c453ce8563771bac",
+      "wurst/WarcraftRpgProjections.wurst": "dc211d490f8aedf24e754d00cdd512bba5afcbe8e4a4ff4ef200046299a5059e",
+      "wurst/WarcraftRpgRuntime.wurst": "ba69231856c57e154939d0f27417640b79ec77707a8e892f582782c8c0015411",
+      "wurst/WarcraftRpgRuntimeTests.wurst": "a08ddca512635016078b569edb25c21688e5bbedd70bc1e2d0c5398c2e9b2b1d",
+      "wurst.build": "75d967aef668404068ebda2c1e71a9545467536c1ef4f8e13f8affda294f6ab9",
+      "wurst_run.args": "d6efe3b56042652bbb7829d4b2574d69d1727e0bcc29521bef7d1f37647a5ff6"
+    },
+    "dependencies": {
+      "wurstStdlib2/.editorconfig": "78ef75020f47168985d122192b0691317370299d0f1253e80a7b5cc2795872cf",
+      "wurstStdlib2/.git/FETCH_HEAD": "146ae4c12e7ded373e5cf687026d601d61562faed3fd1662ddd45df59903fa15",
+      "wurstStdlib2/.git/HEAD": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "wurstStdlib2/.git/config": "b53dda6ed2b75f5c19218e18ad6fc66be49c2c005d844b514e36b2b15ed4d5a7",
+      "wurstStdlib2/.git/index": "89cff1c4376f593cfc0e25f496fda9ebbf4049f7b30ba05f50bfca5aa5bfb737",
+      "wurstStdlib2/.git/logs/HEAD": "b64dc0cba43407a1511b88526f51cdecdcd42a350757624460e6ee420ff9c87f",
+      "wurstStdlib2/.git/logs/refs/heads/master": "b64dc0cba43407a1511b88526f51cdecdcd42a350757624460e6ee420ff9c87f",
+      "wurstStdlib2/.git/objects/pack/pack-7d4123d38d530c82a4dc76975c31faca0af53e51.idx": "b5519e28c8b114b830693a255e24680a35a28920f42791dc8920687672b5dbac",
+      "wurstStdlib2/.git/objects/pack/pack-7d4123d38d530c82a4dc76975c31faca0af53e51.pack": "614b720ef2e0fb8ce30f4513c159229a89e5d0d5a245bfe3ad46ca89d183e51d",
+      "wurstStdlib2/.git/packed-refs": "94ea2fbe5d6a34897f5b0a60a5a785860c04159a604c6f596bb64a98b6a01664",
+      "wurstStdlib2/.git/refs/heads/master": "44b0b28e3635b69d8ad00808737f79c644488068e6d22dabab8af7e324de8f9f",
+      "wurstStdlib2/.gitattributes": "1a1dbe176bc233b499d35a57db7513f2941c99ab9759f177830c9149be99005b",
+      "wurstStdlib2/.github/pull_request_template.md": "6d00b45f4fc57f712d6f8e1d475996f532a40a2e1a25e7c67e21f68db09fb34e",
+      "wurstStdlib2/.github/workflows/build.yml": "f625315873835331e36a8133363cb4329b8a76667b8e73ace7d6269646566bfe",
+      "wurstStdlib2/.gitignore": "7858173b62778dfc8286e4737e77e35283dca5718e628fccfcc7b3b65f2b15b3",
+      "wurstStdlib2/AGENTS.md": "7aa149e5bad5cb57eaac16ab6ddad0f1dce02784f416d64b94894af2c59437be",
+      "wurstStdlib2/CONTRIBUTING.md": "991eebd2687c0e876182d9935e110025a4d90bd8fc7c000cd5c758658f8354ac",
+      "wurstStdlib2/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "wurstStdlib2/README.md": "a36266d6558fafa261fb344745e0bd76de1735aeecd1e0aea00a77cc3a9eef4f",
+      "wurstStdlib2/docs/UnitSpatialGroups.md": "45068d8919d4a18283f78eef894c31e0854e64fb5c3ef73bb534eb0b773420da",
+      "wurstStdlib2/tests/AUDIT_VALIDATION.md": "8ea88faf794758c5fa5b3d97ce7df8a398fc311d1233ac480aa3bab85ae25e34",
+      "wurstStdlib2/tests/README.md": "70d2d89682b0885f536ba1aa04638b6c276bed626732345b72c5b74c2cddf73d",
+      "wurstStdlib2/tests/VALIDATION.md": "1b24ecea66383f857785f3ebb68e0018b2de24b3271575dcaf0552458a9da5a3",
+      "wurstStdlib2/tests/audit-native-results.json": "c92a623e2c5d7d1375a960e2c1849891472d96e9b9552468e390838fdcf857a2",
+      "wurstStdlib2/tests/check_native_bridges.py": "16c0afbbc9bbbfc3b8f3950971b9fb923a8f1d039eafb72120b1e48aae9b1eef",
+      "wurstStdlib2/tests/fixtures/CustomUnitIndexer_config.wurst": "63ad9ee00044082297e71e4a5e09474eed2b33f21b5de15e21fd004760ed088f",
+      "wurstStdlib2/tests/fixtures/README.md": "e9f3a59d45f208c45dcf41e64bc5fea0be3e224e4d7bd28a09a15238de6ae3ff",
+      "wurstStdlib2/tests/fixtures/RegressionBase.w3x": "312ed6eb88ff33277cee4eb514bfcc2de4695913e2292436b54f81fd7fd62150",
+      "wurstStdlib2/tests/fixtures/RegressionCustomIndex.wurst": "45b8a82fd36b0428c80c4128b5625912a98a2dddbf63a25dac9e98e6f0157f31",
+      "wurstStdlib2/tests/fixtures/RegressionIndexerPolicy.wurst": "c8bf43d5930596704ab6b63770615b6e02b72b979a44bd5169e10a783f09eb3f",
+      "wurstStdlib2/tests/fixtures/RegressionLateIndexHook.wurst": "e6905cb16e5cef6465c2410cedc44c89d075dffb5fdf48cb69333617283f6738",
+      "wurstStdlib2/tests/fixtures/RegressionNativeLifecycle.wurst": "43186baa4c01db1727c94da9028339f998afa9a81b18b5fbb9a7958c7441b2a1",
+      "wurstStdlib2/tests/fixtures/RegressionSpatialEligibility.wurst": "d339fdf28dbbc4968b5bead70150b2bfcf803f342b2717a763752808550a0c24",
+      "wurstStdlib2/tests/fixtures/StdlibIngameTests_config.wurst": "885baf410f73229a26937e458677c414ea686aeb91e2e13e93d88f40e0efad63",
+      "wurstStdlib2/tests/fixtures/UnitIndexer_config.wurst": "2adaac31388298436151df601e9797e554f648e1530e3cdaf8f1266367c1343f",
+      "wurstStdlib2/tests/fixtures/UnitSpatialIndex_config.wurst": "57b92b6b1e129a7e37b347211c3ace99374ad0e16c33aab59ddfd2c4488e7c00",
+      "wurstStdlib2/tests/native-results.json": "fcd9a0eb984e86472250b470bd7b12e15302a588af5422d9645c7e8cef58c0d0",
+      "wurstStdlib2/tests/prepare_audit_regressions.py": "99e41fef0e75560de1dbb3c40ea50c3392b1abc85eaaffc660a67c7fe952e509",
+      "wurstStdlib2/tests/prepare_regressions.py": "2bf513aa67c57c80026b66520b0222c7e791164a810dfb0a4407fb51b32f3455",
+      "wurstStdlib2/tests/test_prepare_audit_regressions.py": "c887e0e90d871141f79d4af465d563f69825e81eb18fb450cdf07345ce0a3855",
+      "wurstStdlib2/tests/test_prepare_regressions.py": "42d98de0d93ff3a0edac096f20d4b6f4a1679fb1e7c87dc28a10f48278f48763",
+      "wurstStdlib2/wurst/StdlibIngameAllocatorTests.wurst": "2e46281031503e1f949772a076159e8f5cf06dccd09d66a5ad86ddd190e5c731",
+      "wurstStdlib2/wurst/StdlibIngameArithmeticTests.wurst": "bcf6da89f2b0587a8a6a6959727b06bf1b07dec430600662b398d45e9d03208e",
+      "wurstStdlib2/wurst/StdlibIngameBirthDamageTests.wurst": "4531dd0be12d3eee124c7c50dac0df98a3fa9c2fa9801fca3660efd17c4f6beb",
+      "wurstStdlib2/wurst/StdlibIngameChecks.wurst": "f8003547e7e6c8b0544586c9e80e6784200c5926d63717051c087d04f1cabbff",
+      "wurstStdlib2/wurst/StdlibIngameChecksTests.wurst": "27902fdc133f80da23f9ce6ca376ecd5fe2ad653fd11599b816dc0a156f7cb07",
+      "wurstStdlib2/wurst/StdlibIngameDamageTests.wurst": "0ddfb7ec3157765cb046d0b7fa5d1117ebdb785feb94269a880a6ea16c7a5ddb",
+      "wurstStdlib2/wurst/StdlibIngameEventTests.wurst": "945db93544eaf1f47061bdb964e9d595972df902ddb3dde81571284504cf8cac",
+      "wurstStdlib2/wurst/StdlibIngameOptionalIndexTests.wurst": "6901fc851a9c7739cbb9490848a83e99269060e35a44af64b41c77a9045b2110",
+      "wurstStdlib2/wurst/StdlibIngameRuntimeTests.wurst": "dffb0b1f85ad693a16473760dafe12609f5c70dddabcdd85554d38915ac25587",
+      "wurstStdlib2/wurst/StdlibIngameTests.wurst": "f051d678b76c94a96f35c90a99b3708104cd317b394f94a1c90542a72fa7b4bc",
+      "wurstStdlib2/wurst/StdlibIngameTimedLoopTests.wurst": "c7a24060c30bc43415a8eea557b9633e8314e161829663f42ccd94f53ba08787",
+      "wurstStdlib2/wurst/StdlibIngameTimerTests.wurst": "9d4bf4d3beb855a5ebf6f2483976106d41501351895fcc06a863025f38c4e02b",
+      "wurstStdlib2/wurst/StdlibIngameUnitIndexTests.wurst": "d645acf1872371bbb9d13993d3ff88ab13f9a02b30b475e2bfe9e2d5e7ff3f56",
+      "wurstStdlib2/wurst/Wurst.wurst": "62bb12f2cbd4ff87e3048c4a813eababfc08de2dca6db9780db5e167aba1fef6",
+      "wurstStdlib2/wurst/_handles/Ability.wurst": "bc2218cb17c809d20a683b58b7be7539aac47304a291b270c7443c684560e81d",
+      "wurstStdlib2/wurst/_handles/Boolexpr.wurst": "f8db704d9a083685a7eb4fde46c95038bec19fa10ae6d130c95378495f891e26",
+      "wurstStdlib2/wurst/_handles/Camera.wurst": "c343588d78422e2b26157625d88fa7685b9c100a6f7e0f4d0aa822cf3e137f2d",
+      "wurstStdlib2/wurst/_handles/CommonNativeExtensions.wurst": "f760a3e1deb8f614b4ef099d13b5663438410a28f355441e27e5a289976eb175",
+      "wurstStdlib2/wurst/_handles/Destructable.wurst": "c76c9bbb7da1fdf35ade9ff1bb0a10dd64443e66b9df0afce487f33dbef360d2",
+      "wurstStdlib2/wurst/_handles/DestructableTests.wurst": "7981dc65ba528270f0434964fb92ed1b608fd43d96c56e30e19b9036b4724726",
+      "wurstStdlib2/wurst/_handles/Dialog.wurst": "8a288ffa495bea8422165a2187d1176b487da1372743691bc362466ccdcacc00",
+      "wurstStdlib2/wurst/_handles/DialogTests.wurst": "a44aaf16a4b687f27ac270eadca665ab8e3d64c55946f0edac23143a0859993d",
+      "wurstStdlib2/wurst/_handles/Doodad.wurst": "658ef5a30bc49a8bbbfe09fdd82b3e96f87f9b618eb09878b928de06ec381341",
+      "wurstStdlib2/wurst/_handles/Effect.wurst": "b21e5b799db65af44f3c2e5624028f6474d32603fa1b3aedd01143086ae53aca",
+      "wurstStdlib2/wurst/_handles/EffectTests.wurst": "cf6e214c0da7f205fefd1423ea3277cd1db3ca9acb5924138e4138e9aec60cdf",
+      "wurstStdlib2/wurst/_handles/Fogmodifier.wurst": "6324c144049797379bd048d95f2dfb320f1160e4d0462c8621b132ef529e9f73",
+      "wurstStdlib2/wurst/_handles/Force.wurst": "6040dcc18accf88e2449046270eb8af29f3ad096b46682df26732598dc605037",
+      "wurstStdlib2/wurst/_handles/ForceTests.wurst": "2aa788ba09ce98d7e65dda7ba63f81b971b16c57dc5983cc9873986eb2534c9b",
+      "wurstStdlib2/wurst/_handles/Framehandle.wurst": "7696fa2e02b928443f5833c99ff5237739f47d61cb87803b183124f32f8c3e11",
+      "wurstStdlib2/wurst/_handles/GameCache.wurst": "846a5e1aee63311fabee3d481b22e1a14925d5e90e22d1757749e106ed0bc38b",
+      "wurstStdlib2/wurst/_handles/GameCacheTests.wurst": "e101b7c4539f01a8efa0339e2e4043c8ccaadd4f18029740a9f44a1d73559ca7",
+      "wurstStdlib2/wurst/_handles/Group.wurst": "89b8523a8fc8ef4779fe1d158f93a98a294f8527840becfb42476c48069113c9",
+      "wurstStdlib2/wurst/_handles/GroupTests.wurst": "67d5eb2c36c48fec0751f6e302f1c6b19a6230c636fe79d9ec03abe2ec88eb45",
+      "wurstStdlib2/wurst/_handles/Hashtable.wurst": "d19fdd538361353d655e642fca265bd5b8b0613437db56d445718a4064ac33a4",
+      "wurstStdlib2/wurst/_handles/HashtableTests.wurst": "e6f42a614af3b4ce2c6ed40f5e9fa32c94e615506f51c454a01869fba34c1280",
+      "wurstStdlib2/wurst/_handles/Image.wurst": "5c871d68ca6ab0fb12f29ac1858ac01e95d7782cf76520abda2155878bea98a6",
+      "wurstStdlib2/wurst/_handles/Item.wurst": "d8cfe34407b71b41ef6132a160218b153ae5b3d583cecea842f1a0485fe5f4ee",
+      "wurstStdlib2/wurst/_handles/Lightning.wurst": "13069ec9410b0ddb12edfe129aaf43c88a5c31fcb46acc19afd0be69072df0d6",
+      "wurstStdlib2/wurst/_handles/Multiboard.wurst": "51f90da42689a6bf87c05460b34a4ff9b2c163294e7cea85ab237a91205a449c",
+      "wurstStdlib2/wurst/_handles/Player.wurst": "887e7f969126c32a87165f567ad8401c5c0b73b248f518423a33a4c5455817d9",
+      "wurstStdlib2/wurst/_handles/PlayerTests.wurst": "4df124471027d7cd62f8491c0b0ebeb274546164d09ca0bd4d06a7c475a4e563",
+      "wurstStdlib2/wurst/_handles/Playercolor.wurst": "3f54c95170543554ebf04ce70bc4b179aecbcb90072f1683fcd75c4f6e8ec3cb",
+      "wurstStdlib2/wurst/_handles/PlayercolorTests.wurst": "bbad62fd26bce5443e3c2bcf1ab2bae6beb0fbc6bbe140a122d92e4b94c6f322",
+      "wurstStdlib2/wurst/_handles/Quest.wurst": "2886ea85aa2a17f34093419c033eff941ffddfdbe1dc569b076cb909ff82ad05",
+      "wurstStdlib2/wurst/_handles/QuestItem.wurst": "e432a35d819da3e9263e7b4b126c787d0f65f34283afd5439b047939c7b51a02",
+      "wurstStdlib2/wurst/_handles/QuestItemTests.wurst": "e7b78e53b8fe6e6d4010f91ecec0ea975cc1cd3250a4989f4aec6894a63b782b",
+      "wurstStdlib2/wurst/_handles/QuestTests.wurst": "79f33655ccafccc72272cbec534d731a61c3cd55900339acc52f533e15d7a2aa",
+      "wurstStdlib2/wurst/_handles/Rect.wurst": "ce69ea82677a2a028183fa5d132fb1a6eb8acdca70505505f4528383e65fe2c4",
+      "wurstStdlib2/wurst/_handles/RectTests.wurst": "37c90063ec1d3e6e51a8fd2a9365aee405d4ec4bec1f06064ed62ed4565dbca6",
+      "wurstStdlib2/wurst/_handles/Region.wurst": "ad60688813b1cbf56da7b11f555780bca702266e60cf0c0947a03c385f497214",
+      "wurstStdlib2/wurst/_handles/Sound.wurst": "b39500b075b7fda53defbb731792d5165a220d6f216d8c5b5c95602a5979af50",
+      "wurstStdlib2/wurst/_handles/Texttag.wurst": "655bc6800d7c08fd573b174b5ed89ad5bc9bcdd1956f1f0fc986cccf32472493",
+      "wurstStdlib2/wurst/_handles/Timer.wurst": "b2b4899c860ab73f3c6e4976feee89e29bae44b1cfee0d839c2ca90b4f6b7eb9",
+      "wurstStdlib2/wurst/_handles/TimerDialog.wurst": "6bcf145788a695442597b4a48508b95b7901fa8dc8b52e899c93b5684ea40f6f",
+      "wurstStdlib2/wurst/_handles/Trigger.wurst": "a67dd1a1c44003ab989caa8cc0342a373618561b08391ba31a739a8f0a74e649",
+      "wurstStdlib2/wurst/_handles/Unit.wurst": "9fae4f5bca35bf258eeee70e4c5e8727c520d9ee8b6d16f4d22a2deababc572c",
+      "wurstStdlib2/wurst/_handles/Weather.wurst": "2641427359bcf701f815c70297aa74d7c226d42cdf6be4818399ebb2507cac55",
+      "wurstStdlib2/wurst/_handles/Widget.wurst": "e4d95b60fa74bcab5faad8015f7580b04ddcb46c5e6a2ebea139be383656009b",
+      "wurstStdlib2/wurst/_handles/_Handles.wurst": "6ca48c42bd21712f31a8b4c4eaf0779c97891834bb7b477b37185aa7f15ca520",
+      "wurstStdlib2/wurst/_handles/primitives/Boolean.wurst": "5d0d3b3b675222f8f6edb7e881b4b851a6fed61290dc0ff220d5aadb47d0bf6b",
+      "wurstStdlib2/wurst/_handles/primitives/Integer.wurst": "96d155d188a4b0d89e250d042b3f60505677f21c1b0e16481425f365e85f3338",
+      "wurstStdlib2/wurst/_handles/primitives/PrimitivesTests.wurst": "4954da9e8b68ac5d1888b66763a97e22c5a4c755fa8b31117c630b9ced643919",
+      "wurstStdlib2/wurst/_handles/primitives/Real.wurst": "1d97a95faeef16b598c530bfa2f9b3b4230beda9c53a49c938b0cd2f5284772f",
+      "wurstStdlib2/wurst/_handles/primitives/Reference.wurst": "92a32c6a8ac6cfe92ed73874d1946e7b771a79de681ec51c02b359f878711a4d",
+      "wurstStdlib2/wurst/_handles/primitives/String.wurst": "5fa88513e7be0cea7a5a60f22f238555c854bc02953b45b5f28c2b8712405ad6",
+      "wurstStdlib2/wurst/_handles/primitives/StringTests.wurst": "63aabf6e52658296f28e8daf46ae63c9cf0dfab1c10c74675413ec5bf914d322",
+      "wurstStdlib2/wurst/_handles/primitives/_Primitives.wurst": "25e20646cf09d54ccc49977fa344f1920e5c24971409afd01be75e6c449e74d7",
+      "wurstStdlib2/wurst/_wurst/Annotations.wurst": "b212ca69306660939026ee09c669399b927049a28ecbb1a5251e7c64b5bad96d",
+      "wurstStdlib2/wurst/_wurst/Basics.wurst": "871b8f2b8be9563d9abd14169094c4d4a9c149206f6c4efe2a10a65a15ee4b4f",
+      "wurstStdlib2/wurst/_wurst/ErrorHandling.wurst": "ec4ff3005f57d4f5624e018d89d40afba171bb3d0b2282c891c221cb3dba6e6b",
+      "wurstStdlib2/wurst/_wurst/MagicFunctions.wurst": "7a0264e313f0102a10fee26b6272ff3314394853cc0eb7e907d7866a9faa02cf",
+      "wurstStdlib2/wurst/_wurst/MagicFunctionsTests.wurst": "15920a55cd5997139307ec4510bdaef4c4b3bbb2c55ad037809c292a2056b3e3",
+      "wurstStdlib2/wurst/_wurst/Reflection.wurst": "282a45aaeb6ad66c6af6c455981e66e2ab1ad417cbae255f5879621333e93ee2",
+      "wurstStdlib2/wurst/_wurst/TypeCasting.wurst": "7825a1161f524cdfbd2572002db135e5aeab83ddc24ce70524d78b148dfc031c",
+      "wurstStdlib2/wurst/_wurst/Wurstunit.wurst": "d30f47d5d3f8b879b649b20a3e16ee2c36a27bcc6b934b21a627f31c5e9f62c2",
+      "wurstStdlib2/wurst/_wurst/assets/Abilities.wurst": "1a09529d680492d79f4aa09929ba1e652ff343c387d13dbff1521eb253714183",
+      "wurstStdlib2/wurst/_wurst/assets/AbilityIds.wurst": "0d46c5f0c73a7ceaf97882df6e90e60b27c9db93f7246e81b8fb156229bfc3bc",
+      "wurstStdlib2/wurst/_wurst/assets/Assets.wurst": "37f3a7734bd4ddd6ad81f129590ef0ec0aa348c87ca7ce9b454c3189faa10395",
+      "wurstStdlib2/wurst/_wurst/assets/AttachmentPoints.wurst": "5fdabba4424ac77260054efbe0b584c82722c2fede83453023e38acb5e0c9796",
+      "wurstStdlib2/wurst/_wurst/assets/BuffIds.wurst": "02fd8e4e6f994ed9693130eda5df9fd662690d01b568efc46fb4522cf858e38e",
+      "wurstStdlib2/wurst/_wurst/assets/Buildings.wurst": "b1b2d5c23bd55e57935418f56991fde0f900825c0f940994ce3659285cd9c75d",
+      "wurstStdlib2/wurst/_wurst/assets/Doodads.wurst": "a1f0908a2432f2eef7a4734fdebffa5ac14a4d1c3572df8f52c10ea31de8b5e5",
+      "wurstStdlib2/wurst/_wurst/assets/Environment.wurst": "4da17c7ebf38350d68e19e0f3668fbaf51cf06bcf07f2b6dd8fcff1a3bbe4c48",
+      "wurstStdlib2/wurst/_wurst/assets/FramehandleNames.wurst": "b5263c0fa186abcfdb5ef263ce43a2b126a475997027dae9bfe8e0c27042724d",
+      "wurstStdlib2/wurst/_wurst/assets/Icons.wurst": "e9f04b500cc0c3531475e574f1778ced06f7eb546e4bd61e7850fc3a22a9c282",
+      "wurstStdlib2/wurst/_wurst/assets/ItemIds.wurst": "dfe1d542ed55cf11dfb6d0edf906324e8223633b1ec8b74e8f63d5b70593c125",
+      "wurstStdlib2/wurst/_wurst/assets/Objects.wurst": "22102a7377889aabba6d5876026bab48b2e8e6df03a33f12da6b6b61b9cf5cc7",
+      "wurstStdlib2/wurst/_wurst/assets/OrderIds.wurst": "cdddd31dad0219c5facf74ed1b910fa2d3afae4cb91bd04b87f78cd6c8bb6d00",
+      "wurstStdlib2/wurst/_wurst/assets/Orders.wurst": "87825c2069100c420465936ad5ce5af3fcec88e6388177933d584213c8b76216",
+      "wurstStdlib2/wurst/_wurst/assets/PathingMaps.wurst": "f3db19070b106839f640f0b66da7783854faa6179474a12871b71731eb5559b2",
+      "wurstStdlib2/wurst/_wurst/assets/Sounds.wurst": "93d9d8d95c56d9efa967ff8547f9b33fd5b26700b3575e3ae1ba7c4651dea1fb",
+      "wurstStdlib2/wurst/_wurst/assets/Soundsets.wurst": "0bfa33c1787f820450a3f56861279561070b88bd98d849193869b784dd9bc852",
+      "wurstStdlib2/wurst/_wurst/assets/Textures.wurst": "e89d74dac2a935a3eeb857f5b38fea2b0a76fb65bb27455b5e3f8d17e72e97f5",
+      "wurstStdlib2/wurst/_wurst/assets/Tiles.wurst": "6b875f616d8ce419da942c6d8af124cad6880acded2189e8a4ebe87f688292da",
+      "wurstStdlib2/wurst/_wurst/assets/UI.wurst": "94ffdfb75324e1d802de234c5ed55f90cc9148fd962450d522b9e95f58cead14",
+      "wurstStdlib2/wurst/_wurst/assets/UnitAnimations.wurst": "8b6dabe525bc6504237e06cb710b34dc04ff4b2cecc6f8747a71e091ff16e595",
+      "wurstStdlib2/wurst/_wurst/assets/UnitIds.wurst": "232339e321231367de21d9b87afb4b4b6b2da41bd1dbe86d25ed44a85ca4ea7c",
+      "wurstStdlib2/wurst/_wurst/assets/Units.wurst": "0104230aa901fab676b221c32798899fdf5990184df311b722cdcfcf1abe6cb8",
+      "wurstStdlib2/wurst/_wurst/assets/WeatherEffects.wurst": "a26f7955df0d888e791cbf9d309c9d4e28fdd7bce138f46a7870ebcfe76e9f69",
+      "wurstStdlib2/wurst/closures/ClosureEvents.wurst": "0b63275ddc64e4eacb40a09288c1c6c8de2a298872645e0927b3b0d6af637661",
+      "wurstStdlib2/wurst/closures/ClosureEventsTests.wurst": "57376ca84c6f8686af942a45476a7884ed99b3f56b90341f1c07fe96f5a14842",
+      "wurstStdlib2/wurst/closures/ClosureForGroups.wurst": "441adfd62ae8750615326274feb4b7619dee6a7ffcee1cb84d66900c3cf06aab",
+      "wurstStdlib2/wurst/closures/ClosureFrames.wurst": "f5e1b892d7ecc3ba11e2c89c78270ad5c52c90e735ddbb142248d42a666e4e17",
+      "wurstStdlib2/wurst/closures/ClosureFramesTests.wurst": "26f2fde23636cd51afa768145b7686712f8569454fdc0754a00e79ec73ece97a",
+      "wurstStdlib2/wurst/closures/ClosureKeyPresses.wurst": "0034c8d92c69756af4633eedbc851f22e48b65d3ff4f6cb6305009c95ba5c078",
+      "wurstStdlib2/wurst/closures/ClosureKeyPressesTests.wurst": "cb22ac3c325e3b3e020a8bb4e176eddc37b3843f0c056eda4bc1ae7aabf47bbc",
+      "wurstStdlib2/wurst/closures/ClosureTimers.wurst": "0e3b35dbfeda5e5cbb3f0ba46f68778e0ab37441c685c741e3cfc05191a0817b",
+      "wurstStdlib2/wurst/closures/ClosureTimersTests.wurst": "6a24a1abdc9a97b03ae713eea5be0dd637ce4d374c416229d558866b9f98356b",
+      "wurstStdlib2/wurst/closures/Execute.wurst": "983c49f1062d1f1e33e1abd114e999b6b27c54b69ae8ebc2a7aeff9062511312",
+      "wurstStdlib2/wurst/closures/ExecuteTests.wurst": "e58b97f5726cb2f31fe540fe14f490acf2f321924878ce43b59d839a4dc27440",
+      "wurstStdlib2/wurst/closures/SpatialIndexForDestructables.wurst": "7d69b471c8b37993abfb5359f82ca5d51debf7929f5505a47e571cbb05103db3",
+      "wurstStdlib2/wurst/closures/SpatialIndexForUnits.wurst": "8309883976712cbbdfc49d254ff3fe69cce6d894cd7f47f2b6aa4e7c7dc63860",
+      "wurstStdlib2/wurst/data/ArrayList.wurst": "275ca6b8208b9359a5acffa1806190a8412fd4a6a4676bcff5c52da2f7feb174",
+      "wurstStdlib2/wurst/data/ArrayListMemoryTests.wurst": "8c95712fa2b428270dbb02eeec33db25dd21a88c05843633282169eebdd7148e",
+      "wurstStdlib2/wurst/data/ArrayListRegressionTests.wurst": "e97d9ec74f153c2ea3169f3155f9d6308ab8c326056e6cc3aeb6e199b5495db4",
+      "wurstStdlib2/wurst/data/ArrayListTests.wurst": "f9f12927b4fea4e9e58e11d198bfc528eadee8dfa35b67bc85fc2c823f79af05",
+      "wurstStdlib2/wurst/data/BitSet.wurst": "10f69b02c7c0c0dd28da4b13d1aa919ecc92ec1f99bceef02e9407d62d7981fe",
+      "wurstStdlib2/wurst/data/BitSetTests.wurst": "37ce514e7d2d581e21868e9734fb4599194f970d8efc085e87776055b414cff9",
+      "wurstStdlib2/wurst/data/CodeList.wurst": "7bf6ddd1e1edc7f43a81e12dea9f9e654c13266fc0b1aa6fecc4a1d06073ae9c",
+      "wurstStdlib2/wurst/data/CollectionIteratorTests.wurst": "12b5857aa2031d1b2dd7cc2c20545d29744c0b357bb869568b0d4d67414c97df",
+      "wurstStdlib2/wurst/data/HashList.wurst": "db7356dd73be27b9cf1c3d7e07433823affc1136cd474ee2da11dd92f2b9c9af",
+      "wurstStdlib2/wurst/data/HashListTests.wurst": "bb4db203a96a5abf74fc3c5a70781113baa1e7e50058d948697074dcf36e3273",
+      "wurstStdlib2/wurst/data/HashMap.wurst": "54e37dc65dc58fefb953de1475e0613f03f80d4cd2ac946452659f28788c3ac0",
+      "wurstStdlib2/wurst/data/HashMapTests.wurst": "9ce4d31c6fb3f89db832f5f13d17e4f9e07f88a2e79f6cc4ccf640af8aa608ae",
+      "wurstStdlib2/wurst/data/HashSet.wurst": "791aa09d810dc339af11cc64a897a0143aa89c30fac53ab0a906782afd216bcb",
+      "wurstStdlib2/wurst/data/HashSetRegressionTests.wurst": "92fbc8e7782c877040a59374fbf9b584b18bb0a98e9d6a975b5d7f0cc08a1af0",
+      "wurstStdlib2/wurst/data/HashSetTests.wurst": "ae623669dbd26b7198e07bd8b4885eac555634449cdf44babb6239c41c6f2a46",
+      "wurstStdlib2/wurst/data/IntMap.wurst": "2715c065b37245aff8b790be5357181bbcd2856316d1b19196d9b180502ec667",
+      "wurstStdlib2/wurst/data/IntMapTests.wurst": "209154d53ae81e7e62a5b21d463750f9e09ad5866f22ce7273eb98c1bcb5202a",
+      "wurstStdlib2/wurst/data/KeyedMap.wurst": "3b6f7414a6bcb8d53b776042999a7fb145d26bf505b3d84941e3b146e78786a1",
+      "wurstStdlib2/wurst/data/KeyedMapTests.wurst": "f4d7c7936cf8fd15d0311d0a2916905097651fbe25f737ba8e85c3a67a3da697",
+      "wurstStdlib2/wurst/data/LinkedList.wurst": "a6715be0a0d1ae07586338739d1b24d5efd9e970aca31daeb336cd2122bdfebd",
+      "wurstStdlib2/wurst/data/LinkedListModule.wurst": "e0b6b0b33cbc4cdc563880f07d0854c43e9dea4af9a529d3dd91509b1ed5f9ad",
+      "wurstStdlib2/wurst/data/LinkedListModuleTests.wurst": "5da2562bfd36cb83fb2465beeb71e0fff08ac27f2f40d66d07c418cdf3ba7471",
+      "wurstStdlib2/wurst/data/LinkedListTests.wurst": "ef5eeef412986b12ba99e86813e776e3083782276fd2c916830fd98dc0499472",
+      "wurstStdlib2/wurst/data/PriorityQueue.wurst": "b830ab97695f3e31ec361cef729a9bd44e0d0010498c89a91938cea7574fd9d0",
+      "wurstStdlib2/wurst/data/PriorityQueueTests.wurst": "3a3f9398729f06d7843893f607952067df6223a9f53418f540793030f2ed5f74",
+      "wurstStdlib2/wurst/data/ShardedIntStorage.wurst": "d9ba8cdcb63ef984e9787965e671d533dc68fab1256a3d1e57524fac8bd1ceeb",
+      "wurstStdlib2/wurst/data/ShardedIntStorageTests.wurst": "2020cbec26c1830d7e82cb49668717feb832f174858e69a90097b37f903229bb",
+      "wurstStdlib2/wurst/data/Table.wurst": "f07d08db3bf582d80c157863110a197cd296130a5ea300153698343ff90bc0e4",
+      "wurstStdlib2/wurst/data/TableTests.wurst": "7d8eb0b76609941aea5cb7b50b871f46991590fee0887d6ffb196e3cdd9cb8c1",
+      "wurstStdlib2/wurst/dummy/DummyCaster.wurst": "fd74c95c02ed78a1525b20cb9892991769da9aac3febef347ff1d88b6c5469c4",
+      "wurstStdlib2/wurst/dummy/DummyDamage.wurst": "be17296bc7ecc4822724efa439c4fbae32d1bf5dc2031b66e91c91d39eae3437",
+      "wurstStdlib2/wurst/dummy/DummyRecycler.wurst": "3a8bc48cbe68f59da04494a427bfda82d13c4461f0c64f70d533f3ab3970dd6f",
+      "wurstStdlib2/wurst/dummy/DummyTests.wurst": "f239a05ad5f2a210fc940f34ff7cdf90b41e04b9aab26aa8d893806f105daf36",
+      "wurstStdlib2/wurst/dummy/Fx.wurst": "6bcaf851a74e09a3b6c80bc0b183e8e4c91e7a9651164f25dd984e05fe9ecb78",
+      "wurstStdlib2/wurst/dummy/Fx2.wurst": "0a85de8c26ed466a08152bcf82d523ece6c9f383b6be2dc532599da899a00728",
+      "wurstStdlib2/wurst/dummy/InstantDummyCaster.wurst": "858a4ef94758e40a51c9848629734fc0867259fb4a7c7d65dd4d9b4d14bbd66a",
+      "wurstStdlib2/wurst/event/DamageEvent.wurst": "837fe0787be55ac9258ac10b024d6b70e2bb7d3d288523eb2ded40709084451b",
+      "wurstStdlib2/wurst/event/DamageEventTests.wurst": "089ede83ca4be0b32fb44eaaabdb7b35408136a858940235b79b036bf2825419",
+      "wurstStdlib2/wurst/event/EventHelper.wurst": "a61e970d1e9191c69cd4e0840cf04f2cc53559fd0ef565a877a7985c08aaf252",
+      "wurstStdlib2/wurst/event/LastOrder.wurst": "e331982d4b75d2f2fd8ca747af10704efa03a62adac35a1589d213f918b219b3",
+      "wurstStdlib2/wurst/event/LastOrderConsumerTests.wurst": "12520c1d0a4ef82efc3a3ace8c3bb5b384e0fee251a4fe5715d063987e23b0b1",
+      "wurstStdlib2/wurst/event/LastOrderTests.wurst": "81adbca70845a416ba213f7c0d3c2dbbfc67d57f09e63dea2d750b99b18927c8",
+      "wurstStdlib2/wurst/event/OnUnitEnterLeave.wurst": "758972dc9ad29060e5b8f0b1269d307533849ed8dc4f6a9d1653e861a8e74c15",
+      "wurstStdlib2/wurst/event/RegisterEvents.wurst": "95f2dbf1bbbe0d079e04a5ffd1088e44847dfd7ac6033dc2873f2600511668f7",
+      "wurstStdlib2/wurst/event/UnitLifecycleTrace.wurst": "59a066c69b20bdf67bd32c53ca953da37595bf4d15d079b84acb81ca19b370e1",
+      "wurstStdlib2/wurst/file/Base64.wurst": "1a18034303bd3396eccb7043d915219d8e1436b8bbbfd0922519d5b12cb4959a",
+      "wurstStdlib2/wurst/file/Base64Tests.wurst": "8d3389108c6e8f181721060c0394edf422d6db762e512702db7bd557be4fbc5d",
+      "wurstStdlib2/wurst/file/ByteBuffer.wurst": "196925a78989e22a63222e79025c318b87e63d5f0c205a06d5e1f19c827e6788",
+      "wurstStdlib2/wurst/file/ByteBufferTests.wurst": "bedcbf658835d4e8dff98a025215b29b8e13524cdf8ba427192cf4b7d6dd0b4f",
+      "wurstStdlib2/wurst/file/ChunkedString.wurst": "4ff19f1e3d234d0b7c0c23b34c3c187c35e3278df7b9a478415701423ec7b489",
+      "wurstStdlib2/wurst/file/ChunkedStringTests.wurst": "976c3004dab590ad35707cf852a7574a76e06a88f988a3e1f813419662a9cab2",
+      "wurstStdlib2/wurst/file/FileIO.wurst": "eaa4d2a6a8c0ccd01c1d6b9410e724ad75b70d19f227e61bf7e80862d19f95e8",
+      "wurstStdlib2/wurst/file/GameStatus.wurst": "e9e72ec9333a8f82b5c02fe44ae4f18940b9b1edc64b9c7cd46246fc4e4b14d1",
+      "wurstStdlib2/wurst/file/MultibyteDiagnostics.wurst": "373e0793baf0ab6610f9ed79f73e2aa49fc585ce36501a872a1147120d7144ed",
+      "wurstStdlib2/wurst/file/SQLite.wurst": "445789667ab91dc6b88c83cdb7a7c0dc2f2854efb4ba6e5889060a1b9b706e1a",
+      "wurstStdlib2/wurst/file/SQLiteTests.wurst": "4359420ac4e8d695a020d75ac90e1cc8e641cc0a9c9d12583f5a23b4e3614a08",
+      "wurstStdlib2/wurst/file/SaveLoadData.wurst": "11b95ee1670935e366d90a91a88b32cf87dca8925c3ec6b3aa9a4a873291c954",
+      "wurstStdlib2/wurst/file/SaveLoadDataTests.wurst": "740f52bc9820844f2cfeec7c7f90471d57685e8f7798aa3840798b9c96bd61a0",
+      "wurstStdlib2/wurst/file/Serializable.wurst": "16e2d16593a69c7283b8e622a33211dc440086cd39e509073d7e313667fbf3f5",
+      "wurstStdlib2/wurst/file/SerializableTests.wurst": "6b59e1ec507863ef0b55b0466aa63bcbd4e44d1240bce245d34c67a0e0996411",
+      "wurstStdlib2/wurst/file/StructuredSerialization.wurst": "846b68009634a3533d44ef4eaca08c92356fa741e6033ece0a9254bc0f109308",
+      "wurstStdlib2/wurst/file/StructuredSerializationCore.wurst": "b2e13dcc3c459a2e73ad322b1dedd67e6feff5b67593dc33af5aab20cb134acb",
+      "wurstStdlib2/wurst/file/SyncSimple.wurst": "0c2fec845109dceefbefeb14c372ccd21e6fd8bdbca616a249c37745df43f416",
+      "wurstStdlib2/wurst/math/Angle.wurst": "f0db9a02908bf3b06fa826821936410f5706bfe0a5f77292a850719c712a9c0f",
+      "wurstStdlib2/wurst/math/AngleTests.wurst": "47b4876d6c5c57423e456e99b2b66dfc6876a38a3c2cc0dedfac6fe8970154a7",
+      "wurstStdlib2/wurst/math/BigNum.wurst": "2155c7a3b247ac80092e306469ec292c2b8c2d25e4a7da5db33eb01d9defb77f",
+      "wurstStdlib2/wurst/math/BigNumTests.wurst": "975a245832b4824486a5477cfc26c00b5f24c11804f9f5a5ffa69ec641d3f428",
+      "wurstStdlib2/wurst/math/Bitwise.wurst": "0e35bed0c13b3884d29b9fe2e82e2e5f762b524cb2a821a047fe701be9222635",
+      "wurstStdlib2/wurst/math/BitwiseInit.wurst": "ffd0f9c933cee7f747de480f0f02e36006d3cd59814b06773f152082e47eb643",
+      "wurstStdlib2/wurst/math/BitwiseTests.wurst": "88a36b1b5cc79a4f7af374e3d3e72017b06d338296b1668f8336d933829ed648",
+      "wurstStdlib2/wurst/math/Interpolation.wurst": "02a18239285bdb44d8fb93fcfae5abd0341f79469eec8ae19da8bf0ee90c7a7a",
+      "wurstStdlib2/wurst/math/InterpolationTests.wurst": "2b5a6020fa1fadb7c1514dfd625b3836889c37fcd03e0f27538c62f15f4656da",
+      "wurstStdlib2/wurst/math/LineGeometry.wurst": "93a001b25c85711056ba6183ce6545e53b48aab89d2df382c59beb23b4337f96",
+      "wurstStdlib2/wurst/math/LineGeometryTests.wurst": "631c2436ec3c3dafdb37ab1f73daa387d1aff23a075418960f8e0f4c68ae35c0",
+      "wurstStdlib2/wurst/math/Maths.wurst": "b6955e4fd2910dad25eb3b2346d8ee92eec793a7efb7a7804b7b9d6469886a91",
+      "wurstStdlib2/wurst/math/MathsTests.wurst": "b4ef7bcf6e13495b5b5666669b3bd0bfa6faf4920ce6e2d9f92433d0ad2965dc",
+      "wurstStdlib2/wurst/math/Matrices.wurst": "38310aae4df529e0e2bb89f82dfe8d63314fb893f963c3d837fdbae3b836bd3f",
+      "wurstStdlib2/wurst/math/MatricesTests.wurst": "abd1ab5c013d7c927ec0c1651e2a5f3253bdc8c5413bebe55cbc3f2afb9af75a",
+      "wurstStdlib2/wurst/math/PathingGrid.wurst": "2258c391fbfe3bf1bd851176623895cbde4100bdc914e7e6b5716f7f4889c705",
+      "wurstStdlib2/wurst/math/PathingGridTests.wurst": "aa6c2e050444c632c3f9815f19bb17ce52981c36dbb2bd92072eb9993a734048",
+      "wurstStdlib2/wurst/math/Polygon.wurst": "fd8e79269c3f842855f9dc2a40a2f359ce7ae102ae9ff254ae1373bd861df53d",
+      "wurstStdlib2/wurst/math/PolygonTests.wurst": "072ce6b2193bb45c89001e63294d375d5cef079731dd865883d5dc794590f6e3",
+      "wurstStdlib2/wurst/math/Quaternion.wurst": "ed7f293a62be0eeb9ab6eab0022d7227a2099e0ca44225f7b107846603d098d5",
+      "wurstStdlib2/wurst/math/QuaternionTests.wurst": "2daaec0721a87b2deefac5c765273edbefbf68177fd1115c958a05b72ac70020",
+      "wurstStdlib2/wurst/math/Raycast.wurst": "f6d992fe2cde020a8c9d60288941cad439cf2f16faa9167ebc65bd766536cf6f",
+      "wurstStdlib2/wurst/math/RaycastTests.wurst": "56e93096a8b16aef0a5e3acb180f690912a3a938f332d84c1feae9ceb61dbf24",
+      "wurstStdlib2/wurst/math/Vectors.wurst": "9e5ac173c77ecd1f64272c10b56cd9d857854ed17f89ac7d2cacbb083f09fa4e",
+      "wurstStdlib2/wurst/math/VectorsTests.wurst": "9c5337d3a4cd06ecb42e1973e3db529100b63a3a8f9265723ba848d2da61c7b3",
+      "wurstStdlib2/wurst/objediting/AbilityObjEditing.wurst": "1ff59f0921d1d737751a87ed58c21a14d88358f630fadacd27a9d70500963409",
+      "wurstStdlib2/wurst/objediting/BuffObjEditing.wurst": "d019809c1643260900ab757de468fc5dfd08226cc252ba449575655cfdca9fbc",
+      "wurstStdlib2/wurst/objediting/DestructableObjEditing.wurst": "5118bf16fcc13c65a916120c18b3880e5fbe2e070372715accd302f518c5ab44",
+      "wurstStdlib2/wurst/objediting/DoodadObjEditing.wurst": "0f0dbd598128c9a704dca4db8d0e469d8120304cc90bd3003f6edee0ca116dc8",
+      "wurstStdlib2/wurst/objediting/ItemObjEditing.wurst": "9bf80d2980c66bb6f5012079ba9e5278ed995f85c08f90339b0d98a5b609ad2b",
+      "wurstStdlib2/wurst/objediting/ObjEditingCommons.wurst": "e695f6cb76c4978b0082541e44dfc463eabb52358020c8340b583b6290815b89",
+      "wurstStdlib2/wurst/objediting/ObjEditingNatives.wurst": "4bbb7480f18c4e38dbcd9e16a0e9ef4346a4924168ce28a2e706a79920e2adda",
+      "wurstStdlib2/wurst/objediting/ObjectIds.wurst": "c0815f6135b3002289e130041592f7e07aa5aa8f21305839ad5cb784e0cd5d9c",
+      "wurstStdlib2/wurst/objediting/ObjectIdsTests.wurst": "636a3b9e0f8d1396cde7bb858758b3cc043d250f2b8a80353763b9a3b4b1a864",
+      "wurstStdlib2/wurst/objediting/TargetsAllowed.wurst": "6fd74ab8676e0f9272fca21eada1c23f8d17b6935574577f10a7b4e7b1f3bae1",
+      "wurstStdlib2/wurst/objediting/UnitObjEditing.wurst": "51ea43e951f2e40069cf639d03bf29882f625b99c23a895b8c2bd7c520ec2da1",
+      "wurstStdlib2/wurst/objediting/UpgradeObjEditing.wurst": "ee89db0e2c43b25f2d3ae51c1550bf27648df99e90f029c3c359310bf17a6bb7",
+      "wurstStdlib2/wurst/objediting/presets/ChannelAbilityPreset.wurst": "42c9e15b6563aee5639a9b5277c4c5f937a233919c8532eda7d274fe5cbfd6cb",
+      "wurstStdlib2/wurst/objediting/presets/HeroPreset.wurst": "2617acbc86e716aa122bdcd5a658fa64172572b479ea8f1fd2df18a506f9eb69",
+      "wurstStdlib2/wurst/objediting/presets/ObjectIdGenerator.wurst": "a6a5c695801e1e5d07682fc91e8c39ec14d6a5c1b674c62d245c3ca972613b11",
+      "wurstStdlib2/wurst/objediting/presets/OrderStringFactory.wurst": "ec8922c19ef3d4c292b6cda6b42b0ce8a75d679a9a08097ff423f9699f2d1fe4",
+      "wurstStdlib2/wurst/tests/RegressionAbortOrderConsumer.wurst": "1798101c2fc931c59effdd23c745c033286b0da20107129ded0d29afe625cd20",
+      "wurstStdlib2/wurst/tests/RegressionArrayListTests.wurst": "4315fd0006815ff29a2446b306507e7dfb9b427711e7811c126312c0f0b3301f",
+      "wurstStdlib2/wurst/tests/RegressionAuditTests.wurst": "594704e3edfcbfa42bd39d3eb8343b5ead07a79735bb6c5d0c2f99aa5834ef3c",
+      "wurstStdlib2/wurst/tests/RegressionChecks.wurst": "503d4c07da575ec2c9a1b7d19887d95a083d61a29027ceab7aab270334f9ef20",
+      "wurstStdlib2/wurst/tests/RegressionGameplayTests.wurst": "2148f70859f18dc69025cca8e26eee5dcf8fb97ac77099be9f004d2bfc63e57e",
+      "wurstStdlib2/wurst/tests/RegressionRegistrationTests.wurst": "b95797c64e10a5b75e9247d816e117f4992620e9c3e91dc58d55abaa525210d6",
+      "wurstStdlib2/wurst/tests/RegressionTerrainTests.wurst": "003c367120d8102345aaa9a66d446712ab7d490098851b6c31cb331371424019",
+      "wurstStdlib2/wurst/tests/RegressionUiTests.wurst": "227c032a3d192982a6efdbce88275079f9e8ea7f78019d37695b9445b5b08436",
+      "wurstStdlib2/wurst/tests/StdlibRegressionTests.wurst": "4720cd601f1e64478251688081a0555256623e60b7106274cb00afbcdb4f8362",
+      "wurstStdlib2/wurst/util/Board.wurst": "e8c6de08ab15b9e53c427ddf5f83182d5804beab9f1b45736e9a9c5b5a0ec390",
+      "wurstStdlib2/wurst/util/Cinematic.wurst": "00f4ce7077e67464c996d2d948e20f9c2792e7ce99c7b0e5703e9bedb3201c8f",
+      "wurstStdlib2/wurst/util/Colors.wurst": "47f0ae85acdddb24e9f297416843051c1e3a3e7419b09418f03c3b0521962a31",
+      "wurstStdlib2/wurst/util/ColorsTests.wurst": "56ac856116b3a0d16e42efba984ff7bffb62d0ed7ac17e0ca3b0e752472b4869",
+      "wurstStdlib2/wurst/util/DestructableSpatialIndex.wurst": "b5b71d50e96fdd88920c2dd756668cc180cb6e77d0b1a39614bd8c1143a6bc4a",
+      "wurstStdlib2/wurst/util/DestructableSpatialIndexTests.wurst": "fa140bd17038ad18d9efcee33206640d3ace2c62627b65401d6cba3957f9ac2b",
+      "wurstStdlib2/wurst/util/DialogBox.wurst": "f77496efde9aaff9680194553f75f5f32cdc34f5165b2e10159eb5846e63c456",
+      "wurstStdlib2/wurst/util/EffectUtils.wurst": "56cdf44c4e9c6aa862a1cdca8d6410f44f8d85651dd81d7284dc3d1c865c268b",
+      "wurstStdlib2/wurst/util/GameTimer.wurst": "a4876eb5cc38dbab56b2796b79477897a5986a01aeda4738243b05596c4232e1",
+      "wurstStdlib2/wurst/util/GameTimerTests.wurst": "f0b344cea67e8f5b97d4a5c03acfd9ba5f87982a4d542ebd2acd344e8d13d82c",
+      "wurstStdlib2/wurst/util/GroupUtils.wurst": "5c0eabb2382edcd0f6846fe3a6b2f44f7b563459c4583887a5cdc3b3e26455e1",
+      "wurstStdlib2/wurst/util/GroupUtilsTests.wurst": "13b1b20edc5103be9648b64aa863d0d52b97094ee5f6fc381eadc4099093479f",
+      "wurstStdlib2/wurst/util/Knockback3.wurst": "bed4a373d95aa831db20e1b0ea260e32228ab826edab9509ea907d32fcc05601",
+      "wurstStdlib2/wurst/util/MapBounds.wurst": "2802b39eb3dc0ac0870b8137e5d47d9c073c9693db0f8da667eaa51e3cf09d9b",
+      "wurstStdlib2/wurst/util/MapBoundsTests.wurst": "805d1fbc238a2ad19c27541e59f43739fd36d6020a733f6ae038f30e7cb64c21",
+      "wurstStdlib2/wurst/util/Preloader.wurst": "1ea20f9b00e34da1d1942735622e9ea195d8836941c5c72e6183d7e2cfd2d55f",
+      "wurstStdlib2/wurst/util/Printing.wurst": "48d7f373a417cbf0c385744efb0775f60989bc3197ca392a7da4898eeef47cf3",
+      "wurstStdlib2/wurst/util/SafetyChecks.wurst": "bb9338599b90de80a8c16421f018cf00de9663a5da4e9c3404dc369e42cafa80",
+      "wurstStdlib2/wurst/util/Simulate3dSound.wurst": "3b1053dec1134f21e27351344cfc4d33d0a4ba4148532859d8f0719e5dbdb62f",
+      "wurstStdlib2/wurst/util/SoundUtils.wurst": "f235c8a4b81c21be36631ef3fb662b87c61338e221610b9253101fa9bfdec0d7",
+      "wurstStdlib2/wurst/util/SpatialPartition.wurst": "59902c4e47303aacdd43a052490718bf068832feaaadc090ed277cffa52baaf2",
+      "wurstStdlib2/wurst/util/SpatialPartitionTests.wurst": "de11379ac710b7542e32608a62f96f6daa78d904b3288f991b9cd5f70220cbba",
+      "wurstStdlib2/wurst/util/StandardTextTags.wurst": "93b83a3b7d2eb3dc2c344a6089ffbf426b430e626c435358d0fe82bf36022cb7",
+      "wurstStdlib2/wurst/util/StringUtils.wurst": "917f6eefcb6c246b15cecea2ff18b6b6e895cb651a8d4b031cf6c0c17498ea94",
+      "wurstStdlib2/wurst/util/StringUtilsTests.wurst": "9a9ea88f0829c1d423744ecf7af5e118ba7e033317afc88964c69c90a365c06f",
+      "wurstStdlib2/wurst/util/TerrainEnvironment.wurst": "6128df5f77909347184b83f423a72c0f4a8c9925120109b805fbac141349e585",
+      "wurstStdlib2/wurst/util/TerrainUtils.wurst": "e66e09954a82b799347c2a8b0b9d2ad078e24b14ec09020d88a791b2acd7be23",
+      "wurstStdlib2/wurst/util/TerrainUtilsTests.wurst": "02d9382d6277d4300107b48210bcceaccc27f684a2ad3598de58a7b189f9a999",
+      "wurstStdlib2/wurst/util/Time.wurst": "e8d0a573bcfc6f63c412124044bc17c5847e7b6f8867deeb80add467b06d4a19",
+      "wurstStdlib2/wurst/util/TimeTests.wurst": "69d333eddf413b08f82c82dd1131db9874158f504a5381ff9d257ef22e515ffb",
+      "wurstStdlib2/wurst/util/TimerUtils.wurst": "f8ef397079d518cb34e0781778bd1b7e481b6046d26c2498ea70f9b6a6172456",
+      "wurstStdlib2/wurst/util/TimerUtilsTests.wurst": "231e3d9f7ad6e0190030f857461785f0bb44176dbb771730f397d9f3c6abced1",
+      "wurstStdlib2/wurst/util/UnitIndexer.wurst": "05db870ac41e43e48adaeca52e125e7d9abed0d0326566430f7258cb47e0a2f6",
+      "wurstStdlib2/wurst/util/UnitIndexerTests.wurst": "5399a11a3dc032f9435f2dff4e8cf9bac615fe33de980cf16f656df09d3a0b99",
+      "wurstStdlib2/wurst/util/UnitSpatialIndex.wurst": "a5ebbc1be6f794c358f75136259b99e73cb252364a801620c4d519eee9b467d5",
+      "wurstStdlib2/wurst/util/UnitSpatialIndexTests.wurst": "956932d98f570199a1b2055f892325f9b447cad24fb1c2e64642f37d6ec64b0b",
+      "wurstStdlib2/wurst.build": "fa94a8b9be8738584e82bcfad8a51366d810519a4b2adb76f636a698be0d7312",
+      "wurstStdlib2/wurst_run.args": "e0e5144262ec482457ce27d62ee535e9ab207a0852cffde01af03d0a36abd0be"
+    },
+    "launcher": "a0fd8551ab68d003afcaa426e4606274008805091d795f6f81b1b065f9d56cc3",
+    "compiler": "1f3ae40b1018b8757867515596adfa69113ca85f390c1b353cc8b69cf8944145"
+  },
+  "expected": {
+    "InstalledCommandHelpTests": [
+      {
+        "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpListsProductionPagesTopicsAndVisibility",
+        "line": 128
+      },
+      {
+        "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRejectsMalformedPagesAndHiddenTopics",
+        "line": 173
+      },
+      {
+        "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpRetiresReplacedAndRepeatedListeners",
+        "line": 199
+      },
+      {
+        "id": "wurst/InstalledCommandHelpTests.wurst:installedHelpReplayAfterRegistryReconstructionIsReadOnly",
+        "line": 232
+      }
+    ],
+    "QuestRewardTests": [
+      {
+        "id": "wurst/QuestRewardTests.wurst:earnedResearchRewardGrantsOnlyTargetToPlayerWithoutPaymentOrPrerequisites",
+        "line": 88
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:researchRewardWaitsForReadyOwnerAndFreshLocalTurnIn",
+        "line": 126
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:reachedStageSubsetExcludesUnchosenUnsupportedRewardButBlocksChosenSibling",
+        "line": 149
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:unknownTargetAndRewardOverflowRejectWholeBatchBeforeAnyAward",
+        "line": 164
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:fullResearchCapacityRejectsWithoutPartialCompletion",
+        "line": 182
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:bothGeneratedResearchBearingQuestsBlockTheirWholeUnsupportedBatches",
+        "line": 215
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:unrelatedGeneratedQuestKeepsItsExistingGenericRewardPath",
+        "line": 237
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:completedOldSaveNeverRetroactivelyGrantsNewResearchRewards",
+        "line": 249
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:duplicateAndAlreadyOwnedResearchRewardsDoNotDuplicateCompletionKeys",
+        "line": 262
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:earnedPlayerResearchUpdatesMatchingActiveObjectiveWithoutAnotherReward",
+        "line": 276
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:physicalTurnInUsesSameOwnerPresenceGrantAndObserverSynchronization",
+        "line": 292
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:physicalBlockedRewardFeedbackDoesNotHideLegitimateOtherVisitProgress",
+        "line": 321
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:physicalOrdinaryRewardOverflowRemainsVisibleAlongsideOtherVisitProgress",
+        "line": 344
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:rewardInteractionFreezesReadyCandidatesInEitherJournalOrder",
+        "line": 403
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:rewardWithNoNewGrantDoesNotSynchronizePreviouslyOwnedResearch",
+        "line": 407
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:rewardNewGrantSynchronizesOnlyMatchingEntryStageNotOtherPreownedTargets",
+        "line": 422
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:questOwnsRewardBatchOutcomesIncludingRejectedOverflow",
+        "line": 453
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:rewardGrantCannotVisitNewStageDuringSameInteractionInEitherOrder",
+        "line": 495
+      },
+      {
+        "id": "wurst/QuestRewardTests.wurst:explicitRewardTurnInStillSynchronizesNewResearchImmediately",
+        "line": 499
+      }
+    ],
+    "ScienceExplorationTests": [
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:registeredScienceResearchAndJourneyActionsConsumeRealInputsAndReduceOnlyEligibleHazards",
+        "line": 101
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity",
+        "line": 132
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills",
+        "line": 157
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceRejectionsCoverResearchEquipmentHistoryInstitutionRouteActorAccessAndResources",
+        "line": 184
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket",
+        "line": 233
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact",
+        "line": 256
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:failedCampaignLoadRollsBackScienceWorkEquipmentAndOutcomeCounters",
+        "line": 298
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl",
+        "line": 334
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:chemicalQualifiedWorkRejectsMissingFacilitiesStaffInputsTechnologyAndUnauthorizedControl",
+        "line": 356
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:chemicalNamedSourceCompositionRoundingRepeatGrantsAndAheadOfTimeAccess",
+        "line": 397
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:chemicalActiveAbstractResumeCaptureAndMalformedLoadPreserveExactAuthority",
+        "line": 451
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:chemicalFailedCampaignLoadRollsBackWorkFractionInputsAndEarnedSource",
+        "line": 484
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:barometricOnlyRegisteredVoyageCommitsExactStormLossAgainstMatchedControl",
+        "line": 553
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:barometricCalmWeatherAndUnfundedDaysCannotCreateAvoidanceOrPartialBills",
+        "line": 595
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:barometricVoyageRejectsMissingInstrumentsTechnologyVesselRouteAndLawfulControl",
+        "line": 633
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:barometricFractionsResumeReconstructAndCaptureWithPlayerAiParity",
+        "line": 676
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:barometricFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch",
+        "line": 719
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalOnlyRegisteredSurveyCommitsExactHazardLossAgainstMatchedControl",
+        "line": 789
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalUnfundedDaysCannotCreateAvoidanceFractionsOrPartialBills",
+        "line": 846
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalSurveyRejectsMissingEquipmentResearchFormationRouteAndLawfulControl",
+        "line": 883
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalFractionsResumeReconstructAndCaptureWithPlayerAiParity",
+        "line": 935
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalNamedSourcesDeduplicateAndUnrelatedResearchCannotReduceSurveyLoss",
+        "line": 979
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:botanicalFailedCampaignLoadRollsBackSupplyFractionBillsAndResearch",
+        "line": 1011
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:calculusOnlyRegisteredResearchCommitsExactWorkAgainstMatchedControl",
+        "line": 1076
+      },
+      {
+        "id": "wurst/ScienceExplorationTests.wurst:calculusFundedWorkResumesAfterSnapshotAndUnfundedDaysAddNothing",
+        "line": 1121
+      }
+    ]
+  }
+}

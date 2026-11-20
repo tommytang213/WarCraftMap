@@ -8,8 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
+from wurst_dependency_receipt import log_installed_stdlib, log_post_install_inputs
 from hero_starting_profiles import starting_definitions, rank_text, recovery_days, growth_cadence
-from quest_codegen import validate_graphs, emit_quests
+from quest_codegen import validate_graphs, emit_quests, trade_quest_bindings, consultation_quest_bindings
+from quest_rewards import configuration as quest_reward_configuration
 
 class PackagingError(RuntimeError): pass
 GENERATOR_VERSION = 33
@@ -301,7 +303,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         hero_allocations = allocation_definitions(progression_catalog, hero_starts)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         raise _fail("hero starting profiles", error) from error
-    quest_sources = [Path(__file__).with_name("quest_codegen.py")]
+    quest_sources = [Path(__file__).with_name("quest_codegen.py"), Path(__file__).with_name("quest_rewards.py")]
     try:
         quest_config = configuration(config.project)["scenario"]
         quest_builder = quest_config.get("questProjectionBuilder")
@@ -320,6 +322,9 @@ def generate(config: BuildConfig, generated: Path) -> None:
             bindings = json.loads(path.read_text())
             quest_sources.append(path)
         quest_bindings, quest_blockers = validate_graphs(world.get("quests", []), bindings)
+        quest_trades = trade_quest_bindings(world.get("quests", []), bindings)
+        quest_consultations = consultation_quest_bindings(world.get("quests", []), bindings)
+        quest_rewards = quest_reward_configuration(world)
     except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         raise _fail("quest generation", error) from error
     generated.mkdir(parents=True, exist_ok=True)
@@ -443,7 +448,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         for unlock in row["unlocks"]:
             rpg.append(f'\ttechnology{index}.addUnlock("{ws(row["id"])}","{ws(unlock["kind"])}","{ws(unlock["contentId"])}")')
         rpg.append(f'\truntime.technologies.register(technology{index})')
-    rpg += emit_quests(world.get("quests", []), quest_bindings, ws)
+    rpg += emit_quests(world.get("quests", []), quest_bindings, ws, quest_rewards["batches"])
     inventory = catalogues.get("inventory", {})
     from equipment_items import item_definitions_wurst
     rpg += item_definitions_wurst(inventory)
@@ -480,8 +485,15 @@ def generate(config: BuildConfig, generated: Path) -> None:
                                           catalogues.get("treasures", {}), [path for _, path in config.regional_terrain])
     from treasure_resolution import definitions as treasure_definitions, configuration as treasure_configuration
     runtime['treasureResolutionCatalog'] = treasure_definitions(catalogues.get('treasures', {}), locations)
-    rpg.append("\n" + treasure_configuration(runtime['treasureResolutionCatalog']))
     runtime['interactionLocations'] = locations
+    for binding in quest_consultations:
+        if not any(row['id'] == binding['locationId'] and row['kind'] == 'settlement' for row in locations):
+            raise PackagingError("quest consultation provider has no generated settlement location")
+        values = ", ".join(json.dumps(binding[k]) for k in
+                           ("questId", "stageId", "objectiveId", "providerId", "providerName", "locationId", "institutionId"))
+        rpg.append(f"\truntime.registerConsultation(new QuestConsultationBinding({values}))")
+    runtime['questConsultationBindings'] = quest_consultations
+    rpg.append("\n" + treasure_configuration(runtime['treasureResolutionCatalog']))
     from map_knowledge import knowledge_catalog
     runtime['mapKnowledgeCatalog'] = knowledge_catalog(config.project)
     points = {row["id"]: row for row in locations if row["kind"] == "settlement"}
@@ -776,6 +788,10 @@ def generate(config: BuildConfig, generated: Path) -> None:
         trade_lines += [f"\tconfigureGeneratedTrade{i}(runtime)" for i in range((len(trade_records) + chunk_size - 1) // chunk_size)]
     else:
         trade_lines.append("\tskip")
+    for binding in quest_trades:
+        values = ", ".join(json.dumps(binding[k]) for k in ("questId", "stageId", "objectiveId", "marketId", "commodityId"))
+        trade_lines.append(f"\truntime.registerQuestTrade(new QuestTradeBinding({values}))")
+    runtime["questTradeBindings"] = quest_trades
     from civic_governance import configuration as civic_configuration
     civic_wurst, civic_catalog, civic_sources = civic_configuration(config.project, world, settlement_runtime, authored_sources, trade_records)
     runtime['civicGovernance'] = civic_catalog
@@ -823,7 +839,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
         logistics_wurst += f"\tledger.foodMapCount = {len(runtime['partyNavigation'])}\n"
     finance_wurst += '\tconfigureGeneratedLogistics(ledger, effects)\n' + logistics_wurst
     finance_sources += logistics_sources
-    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport TreasureResolution\nimport MilitarySettlementRuntime\nimport MilitaryTraditionLayer\nimport CombatEffects\nimport VoyageNavigation\nimport ExactRational\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\nimport Agriculture\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
+    wurst = f"// Generated by package_wurst_map.py v{GENERATOR_VERSION}; do not edit.\npackage {config.package_name}\n\nimport UnstuckRecovery\nimport CampaignTimeline\nimport CommandRouter\nimport WarcraftRpgRuntime\nimport TreasureResolution\nimport MilitarySettlementRuntime\nimport MilitaryTraditionLayer\nimport CombatEffects\nimport VoyageNavigation\nimport ExactRational\nimport PlayableCountryInteractions\nimport ReligionRuntime\nimport PlayablePiracy\nimport PlayableCampaignRuntime\nimport PlayableTrade\nimport QuestTradeRuntime\nimport QuestConsultation\nimport QuestRewards\nimport Agriculture\n\npublic constant int SCENARIO_SCHEMA_VERSION = {world['schemaVersion']}\npublic constant string PHYSICAL_MAP_ID = \"unpackaged\"\npublic constant string SCENARIO_SOURCE_SHA256 = \"{runtime['sourceSha256']}\"\n\n{origin_configuration}public function configureGeneratedPhysicalBoundaries(PhysicalBoundaryRegistry registry)\n\tskip\n" + "\n".join(recovery + timeline_lines + rpg + conflict_lines + military_lines + countries + religion_lines + piracy + trade_lines) + piracy_factory + "\n"
     naval_sources = []
     naval_wurst = '\npublic function configureGeneratedNaval(NavalLedger ledger, NavalResearchEffects effects)\n\tskip\n'
     naval_builder = configuration(config.project)["scenario"].get("navalBuilder")
@@ -885,11 +901,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
         land_wurst = land_payload['wurst']
         land_sources = [content_path(config.project, name) for name in land_payload['sources']]
     industry_sources = []
+    industry_market_pairs = set()
     industry_wurst = '\npublic function configureGeneratedIndustry(IndustryLedger ledger, IndustryResearchEffects effects)\n\tskip\n\npublic function configureGeneratedIndustryMarkets(PlayableTradeRuntime runtime)\n\tskip\n'
     industry_builder = configuration(config.project)["scenario"].get("industryBuilder")
     if industry_builder:
         payload = json.loads(subprocess.check_output([sys.executable, str(content_path(config.project, industry_builder))], cwd=config.project, text=True))
         runtime['industry'] = payload['catalog']
+        industry_market_pairs = {tuple(pair) for pair in payload['catalog']['markets']}
         industry_wurst = payload['wurst']
         industry_sources = [content_path(config.project, name) for name in payload['sources']]
         runtime['tradeMarketCount'] += sum(
@@ -897,6 +915,13 @@ def generate(config: BuildConfig, generated: Path) -> None:
             for ident, good in payload['catalog']['markets'])
         if runtime['tradeMarketCount'] > 16384:
             raise PackagingError('industry: trade authority capacity exceeded')
+    # Industry can register otherwise absent output markets. Validate only
+    # after both real registration sources are available, never invent a pair.
+    for binding in quest_trades:
+        prefix = f'\truntime.registerMarketProfile("{binding["marketId"]}","{binding["commodityId"]}",'
+        if (not any(line.startswith(prefix) for line in trade_records)
+                and (binding['marketId'], binding['commodityId']) not in industry_market_pairs):
+            raise PackagingError("quest committed trade binding has no generated market/commodity")
     wurst += civic_wurst + science_wurst + naval_wurst + land_wurst + industry_wurst + finance_wurst + banking_wurst + courts_wurst
     wurst = wurst.replace('import UnstuckRecovery\n', 'import BankingOperations\nimport Industry\nimport TradeFinance\nimport NavalServices\nimport ScienceExploration\nimport LandArmyEffects\nimport CivicGovernance\nimport UnstuckRecovery\nimport BoundaryArrival\nimport PartyLocations\n')
     wurst = wurst.replace('import WarcraftRpgRuntime\nimport TreasureResolution\n', 'import WarcraftRpgRuntime\nimport TreasureResolution\nimport PhysicalInteraction\n')
@@ -904,6 +929,7 @@ def generate(config: BuildConfig, generated: Path) -> None:
     runtime['questDefinitions'] = world.get('quests', [])
     runtime['questConditionBindings'] = quest_bindings
     runtime['questIntegrationBlockers'] = quest_blockers
+    runtime['questRewardIntegration'] = quest_rewards
     runtime['researchUnlockDefinitions'] = unlock_definitions
     bound_research = {(row['entitlement']['kind'], row['entitlement']['contentId'])
                       for row in combat_payload['catalog']['researchEffects']} if combat_payload else set()
@@ -1264,6 +1290,8 @@ def run_execution_tests(config: BuildConfig, executable: str, revision: str | No
     generate(config, generated); verify_generated(config, generated)
     compile_root = _assemble(config, root, generated)
     _run("Wurst test dependency installation", [executable, "install"], compile_root)
+    log_installed_stdlib(compile_root)
+    log_post_install_inputs(compile_root)
     try:
         return execute_tests(compile_root, executable, root, source_revision(config.project, revision), project=config.project)
     except WurstExecutionError as error:
@@ -1280,6 +1308,8 @@ def build(config_path: Path, grill: str | None = None, clean_first: bool = True)
     (compile_root / "map" / config.source_map.name / "runtime/build-identity.json").write_text(
         json.dumps(identity, sort_keys=True) + "\n")
     _run("Wurst dependency installation", [executable, "install"], compile_root)
+    log_installed_stdlib(compile_root)
+    log_post_install_inputs(compile_root)
     _run("Wurst compilation", [executable, "typecheck"], compile_root)
     try:
         execute_tests(compile_root, executable, root / "wurst-tests", revision, project=config.project)

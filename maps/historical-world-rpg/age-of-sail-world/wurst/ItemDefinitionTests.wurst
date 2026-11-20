@@ -56,7 +56,7 @@ import ScenarioData
 	f.inspect("other", "meleePower: 40 (|cffaaaaaa0|r)")
 	let before = f.rpg.captureState()
 	let layer = f.projections.itemLayer("other", "primary")
-	f.commands.dispatch(null, "/equip other fixture_alternative").assertTrue()
+	f.commands.dispatch(Player(0), "/equip other fixture_alternative").assertTrue()
 	f.output.last.assertEquals("Requirements are not met here.")
 	f.rpg.captureState().assertEquals(before)
 	(f.projections.itemLayer("other", "primary") == layer).assertTrue()

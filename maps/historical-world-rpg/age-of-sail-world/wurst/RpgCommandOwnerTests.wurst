@@ -1,0 +1,98 @@
+package RpgCommandOwnerTests
+
+import WarcraftRpgRuntime
+import QuestStages
+import CommandRouter
+
+class OwnerOutput implements CommandOutput
+	string last = ""
+	override function show(player recipient, string message)
+		last = message
+
+class OwnerEffects extends UnboundResearchEffects
+	int calls = 0
+	override function replaceResearchEntitlements(ResearchEntitlements result)
+		calls++
+		super.replaceResearchEntitlements(result)
+
+class OwnerResources implements ResearchCommandResources
+	int reads = 0
+	int writes = 0
+	override function controllerId(player sender) returns string
+		reads++
+		return "player"
+	override function year() returns int
+		reads++
+		return 1600
+	override function gold(player sender) returns int
+		reads++
+		return 100
+	override function setGold(player sender, int amount)
+		writes++
+
+class OwnerFixture
+	OwnerEffects effects = new OwnerEffects()
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(effects)
+	OwnerResources resources = new OwnerResources()
+	OwnerOutput output = new OwnerOutput()
+	CommandRegistry commands = new CommandRegistry(false, 6, new CommandText(), output)
+	RuntimeQuest definition = new RuntimeQuest("choice", "Choice", "regional")
+	construct()
+		rpg.researchResources = resources
+		let hero = new RpgHero("hero", "Hero", 'Hpal')
+		hero.recruited = true
+		rpg.heroes.register(hero)
+		rpg.inventory.registerItem(new RpgItem("coat", "Coat", "chest", "common", 1))
+		rpg.inventory.grant("coat").assertTrue()
+		definition.graph = new QuestGraph("start", "")
+		definition.graph.addStage(new QuestStage("start", "Start", "first~", "left~right~"))
+		definition.graph.addStage(new QuestStage("left", "Left", "second~", ""))
+		definition.graph.addStage(new QuestStage("right", "Right", "third~", ""))
+		definition.graph.addObjective(new QuestObjective("first", "First", "quest_travel_satisfied", "settlement:port~", "physical_visit"))
+		definition.graph.addObjective(new QuestObjective("second", "Second", "quest_travel_satisfied", "settlement:port~", "physical_visit"))
+		definition.graph.addObjective(new QuestObjective("third", "Third", "quest_travel_satisfied", "settlement:port~", "physical_visit"))
+		rpg.journal.register(definition)
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+	function reject(player sender, string command)
+		let before = rpg.captureState()
+		let calls = effects.calls
+		let reads = resources.reads
+		let writes = resources.writes
+		output.last = ""
+		commands.dispatch(sender, command).assertTrue()
+		output.last.assertEquals("Only the campaign player can change equipment or quest choices.")
+		rpg.captureState().assertEquals(before)
+		effects.calls.assertEquals(calls)
+		resources.reads.assertEquals(reads)
+		resources.writes.assertEquals(writes)
+	function owner(string command)
+		commands.dispatch(Player(0), command).assertTrue()
+		output.last.assertEquals("Action completed.")
+
+function checkOwnerBoundary(player sender)
+	let f = new OwnerFixture()
+	f.reject(sender, "/equip hero coat")
+	f.owner("/equip hero coat")
+	f.rpg.inventory.equippedCount.assertEquals(1)
+	f.reject(sender, "/unequip hero chest")
+	f.owner("/unequip hero chest")
+	f.rpg.inventory.equippedCount.assertEquals(0)
+	f.reject(sender, "/accept choice")
+	f.owner("/accept choice")
+	f.definition.state.assertEquals(QUEST_ACTIVE)
+	f.definition.graph.completeObjective("first").assertTrue()
+	f.reject(sender, "/queststage choice left")
+	f.owner("/queststage choice left")
+	f.definition.graph.activeStageId.assertEquals("left")
+	let saved = f.rpg.captureState()
+	let restored = new OwnerFixture()
+	restored.definition.state.assertEquals(QUEST_OFFERED)
+	restored.rpg.restoreState(saved).assertTrue()
+	restored.rpg.captureState().assertEquals(saved)
+	restored.definition.graph.activeStageId.assertEquals("left")
+
+@test function sharedRpgCommandsRejectForeignPlayerWithoutMutation()
+	checkOwnerBoundary(Player(1))
+
+@test function sharedRpgCommandsRejectMissingSenderWithoutMutation()
+	checkOwnerBoundary(null)

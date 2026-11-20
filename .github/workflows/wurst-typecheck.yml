@@ -46,6 +46,7 @@ jobs:
             --pull=never \
             --user root \
             -e WURST_IMAGE \
+            -e WURST_CI_ANNOTATIONS=true \
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             "$WURST_RUN_IMAGE" \
@@ -53,6 +54,7 @@ jobs:
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
+              apt-get install -y --no-install-recommends git || echo "Optional Git inspection tool unavailable; build continues."
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
               validation_status=0

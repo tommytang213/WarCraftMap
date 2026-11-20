@@ -1,4 +1,6 @@
 import re
+import shlex
+import json
 import os
 import subprocess
 import tempfile
@@ -12,7 +14,83 @@ WORKFLOW = REPOSITORY / ".github" / "workflows" / "map-build.yml"
 TYPECHECK_WORKFLOW = REPOSITORY / ".github" / "workflows" / "wurst-typecheck.yml"
 
 
+def workflow_step(workflow, name):
+    """Read one named step, stopping at a peer item or dedented YAML content."""
+    start = re.search(r"(?m)^( +)- name: " + re.escape(name) + r"\s*$", workflow)
+    if start is None:
+        raise ValueError("missing workflow step: " + name)
+    tail = workflow[start.end():]
+    end = re.search(rf"(?m)^ {{0,{len(start.group(1))}}}[^ \t#\r\n]", tail)
+    return tail[:end.start()] if end else tail
+
+
+def docker_annotation_enabled(body):
+    # Shell removes escaped newlines before interpreting comments. Only inspect
+    # the resulting docker command, not comments or later shell statements.
+    joined = body.replace("\\\n", "")
+    commands = [line.strip() for line in joined.splitlines()
+                if line.strip().startswith('docker run ')]
+    if len(commands) != 1 or '"$WURST_RUN_IMAGE"' not in commands[0]:
+        return False
+    try:
+        prefix = commands[0].split('"$WURST_RUN_IMAGE"', 1)[0] + '"$WURST_RUN_IMAGE"'
+        args = shlex.split(prefix, comments=True)
+        image = args.index('$WURST_RUN_IMAGE')
+    except ValueError:
+        return False
+    return any(args[index:index + 2] == ['-e', 'WURST_CI_ANNOTATIONS=true']
+               for index in range(2, image - 1))
+
+
 class MapArtifactWorkflowTests(unittest.TestCase):
+    def test_bounded_failure_annotations_opt_in_only_inside_actual_compiler_containers(self):
+        for path, step in ((WORKFLOW, "Execute complete Wurst suite and package with pinned compiler"),
+                           (TYPECHECK_WORKFLOW, "Execute complete suite, typecheck, and package fixture and content mutation")):
+            source = path.read_text(encoding="utf-8")
+            body = workflow_step(source, step)
+            with self.subTest(workflow=path.name):
+                self.assertEqual(1, source.count("WURST_CI_ANNOTATIONS"))
+                self.assertTrue(docker_annotation_enabled(body))
+                commented = body.replace('-e WURST_CI_ANNOTATIONS=true', '# -e WURST_CI_ANNOTATIONS=true')
+                self.assertFalse(docker_annotation_enabled(commented))
+                self.assertFalse(docker_annotation_enabled(body.replace('WURST_CI_ANNOTATIONS=true', 'WURST_CI_ANNOTATIONS=false')))
+        for path in (REPOSITORY / ".github/workflows").glob("*.yml"):
+            if path not in (WORKFLOW, TYPECHECK_WORKFLOW):
+                self.assertNotIn("WURST_CI_ANNOTATIONS", path.read_text(encoding="utf-8"))
+
+    def test_blocked_summary_matches_artifact_availability(self):
+        body = workflow_step(WORKFLOW.read_text(), "Execute complete Wurst suite and package with pinned compiler")
+        start = body.index('case "$(cat "$artifact_dir/candidate-status")" in')
+        shell = textwrap.dedent(body[start:body.index("\n          esac", start) + len("\n          esac")])
+        for head, ref, logs_only in (
+            ("fix/dot-wc3-continuation-20261118", "refs/pull/601/merge", True),
+            ("", "refs/heads/fix/dot-wc3-continuation-20261118", True),
+            ("other", "refs/pull/1/merge", False),
+        ):
+            with self.subTest(head=head, ref=ref), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "candidate-status").write_text("blocked")
+                (root / "diagnostics").mkdir()
+                (root / "diagnostics/requirement-traceability.json").write_text(json.dumps({
+                    "format": "warcraftmap_requirement_traceability_v1",
+                    "blockers": [{"id": "REQ-BLOCKED", "class": "unreachable",
+                                  "message": "An actionable failure."}]}))
+                env = dict(os.environ, artifact_dir=directory, GITHUB_HEAD_REF=head,
+                           GITHUB_REF=ref, GITHUB_OUTPUT=str(root / "output"),
+                           GITHUB_STEP_SUMMARY=str(root / "summary"))
+                result = subprocess.run(["bash", "-eu", "-c", shell], env=env,
+                                        text=True, capture_output=True, check=True, cwd=REPOSITORY)
+                summary = (root / "summary").read_text()
+                self.assertEqual("ready=false\n", (root / "output").read_text())
+                self.assertIn("No player candidate was published.", summary)
+                self.assertIn("blocker details cannot be listed", summary)
+                self.assertIn("Release blocker excerpt", result.stdout)
+                self.assertIn("REQ-BLOCKED [unreachable] An actionable failure.", result.stdout)
+                self.assertIn("REQ-BLOCKED [unreachable] An actionable failure.", summary)
+                self.assertEqual(logs_only, "reports are not downloadable" in summary)
+                self.assertEqual(not logs_only, "diagnostics artifact" in result.stdout)
+                self.assertEqual(not logs_only, "age-of-sail-requirement-diagnostics artifact" in summary)
+
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -49,12 +127,52 @@ class MapArtifactWorkflowTests(unittest.TestCase):
         self.assertIn('path: ${{ runner.temp }}/age-of-sail-release', self.workflow)
         self.assertIn('set -eu', self.workflow)
         self.assertNotIn('continue-on-error:', self.workflow)
-        player_upload = self.workflow.split('- name: Upload Age of Sail campaign', 1)[1]
+        player_upload = workflow_step(self.workflow, 'Upload Age of Sail campaign')
         self.assertNotIn('always()', player_upload)
         for step in ('Create versioned player files', 'Confirm verified release payload and evidence',
                      'Upload Age of Sail campaign'):
-            body = self.workflow.split('- name: ' + step, 1)[1].split('- name:', 1)[0]
+            body = workflow_step(self.workflow, step)
             self.assertIn("if: steps.candidate.outputs.ready == 'true'", body)
+
+    def test_upload_contract_ignores_later_always_step(self):
+        original = self.workflow
+        try:
+            self.workflow += "\n      - name: Independent diagnostic notice\n        if: always()\n        run: echo diagnostics\n"
+            self.test_upload_uses_the_copied_verified_payload_and_checkout_revision()
+        finally:
+            self.workflow = original
+
+    def test_upload_contract_still_rejects_always_in_upload_step(self):
+        original = self.workflow
+        body = workflow_step(original, 'Upload Age of Sail campaign')
+        guarded = "if: steps.candidate.outputs.ready == 'true'"
+        self.assertIn(guarded, body)
+        try:
+            self.workflow = original.replace(body, body.replace(guarded, "if: always() && steps.candidate.outputs.ready == 'true'", 1), 1)
+            with self.assertRaisesRegex(AssertionError, "always"):
+                self.test_upload_uses_the_copied_verified_payload_and_checkout_revision()
+        finally:
+            self.workflow = original
+
+    def test_step_boundary_stops_at_unnamed_peer_action(self):
+        sample = "      - name: Upload\n        uses: actions/upload-artifact@pin\n      - uses: actions/other@pin\n        if: always()\n"
+        self.assertEqual("\n        uses: actions/upload-artifact@pin\n", workflow_step(sample, 'Upload'))
+
+    def test_last_step_stops_before_another_job_with_always(self):
+        sample = ("jobs:\n  build:\n    steps:\n      - name: Upload\n"
+                  "        if: success()\n        uses: actions/upload-artifact@pin\n"
+                  "  diagnostic:\n    if: always()\n    steps:\n"
+                  "      - run: echo notice\n")
+        body = workflow_step(sample, 'Upload')
+        self.assertIn('if: success()', body)
+        self.assertNotIn('always()', body)
+        self.assertNotIn('diagnostic:', body)
+
+    def test_dedented_comments_do_not_hide_an_upload_condition(self):
+        sample = ("      - name: Upload\n        uses: actions/upload-artifact@pin\n"
+                  "# YAML comments do not end a mapping\n\n        if: always()\n"
+                  "  other_job:\n    steps: []\n")
+        self.assertIn('if: always()', workflow_step(sample, 'Upload'))
 
     def test_failed_requirement_gate_retains_only_diagnostics_and_stops_publication(self):
         diagnostics = self.workflow.split('- name: Retain requirement diagnostics', 1)[1].split('- name:', 1)[0]
@@ -120,7 +238,7 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                     self.assertEqual(expected, status.read_text().strip())
                     output = out / 'github-output'
                     summary = out / 'github-summary'
-                    host_result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True,
+                    host_result = subprocess.run(['bash', '-ec', host], text=True, capture_output=True, cwd=REPOSITORY,
                                                  env={**environment, 'artifact_dir': str(out), 'GITHUB_OUTPUT': str(output),
                                                       'GITHUB_STEP_SUMMARY': str(summary)})
                     self.assertEqual(0, host_result.returncode, host_result.stderr)
@@ -128,6 +246,26 @@ class MapArtifactWorkflowTests(unittest.TestCase):
                     if expected == 'blocked':
                         self.assertIn('Candidate publication: blocked', summary.read_text())
                         self.assertIn('No player candidate was published', summary.read_text())
+
+    def test_renderer_failure_preserves_blocked_notice_and_ready_false(self):
+        host = 'case "$(cat ' + textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]
+                                              .split('\n      - name:', 1)[0])
+        for branch in ('fix/dot-wc3-continuation-20261118', 'other'):
+            with self.subTest(branch=branch), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / 'candidate-status').write_text('blocked')
+                output = root / 'output'; summary = root / 'summary'
+                result = subprocess.run(['bash', '-ec', 'python3() { return 9; }\n' + host],
+                    cwd=REPOSITORY, text=True, capture_output=True,
+                    env={**os.environ, 'artifact_dir': str(root), 'GITHUB_OUTPUT': str(output),
+                         'GITHUB_STEP_SUMMARY': str(summary), 'GITHUB_HEAD_REF': branch, 'GITHUB_REF': ''})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(output.read_text(), 'ready=false\n')
+                self.assertIn('::warning::Blocker excerpt unavailable', result.stdout)
+                self.assertIn('::notice::Candidate publication blocked', result.stdout)
+                self.assertIn('Candidate publication: blocked', summary.read_text())
+                if branch.startswith('fix/'):
+                    self.assertIn('reports are not downloadable', summary.read_text())
 
     def test_missing_or_unknown_publication_status_fails_ci(self):
         host = 'case "$(cat ' + textwrap.dedent(self.workflow.split('          case "$(cat ', 1)[1]

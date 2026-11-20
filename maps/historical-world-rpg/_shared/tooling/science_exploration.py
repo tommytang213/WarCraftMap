@@ -13,22 +13,38 @@ NUMBERS = {'equipmentCost': 1000000, 'equipmentUnits': 10000, 'equipmentDays': 3
            'weatherPeriod': 365, 'weatherDays': 365}
 
 
+def design_source_path(project, relative):
+    """Use a direct scenario JSON path, never an untracked alias/link chain."""
+    if not isinstance(relative, str):
+        raise ValueError('science: design source must be a relative scenario JSON path')
+    scoped = Path(relative)
+    if (scoped.is_absolute() or not scoped.parts or scoped.parts[0] != 'scenario'
+            or '..' in scoped.parts or '__pycache__' in scoped.parts or scoped.suffix != '.json'):
+        raise ValueError('science: design source must be a direct scenario JSON path')
+    path = project.resolve()
+    for part in scoped.parts:
+        path = path / part
+        if path.is_symlink():
+            raise ValueError('science: design source links are not supported')
+    if path.resolve() != path:
+        raise ValueError('science: design source changed its resolved path')
+    return path
+
+
 def configuration(project, world, settlements, authored, trade_records):
-    path = project / 'scenario/progression/science-exploration.json'
+    path = design_source_path(project, 'scenario/progression/science-exploration.json')
     header = '\npublic function configureGeneratedScience(ScienceLedger ledger, ScienceResearchEffects effects)\n'
     if not path.is_file():
         return header + '\tskip\n', {}, []
     data = json.loads(path.read_text())
     if data.get('schemaVersion') != 1:
         raise ValueError('science: invalid schema')
-    design_path = project / data['designSource']
-    if not design_path.resolve().is_relative_to(project.resolve()):
-        raise ValueError('science: design source escapes scenario')
+    design_path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(design_path.read_text())['effects'] if e['metric'] in METRICS]
     nodes = {n['id']: n for n in world['technologies'] + world['institutions']}
     if {e['metric'] for e in effects} != set(METRICS) or len(effects) != 3:
         raise ValueError('science: missing effect contract')
-    observation_path = project / 'scenario/progression/chemical-classification.json'
+    observation_path = design_source_path(project, 'scenario/progression/chemical-classification.json')
     observation = None
     if observation_path.is_file():
         observation = json.loads(observation_path.read_text())
@@ -58,7 +74,7 @@ def configuration(project, world, settlements, authored, trade_records):
     templates = {x['id']: x['warcraftUnitTypeId'] for x in world['militaryRuntimeTemplates']}
     positions = {x['id']: x for x in settlements}
     zones = {x['id']: x for x in world['navigationZones']}
-    nav = json.loads((project / 'scenario/naval/navigation-efficiency.json').read_text())
+    nav = json.loads((design_source_path(project, 'scenario/naval/navigation-efficiency.json')).read_text())
     for i, d in enumerate(data['sites']):
         if d['id'] in ids or d['metric'] not in METRICS or d['capability'] != METRICS[d['metric']]:
             raise ValueError('science: duplicate site or unsupported capability')
@@ -164,15 +180,14 @@ BOTANICAL_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_botanical_coll
 
 def _botanical_authored(project):
     """Recognize only the approved overland source, not a sibling science metric."""
-    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
-    path = (project / data['designSource']).resolve()
-    path.relative_to(project.resolve())
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
+    path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'botanical_collecting' or e['unlock'] == BOTANICAL_UNLOCK]
     if len(effects) != 1:
         return False
     effect = effects[0]
-    world = json.loads((project / 'scenario/world/world.json').read_text())
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'botanical_collecting']
     return (effect['nodeId'] == 'botanical_collecting'
             and effect['unlock'] == BOTANICAL_UNLOCK
@@ -185,16 +200,15 @@ def _botanical_authored(project):
 
 def _barometric_authored(project):
     """The approved identity and coefficient, never inferred from a similar metric."""
-    data = json.loads((project / 'scenario/progression/science-exploration.json').read_text())
-    path = (project / data['designSource']).resolve()
-    path.relative_to(project.resolve())
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
+    path = design_source_path(project, data['designSource'])
     effects = [e for e in json.loads(path.read_text())['effects']
                if e['nodeId'] == 'barometric_measurement'
                or e['unlock'] == BAROMETRIC_UNLOCK]
     if len(effects) != 1:
         return False
     effect = effects[0]
-    world = json.loads((project / 'scenario/world/world.json').read_text())
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
     nodes = [n for n in world['technologies'] if n['id'] == 'barometric_measurement']
     return (effect['nodeId'] == 'barometric_measurement'
             and effect['unlock'] == BAROMETRIC_UNLOCK
@@ -205,11 +219,44 @@ def _barometric_authored(project):
             and len(nodes) == 1 and BAROMETRIC_UNLOCK in nodes[0]['unlocks'])
 
 
+CALCULUS_COMPARISON = 'calculusOnlyRegisteredResearchCommitsExactWorkAgainstMatchedControl'
+CALCULUS_TESTS = {
+    CALCULUS_COMPARISON,
+    'calculusFundedWorkResumesAfterSnapshotAndUnfundedDaysAddNothing',
+    'calculusUsesActiveScholarlyInputsAndFullAuthoredResearchBillWithPlayerAiParity',
+    'unearnedCalculusProducesBaseOutputAndMissingInputsNeverProduceResearchOrPartialBills',
+    'scienceNamedSourcesDeduplicateAndDistinctSourcesStackOnlyInTheirMetricBucket',
+    'scienceActiveAbstractSaveMigrationCaptureAndMalformedLoadKeepAuthorityExact',
+}
+CALCULUS_PROBES = {'research', 'dispatch', 'science_registration', 'science_action',
+                   'science_advance', 'science_pay', 'science_complete'}
+CALCULUS_UNLOCK = {'kind': 'modifier', 'contentId': 'progression_calculus_methods'}
+
+
+def _calculus_authored(project):
+    data = json.loads((design_source_path(project, 'scenario/progression/science-exploration.json')).read_text())
+    path = design_source_path(project, data['designSource'])
+    effects = [e for e in json.loads(path.read_text())['effects']
+               if e['nodeId'] == 'calculus_methods' or e['unlock'] == CALCULUS_UNLOCK]
+    if len(effects) != 1:
+        return False
+    effect = effects[0]
+    world = json.loads((design_source_path(project, 'scenario/world/world.json')).read_text())
+    nodes = [n for n in world['technologies'] if n['id'] == 'calculus_methods']
+    return (effect['nodeId'] == 'calculus_methods'
+            and effect['unlock'] == CALCULUS_UNLOCK
+            and effect['metric'] == 'research_generation_efficiency'
+            and type(effect['bonusBasisPoints']) is int and effect['bonusBasisPoints'] == 500
+            and effect['activation'] == 'passive_research'
+            and effect['recipient'] == 'controlled_scholarly_research_centers'
+            and len(nodes) == 1 and CALCULUS_UNLOCK in nodes[0]['unlocks'])
+
+
 def verified_bindings(project, execution=None, execution_log=None, revision=None):
     """Only current complete pinned execution can close this exact finding."""
     if execution is None or execution_log is None or revision is None:
         return set()
-    from integration_evidence import verify_execution_coverage
+    from integration_evidence import verify_execution_coverage, source_identity
     from wurst_execution import WurstExecutionError
     try:
         coverage = verify_execution_coverage(execution, execution_log, project, revision)
@@ -224,8 +271,11 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
     comparative = prefix + 'chemicalRegisteredResearchCommitsExactScientificWorkAgainstIdenticalControl'
     bound = set()
     if CHEMICAL_TESTS <= passed and required <= set(probes.get(comparative, [])):
-        contract = json.loads((project / 'scenario/progression/chemical-classification.json').read_text())
-        bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+        try:
+            contract = json.loads((design_source_path(project, 'scenario/progression/chemical-classification.json')).read_text())
+            bound.add((contract['unlock']['kind'], contract['unlock']['contentId']))
+        except (ValueError, OSError, KeyError, TypeError):
+            return set()
     comparative = prefix + BAROMETRIC_COMPARISON
     try:
         if (BAROMETRIC_TESTS <= passed
@@ -244,4 +294,22 @@ def verified_bindings(project, execution=None, execution_log=None, revision=None
             bound.add(('modifier', 'progression_botanical_collecting'))
     except (ValueError, OSError, KeyError, TypeError, AttributeError):
         pass
+    comparative = prefix + CALCULUS_COMPARISON
+    try:
+        if (CALCULUS_TESTS <= passed
+                and comparative in coverage.get('calculus_research', [])
+                and CALCULUS_PROBES <= set(probes.get(comparative, []))
+                and _calculus_authored(project)):
+            bound.add(('modifier', 'progression_calculus_methods'))
+    except (ValueError, OSError, KeyError, TypeError, AttributeError):
+        pass
+    # Authored helpers reopen scenario files after coverage verification. Reject
+    # persistent mid-call source changes, including changes in a later branch
+    # after an earlier binding was accepted. This cooperative-worktree guard is
+    # not an atomic snapshot against an adversarial change-and-revert writer.
+    try:
+        if source_identity(project, revision) != execution.get('sourceIdentity'):
+            return set()
+    except (ValueError, OSError, KeyError, TypeError):
+        return set()
     return bound

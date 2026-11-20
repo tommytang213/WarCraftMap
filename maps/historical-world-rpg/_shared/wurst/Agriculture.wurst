@@ -271,11 +271,18 @@ public class AgricultureRuntime extends UnboundResearchEffects implements Resear
 		if seed>0 and diffusion>0
 			let learned=agricultureScale(seed,knowledgePerSeedBp)
 			s.knowledge=IMinBJ(maximumKnowledge,s.knowledge+learned+agricultureScale(learned,diffusion))
-		var loss=agricultureScale(stored-seed,s.spoilageBp)
+		var spoilageRelief=0
 		for i=0 to effectCount-1
 			let e=effects[i]
 			if e.kind=="building" and active(s,e,day)
-				loss-=agricultureScale(loss,e.secondary)
+				spoilageRelief=IMinBJ(10000,spoilageRelief+e.secondary)
+		// Combine the earned reduction before the one stock-loss rounding.
+		// Rounding ordinary spoilage first can erase the granary's benefit on
+		// small real stocks (for example, 21 units at 10% spoilage).
+		var loss=0
+		if stored>seed and s.spoilageBp>0
+			let exposure=exactNaturalMultiply(I2S(stored-seed),s.spoilageBp)
+			loss=exactNaturalNativeInt(exactNaturalScaleFloor(exposure,10000-spoilageRelief,100000000))
 		let taxEfficiency=rate(s,"rural_tax_efficiency",day)
 		authority.harvest(s.id,seed,equipmentConsumed,output,loss,capacity(s,day))
 		// Transfers from actual taxable market liquidity; no minted revenue.

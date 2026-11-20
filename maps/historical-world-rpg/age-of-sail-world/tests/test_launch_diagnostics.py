@@ -417,6 +417,15 @@ class NativeDiagnosticTests(unittest.TestCase):
         self.assertNotIn("private", json.dumps(result))
         self.assertNotIn("passed", json.dumps(result))
 
+    def test_log_events_rejects_replaced_or_truncated_prior_log(self):
+        old = b"Played Maps/selector.w3x\n"
+        for after in (b"", b"Opening map - Maps/selector.w3x\n",
+                      b"Played Maps/other.w3x\nOpening map - Maps/selector.w3x\n"):
+            with self.subTest(after=after), self.assertRaisesRegex(ValueError, "changed or truncated"):
+                wgc.log_events(old, after, "selector.w3x")
+        self.assertEqual(wgc.log_events(b"", b"Opening map - Maps/selector.w3x\n", "selector.w3x"),
+                         {"openingMap": 1, "playedLoaderEntry": 0})
+
 
 if __name__ == "__main__":
     unittest.main()

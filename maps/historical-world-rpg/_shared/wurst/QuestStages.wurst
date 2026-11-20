@@ -85,6 +85,7 @@ public class QuestStage
  * a location signal, or a generic combat count is never such a receipt. */
 public interface QuestConditionAuthority
 	function supports(string conditionId) returns boolean
+	function supportsObjective(string questId, string stageId, QuestObjective objective) returns boolean
 	function validates(string questId, string stageId, QuestObjective objective, string receiptId) returns boolean
 
 public class QuestGraph

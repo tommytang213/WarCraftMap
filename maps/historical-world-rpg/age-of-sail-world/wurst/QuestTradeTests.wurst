@@ -1,0 +1,268 @@
+package QuestTradeTests
+
+import PlayableTrade
+import QuestTradeRuntime
+import QuestStages
+import LiveTradeAccess
+import WarcraftRpgRuntime
+import WarcraftRegionalRuntime
+import MilitarySettlementRuntime
+import MilitarySettlementRuntimeTests
+import TradeCommandTests
+import PlayableCampaignRuntime
+import CampaignTimeline
+import CampaignSaveManager
+import CommandRouter
+import ManagementScreenPauseController
+import ScenarioData
+
+/** Only native presence/output are recorded. The generated market and authored
+ * quest, command dispatch, economic commit, event gate and codec are production. */
+public class QuestTradeFixture
+	TradeCommandPorts ports = new TradeCommandPorts()
+	TradeActors actors = new TradeActors()
+	PlayableTradeRuntime trade = new PlayableTradeRuntime()
+	WarcraftRpgRuntime rpg = new WarcraftRpgRuntime(null)
+	CampaignClock clock = new CampaignClock(529237, 664741, 529237, 1.)
+	PlayableCampaignState state = new PlayableCampaignState(new WarcraftRegionalAdapter(), clock)
+	MilitarySettlementRuntime military = new MilitarySettlementRuntime(new RecordingMilitaryAdapter())
+	CommandRegistry commands = new CommandRegistry(false, 8, new CommandText(), ports)
+	RuntimeQuest questDefinition
+	construct()
+		configureGeneratedTrade(trade)
+		var kept = 0
+		for i = 0 to trade.marketCount - 1
+			let market = trade.markets[i]
+			if (market.id == "calicut" and (market.goodName == "pepper" or market.goodName == "grain")) or (market.id == "cochin" and market.goodName == "pepper")
+				trade.markets[kept] = market
+				kept++
+			else
+				destroy market
+		trade.marketCount = kept
+		kept.assertEquals(3)
+		kept = 0
+		for i = 0 to trade.storeCount - 1
+			let store = trade.stores[i]
+			if store.accessKind == "personal" or store.id == "warehouse:calicut"
+				trade.stores[kept] = store
+				kept++
+			else
+				destroy store
+		trade.storeCount = kept
+		configureGeneratedRpg(rpg)
+		questDefinition = rpg.journal.get("india_stars_and_pepper")
+		for i = 0 to rpg.journal.count - 1
+			if rpg.journal.quests[i] != questDefinition
+				destroy rpg.journal.quests[i]
+		rpg.journal.quests[0] = questDefinition
+		rpg.journal.count = 1
+		rpg.heroes.count = 0
+		rpg.treasures.count = 0
+		let hero = new RpgHero("trader", "Trader", 'Hpal')
+		hero.recruited = true
+		hero.assignment = "field"
+		rpg.heroes.register(hero)
+		configureGeneratedInteractions(rpg.interactions)
+		rpg.interactions.actors = actors
+		rpg.interactions.maps = new CampaignInteractionMaps(state)
+		state.setRpgRuntime(rpg)
+		state.setMilitarySettlementRuntime(military)
+		state.identity = new PlayerCampaignIdentity()
+		let point = rpg.interactions.get("calicut")
+		state.identity.startCampaign("vijayanagara_empire", point.mapId, "middle_east_india", "calicut").assertTrue()
+		state.loadedPhysicalMap = point.mapId
+		state.setExtension(trade)
+		military.registerSettlement(new SettlementRuntimeState("calicut", "vijayanagara_empire", point.mapId, 'htow', 'hfoo', 24, 48, 96, 72, point.x, point.y))
+		let cochin = rpg.interactions.get("cochin")
+		military.registerSettlement(new SettlementRuntimeState("cochin", "vijayanagara_empire", cochin.mapId, 'htow', 'hfoo', 24, 48, 96, 72, cochin.x, cochin.y))
+		trade.access = new LiveTradeAccess(state)
+		trade.bindQuestTrades(rpg)
+		trade.management.pauses = new ManagementScreenPauseController(ports, false)
+		trade.newCampaign("calicut")
+		registerPlayableTradeCommands(commands, trade, ports).assertEquals("")
+		registerRpgRuntimeCommands(commands, rpg).assertEquals("")
+		actors.moveTo(point)
+	function dispatch(string command)
+		commands.dispatch(Player(0), command).assertTrue()
+	function select(string place, string commodity)
+		actors.moveTo(rpg.interactions.get(place))
+		dispatch("/trade select " + place + " " + commodity)
+		dispatch("/trade store player_ship_hold")
+		trade.market.id.assertEquals(place)
+		trade.market.goodName.assertEquals(commodity)
+		trade.storeSelected.assertTrue()
+	function accept()
+		dispatch("/accept india_stars_and_pepper")
+		questDefinition.state.assertEquals(QUEST_ACTIVE)
+		questDefinition.graph.activeStageId.assertEquals("market_measure")
+	function pending()
+		questDefinition.graph.completedObjectiveIds.assertEquals("")
+		questDefinition.graph.processedReceiptIds.assertEquals("")
+	function completed()
+		questDefinition.graph.completedObjectiveIds.assertEquals("trade_pepper~")
+		questDefinition.graph.stageComplete("market_measure", questDefinition.graph.completedObjectiveIds).assertTrue()
+		questDefinition.graph.activeStageId.assertEquals("market_measure")
+		questDefinition.state.assertEquals(QUEST_ACTIVE)
+		journalText(rpg).contains("consult_king~consult_pilots~").assertTrue()
+	function personal() returns TradeStore
+		return trade.findStore("player_ship_hold")
+	function reject(string command)
+		reject(command, "")
+	function reject(string command, string expected)
+		let economy = trade.capture()
+		let quests = rpg.captureState()
+		ports.output = ""
+		dispatch(command)
+		if expected != ""
+			ports.output.assertEquals(expected)
+		trade.capture().assertEquals(economy)
+		rpg.captureState().assertEquals(quests)
+
+@test function generatedCalicutPepperPurchaseAdvancesOnlyItsAuthoredObjective()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	f.pending()
+	let funds = f.personal().money
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	(f.personal().money < funds).assertTrue()
+	f.personal().quantity("pepper").assertEquals(10)
+	f.completed()
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	let objective = f.questDefinition.graph.objective("trade_pepper")
+	f.trade.questTrades.supportsObjective("unrelated", "market_measure", objective).assertFalse()
+	f.dispatch("/queststage india_stars_and_pepper consult_pilots")
+	journalText(f.rpg).contains("/consult calicut_pilot_guild").assertTrue()
+
+@test function generatedPepperSaleAfterAcceptanceDoesNotReplayPreAcceptancePurchase()
+	let f = new QuestTradeFixture()
+	f.select("calicut", "pepper")
+	f.dispatch("/trade buy 10")
+	f.pending()
+	f.accept()
+	f.pending()
+	let funds = f.personal().money
+	f.dispatch("/trade sell 10")
+	f.ports.output.startsWith("Sold 10 pepper;").assertTrue()
+	(f.personal().money > funds).assertTrue()
+	f.completed()
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_2~")
+
+@test function otherCommodityLocationAndCargoTransfersNeverProvePepperObjective()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "grain")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 grain.")
+	f.pending()
+	f.select("cochin", "pepper")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	f.pending()
+	f.select("calicut", "pepper")
+	f.trade.progress.standing = 100
+	f.dispatch("/trade move player_ship_hold warehouse:calicut pepper 5")
+	f.ports.output.assertEquals("Cargo moved.")
+	f.pending()
+
+@test function unsuccessfulStaleRemoteAndForeignTradeCannotCompleteTheQuest()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	f.reject("/trade buy 0", "Quantity must be a positive whole number.")
+	f.personal().money = 0
+	f.reject("/trade buy 10", "Funds are insufficient.")
+	f.personal().money = 1000
+	f.actors.exists = false
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
+	f.actors.exists = true
+	f.actors.actorX = 99999.
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
+	f.actors.moveTo(f.rpg.interactions.get("calicut"))
+	f.military.settlements[0].controllerId = "portugal"
+	f.reject("/trade buy 10", "Trade selection is unavailable. Select a local market and cargo store again.")
+	f.select("calicut", "pepper")
+	let before = f.state.captureAuthoritativeState()
+	f.ports.output = ""
+	f.commands.dispatch(Player(1), "/trade buy 10").assertTrue()
+	f.ports.output.assertEquals("Trade selection is unavailable. Select a local market and cargo store again.")
+	f.state.captureAuthoritativeState().assertEquals(before)
+	f.pending()
+	// A fresh selection honors changed-world control, rather than initial ownership.
+	f.dispatch("/trade buy 10")
+	f.completed()
+
+@test function directControllerTradeAndForgedQuestReceiptHaveNoLiveCommitProof()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	f.trade.controller.buy("fixture_trade", f.trade.market, f.personal(), 10).assertEquals("Bought 10 pepper.")
+	f.pending()
+	let before = f.state.captureAuthoritativeState()
+	f.rpg.questEvent(f.questDefinition.id, "trade_pepper", "trade_commit_1").assertFalse()
+	f.state.captureAuthoritativeState().assertEquals(before)
+	f.pending()
+
+@test function committedTradeReceiptAndEconomicReplayProtectionSurviveCurrentCodec()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	f.dispatch("/trade buy 10")
+	f.completed()
+	let economy = f.trade.capture()
+	let quests = f.rpg.captureState()
+	let codec = new PlayableCampaignCodec(f.clock)
+	var document = "v2;autosave=1|1|8:1001011;partyLocations=v1;map=middle_east_india;region=middle_east_india;world=instance:india;players=origin:vijayanagara_empire,allegiance:vijayanagara_empire,settlement:calicut;quests=;discovery=v1|r,middle_east_india|s,calicut;orders=;trade=" + economy + ";diplomacy=v1;rewards=v1;rpg=" + quests + ";militarySettlements=v1;religion=v1;piracy=v1;clock=" + f.clock.captureState()
+	let payload = codec.encode("manual_01", SAVE_SLOT_MANUAL, 1, "pepper objective", document)
+	let decoded = codec.decodeMigrateAndValidate(payload, "manual_01")
+	(decoded != "").assertTrue()
+	lastAuthorityValue(decoded, "trade").assertEquals(economy)
+	lastAuthorityValue(decoded, "rpg").assertEquals(quests)
+	let restored = new QuestTradeFixture()
+	restored.pending()
+	restored.trade.reconstruct(lastAuthorityValue(decoded, "trade")).assertTrue()
+	restored.rpg.restoreState(lastAuthorityValue(decoded, "rpg")).assertTrue()
+	restored.completed()
+	restored.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	restored.rpg.questEvent(restored.questDefinition.id, "trade_pepper", "trade_commit_1").assertFalse()
+	restored.trade.capture().assertEquals(economy)
+	restored.rpg.captureState().assertEquals(quests)
+	restored.select("calicut", "pepper")
+	restored.trade.nextTransaction = 1
+	restored.reject("/trade buy 10", "Transaction already processed.")
+	restored.ports.output.assertEquals("Transaction already processed.")
+	restored.trade.nextTransaction = 2
+	restored.dispatch("/trade buy 10")
+	restored.personal().quantity("pepper").assertEquals(20)
+	restored.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	restored.completed()
+
+@test function unrelatedTradeObjectiveRemainsUnavailableInJournalAndEventGate()
+	let f = new QuestTradeFixture()
+	f.accept()
+	// Keep the generated condition/reference but change the owning quest identity.
+	f.questDefinition.id = "unrelated_trade"
+	journalText(f.rpg).contains("Progress unavailable: condition integration pending.").assertTrue()
+	f.rpg.questEvent("unrelated_trade", "trade_pepper", "trade_commit_1").assertFalse()
+	f.pending()
+
+@test function duplicateQuestReceiptRejectsAnActualCommittedTradeBeforeNewReceiptSucceeds()
+	let f = new QuestTradeFixture()
+	f.accept()
+	f.select("calicut", "pepper")
+	// Seed a previously consumed identity with an incomplete objective so the
+	// duplicate gate, not completed-objective or missing live proof, is tested.
+	f.questDefinition.graph.processedReceiptIds = "trade_commit_1~"
+	f.questDefinition.graph.completedObjectiveIds.assertEquals("")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	f.personal().quantity("pepper").assertEquals(10)
+	f.trade.nextTransaction.assertEquals(2)
+	f.questDefinition.graph.completedObjectiveIds.assertEquals("")
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~")
+	f.dispatch("/trade buy 10")
+	f.ports.output.assertEquals("Bought 10 pepper.")
+	f.personal().quantity("pepper").assertEquals(20)
+	f.questDefinition.graph.processedReceiptIds.assertEquals("trade_commit_1~trade_commit_2~")
+	f.completed()

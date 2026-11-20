@@ -14129,9 +14129,16 @@
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
             "contains": [
               "interactions.resolve(actor, sender, q.turnInId)",
-              "journal.turnIn(id,heroes.get(heroId),day,cooldownDays)"
+              "commitQuestTurnIn(sender,q,actor,day,cooldownDays)"
             ],
             "symbol": "turnInQuest"
+          },
+          {
+            "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",
+            "contains": [
+              "journal.turnIn(definition.id, heroes.heroes[actor], day, cooldownDays)"
+            ],
+            "symbol": "commitQuestTurnIn"
           },
           {
             "path": "../_shared/wurst/WarcraftRpgRuntime.wurst",

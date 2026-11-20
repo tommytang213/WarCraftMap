@@ -12,6 +12,8 @@ import CargoBalances
 import TradePricing
 import ManagementScreenPauseController
 import LiveTradeAccess
+import QuestTradeRuntime
+import WarcraftRpgRuntime
 
 public constant int LIVE_TRADE_SCHEMA_CURRENT = 5
 
@@ -559,6 +561,7 @@ function readCargoContents(CargoBalances contents,string encoded,int expected,in
 	return capacity-remaining==expected
 
 public class PlayableTradeRuntime implements CampaignRuntimeExtension
+	QuestTradeRuntime questTrades = null
 	AgricultureRuntime agriculture=new AgricultureRuntime()
 	string stapleId=""
 	string farmEquipmentId=""
@@ -1043,6 +1046,14 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 					storeId=stores[found].id
 				controller.provenance.add(storeId,row.field(1),S2I(row.field(2)),S2I(row.field(3)),row.field(4))
 		return true
+	function registerQuestTrade(QuestTradeBinding binding)
+		if questTrades == null
+			questTrades = new QuestTradeRuntime()
+		questTrades.register(binding)
+	function bindQuestTrades(WarcraftRpgRuntime rpg)
+		if questTrades != null and rpg.journal.conditions != questTrades
+			questTrades.other = rpg.journal.conditions
+			rpg.journal.conditions = questTrades
 	function transactionId(string side) returns string
 		let result="runtime-"+side+"-"+nextTransaction.toString()
 		nextTransaction++
@@ -1100,6 +1111,8 @@ public class PlayableTradeRuntime implements CampaignRuntimeExtension
 		else
 			result=tradeController().sell(id,market,hold,quantity,1000)
 		if controller.processedCount>before
+			if questTrades != null
+				questTrades.committed(access.state.rpg, sender, market.id, market.goodName, marketControl, side, quantity, nextTransaction)
 			nextTransaction++
 		return result
 	function transfer(player sender,string sourceId,string destinationId,int quantity) returns string

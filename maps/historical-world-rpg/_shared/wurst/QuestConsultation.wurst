@@ -1,0 +1,75 @@
+package QuestConsultation
+
+import QuestStages
+import initlater WarcraftRpgRuntime
+
+/** A named service, not a recruited character or an institution entitlement.
+ * All story identities and physical locations are scenario-owned. */
+public class QuestConsultationBinding
+	string questId
+	string stageId
+	string objectiveId
+	string providerId
+	string providerName
+	string locationId
+	string institutionId
+	construct(string questId, string stageId, string objectiveId, string providerId, string providerName, string locationId, string institutionId)
+		this.questId = questId
+		this.stageId = stageId
+		this.objectiveId = objectiveId
+		this.providerId = providerId
+		this.providerName = providerName
+		this.locationId = locationId
+		this.institutionId = institutionId
+	function matches(string owner, string stage, QuestObjective objective) returns boolean
+		return owner == questId and stage == stageId and objective.id == objectiveId and objective.conditionId == "quest_institution_satisfied" and objective.binding == "domain_receipt" and objective.entityRefs == "institution:" + institutionId + "~"
+
+/** One synchronous local consultation records its exact authored objective.
+ * No service selection, visit, entitlement or historical load grants proof. */
+public class QuestConsultationRuntime implements QuestConditionAuthority
+	QuestConsultationBinding array[64] bindings
+	int count = 0
+	QuestConditionAuthority other = null
+	private int proof = -1
+	function register(QuestConsultationBinding binding)
+		if count < 64
+			bindings[count] = binding
+			count++
+	override function supports(string conditionId) returns boolean
+		return (count > 0 and conditionId == "quest_institution_satisfied") or (other != null and other.supports(conditionId))
+	override function supportsObjective(string owner, string stage, QuestObjective objective) returns boolean
+		for i = 0 to count - 1
+			if bindings[i].matches(owner, stage, objective)
+				return true
+		return other != null and other.supportsObjective(owner, stage, objective)
+	override function validates(string owner, string stage, QuestObjective objective, string receiptId) returns boolean
+		if proof >= 0 and proof < count and receiptId == "consult_" + bindings[proof].providerId and bindings[proof].matches(owner, stage, objective)
+			return true
+		return other != null and other.validates(owner, stage, objective, receiptId)
+	function hint(string owner, string stage, QuestObjective objective) returns string
+		for i = 0 to count - 1
+			if bindings[i].matches(owner, stage, objective)
+				return "\nConsult " + bindings[i].providerName + " at " + bindings[i].locationId + ": /consult " + bindings[i].providerId
+		return ""
+	function consult(WarcraftRpgRuntime runtime, player sender, string providerId) returns string
+		if sender != Player(0)
+			return "Only the campaign player can consult a provider."
+		for i = 0 to count - 1
+			let binding = bindings[i]
+			if binding.providerId == providerId
+				let definition = runtime.journal.get(binding.questId)
+				if definition == null or definition.state != QUEST_ACTIVE or definition.graph == null or definition.graph.activeStageId != binding.stageId or not definition.graph.activeObjective(binding.objectiveId)
+					return "No active consultation objective for this provider."
+				let objective = definition.graph.objective(binding.objectiveId)
+				if objective == null or not binding.matches(definition.id, definition.graph.activeStageId, objective)
+					return "Consultation binding is unavailable."
+				let actor = runtime.localActor(sender, binding.locationId)
+				if actor < 0 or not runtime.eligibleActor(actor) or runtime.interactions.resolve(actor, sender, binding.locationId) == null
+					return "A field character must be present at the consultation location."
+				proof = i
+				let changed = runtime.questEvent(binding.questId, binding.objectiveId, "consult_" + binding.providerId)
+				proof = -1
+				if changed
+					return "Obtained observations from " + binding.providerName + "."
+				return "Consultation made no progress."
+		return "Unknown consultation provider."

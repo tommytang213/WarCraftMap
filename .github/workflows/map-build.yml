@@ -1,3 +1,4 @@
+# The isolated Dot diagnostic branch retains logs only: artifact allowance is unverified.
 name: Age of Sail campaign artifact
 
 on:
@@ -15,6 +16,11 @@ on:
       - "automation/prepare_wurst_image.sh"
       - ".github/workflows/map-build.yml"
   workflow_dispatch:
+    inputs:
+      expected_head_sha:
+        description: Optional frozen continuation head SHA; supplying it enables exact-head preflight
+        required: false
+        type: string
 
 # Keep PR verification and final main checks, but do not rebuild each agent branch
 # twice (once for its push and again for pull_request). New PR commits cancel
@@ -37,6 +43,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Bind manual validation to frozen repository head
+        if: github.event_name == 'workflow_dispatch' && inputs.expected_head_sha != ''
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: bash automation/verify_manual_head_checkout.sh
 
       - name: Validate canonical source and contracts
         run: |
@@ -62,6 +74,7 @@ jobs:
             -e MAP_PROJECT \
             -e RELEASE_ARTIFACT \
             -e WURST_IMAGE \
+            -e WURST_CI_ANNOTATIONS=true \
             -e SOURCE_REVISION="$GITHUB_SHA" \
             -v "$PWD:/source:ro" \
             -v "$artifact_dir:/out" \
@@ -70,6 +83,7 @@ jobs:
               set -eu
               apt-get update
               apt-get install -y --no-install-recommends python3
+              apt-get install -y --no-install-recommends git || echo "Optional Git inspection tool unavailable; build continues."
               cp -a /source /tmp/workspace
               chown -R wurstuser:wurstuser /tmp/workspace
               candidate_status=0
@@ -102,14 +116,22 @@ jobs:
             ready) echo "ready=true" >> "$GITHUB_OUTPUT" ;;
             blocked)
               echo "ready=false" >> "$GITHUB_OUTPUT"
-              echo "::notice::Candidate publication blocked by release audits; see the diagnostics artifact."
-              echo "**Candidate publication: blocked.** Validation completed, but the final W3N release audits contain unresolved requirements or research consumers. No player candidate was published. See the age-of-sail-requirement-diagnostics artifact for the complete reports." >> "$GITHUB_STEP_SUMMARY"
+              if ! python3 maps/historical-world-rpg/age-of-sail-world/tooling/print_release_blockers.py --diagnostics "$artifact_dir/diagnostics" --summary "$GITHUB_STEP_SUMMARY"; then
+                echo "::warning::Blocker excerpt unavailable; candidate remains blocked. See validation logs."
+              fi
+              if [ "${GITHUB_HEAD_REF:-}" = "fix/dot-wc3-continuation-20261118" ] || [ "${GITHUB_REF:-}" = "refs/heads/fix/dot-wc3-continuation-20261118" ]; then
+                echo "::notice::Candidate publication blocked by release audits; this continuation run is logs-only."
+                echo "**Candidate publication: blocked.** No player candidate was published. This continuation run skips artifact/cache uploads; reports are not downloadable. Inspect the validation logs for audit diagnostics." >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "::notice::Candidate publication blocked by release audits; see the diagnostics artifact."
+                echo "**Candidate publication: blocked.** Validation completed, but the final W3N release audits contain unresolved requirements or research consumers. No player candidate was published. See the age-of-sail-requirement-diagnostics artifact for the complete reports." >> "$GITHUB_STEP_SUMMARY"
+              fi
               ;;
             *) echo "Invalid candidate publication status" >&2; exit 1 ;;
           esac
 
       - name: Retain requirement diagnostics even when publication is blocked
-        if: always()
+        if: always() && github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-requirement-diagnostics-${{ github.run_number }}
@@ -153,7 +175,7 @@ jobs:
           test -s "$artifact_dir/BUILD_VERSION.txt"
 
       - name: Upload Age of Sail campaign
-        if: steps.candidate.outputs.ready == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+        if: steps.candidate.outputs.ready == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/main') && github.head_ref != 'fix/dot-wc3-continuation-20261118' && github.ref != 'refs/heads/fix/dot-wc3-continuation-20261118'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-of-sail-world-release-candidate-${{ env.RELEASE_VERSION_PREFIX }}.${{ github.run_number }}
@@ -161,3 +183,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
+
+      - name: Explain diagnostic-only artifact policy
+        if: always() && (github.head_ref == 'fix/dot-wc3-continuation-20261118' || github.ref == 'refs/heads/fix/dot-wc3-continuation-20261118')
+        run: |
+          echo "::notice::Diagnostic branch: no workflow artifact or cache uploads. Earlier artifact-download references do not apply to this run."
+          echo "**Diagnostic branch policy:** only CI logs and job summaries are retained. No downloadable workflow artifacts or release candidate are provided; any earlier artifact references do not apply. Native acceptance remains separate." >> "$GITHUB_STEP_SUMMARY"
