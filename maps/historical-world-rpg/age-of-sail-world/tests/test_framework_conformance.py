@@ -199,14 +199,20 @@ class FrameworkConformanceTests(unittest.TestCase):
             category = Path(tmp)
             copy_category(category)
             replay = category / "_shared/tooling/focused_wurst_replay.py"
+            receipt = category / "_shared/tooling/wurst_dependency_receipt.py"
             self.assertIn('"--porcelain"', replay.read_text())
+            self.assertIn('"--porcelain"', receipt.read_text())
             self.assertEqual([], audit(category))
             with replay.open("a") as stream:
                 stream.write('\nGOOD = "porcelain"\nOTHER = "grain"\n')
+            with receipt.open("a") as stream:
+                stream.write('\nBAD_COMMODITY = "porcelain"\nBAD_SETTLEMENT = "split"\n')
             (category / "_shared/tooling/other.py").write_text('FLAG = "--porcelain"\n')
             errors = audit(category)
             self.assertTrue(any("tooling/focused_wurst_replay.py" in error and "'porcelain'" in error for error in errors))
             self.assertTrue(any("tooling/focused_wurst_replay.py" in error and "'grain'" in error for error in errors))
+            self.assertTrue(any("tooling/wurst_dependency_receipt.py" in error and "'porcelain'" in error for error in errors))
+            self.assertTrue(any("tooling/wurst_dependency_receipt.py" in error and "'split'" in error for error in errors))
             self.assertTrue(any("tooling/other.py" in error and "'porcelain'" in error for error in errors))
 
     def test_campaign_wts_newline_exception_is_exact(self):
