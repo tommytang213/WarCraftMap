@@ -15,10 +15,24 @@ import sys
 
 MAX_TRACKED_FILES = 10000
 MAX_TRACKED_BYTES = 512 * 1024 * 1024
+MAX_COMPILER_BYTES = 32 * 1024 * 1024
+REASON_CODES = frozenset({
+    "compiler-input-absent", "dependency-absent", "dependency-absent-or-ambiguous",
+    "dependency-changed-during-read", "empty-tracked-tree", "inputs-changed-during-read",
+    "invalid-revision", "invalid-tracked-path", "tracked-bytes-limit", "tracked-files-limit",
+    "unexpected-git-root", "unsupported-compiler-input", "unsupported-tracked-file",
+    "working-tree-dirty",
+})
 RECEIPT_LINE = re.compile(
     r"WurstStdlib2 install receipt: status=(?:unverified reason=[a-z-]+|"
     r"observed-clean revision=[0-9a-f]{40} trackedSha256=[0-9a-f]{64} "
     r"trackedFiles=[1-9][0-9]{0,5} evidenceOnly=true)"
+)
+INPUT_LINE = re.compile(
+    r"Wurst post-install inputs receipt: status=(?:unverified reason=[a-z-]+|"
+    r"observed wurstBuildSha256=[0-9a-f]{64} commonJSha256=[0-9a-f]{64} "
+    r"blizzardJSha256=[0-9a-f]{64} stdlibRevision=[0-9a-f]{40} "
+    r"stdlibTrackedSha256=[0-9a-f]{64} trackedFiles=[1-9][0-9]{0,5} evidenceOnly=true)"
 )
 
 
@@ -83,12 +97,47 @@ def _observe(compile_root: Path) -> tuple[str, str, int]:
     return revision, digest, len(rows)
 
 
+def _compiler_inputs(compile_root: Path) -> tuple[str, str, str]:
+    """Use the execution manifest's SHA-256 algorithm on its three fixed inputs."""
+    names = ("wurst.build", "_build/common.j", "_build/blizzard.j")
+    remaining = MAX_COMPILER_BYTES
+    hashes = []
+    for name in names:
+        path = compile_root / name
+        if not path.exists():
+            raise ValueError("compiler-input-absent")
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(compile_root.resolve()):
+            raise ValueError("unsupported-compiler-input")
+        digest, size = _hash_file(path, remaining)
+        remaining -= size
+        hashes.append(digest)
+    return tuple(hashes)
+
+
+def _post_install_inputs(compile_root: Path) -> str:
+    revision, tracked, count = _observe(compile_root)
+    build_hash, common_hash, blizzard_hash = inputs = _compiler_inputs(compile_root)
+    if _observe(compile_root) != (revision, tracked, count) or _compiler_inputs(compile_root) != inputs:
+        raise ValueError("inputs-changed-during-read")
+    return (f"Wurst post-install inputs receipt: status=observed "
+            f"wurstBuildSha256={build_hash} "
+            f"commonJSha256={common_hash} "
+            f"blizzardJSha256={blizzard_hash} "
+            f"stdlibRevision={revision} stdlibTrackedSha256={tracked} "
+            f"trackedFiles={count} evidenceOnly=true")
+
+
+def _reason(error: BaseException) -> str:
+    value = error.args[0] if type(error) is ValueError and len(error.args) == 1 else None
+    return value if isinstance(value, str) and value in REASON_CODES else "inspection-unavailable"
+
+
 def _emit_installed_stdlib(compile_root: Path) -> None:
     """Child process: print only fixed-format provenance or a reason code."""
     try:
         revision, digest, count = _observe(compile_root)
     except (OSError, ValueError, UnicodeError, subprocess.SubprocessError) as error:
-        reason = str(error) if isinstance(error, ValueError) and re.fullmatch(r"[a-z-]+", str(error)) else "inspection-unavailable"
+        reason = _reason(error)
         print(f"WurstStdlib2 install receipt: status=unverified reason={reason}", flush=True)
         return
     print(f"WurstStdlib2 install receipt: status=observed-clean revision={revision} "
@@ -111,7 +160,30 @@ def log_installed_stdlib(compile_root: Path) -> None:
     print("WurstStdlib2 install receipt: status=unverified reason=inspection-unavailable", flush=True)
 
 
+def log_post_install_inputs(compile_root: Path) -> None:
+    """Optional, bounded log receipt; it cannot affect build or acceptance gates."""
+    try:
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve()), "--inputs", str(compile_root)],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=30,
+        )
+        line = result.stdout.strip()
+        if result.returncode == 0 and INPUT_LINE.fullmatch(line):
+            print(line, flush=True)
+            return
+    except Exception:
+        pass
+    print("Wurst post-install inputs receipt: status=unverified reason=inspection-unavailable", flush=True)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) == 2:
+        _emit_installed_stdlib(Path(sys.argv[1]))
+    elif len(sys.argv) == 3 and sys.argv[1] == "--inputs":
+        try:
+            print(_post_install_inputs(Path(sys.argv[2])), flush=True)
+        except (OSError, ValueError, UnicodeError, subprocess.SubprocessError) as error:
+            reason = _reason(error)
+            print(f"Wurst post-install inputs receipt: status=unverified reason={reason}", flush=True)
+    else:
         raise SystemExit(2)
-    _emit_installed_stdlib(Path(sys.argv[1]))

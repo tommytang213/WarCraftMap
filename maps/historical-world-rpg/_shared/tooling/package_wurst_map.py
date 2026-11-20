@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from scenario_inputs import catalogue_paths, configuration, content_path, settlement_sources
 from wurst_execution import WurstExecutionError, execute_tests, source_revision, toolchain_environment
-from wurst_dependency_receipt import log_installed_stdlib
+from wurst_dependency_receipt import log_installed_stdlib, log_post_install_inputs
 from hero_starting_profiles import starting_definitions, rank_text, recovery_days, growth_cadence
 from quest_codegen import validate_graphs, emit_quests, trade_quest_bindings, consultation_quest_bindings
 from quest_rewards import configuration as quest_reward_configuration
@@ -1291,6 +1291,7 @@ def run_execution_tests(config: BuildConfig, executable: str, revision: str | No
     compile_root = _assemble(config, root, generated)
     _run("Wurst test dependency installation", [executable, "install"], compile_root)
     log_installed_stdlib(compile_root)
+    log_post_install_inputs(compile_root)
     try:
         return execute_tests(compile_root, executable, root, source_revision(config.project, revision), project=config.project)
     except WurstExecutionError as error:
@@ -1308,6 +1309,7 @@ def build(config_path: Path, grill: str | None = None, clean_first: bool = True)
         json.dumps(identity, sort_keys=True) + "\n")
     _run("Wurst dependency installation", [executable, "install"], compile_root)
     log_installed_stdlib(compile_root)
+    log_post_install_inputs(compile_root)
     _run("Wurst compilation", [executable, "typecheck"], compile_root)
     try:
         execute_tests(compile_root, executable, root / "wurst-tests", revision, project=config.project)
